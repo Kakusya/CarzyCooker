@@ -21,7 +21,7 @@ ET/Code Creator
 | `DefaultComponentSystemCodeCreator` | Component + System | 否 |
 | `UIFormCodeCreator` | UIForm + System + Mono | 创建 UIForm prefab |
 | `UIWidgetCodeCreator` | UIWidget + System + Mono | 否 |
-| `UGFEntityCodeCreator` | GFEntity + System + Mono | 否 |
+| `UGFEntityCodeCreator` | UGFEntity + System + Mono | 否 |
 
 所有生成器都拒绝覆盖已有 `.cs` 文件。生成前先确认名称与目标目录；失败后不要删除不属于本次生成的文件。
 
@@ -77,12 +77,12 @@ UIWidget 生成器不创建 prefab。可把 Mono 组件挂到已有 UIForm 子�
 输入 `Player` 会生成：
 
 ```text
-Code/ModelView/Client/Game/GFEntity/Player/GFEntityPlayer.cs
-Code/ModelView/Client/Game/GFEntity/Player/MonoGFEntityPlayer.cs
-Code/HotfixView/Client/Game/GFEntity/Player/GFEntityPlayerSystem.cs
+Code/ModelView/Client/Game/UGFEntity/Player/UGFEntityPlayer.cs
+Code/ModelView/Client/Game/UGFEntity/Player/MonoUGFEntityPlayer.cs
+Code/HotfixView/Client/Game/UGFEntity/Player/UGFEntityPlayerSystem.cs
 ```
 
-生成器不创建 Entity prefab，也不写 `Entity.xlsx`。需要自行创建资源、挂载 `MonoGFEntityPlayer`、配置表并导出。
+生成器不创建 Entity prefab，也不写 `Entity.xlsx`。需要自行创建资源、挂载 `MonoUGFEntityPlayer`、配置表并导出。
 
 完整接入流程见 [Entity 开发](Entity开发.md)。
 
@@ -104,7 +104,7 @@ Unity/Assets/Res/Editor/ET/Config/
 
 窗口只禁用空名称和包含空格的名称，不会完整验证 C# 标识符或路径字符。建议使用 PascalCase 的单个类型名，例如 `Login`、`InventoryItem`。
 
-不要输入后缀：UIForm 生成器会自动添加 `UIForm`，Entity 生成器会自动添加 `GFEntity`，Widget 生成器会自动添加 `UIWidget`。
+不要输入后缀：UIForm 生成器会自动添加 `UIForm`，Entity 生成器会自动添加 `UGFEntity`，Widget 生成器会自动添加 `UIWidget`。
 
 ## 自定义生成器
 
@@ -171,4 +171,4 @@ namespace ET.Editor
 | 默认生成器 | `Game/ET/Editor/CodeCreator/DefaultComponentSystemCodeCreator.cs` |
 | UIForm 生成器 | `Game/ET/Editor/CodeCreator/UIFormCodeCreator.cs` |
 | UIWidget 生成器 | `Game/ET/Editor/CodeCreator/UIWidgetCodeCreator.cs` |
-| Entity 生成器 | `Game/ET/Editor/CodeCreator/GFEntityCodeCreator.cs` |
+| Entity 生成器 | `Game/ET/Editor/CodeCreator/UGFEntityCodeCreator.cs` |

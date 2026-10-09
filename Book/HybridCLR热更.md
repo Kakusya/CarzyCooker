@@ -1,5 +1,7 @@
 # HybridCLR 热更新
 
+> **ET 底座适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。
+
 GDK 用 `UNITY_HOTFIX` 控制 HybridCLR 工作流。ET 与 GameHot 仍由各自 Loader 启动，但业务程序集从 Unity 内置程序集切换为 `.dll.bytes` 资源，并在 IL2CPP Player 中加载 AOT 补充元数据。
 
 ## 先理解两个开关

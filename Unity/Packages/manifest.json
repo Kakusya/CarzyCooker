@@ -27,7 +27,6 @@
     "me.xw.reactivebinding": "https://github.com/XuToWei/ReactiveBinding.git?path=Unity",
     "me.xw.statecontroller": "https://github.com/XuToWei/StateController.git",
     "me.xw.toolbarextension": "https://github.com/XuToWei/ToolbarExtension.git",
-    "me.xw.unityagentbridge": "https://github.com/XuToWei/UnityAgentBridge.git?path=Unity",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
@@ -56,6 +55,7 @@
     "com.unity.modules.unitywebrequestwww": "1.0.0",
     "com.unity.modules.vehicles": "1.0.0",
     "com.unity.modules.video": "1.0.0",
-    "com.unity.modules.wind": "1.0.0"
+    "com.unity.modules.wind": "1.0.0",
+    "com.unity.pipeline": "0.8.0-exp.1"
   }
 }

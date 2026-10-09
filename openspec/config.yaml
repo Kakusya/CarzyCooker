@@ -1,0 +1,62 @@
+schema: spec-driven
+
+context: |
+  Language: zh
+  All artifacts must be written in zh.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+  CarzyCooker is on the main branch (tracking origin/main), based on the former ET branch, using UnityGameFramework + ET, HybridCLR, UniTask and Luban.
+  ProcedurePreset enters ProcedureET directly. GameHot and GF Network runtime were removed in this branch; do not restore them from other-branch docs.
+  Only Codex integration is maintained. Read AGENTS.md and Docs/AI/module-index.md first.
+  Preserve the validated collaboration rules and reference structure; load the relevant project skills before each applicable phase.
+  Canonical conventions live in references/; known issues in KnownIssues.md. Former Docs/Development pages are redirects only.
+  Read long-term-goals.md for direction and CarzyCooker当前进度.md for delivered capabilities; neither authorizes new implementation.
+  Main specs describe source-backed foundation contracts; future cooking designs live in Docs/Product.
+  Preserve confirmed, authorized supplement, candidate and undecided statuses.
+  Do not implement cooking gameplay or change the foundation architecture in the migration.
+  No SHA/hash verification, extra JSON evidence bundles or full-state copies.
+  Unity CLI and the project Pipeline package are explicitly authorized. Use exact project-path discovery.
+  New or enhanced skills require item-by-item approval; no automatic MCP, product-test, build-acceptance or port-governance tools.
+  New supporting tools require a concrete purpose, necessity, dependencies, file changes and acceptance proposal before approval.
+
+rules:
+  proposal:
+    - 写明实际行为变化、范围外事项和适用模块；已有明确授权不重复请求批准。
+  design:
+    - 核实当前源码、owner、程序集和生成配置；未决问题不得代定。
+  specs:
+    - 正文中文，保留英文结构和 SHALL/MUST；每项 Requirement 至少有一个 Scenario。
+    - 区分当前实现、新增约定和未来设计；提供本项目有效源码或文档引用。
+  tasks:
+    - 任务只包含已授权范围，写清验证和 NotRun，不能以任务勾选冒充产品验收。
+
+operations:
+  apply:
+    guidance:
+      - 保留用户未提交修改和已删除文件；先读适用规范，再用现有 API 实施。
+      - 构建、Editor、服务启动与生成只在当轮任务授权下执行，不由技能自动扩大范围。
+  archive:
+    guidance:
+      - 先验证任务完成和主规格对应关系，区分静态验证与未运行产品验证。
+      - 不提交或推送原始日志、状态副本、缓存或用户现场。
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

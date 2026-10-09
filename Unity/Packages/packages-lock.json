@@ -172,7 +172,7 @@
     },
     "com.unity.nuget.mono-cecil": {
       "version": "1.11.6",
-      "depth": 2,
+      "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -182,6 +182,20 @@
       "depth": 0,
       "source": "registry",
       "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.pipeline": {
+      "version": "0.8.0-exp.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.test-framework": "1.1.33",
+        "com.unity.nuget.mono-cecil": "1.11.6",
+        "com.unity.modules.uielements": "1.0.0",
+        "com.unity.modules.jsonserialize": "1.0.0",
+        "com.unity.modules.screencapture": "1.0.0",
+        "com.unity.nuget.newtonsoft-json": "3.0.2"
+      },
       "url": "https://packages.unity.com"
     },
     "com.unity.profiling.core": {
@@ -328,16 +342,6 @@
       "source": "git",
       "dependencies": {},
       "hash": "ecb4645d33e69f481cf70ceb2eec385ff89c5287"
-    },
-    "me.xw.unityagentbridge": {
-      "version": "https://github.com/XuToWei/UnityAgentBridge.git?path=Unity",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {
-        "com.unity.nuget.newtonsoft-json": "3.2.1",
-        "com.unity.test-framework": "1.1.33"
-      },
-      "hash": "55be190a99512856cfcc7ae53c2ef2994a2e242b"
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",

@@ -1,5 +1,7 @@
 # GameDevelopmentKit 文档
 
+> **ET 底座适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。
+
 Book 解释“怎么做、为什么这样做、产物在哪里”。主 README 只负责项目定位和最短上手路径；具体流程以这里的专题文档为准。
 
 ## 推荐阅读路线
@@ -38,6 +40,7 @@ Book 解释“怎么做、为什么这样做、产物在哪里”。主 README �
 | ET 工具 | [ET 代码生成工具](ET代码生成工具.md) | 已实现 | Component、UIForm、UIWidget、Entity 模板 |
 | ET 扩展 | [ET 动态事件](ET动态事件.md) | 已实现 | 按实体类型和 SceneType 广播事件 |
 | 编辑器 | [自定义 Toolbar](自定义Toolbar.md) | 已实现 | 向 Unity 主工具栏注册按钮 |
+| 编辑器 | [Unity CLI/Pipeline](UnityCLI.md) | 已接入，验证范围见正文 | 发现本工程、实际命令、编译和状态 |
 | 构建 | [HybridCLR 热更新](HybridCLR热更.md) | 已实现 | 热更新 DLL 与 AOT 元数据准备 |
 | 构建 | [一键打包](一键打包.md) | 已实现 | 资源、安装包和本地资源服务器 |
 | 设计 | [动态扩容设计](动态扩容.md) | 未实现 | ET 服务发现、路由与弹性伸缩方案 |

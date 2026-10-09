@@ -1,5 +1,7 @@
 # Proto 生成工具
 
+> **ET 底座适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。
+
 GDK 的 Proto2CS 是面向项目约定的轻量代码生成器，不调用 `protoc`。它按子目录隔离 Opcode 区间，并可生成 ET 的 MemoryPack 消息或 UGF 的 Protobuf Unity Packet。
 
 ## 目录约定
@@ -13,6 +15,9 @@ GDK 的 Proto2CS 是面向项目约定的轻量代码生成器，不调用 `prot
 | `ET-Client` | ET | 10000 | ET Client 与 ClientServer |
 | `ET-ClientServer` | ET | 20000 | ET ClientServer |
 | `GameHot` | UGF | 30000 | GameHot Message |
+| `ET-Admin` | ET | 30000 | DotNet Model 管理消息 |
+
+ET-Admin 与 GameHot 属于不同生成/服务域，不把两者混为同一全局 Opcode 命名空间。
 
 ## 前置条件与执行
 

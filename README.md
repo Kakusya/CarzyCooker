@@ -1,4 +1,6 @@
 # ET模式
+
+> **ET 分支适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。
 使用ET+GF，使用GF扩展了ET的客户端部分，功能更强大，双端开发更便利
 
 # GameDevelopmentKit

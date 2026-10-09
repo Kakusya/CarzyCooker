@@ -1,5 +1,7 @@
 # UI 开发
 
+> **ET 底座适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。
+
 GDK 的 UI 配置统一由 GF UIComponent 管理。业务层可选择 GameHot 的 MonoBehaviour 工作流，或 ETUI 的 Entity/System 工作流；两者共享 UI 表、资源路径、UIGroup 和 GF 生命周期。
 
 运行时为 `Image`、`UXImage` 或 `RawImage` 动态换图时，使用 [AssetSet 资源设置](AssetSet.md) 统一处理加载、远程缓存与回收。

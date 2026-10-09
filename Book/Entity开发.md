@@ -1,5 +1,7 @@
 # Entity 开发
 
+> **ET 底座适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。
+
 GDK 使用 GF EntityComponent 负责资源加载、实例池和显示生命周期。GameHot 直接编写 EntityLogic；ETEntity 则让 ET 实体拥有一个 GF Entity 视图，并在 ET System 中接收 GF 生命周期。
 
 ## 选择实现方式
@@ -137,12 +139,12 @@ ETEntity 的 ET 实体保存业务状态，GF Entity 只作为视图。`UGFEntit
 打开 `ET/Code Creator`，选择 `UGFEntityCodeCreator`，输入 `Test`。工具生成：
 
 ```text
-Assets/Scripts/Game/ET/Code/ModelView/Client/Game/GFEntity/Test/GFEntityTest.cs
-Assets/Scripts/Game/ET/Code/ModelView/Client/Game/GFEntity/Test/MonoGFEntityTest.cs
-Assets/Scripts/Game/ET/Code/HotfixView/Client/Game/GFEntity/Test/GFEntityTestSystem.cs
+Assets/Scripts/Game/ET/Code/ModelView/Client/Game/UGFEntity/Test/UGFEntityTest.cs
+Assets/Scripts/Game/ET/Code/ModelView/Client/Game/UGFEntity/Test/MonoUGFEntityTest.cs
+Assets/Scripts/Game/ET/Code/HotfixView/Client/Game/UGFEntity/Test/UGFEntityTestSystem.cs
 ```
 
-Entity 生成器不创建预制体。创建 `Assets/Res/Entity/Test.prefab`，把 `MonoGFEntityTest` 挂到预制体，再在 Entity 表配置对应记录。
+Entity 生成器不创建预制体。创建 `Assets/Res/Entity/Test.prefab`，把 `MonoUGFEntityTest` 挂到预制体，再在 Entity 表配置对应记录。
 
 ### 2. 定义 ET 实体与 Mono 视图
 
@@ -150,7 +152,7 @@ Entity 生成器不创建预制体。创建 `Assets/Res/Entity/Test.prefab`，�
 namespace ET.Client
 {
     [ComponentOf(typeof(GFEntityComponent))]
-    public class GFEntityTest : UGFEntity<MonoGFEntityTest>,
+    public class UGFEntityTest : UGFEntity<MonoUGFEntityTest>,
         IAwake, IDestroy, IUGFEntityOnShow, IUGFEntityOnHide
     {
     }
@@ -163,7 +165,7 @@ using CodeBind;
 namespace ET.Client
 {
     [MonoBehaviourBinding]
-    public partial class MonoGFEntityTest : AETMonoUGFEntity
+    public partial class MonoUGFEntityTest : AETMonoUGFEntity
     {
     }
 }
@@ -176,16 +178,16 @@ namespace ET.Client
 ```csharp
 namespace ET.Client
 {
-    [EntitySystemOf(typeof(GFEntityTest))]
-    public static partial class GFEntityTestSystem
+    [EntitySystemOf(typeof(UGFEntityTest))]
+    public static partial class UGFEntityTestSystem
     {
         [UGFEntitySystem]
-        private static void UGFEntityOnShow(this GFEntityTest self)
+        private static void UGFEntityOnShow(this UGFEntityTest self)
         {
         }
 
         [UGFEntitySystem]
-        private static void UGFEntityOnHide(this GFEntityTest self, bool isShutdown)
+        private static void UGFEntityOnHide(this UGFEntityTest self, bool isShutdown)
         {
         }
     }
@@ -202,8 +204,8 @@ namespace ET.Client
 GFEntityComponent owner = scene.GetComponent<GFEntityComponent>()
     ?? scene.AddComponent<GFEntityComponent>();
 
-GFEntityTest entity = await owner
-    .AddGFEntityChildAsync<GFEntityTest>(UGFEntityId.Test);
+UGFEntityTest entity = await owner
+    .AddGFEntityChildAsync<UGFEntityTest>(UGFEntityId.Test);
 ```
 
 固定唯一实例可使用 `AddGFEntityComponentAsync`。允许多个同类型实例时使用 Child，因为同一所有者不能拥有两个相同类型的 Component。
@@ -239,7 +241,7 @@ entity.Dispose(); // 自动隐藏 GF Entity
 
 ### ETEntity 的 `View` 为 null
 
-确认预制体挂有泛型参数对应的 `MonoGFEntity*`，并继承 `AETMonoUGFEntity`。资源加载成功并完成 OnShow 后再访问 View。
+确认预制体挂有泛型参数对应的 `MonoUGFEntity*`，并继承 `AETMonoUGFEntity`。资源加载成功并完成 OnShow 后再访问 View。
 
 ### 修改生成的 EntityId 后又被覆盖
 
