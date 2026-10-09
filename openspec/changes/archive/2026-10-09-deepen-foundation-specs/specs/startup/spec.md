@@ -1,10 +1,6 @@
-# ET 启动与稳定加载层
+# Spec Delta
 
-## Purpose
-
-记录 GF 壳、ET Init/CodeLoader 与实际程序集装载入口。 当前基线为 main 分支的 ET 底座；静态格式/源码核对不代表产品构建、Editor、玩法或联网已验证。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: ET 固定入口
 
@@ -20,14 +16,7 @@ ProcedurePreset SHALL 直接进入 ProcedureET；在 UNITY_ET 编译条件成立
 - **WHEN** 已编译 UNITY_ET 路线且 ProcedureET 离开
 - **THEN** 调用现有 CodeRunner 停止入口；缺少 UNITY_ET 时不能从流程类存在推断 ET 启动回调已编译
 
-### Requirement: ET 程序集装载
-
-CodeLoader MUST 按热更与 CodeBytes 配置取得 Model/ModelView/Hotfix/HotfixView 程序集并注册 CodeTypes，再调用 ET.Entry.Start。
-
-#### Scenario: ET 程序集装载的适用行为
-
-- **WHEN** ET.Init 完成基础单例初始化
-- **THEN** 通过已有 CodeLoader 启动；Editor Model DLL 与资源字节分支按真实配置处理
+## ADDED Requirements
 
 ### Requirement: 启动资源模式分流
 
@@ -78,12 +67,10 @@ CodeLoader MUST 按热更与 CodeBytes 配置取得 Model/ModelView/Hotfix/Hotfi
 
 ## Sources
 
-- [ProcedurePreset](../../../Unity/Assets/Scripts/Game/Procedure/ProcedurePreset.cs)
-- [ProcedureET](../../../Unity/Assets/Scripts/Game/Procedure/ProcedureET.cs)
-- [ET.Init](../../../Unity/Assets/Scripts/Game/ET/Loader/Init.cs)
-- [CodeLoader](../../../Unity/Assets/Scripts/Game/ET/Loader/CodeLoader.cs)
-- [资源模式](../../../Unity/Assets/Scripts/Game/Procedure/ProcedureSplash.cs)
-- [资源检查](../../../Unity/Assets/Scripts/Game/Procedure/ProcedureCheckResources.cs)
-- [预加载](../../../Unity/Assets/Scripts/Game/Procedure/ProcedurePreload.cs)
-- [资源完成](../../../Unity/Assets/Scripts/Game/Procedure/ProcedureCompleteResources.cs)
-- [版本检查](../../../Unity/Assets/Scripts/Game/Procedure/ProcedureCheckVersion.cs)
+- [Preset](../../../../../../Unity/Assets/Scripts/Game/Procedure/ProcedurePreset.cs)
+- [ET 入口与退出](../../../../../../Unity/Assets/Scripts/Game/Procedure/ProcedureET.cs)
+- [资源模式](../../../../../../Unity/Assets/Scripts/Game/Procedure/ProcedureSplash.cs)
+- [资源检查](../../../../../../Unity/Assets/Scripts/Game/Procedure/ProcedureCheckResources.cs)
+- [预加载](../../../../../../Unity/Assets/Scripts/Game/Procedure/ProcedurePreload.cs)
+- [资源完成](../../../../../../Unity/Assets/Scripts/Game/Procedure/ProcedureCompleteResources.cs)
+- [版本检查](../../../../../../Unity/Assets/Scripts/Game/Procedure/ProcedureCheckVersion.cs)

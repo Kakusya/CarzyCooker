@@ -23,4 +23,6 @@ OnInit/IAwake 一次建立状态，Open/Show 建本轮 userData、订阅和任�
 
 实施关注重复进入/退出、owner 关闭、加载中退出、旧结果和池重用。本次迁移未运行这些编辑器/玩法检查。
 
+更细的 [ET 树销毁与实例引用](../openspec/specs/runtime-foundation/spec.md)、[UI 等待与 Widget 状态](../openspec/specs/ui/spec.md)、[Entity 失败与视图回调](../openspec/specs/entity/spec.md) 已纳入主规格。取消请求不等于底层下载已中止，GF view 的附加/隐藏不等于迁移或销毁 ET owner；资源回调失效范围见 [已知问题](../KnownIssues.md)。
+
 依据：[UI手册](../Book/UI开发.md)、[Entity手册](../Book/Entity开发.md)、[UI规格](../openspec/specs/ui/spec.md)、[Entity规格](../openspec/specs/entity/spec.md)。

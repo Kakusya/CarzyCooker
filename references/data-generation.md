@@ -25,6 +25,8 @@ try {
 
 Check 不写产物且跳过本地化输出。缺工具说明前置，不把构建自动加入文档任务。目标与选项见 [Luban手册](../Book/Luban配置.md) 与 [规格](../openspec/specs/data-generation/spec.md)。
 
+非 Check 的失败不会自动跳过复制/ID 派生，也没有回滚保证；复制目标只放该生成链路产物。更细的五目标与失败场景在主规格维护，不在此复制一份契约。
+
 ## 协议、本地化与绑定
 
 - Design/Proto/*/proto.conf 选择 active/codeType/起始 Opcode/输出；Proto2CS 排序和消息顺序影响 Opcode。当前配置只有 ET 生成域，使用 ET/MemoryPack。工具保留 UGF 生成器不等于客户端仍有 GF Network packet 运行时；不恢复已删除模式。见 [Proto手册](../Book/Proto生成工具.md)。

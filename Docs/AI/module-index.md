@@ -41,6 +41,8 @@
 
 ## 质量与已有测试
 
+2026-10-09 继续扫描并细化十四项底座规格，补充模式、异常、取消、清理和兼容边界。十六份主规格当前有 74 项要求、120 个场景；扫描范围、模块与源码对应、保留原文及修改原因见 [深度扫描](spec-scan.md)。这里的数量属于本轮完成记录，后续能力清单以 OpenSpec CLI 为准；静态场景不等于动态测试已执行。
+
 OpenSpec 官方技能已补齐至十二项，完整入口见 [AGENTS 技能加载](../../AGENTS.md#技能加载) 与 [工作流](workflow.md)。规划、实施、验证和归档按各自职责调用，新增教学或批量入口不自动授权业务实现。
 
 适用 [生命周期](../../references/framework-lifecycle.md)、[生成链路](../../references/data-generation.md)、[已知问题](../../KnownIssues.md)。初始迁移只作静态检查；后续已授权接入 [Unity CLI/Pipeline](../../Book/UnityCLI.md)，包解析、连接和编译实际结果见手册。现有 ET Test/RobotCase 仅作定位，产品测试验收和后续 [技能改造](skill-roadmap.md) 逐项批准；未运行项保持 NotRun。
