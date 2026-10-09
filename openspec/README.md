@@ -19,5 +19,6 @@
 | [reactive-ui](specs/reactive-ui/spec.md) | ET reactive/外部 ReactiveBinding |
 | [dependencies](specs/dependencies/spec.md) | Analyzer/第三方/程序集/包 |
 | [ai-collaboration](specs/ai-collaboration/spec.md) | 未来产品/需求/候选 |
+| [automated-testing](specs/automated-testing/spec.md) | 项目测试发现、显式执行、终态和失败报告 |
 
 工作流见 [Codex/OpenSpec](../Docs/AI/workflow.md)，当前配置见 [config.yaml](config.yaml)。每项要求附场景和来源；协作资料规格描述文档与授权行为，不作为玩法能力。

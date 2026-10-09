@@ -14,3 +14,7 @@ description: 处理 CarzyCooker Excel/Luban 配置、校验导出、生成 ID �
 5. 检查源与所有目标 diff，公共 Editor JSON 到 UI/Entity/UIEntity/Scene/Sound ID、本地化及 ET `Config/Luban` 复制。复制可清空目标，不混放手写文件。
 
 实现：`Share/Tool/ExcelExporter/ExcelExporter.Luban.cs`、`ExcelExporter.Localization.cs`、`Generate/`。Check 不写产物且跳过本地化导出。核对真实退出码和失败日志，不用文件存在冒充成功；Editor 刷新/编译未运行写 NotRun。禁止 SHA/hash 与额外 JSON 证据。
+
+新增表时先读实际注册工作簿和已有同类表，确认 table/bean/enum、唯一 ID、字段类型、默认值、client/server group 与生成目标；字段改变逐一找读取者和复制消费者。不得只改 Datas 而遗漏注册。读取工作簿用现有可用方式，不能因参考有 read_xlsx/LubanTableEditor 就假定本项目已安装。
+
+导出前记清任务源文件与受影响目标，Check 失败停止；生成后核对表数据、ID/代码、本地化和 Config/Luban 等输出 diff，未知删除先报告，不重跑或继续用旧生成物掩盖失败。资源引用变更同时读 [ResourceCollection SOP](../../../Book/ResourceCollection导出SOP.md)；行为验证按 [自动测试 SOP](../../../Book/自动化测试SOP.md) 选择真实用例，导表成功不代表玩法验收。

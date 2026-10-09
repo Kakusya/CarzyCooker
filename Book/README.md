@@ -45,6 +45,20 @@ Book 解释“怎么做、为什么这样做、产物在哪里”。主 README �
 | 构建 | [一键打包](一键打包.md) | 已实现 | 资源、安装包和本地资源服务器 |
 | 设计 | [动态扩容设计](动态扩容.md) | 未实现 | ET 服务发现、路由与弹性伸缩方案 |
 
+## 开发与验收 SOP
+
+| 流程 | 正文 | 当前能力 |
+|---|---|---|
+| Unity 启动 | [Unity启动与验证SOP](Unity启动与验证SOP.md) | 本项目 Launcher / ProcedureET 入口 |
+| 资源刷新 | [ResourceCollection导出SOP](ResourceCollection导出SOP.md) | 既有 ET 规则与 Refresh/Optimize |
+| 自动测试 | [自动化测试SOP](自动化测试SOP.md) | 已迁入 AutoTesting 编排，产品用例按实际发现 |
+| 包体验收 | [打包与包体验收SOP](打包与包体验收SOP.md) | 既有构建工具；专用双包编排未接入 |
+| 错误诊断 | [Unity错误诊断SOP](Unity错误诊断SOP.md) | 当前 Console 与压缩器，不扫描历史快照 |
+| 规范/提交检查 | [C# 代码规范](C%23%20代码规范.md) | GF/ET 适配，不批量改存量 |
+| OpenSpec 收尾 | [完成与归档SOP](OpenSpec完成与归档SOP.md) | 已有官方 verify/sync/archive |
+
+端口和动态 UI 结构流程在 [references](../references/README.md)；技能发现从根 [AGENTS](../AGENTS.md) 开始。
+
 ## 阅读约定
 
 - `Unity/...`、`Design/...` 等路径相对仓库根目录。

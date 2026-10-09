@@ -2,7 +2,7 @@
 
 本项目编辑器自动化统一使用 Unity CLI 与官方 `com.unity.pipeline`；技能本身按 [审批清单](../Docs/AI/skill-roadmap.md) 逐项批准，不自动安装参考的额外管线。
 
-Unity CLI 是命令行工具，Pipeline 是 Editor 中提供执行能力的包，skill 是 AI 使用它们的说明。官方 `unity-cli` 技能已经内嵌在 CLI 中，可用 `unity skill show` 读取；批准后在仓库根用 `unity skill install codex --local` 接入项目技能目录。当前只核对安装预览，尚未安装。官方 `unity-pipeline` 技能随项目包提供；官方技能原文保持上游维护，项目规则放入口与手册。
+Unity CLI 是命令行工具，Pipeline 是 Editor 中提供执行能力的包，skill 是 AI 使用它们的说明。官方 `unity-cli` 技能已经内嵌在 CLI 中，可用 `unity skill show` 读取；2026-10-09 本轮获准迁移后，已在仓库根用 `unity skill install codex --local` 接入 [官方技能](../.agents/skills/unity-cli/SKILL.md)，保持 CLI 内嵌原件。官方 `unity-pipeline` 技能随项目包提供；官方技能原文保持上游维护，项目规则放入口与手册。
 
 ## 当前环境
 
@@ -61,3 +61,7 @@ unity command console --project-path "D:/MyWork/CarzyCooker/Unity"
 原 Console 保留 4 条本次探测错误：首次导入窗口两次主线程超时，误用参考旧日志命令两次 Command Not Found；另有本环境管理员运行警告。旧命令已从有效用法中纠正。没有清除或改写错误，不声称原 Console 无错误。后续正确命令运行与编译结果分别确认。
 
 Editor 原日志位于 `C:/Users/Administrator/AppData/Local/Temp/CarzyCooker-UnityCLI-Editor.log`，不提交日志或额外状态副本。
+
+## 已迁入 SOP
+
+启动见 [启动与验证](Unity启动与验证SOP.md)，资源见 [ResourceCollection](ResourceCollection导出SOP.md)，测试见 [自动测试](自动化测试SOP.md)，错误见 [错误诊断](Unity错误诊断SOP.md)，构建见 [包体验收](打包与包体验收SOP.md)。本轮只读发现 EditMode/PlayMode 均为空集，未运行产品测试或构建；自动测试工具自身回归和原生查询分别报告。

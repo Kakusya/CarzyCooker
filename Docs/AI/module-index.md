@@ -41,4 +41,20 @@
 
 ## 质量与已有测试
 
+OpenSpec 官方技能已补齐至十二项，完整入口见 [AGENTS 技能加载](../../AGENTS.md#技能加载) 与 [工作流](workflow.md)。规划、实施、验证和归档按各自职责调用，新增教学或批量入口不自动授权业务实现。
+
 适用 [生命周期](../../references/framework-lifecycle.md)、[生成链路](../../references/data-generation.md)、[已知问题](../../KnownIssues.md)。初始迁移只作静态检查；后续已授权接入 [Unity CLI/Pipeline](../../Book/UnityCLI.md)，包解析、连接和编译实际结果见手册。现有 ET Test/RobotCase 仅作定位，产品测试验收和后续 [技能改造](skill-roadmap.md) 逐项批准；未运行项保持 NotRun。
+
+## 已迁入测试与 SOP
+
+| 范围 | 正文 / 工具 | 技能 |
+|---|---|---|
+| 启动、资源 | [启动](../../Book/Unity启动与验证SOP.md)、[资源导出](../../Book/ResourceCollection导出SOP.md) | [官方 CLI](../../.agents/skills/unity-cli/SKILL.md) |
+| 自动测试 | [SOP](../../Book/自动化测试SOP.md)、[AutoTesting](../../Tools/AutoTesting/README.md)、[主规格](../../openspec/specs/automated-testing/spec.md) | [auto-testing-sop](../../.agents/skills/auto-testing-sop/SKILL.md) |
+| 打包验收 | [SOP](../../Book/打包与包体验收SOP.md)；现有 BuildHelper，专用双包工具未接入 | [build-acceptance-sop](../../.agents/skills/build-acceptance-sop/SKILL.md) |
+| 错误诊断 | [SOP](../../Book/Unity错误诊断SOP.md)；参考压缩器与当前 entries 适配 | [unity-error-extraction](../../.agents/skills/unity-error-extraction/SKILL.md) |
+| 端口 | [SOP](../../references/port-management.md)；专用注册/租约工具未接入 | [port-management](../../.agents/skills/port-management/SKILL.md) |
+| 动态 UI | [SOP](../../references/dynamic-ui-sop.md)；注册表/runner 未接入 | [carzycooker-ui](../../.agents/skills/carzycooker-ui/SKILL.md) |
+| C# / 收尾 | [规范](../../Book/C%23%20代码规范.md)、[OpenSpec 完成归档](../../Book/OpenSpec完成与归档SOP.md) | 现有 apply/verify/sync/archive |
+
+本轮来源及验证范围见 [SOP 迁移](testing-sop-migration.md)，AGENTS 精确修改见 [逐字审阅](testing-sop-agents-review.md)。

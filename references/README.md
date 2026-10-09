@@ -9,6 +9,8 @@
 | [生成链路](data-generation.md) | Excel/Luban、Proto、CodeBind、ID、本地化 |
 | [响应式投影与网络](reactive-and-network.md) | 唯一状态来源、UI 观察、消息/HTTP、取消与 stale |
 | [已知问题](../KnownIssues.md) | 采用现有 helper、解释行为、提出修复 |
+| [端口管理 SOP](port-management.md) | 新监听、固定 endpoint、多 Editor 的发现与消费者核对 |
+| [动态 UI SOP](dynamic-ui-sop.md) | Prefab/CodeBind/Canvas 结构修改与引用迁移 |
 
 完整源码/手册/规格/技能路由见 [模块索引](../Docs/AI/module-index.md)。框架用法在 [Book](../Book/README.md)，未来设计在 [产品资料](../Docs/Product/README.md)，不与主规格混为一层。
 

@@ -7,29 +7,31 @@
 - 恢复需求讨论前加载探索技能的硬规则、触发条件与豁免；按阶段主动加载技能，不只罗列名称。
 - 恢复中文规划/回答/默认提交说明、文档冲突先说明、实现同步文档、待办与已知问题的阅读和授权边界。
 - 保留长期目标、文档分层、技能加载、自动化测试、端口、探索/表配置/UI 纪律、项目约定、架构/程序集/主规格、Book、参考模块、代码规范、编辑器/场景、协作习惯这些章节。
-- 当前七项 OpenSpec 技能真实存在且保留正式路由；仅将宿主特定的 `Skill` 工具表述适配为 Codex 实际读取 `SKILL.md`。
+- 当前十二项 OpenSpec 官方技能真实存在且保留正式路由；仅将宿主特定的 `Skill` 工具表述适配为 Codex 实际读取 `SKILL.md`。初次迁移为七项，后续用户明确要求补齐五项，均由 CLI 1.14.1 生成。
 - 业务与架构部分按本项目替换：按当前 main 分支的 ET 底座保留 ET 服务端、HybridCLR、Model/Hotfix，GameHot/GF Network 已由分支移除；增加未来做饭业务摘要，明确尚未实施和未决事项。
 - 按用户最新要求彻底清除旧编辑器接入和协议；统一使用 Unity CLI/Pipeline。迁移阶段限制保留历史记录，不写成后续任务永久禁令。
 - 实现约定正文迁入 `references/`，已知问题正文迁入根文件；原 Docs 页面只作跳转。长期目标和进度页负责摘要/路由，不复制完整设计或验收日志。
 
-## 配套文件和工具缺口：待讨论，不自动实施
+## 配套文件和工具：当前状态与剩余缺口
 
 | 参考配套 | 当前项目 | 需要讨论的决定 |
 | --- | --- | --- |
 | `grill-me` 及核心拷问技能 | 已有 `carzycooker-requirements`；本次适配先探索、收敛、决策账本、提案授权出口 | 是否需要进一步迁入参考的完整问答组织方式；不把现有项目技能说成不存在 |
-| 独立 `Book/C# 代码规范.md` | 入口恢复适用规范摘要；完整实现约定在 `references/business-code-conventions.md` | 是否需要独立完整手册；写哪些当前约定，避免机械套用 GF 命名到 ET/生成代码 |
-| `unity-cli` 和编辑器 CLI/Pipeline | CLI 1.0.0-beta.11 已存在；本项目已授权加入 Pipeline 0.8.0-exp.1 | 已核实官方内嵌 skill，首项改为接入官方原件；详见技能审批清单与 Unity CLI 手册 |
-| `auto-testing-sop` / `Tools/AutoTesting` | 未接入对应专用管线；保留已有 ET Test/RobotCase 的定位 | 首批具体可观察行为、环境与验收方式；不得复制参考专属玩法入口 |
-| `build-acceptance-sop` / `Tools/BuildAcceptance` | 有底座人工热更/打包工具，没有对应专用验收管线 | 何时需要独立包体验收；具体目标、依赖与改动范围 |
-| `port-management` / `Tools/PortRegistry` | 未接入对应治理工具；现有底座网络配置仍保留 | 是否出现新监听、多 Editor 或端口租约需求，再确定治理方式 |
+| 独立 `Book/C# 代码规范.md` | 已补齐独立手册及提交检查；分层约定在 `references/business-code-conventions.md` | 保留 GF/ET 适配；EditorConfigGuard 仍是另项工具，不机械重命名存量 |
+| `unity-cli` 和编辑器 CLI/Pipeline | CLI 1.0.0-beta.11 已存在；本项目已授权加入 Pipeline 0.8.0-exp.1 | 本轮已用官方安装器接入 unity-cli 原件；包内 unity-pipeline 镜像仍未接入 |
+| `auto-testing-sop` / `Tools/AutoTesting` | 本轮已迁入 SOP 和 Tools/AutoTesting，使用现有 UTF；保留 ET Test/RobotCase 的定位 | 产品测试列表目前为空；实际产品套件另按明确行为实施，不复制参考专属入口/证据管线 |
+| `build-acceptance-sop` / `Tools/BuildAcceptance` | 本轮已迁入 build-acceptance-sop 与手册，使用既有工具；没有专用双包验收编排器 | 何时需要独立包体验收；具体目标、依赖与改动范围 |
+| `port-management` / `Tools/PortRegistry` | 本轮已迁入 port-management 与 SOP；专用 PortRegistry/租约工具未接入 | 是否出现新监听、多 Editor 或端口租约需求，再确定治理方式 |
 | `Tools/LubanTableEditor` 及结构化表编辑脚本/约束文件 | 有 ExcelExporter 和项目 Luban 技能，没有参考专用表编辑工具 | 具体改表需求下选已有可用方式；需要新工具时先提供审批材料 |
-| 动态 UI 结构注册表、结构测试、Prefab 迁移 runner | 有本项目 UI/Widget/CodeBind 技能和生命周期约定，未接入参考专用登记/迁移工具 | 哪个实际 UI 行为需要这些工具，是否有更小的现有验证方式 |
-| `Tools/OpenSpec/verify-change.ps1` | 有 `openspec-verify-change` 和官方严格格式验证，无该脚本 | 是否需要额外脚本；当前技能与 CLI 不因缺脚本而失效 |
+| 动态 UI 结构注册表、结构测试、Prefab 迁移 runner | 已补齐动态 UI SOP 并完善 UI/Entity 技能；专用登记/迁移工具未接入 | 哪个实际 UI 行为需要这些工具，是否有更小的现有验证方式 |
+| `Tools/OpenSpec/verify-change.ps1` | 已有官方技能/严格验证，本轮补齐完成归档 SOP；无该专用脚本 | 是否需要额外脚本；当前技能与 CLI 不因缺脚本而失效 |
 | 专用 worker SOP 及编辑器探针 | 未迁入参考的编排依赖，当前任务不启用 worker 管线 | 是否有实际委派需求，另行确认依赖、运行方式和单写者边界 |
 
 这些工具不是“专属业务”就自动删除章节，也不是“参考验证有效”就自动安装。本次保留章节、通用纪律与缺口；新增工具仍须提供用途、必要性、依赖、逐文件改动和验收方式并取得批准。
 
-用户随后已批准 CLI/项目包接入，实际结果见 [Unity CLI](../../Book/UnityCLI.md)；新增及进一步改造的技能见 [逐项审批清单](skill-roadmap.md)。第一项建议 `unity-cli`，当前仅有提案，尚未生成该 skill。
+用户随后已批准 CLI/项目包接入，实际结果见 [Unity CLI](../../Book/UnityCLI.md)；新增及进一步改造的技能见 [逐项审批清单](skill-roadmap.md)。本轮已授权迁移 SOP/自动测试并接入官方 unity-cli，交付明细见 [SOP 迁移](testing-sop-migration.md)。
+
+2026-10-09 的后续讨论中，用户确认技能、SOP 和配套工具候选全部保留。完整清单统一维护在 [迁移清单](skill-roadmap.md)，包括启动验证、ResourceCollection 导出、错误诊断、官方 uGUI/搜索/包管理/渲染技能，以及测试、打包、归档、规范、端口与动态 UI 流程。依赖未齐或版本暂不兼容的条目也保留；此确认不把待接入项改写成已安装，各项适配和工具实现继续逐项审阅、批准。本页仅维护参考对齐与缺口，不重复完整清单。
 
 ## 原文与改写来源
 

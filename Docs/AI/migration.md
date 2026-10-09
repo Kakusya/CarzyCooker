@@ -70,3 +70,15 @@ ET 文本扫描范围见模块索引。十五项主规格再次通过严格验�
 本机已有有效 Editor 6000.3.18f1，实际路径 D:/MyUnityEditor/6000.3.18f1/Editor/Unity.exe；用户指定 D:/UnityEditor 用于缺版本时下载。复用现有 CLI 1.0.0-beta.11，项目固定 Pipeline 0.8.0-exp.1。包解析、项目连接与编译状态已验证，真实探测错误与原日志见 [Unity CLI](../../Book/UnityCLI.md)。这一轮的实际 Editor 检查与初始迁移的 NotRun 分开记录。
 
 新技能尚未安装，首项及后续候选见 [逐项审批清单](skill-roadmap.md)。本次变更在 openspec/changes/unity-cli-editor-setup 保留审阅；不运行 Play/玩法测试或产品构建，不提交或推送。
+
+## 后续补齐 OpenSpec 全部官方技能
+
+2026-10-09，用户明确要求补齐全部技能。初次的 core 六项加 verify 保留为历史记录；当前 custom/workflows 已选择全部十二项。官方 CLI 1.14.1 在当前仓库刷新 Codex，新增 new-change、continue-change、ff-change、bulk-archive-change、onboard；apply/update 的引导文字由生成器同步到新可用的 continue/new 入口，四项项目技能未改。AGENTS 与工作流、迁移清单、参考对齐和模块索引同步当前状态。
+
+profile/workflows 是全局配置，会影响后续其他项目初始化/更新的选择；本次未刷新其他工程。技能安装不运行 Unity、产品构建或玩法测试，也不接入仍待逐项审批的 Unity/其他技能和配套工具。
+
+## 后续已授权的自动测试与 SOP 迁移
+
+用户核实缺口后明确要求迁移。本轮接入官方 unity-cli、Tools/AutoTesting 及 auto-testing-sop/build-acceptance-sop/unity-error-extraction/port-management；补齐启动、资源、测试、打包、错误、C#、归档、端口和动态 UI 正文，完善原四项项目技能。当前 21 项技能；历史 11/16 项的检查结果保持原记录，不改写旧阶段。
+
+具体文件、原样复制与项目适配、独立工具剩余缺口、验证范围见 [SOP 迁移](testing-sop-migration.md)。AGENTS 本轮精确修改和原因见 [逐字审阅](testing-sop-agents-review.md)。未提交或推送；产品玩法和构建不因迁移自动执行。

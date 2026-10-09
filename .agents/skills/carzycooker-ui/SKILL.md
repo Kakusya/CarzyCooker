@@ -15,3 +15,5 @@ description: 接入 CarzyCooker ETUI、GF 托管 UI 或 Widget，核对配置、
 实际 `Unity/Assets/Scripts/Game/ET/Editor/CodeCreator/UIFormCodeCreator.cs` 创建骨架/prefab，重载后挂 Mono，但不填 Excel。Editor 操作使用 Unity CLI/Pipeline，先精确匹配本工程及实际命令；不把自动化连接成功当作 UI 行为验收。
 
 必需绑定修 prefab/生成源，System 不重复 GetComponent/复制状态。不 SetActive 受管根或手调回调。验收关注连续 Open/Close、加载中关闭、池重用、按钮订阅和覆盖 Pause/Resume；运行按授权，未运行写 NotRun。
+
+结构改动先读 [动态 UI SOP](../../../references/dynamic-ui-sop.md)，按“定位资源/表/绑定与消费者 → 安全编辑 Prefab → CodeBind 重生成 → 迁移调用者 → 生命周期验收”推进。表驱动行为与结构工具拆分 change，不伪造尚缺的注册表/runner。行为验收使用 [自动测试 SOP](../../../Book/自动化测试SOP.md) 中实际存在的测试；空集不能当通过。
