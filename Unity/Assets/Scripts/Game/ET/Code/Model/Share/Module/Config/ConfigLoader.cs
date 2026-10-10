@@ -11,7 +11,8 @@ namespace ET
     {
         public override async UniTask Handle(ConfigComponent.LoadAll arg)
         {
-            World.Instance.AddSingleton<Tables>();
+            ConfigComponent config = ConfigComponent.Instance;
+            Tables tables = World.Instance.AddSingleton<Tables>();
             Type tablesType = typeof (Tables);
             MethodInfo loadMethodInfo = tablesType.GetMethod("LoadAsync");
             if (loadMethodInfo == null)
@@ -24,19 +25,29 @@ namespace ET
             {
                 async UniTask<ByteBuf> LoadByteBuf(string file)
                 {
-                    return new ByteBuf(await ConfigComponent.Instance.ReadBytesAsync(file));
+                    byte[] bytes = await config.ReadBytesAsync(file);
+                    if (!ReferenceEquals(config, ConfigComponent.Instance))
+                    {
+                        throw new OperationCanceledException("Configuration owner stopped");
+                    }
+                    return new ByteBuf(bytes);
                 }
                 Func<string, UniTask<ByteBuf>> func = LoadByteBuf;
-                await (UniTask)loadMethodInfo.Invoke(Tables.Instance, new object[] { func });
+                await (UniTask)loadMethodInfo.Invoke(tables, new object[] { func });
             }
             else
             {
                 async UniTask<JSONNode> LoadJson(string file)
                 {
-                    return JSON.Parse(await ConfigComponent.Instance.ReadTextAsync(file));
+                    string json = await config.ReadTextAsync(file);
+                    if (!ReferenceEquals(config, ConfigComponent.Instance))
+                    {
+                        throw new OperationCanceledException("Configuration owner stopped");
+                    }
+                    return JSON.Parse(json);
                 }
                 Func<string, UniTask<JSONNode>> func = LoadJson;
-                await (UniTask)loadMethodInfo.Invoke(Tables.Instance, new object[] { func });
+                await (UniTask)loadMethodInfo.Invoke(tables, new object[] { func });
             }
         }
     }

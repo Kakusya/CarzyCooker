@@ -14,13 +14,13 @@ Host 本地玩家 -- 本地消息 --+
 远端 Client  -- 网络消息 --+
 ```
 
-上述方向已在会话中确认，无需逐条重审技术细节。详细设计供实施与一致性检查使用；若发现影响行为的新取舍，再单独说明。当前只完成规划，业务尚未实施。
+上述方向已在会话中确认，无需逐条重审技术细节。详细设计供实施与一致性检查使用；若发现影响行为的新取舍，再单独说明。本轮正在实施，完成范围及真实验证见 execution-notes，不以规划完成当作整项交付。
 
 ## Why
 
 已有启动项、稳定第二工作区和本地请求退出的独立规划，但还没有能让 Host 本地玩家与远端 Client 真正加入的产品会话。需要一个最小本机直连原型，以明确的 ET owner 树和发送／接收路径复用同一套成员管理与命令裁决，为后续联机验证提供实际目标。
 
-首期可观察结果是：启动 Host 并让本地玩家通过本地消息加入，再启动一个远端 Client；双方观察同一 Match 的完整名单，完成 Probe 请求／答复，断线后原逻辑成员显示离线，Host 退出后本轮资源释放。以上是验收目标，当前没有对应业务实现。
+首期可观察结果是：启动 Host 并让本地玩家通过本地消息加入，再启动一个远端 Client；双方观察同一 Match 的完整名单，完成 Probe 请求／答复，断线后原逻辑成员显示离线，Host 退出后本轮资源释放。当前本地与真实 KCP 小集已有实现证据，双 Editor 验收仍待必要版本纳入。
 
 ## What Changes
 
@@ -51,6 +51,7 @@ Host 本地玩家 -- 本地消息 --+
 - 本机 loopback 监听由本轮 Host owner 持有，端口 0 以实际绑定结果为准；必要时只在既有 UdpTransport 暴露只读绑定地址，不引入 PortRegistry、网络服务端进程、Realm／Gate／MongoDB 服务或第三份 RPC 等待表。Mongo 类型注册不等于启动数据库服务。
 - 实施后同步 references/reactive-and-network.md、Book/快速开始.md、Book/Unity启动与验证SOP.md 与 Docs/AI/module-index.md，保持正式传输选型仍待裁决。
 - [业务交接 A3／G3](../../../Docs/handoff/Cooking-设计交接-2026-10-09.md) 已明确逻辑成员不随连接销毁，撤销原草案的删除／保留裁决门槛。关联 [业务目标规格](../../../Docs/Product/specs/README.md)，本项只落实最小身份和离线保留，不实现自动重连、Profile 认证、餐厅或领取系统。
-- 本轮已获准实施，当前等待启动项与 Stop 前置收口。按共同裁决、桥接编号和 Peer 生命周期风险先做本地消息/KCP 小集，再做双 Editor；不扩展厨房或正式传输。验证取舍与未验证触发条件见 [execution-notes.md](execution-notes.md)，规划不作为联机证据。
+- 本轮已获准实施，启动项与 Stop 前置已收口。按共同裁决、桥接编号和 Peer 生命周期风险先做本地消息/KCP 小集，再做双 Editor；不扩展厨房或正式传输。验证取舍与未验证触发条件见 [execution-notes.md](execution-notes.md)，规划不作为联机证据。
+- 适用产品代码限定 Unity 的 !DOTNET Share 路线；既有 DotNet Model/Core 同源仍编译，不创建 .NET 产品服务入口。必要原型修正包括手写 LubanPartial 跨表索引延后、旧配置 await 的 owner 检查、Session 超时身份检查及 KCP 构造消除多余 TCP transport；没有改 Excel 或派生表数据。
 
 用户审核从本文“快速审核”开始；技术核对参见 [详细设计](design.md)、[会话规格](specs/product-session/spec.md)、[启动规格](specs/startup/spec.md) 和 [实施任务](tasks.md)。启动配置、第二工作区及框架 Stop 继续由各自 change 承接；本项只消费这些能力，不重复建立它们。

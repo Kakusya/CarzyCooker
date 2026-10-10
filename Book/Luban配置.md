@@ -197,6 +197,8 @@ Pop-Location
 
 ## 运行时加载与重载
 
+`Generate/*/Luban` 是生成输出；相邻 `LubanPartial` 是人工维护的 partial 扩展，未列入当前 outputCodeDir。跨表读取应放在所有并发 LoadAsync 完成后的 `PostResolveRef`，不能在某张表的 `PostInit` 读取另一张可能尚未完成加载的表。DTStartSceneConfig 的启动索引使用此边界；不手改生成的 Tables/DT/DR 或数据文件。
+
 启动时，GF 通过 `TablesComponent.LoadAllAsync()` 加载公共表；ET 与 GameHot 的入口加载各自生成的 Tables。
 
 单表重载示例：

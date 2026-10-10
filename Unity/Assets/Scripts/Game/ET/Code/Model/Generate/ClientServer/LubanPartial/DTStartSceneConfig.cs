@@ -47,7 +47,8 @@ namespace ET
             return agent;
         }
 
-        partial void PostInit()
+        // 跨表索引必须在全部并发 LoadAsync 完成后构建；本文件为人工 partial 扩展。
+        partial void PostResolveRef()
         {
             this.Gates.Clear();
             this.ProcessScenes.Clear();

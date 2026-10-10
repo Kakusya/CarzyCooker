@@ -68,14 +68,15 @@ namespace ET
         {
             self.AService.Remove(self.Id, self.Error);
             
-            foreach (RpcInfo responseCallback in self.requestCallbacks.Values.ToArray())
+            RpcInfo[] pending = self.requestCallbacks.Values.ToArray();
+            self.requestCallbacks.Clear();
+            foreach (RpcInfo responseCallback in pending)
             {
                 responseCallback.SetException(new RpcException(self.Error, $"session dispose: {self.Id} {self.RemoteAddress}"));
             }
 
             Log.Info($"session dispose: {self.RemoteAddress} id: {self.Id} ErrorCode: {self.Error}, please see ErrorCode.cs! {TimeInfo.Instance.ClientNow()}");
             
-            self.requestCallbacks.Clear();
         }
         
         public static void OnResponse(this Session self, IResponse response)
@@ -116,6 +117,11 @@ namespace ET
 
         public static async UniTask<IResponse> Call(this Session self, IRequest request, int time = 0)
         {
+            if (self.IsDisposed)
+            {
+                throw new ObjectDisposedException(nameof(Session));
+            }
+            EntityRef<Session> selfRef = self;
             int rpcId = ++self.RpcId;
             RpcInfo rpcInfo = new(request.GetType());
             self.requestCallbacks[rpcId] = rpcInfo;
@@ -127,6 +133,11 @@ namespace ET
                 async UniTaskVoid Timeout()
                 {
                     await self.Root().GetComponent<TimerComponent>().WaitAsync(time);
+                    self = selfRef;
+                    if (self == null)
+                    {
+                        return;
+                    }
                     if (!self.requestCallbacks.TryGetValue(rpcId, out RpcInfo action))
                     {
                         return;

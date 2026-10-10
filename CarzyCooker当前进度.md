@@ -9,7 +9,9 @@
 | 做饭玩法 | 房间、厨房、订单、顾客、伙伴、供应和产品存档尚未实施 | [未来产品设计](Docs/Product/README.md) |
 | 联机启动基础 | 显式 legacy/host/client 配置、工程范围请求、普通 Launcher 兼容与本轮 owner 收尾已实施；产品未接入时 Host/Client 拒绝，不启动 Demo | [执行记录](openspec/changes/multiplayer-instance-bootstrap/execution-notes.md)、[实例规格](openspec/specs/runtime-instances/spec.md) |
 | 本地请求退出 | 原 ProcessInnerSender 的幂等 Stop/Destroy、等待取消、旧计时/答复隔离已实施；真实消息 UTF 9/9 Passed，Unity/DotNet.Core 编译通过，不证明产品联机 | [执行记录](openspec/changes/local-message-request-shutdown/execution-notes.md)、[网络规格](openspec/specs/network/spec.md) |
-| 验证 | 初始迁移与本轮规格细化采用静态检查；CLI 接入的 Editor/包验证见专页；自动测试迁移包含工具自测及测试发现，产品构建、玩法、实际联网仍为 NotRun | [Unity CLI](Book/UnityCLI.md)、[测试/SOP迁移](Docs/AI/testing-sop-migration.md)、[规格验证](openspec/changes/archive/2026-10-09-deepen-foundation-specs/verification.md) |
+| 产品会话原型 | Unity loopback Host/Client、独立产品树、Match/Participant、共用有序裁决、本地消息及 UDP-KCP 已实现；单端和真实 KCP 小集已有结果，双 Editor 角色反转与最终收口尚待完成，不含厨房/存档/身份恢复 | [执行记录](openspec/changes/product-session-bootstrap/execution-notes.md)、[设计](openspec/changes/product-session-bootstrap/design.md) |
+| 稳定第二端 | 长期 CarzyCooker-NetTest / multiplayer-baseline 已建立；独立 Editor/缓存/日志、固定产品名、同名设置键不同值交错重读与原线程通信已核实；必要产品版本升级和双 Editor 产品联调未完成 | [共用规程](Docs/AI/multiplayer-peer-workflow.md)、[执行记录](openspec/changes/multiplayer-peer-workspace/execution-notes.md) |
+| 验证 | 初始迁移与规格细化采用静态检查；后续启动、本地消息、产品 KCP 和 Editor 结果各见本项记录；产品构建、厨房玩法、物理两机 LAN 仍 NotRun | [Unity CLI](Book/UnityCLI.md)、[测试/SOP迁移](Docs/AI/testing-sop-migration.md)、[规格验证](openspec/changes/archive/2026-10-09-deepen-foundation-specs/verification.md) |
 | 自动化配套 | Unity CLI/Pipeline、Tools/AutoTesting、相关技能及启动/资源/测试/打包/错误/端口/UI/归档 SOP 已迁入；专用双包编排、PortRegistry、UI 结构 runner 等仍未接入 | [已迁入配套](Docs/AI/skill-roadmap.md)、[剩余缺口](Docs/AI/reference-alignment.md) |
 
 不会因设计写完、候选表存在、任务勾选或格式通过，把未来玩法列为已实现。后续玩法必须有实际代码/配置和对应验证结果后再更新。

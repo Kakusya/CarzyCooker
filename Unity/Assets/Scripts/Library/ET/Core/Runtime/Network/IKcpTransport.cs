@@ -20,6 +20,8 @@ namespace ET
     {
         private readonly Socket socket;
 
+        public IPEndPoint LocalEndPoint => this.socket.LocalEndPoint as IPEndPoint;
+
         public UdpTransport(AddressFamily addressFamily)
         {
             this.socket = new Socket(addressFamily, SocketType.Dgram, ProtocolType.Udp);
@@ -41,6 +43,7 @@ namespace ET
             }
             catch (Exception e)
             {
+                this.socket.Dispose();
                 throw new Exception($"bind error: {ipEndPoint}", e);
             }
 

@@ -52,5 +52,18 @@ namespace ET
          public const ushort M2C_TransferMap = 10046;
          public const ushort C2G_Benchmark = 10047;
          public const ushort G2C_Benchmark = 10048;
+         public const ushort ProductRosterMember = 10049;
+         public const ushort ProductJoinRequest = 10050;
+         public const ushort ProductJoinResponse = 10051;
+         public const ushort ProductProbeRequest = 10052;
+         public const ushort ProductProbeResponse = 10053;
+         public const ushort ProductLeaveRequest = 10054;
+         public const ushort ProductLeaveResponse = 10055;
+         public const ushort ProductRosterSnapshot = 10056;
+         public const ushort ProductHeartbeatRequest = 10057;
+         public const ushort ProductHeartbeatResponse = 10058;
+         public const ushort ProductMatchClosed = 10059;
+         public const ushort ProductControlRequest = 10060;
+         public const ushort ProductControlResponse = 10061;
     }
 }

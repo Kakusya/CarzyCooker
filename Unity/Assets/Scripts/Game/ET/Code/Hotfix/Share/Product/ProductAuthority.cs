@@ -1,0 +1,194 @@
+#if !DOTNET
+using System;
+using System.Linq;
+using System.Text;
+using Cysharp.Threading.Tasks;
+
+namespace ET
+{
+    [FriendOf(typeof(Match))]
+    [FriendOf(typeof(Participant))]
+    [FriendOf(typeof(HostPeer))]
+    [FriendOf(typeof(HostSessionComponent))]
+    [FriendOf(typeof(ProductRuntimeComponent))]
+    [FriendOf(typeof(LocalDelivery))]
+    [FriendOf(typeof(RemoteDelivery))]
+    public static class ProductAuthority
+    {
+        public static HostPeer CreatePeer(HostSessionComponent authority)
+        {
+            if (authority.NextBindingGeneration == long.MaxValue)
+            {
+                throw new InvalidOperationException("Product binding generation exhausted");
+            }
+            HostPeer peer = authority.AddChild<HostPeer, HostSessionComponent, long>(authority, ++authority.NextBindingGeneration);
+            peer.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
+            return peer;
+        }
+
+        public static void Commit(HostSessionComponent authority, ProductControlRequest request, ProductControlResponse response)
+        {
+            ProductRuntimeComponent runtime = authority.Runtime;
+            Match match = authority.Match;
+            HostPeer peer = authority.GetChild<HostPeer>(request.PeerId);
+            if (runtime == null || match == null || runtime.Stage is ProductStage.Stopping or ProductStage.Stopped or ProductStage.Failed)
+            {
+                response.Error = ProductError.RuntimeStopped;
+                return;
+            }
+            if (peer == null || peer.InstanceId != request.PeerInstanceId || peer.Generation != request.BindingGeneration)
+            {
+                response.Error = ProductError.PeerClosed;
+                return;
+            }
+            ProductControlAction action = (ProductControlAction)request.Action;
+            if (action == ProductControlAction.Close)
+            {
+                Participant member = match.GetChild<Participant>(peer.MemberId);
+                if (member != null && member.BindingGeneration == peer.Generation && (HostPeer)member.BoundPeer == peer && member.Online)
+                {
+                    member.Online = false;
+                    member.BoundPeer = default;
+                    Changed(authority, match);
+                }
+                peer.CloseFinished = true;
+                return;
+            }
+            // 第二次核对发生在共同有序 Mailbox 内，不能仅信 Peer 接收时的资格。
+            if (!peer.EntryOpen || peer.Closing)
+            {
+                response.Error = ProductError.PeerClosed;
+                return;
+            }
+            switch (action)
+            {
+                case ProductControlAction.Join:
+                    if (request.ProtocolVersion != ProductSessionRules.ProtocolVersion)
+                    {
+                        response.Error = ProductError.IncompatibleProtocol;
+                        return;
+                    }
+                    if (peer.MemberId == 0)
+                    {
+                        if (match.NextMemberId == int.MaxValue)
+                        {
+                            response.Error = ProductError.InvalidRequest;
+                            return;
+                        }
+                        int memberId = ++match.NextMemberId;
+                        Participant member = match.AddChildWithId<Participant>(memberId);
+                        member.MemberId = memberId;
+                        member.Online = true;
+                        member.BoundPeer = peer;
+                        member.BindingGeneration = peer.Generation;
+                        peer.MemberId = memberId;
+                        Changed(authority, match);
+                    }
+                    FillJoin(match, peer, response);
+                    return;
+                case ProductControlAction.Probe:
+                case ProductControlAction.Leave:
+                    Participant participant = match.GetChild<Participant>(peer.MemberId);
+                    if (participant == null || !participant.Online || (HostPeer)participant.BoundPeer != peer || participant.BindingGeneration != peer.Generation)
+                    {
+                        response.Error = ProductError.NotJoined;
+                        return;
+                    }
+                    if (string.IsNullOrEmpty(request.MatchId) || request.MatchId != match.MatchId)
+                    {
+                        response.Error = ProductError.WrongMatch;
+                        return;
+                    }
+                    if (action == ProductControlAction.Probe)
+                    {
+                        if (request.Sequence <= 0 || request.Payload == null || Encoding.UTF8.GetByteCount(request.Payload) > ProductSessionRules.MaxPayloadBytes)
+                        {
+                            response.Error = ProductError.InvalidRequest;
+                            return;
+                        }
+                        response.MemberId = participant.MemberId;
+                        response.Sequence = request.Sequence;
+                        response.Payload = request.Payload;
+                        return;
+                    }
+                    participant.Dispose();
+                    peer.EntryOpen = false;
+                    peer.Closing = true;
+                    peer.CloseFinished = true;
+                    response.Committed = true;
+                    Changed(authority, match);
+                    return;
+                default:
+                    response.Error = ProductError.InvalidRequest;
+                    return;
+            }
+        }
+
+        private static void FillJoin(Match match, HostPeer peer, ProductControlResponse response)
+        {
+            response.MatchId = match.MatchId;
+            response.MemberId = peer.MemberId;
+            response.BindingGeneration = peer.Generation;
+            response.RosterVersion = match.RosterVersion;
+            foreach (Participant member in match.Children.Values.Cast<Participant>())
+            {
+                response.Members.Add(ProductMessages.Create<ProductRosterMember>(message => { message.MemberId = member.MemberId; message.Online = member.Online; }));
+            }
+        }
+
+        private static void Changed(HostSessionComponent authority, Match match)
+        {
+            ++match.RosterVersion;
+            foreach (HostPeer peer in authority.Children.Values.Cast<HostPeer>().ToArray())
+            {
+                if (!peer.EntryOpen || peer.MemberId == 0)
+                {
+                    continue;
+                }
+                var snapshot = ProductMessages.Create<ProductRosterSnapshot>(message => { message.MatchId = match.MatchId; message.BindingGeneration = peer.Generation; message.RosterVersion = match.RosterVersion; });
+                foreach (Participant member in match.Children.Values.Cast<Participant>())
+                {
+                    snapshot.Members.Add(ProductMessages.Create<ProductRosterMember>(message => { message.MemberId = member.MemberId; message.Online = member.Online; }));
+                }
+                Deliver(peer, snapshot);
+            }
+            EventSystem.Instance.Publish((Scene)authority.IScene, new ProductMemberChanged { MatchId = match.MatchId, RosterVersion = match.RosterVersion });
+        }
+
+        public static void Deliver(HostPeer peer, MessageObject message)
+        {
+            LocalDelivery local = peer.GetComponent<LocalDelivery>();
+            ClientSessionComponent client = local?.Client ?? default;
+            if (client != null)
+            {
+                ProcessInnerSender sender = peer.Root().GetComponent<ProcessInnerSender>();
+                sender.Send(client.GetActorId(), (IMessage)message);
+                return; // 本地消息由接收 handler 释放。
+            }
+            RemoteDelivery remote = peer.GetComponent<RemoteDelivery>();
+            Session session = remote?.Session ?? default;
+            try
+            {
+                if (session != null)
+                {
+                    session.Send((IMessage)message);
+                }
+            }
+            finally
+            {
+                message.Dispose(); // Session.Send 已完成序列化，不负责回收输入。
+            }
+        }
+    }
+
+    [MessageHandler(SceneType.ProductHost)]
+    public sealed class ProductControlHandler : ProductActorRequestHandler<HostSessionComponent, ProductControlRequest, ProductControlResponse>
+    {
+        protected override UniTask Run(HostSessionComponent authority, ProductControlRequest request, ProductControlResponse response)
+        {
+            ProductAuthority.Commit(authority, request, response);
+            return UniTask.CompletedTask;
+        }
+    }
+}
+#endif

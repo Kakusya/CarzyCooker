@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Cysharp.Threading.Tasks;
+using System;
 using Game;
 using GameFramework;
 using UnityEngine;
@@ -11,9 +12,22 @@ namespace ET
     {
         private Assembly m_Model;
         private Assembly m_ModelView;
+        private Init m_Owner;
+        private World m_World;
+
+        private void CheckOwner()
+        {
+            if (m_Owner == null || !m_Owner.IsCurrent(m_World))
+            {
+                throw new OperationCanceledException("ET code load owner stopped");
+            }
+        }
 
         public async UniTask StartAsync()
         {
+            m_Owner = Init.Instance;
+            m_World = m_Owner.OwnedWorld;
+            CheckOwner();
             m_Model = null;
             m_ModelView = null;
 
@@ -51,8 +65,8 @@ namespace ET
                     m_ModelView = Assembly.Load(assBytesModelView, pdbBytesModelView);
                 }
                 var hotfixAssemblies = await LoadHotfixAsync();
-
-                World.Instance.AddSingleton<CodeTypes, Assembly[]>(new []
+                CheckOwner();
+                m_World.AddSingleton<CodeTypes, Assembly[]>(new []
                     {typeof (World).Assembly, typeof(Init).Assembly, m_Model, m_ModelView, hotfixAssemblies.Item1, hotfixAssemblies.Item2});
             }
             else
@@ -85,10 +99,12 @@ namespace ET
                         break;
                     }
                 }
-                World.Instance.AddSingleton<CodeTypes, Assembly[]>(new []
+                CheckOwner();
+                m_World.AddSingleton<CodeTypes, Assembly[]>(new []
                     {typeof (World).Assembly, typeof(Init).Assembly, m_Model, m_ModelView, hotfix, hotfixView});
             }
             
+            CheckOwner();
             IStaticMethod start = new StaticMethod(m_Model, "ET.Entry", "Start");
             start.Run();
         }
@@ -96,7 +112,8 @@ namespace ET
         public async UniTask ReloadAsync()
         {
             var hotfixAssemblies = await LoadHotfixAsync();
-            World.Instance.AddSingleton<CodeTypes, Assembly[]>(new[]
+            CheckOwner();
+            m_World.AddSingleton<CodeTypes, Assembly[]>(new[]
                 { typeof(World).Assembly, typeof(Init).Assembly, m_Model, m_ModelView, hotfixAssemblies.Item1, hotfixAssemblies.Item2 });
             CodeTypes.Instance.CreateCode();
         }
@@ -118,11 +135,18 @@ namespace ET
 
         private async UniTask<byte[]> LoadCodeBytesAsync(string fileName)
         {
+            CheckOwner();
             string assetName = AssetUtility.GetETAsset(Utility.Text.Format("Code/{0}", fileName));
             TextAsset textAsset = await GameEntry.Resource.LoadAssetAsync<TextAsset>(assetName);
-            byte[] bytes = textAsset.bytes;
-            GameEntry.Resource.UnloadAsset(textAsset);
-            return bytes;
+            try
+            {
+                CheckOwner();
+                return textAsset.bytes;
+            }
+            finally
+            {
+                GameEntry.Resource.UnloadAsset(textAsset);
+            }
         }
     }
 }

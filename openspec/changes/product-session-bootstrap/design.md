@@ -4,7 +4,7 @@
 
 ## Context
 
-目标见 [proposal.md](proposal.md)，契约见 [product-session](specs/product-session/spec.md) 与 [startup](specs/startup/spec.md)。本轮为规划；以下新类型和消息名是实施候选，不代表代码已存在。
+目标见 [proposal.md](proposal.md)，契约见 [product-session](specs/product-session/spec.md) 与 [startup](specs/startup/spec.md)。本轮实施中，以下树与消息已落地；矩阵未全部完成，真实结果及历史失败见 execution-notes。
 
 已核对的底座事实：
 
@@ -31,7 +31,7 @@
 
 增加互不重叠的 ProductRoot、ProductHost、ProductClient 标志，使用 long 位移并核对现有分配。Main 调度器不等于 SceneType.Main；产品根只用 ProductRoot，不拼入 Main，避免匹配 Demo EntryEvent。
 
-Host 进程的拟定 owner 树：
+Host 进程的 owner 树：
 
 ```text
 World / FiberManager
@@ -79,7 +79,7 @@ World / FiberManager
 
 Match 的唯一成员状态由 HostSession 有序入口裁决，HostSession 不再维护第二份可写名单。Participant 的释放父对象是 Match；HostPeer／Session 只持绑定引用，关闭连接只使成员离线。本项不创建 LoadedSave、RestaurantRuntime 或 Level；未来这些业务的树与固定 Tick 见 [业务目标设计](../../../Docs/Product/architecture.md)，Mailbox 有序控制不等于玩法时钟。
 
-拟定数据归属如下。字段名可在实施时对齐现有 ET 命名，但归属与含义不得交换：
+当前数据归属如下。字段名可在实施时对齐现有 ET 命名，但归属与含义不得交换：
 
 | owner | 最小数据 | 唯一写入入口与释放边界 |
 | --- | --- | --- |
@@ -101,9 +101,9 @@ Entry 共用必需单例／CodeTypes／配置装载后按本轮配置创建 Main
 
 装载完成后允许 Runner 开始驱动 Fiber，再由本轮产品异步编排报告初始化、HostListening、本地 Joined 或远端 Joined。HostReady 要同时具备监听和本地 Joined；启动配置的 Prepared 保留其原含义。编排捕获失败并向本轮 owner／稳定上下文报告，不能让 Forget 的日志替代最终结果。
 
-关闭沿已有 OnShutdown handler 分流到产品停止 Invoke，不再注册同参数同键 handler；该同步停止在 World.Dispose 前执行，不等待任何网络确认。核对 Init 在 Runner 尚未建立时失败／被关闭的路径，已创建 World／产品资源也须清理，旧异步初始化不得创建新世界或新一轮。
+关闭沿已有 OnShutdown Invoke 键进入 Loader 根交接并同步调用产品 Stop，不再注册同参数同键 handler；该同步停止在 World.Dispose 前执行，不等待任何网络确认。Init 在 Runner 尚未建立时也走同一兜底，旧异步初始化不得创建新世界或新一轮。
 
-启动顺序为：取得配置 → 完成既有装载与注册 → 创建产品根和公共组件 → 安装／允许 Runner 泵消息 → Host 创建 Match／监听并发起本地 Join，或 Client 创建连接并发起远端 Join → 校验本人确认和名单 → 报告 Ready。Listen 与 Join 可分别报告；不使用对象已创建、Session.Create 返回或分支名称证明连接与业务已就绪。任一必需阶段失败先记录真实原因，再进入同一停止路径；已经 Stopping 的本轮不会被后续回调改成 Ready。
+实际启动顺序为：取得配置 → 完成既有装载与注册 → Entry 发起配置加载并异步返回 → Init 安装 Runner → 配置就绪后 FiberManager 创建 ProductRoot 并在 Fiber 上调用初始化 Invoke → 创建公共组件、Match/监听或连接，发起 Join 入队后返回 → 消息泵裁决本人确认和名单 → 报告 Ready。Listen 与 Join 可分别报告；不使用对象已创建、Session.Create 返回或分支名称证明连接与业务已就绪。任一必需阶段失败先记录真实原因，再进入同一停止路径；已经 Stopping 的本轮不会被后续回调改成 Ready。
 
 ### 3. 完整发送、接收与答复路径
 
@@ -125,7 +125,7 @@ Entry 共用必需单例／CodeTypes／配置装载后按本轮配置创建 Main
 
 ### 4. 最小协议与消息所有权
 
-候选消息包括外层 Join／Probe／Leave 请求响应、RosterSnapshot 与 Heartbeat，以及 Peer 向 HostSession 转交的内部请求／响应；均用既有生成入口和请求接口。Probe 为无玩法回显，答复含实际裁决成员号及请求载荷，用于验证两端经过同一入口，不新增厨房状态。
+已生成消息包括外层 Join／Probe／Leave 请求响应、RosterSnapshot 与 Heartbeat，以及 Peer 向 HostSession 转交的内部请求／响应；均用既有生成入口和请求接口。Probe 为无玩法回显，答复含实际裁决成员号及请求载荷，用于验证两端经过同一入口，不新增厨房状态。
 
 修改启用 Proto 源并生成 Client／ClientServer 输出，内部消息不列入网络入口白名单；先核对文件排序和 Opcode 编号，避免重排既有消息。稳定端按明确维护流程纳入必要版本，记录可读协议版本；不能用分支名、ProductName 或提交身份替代 wire 兼容版本。
 
@@ -168,11 +168,11 @@ Join 等待中退出先失效绑定和临时 Peer，使未执行命令不能再�
 | Fiber 初始化 Invoke | 精确 ProductRoot | 创建根公共组件，子场景显式初始化，不发送旧 Main EntryEvent |
 | Peer 与共同控制消息 Handler | ProductHost | Peer／HostSession MailBox 处理；HostSession 是唯一 Match 名单提交入口 |
 | 客户端快照消息 Handler | ProductClient | 本地 Send 和远端桥接 Send 到同一 ClientSession ActorId，不写 Host 状态 |
-| MemberChanged Event（拟定） | ProductHost | 提交成员或在线状态后发布 MatchId／RosterVersion，观察者不增加版本 |
-| ClientJoined／RosterApplied／ClientLeft Event（拟定） | ProductClient | 本端确认与投影提交后发布，不将通知到达作为已加入 |
+| MemberChanged Event | ProductHost | 提交成员或在线状态后发布 MatchId／RosterVersion，观察者不增加版本 |
+| ClientJoined／RosterApplied／ClientLeft Event | ProductClient | 本端确认与投影提交后发布，不将通知到达作为已加入 |
 | OnShutdown 既有 Invoke | 沿用已有精确键，再分流产品根 | 不重复注册 handler；先调用同步停止，再释放 World |
 
-事件名仅是拟定标识；实际属性签名沿用现有 ET。观察者不进入名单提交，也不发布同类事件回写名单；配置新增 SceneType 后仍要检查 All 匹配和根 DynamicEvent 广播，不能承诺自动事件隔离。
+事件使用 ProductMemberChanged/ProductClientJoined/ProductRosterApplied/ProductClientLeft；属性和具体 Scene 泛型沿用现有 ET。观察者不进入名单提交，也不发布同类事件回写名单；配置新增 SceneType 后仍要检查 All 匹配和根 DynamicEvent 广播，不能承诺自动事件隔离。
 
 ### 6. 端口、心跳与分层退出
 
@@ -227,7 +227,17 @@ UTF 验证真实树、mailbox 路由、共同裁决、名单版本／对象回�
 | 真 KCP loopback | 报告实际非零 endpoint；兼容／不兼容 Join、心跳空闲、退出各有明确终态 | 同机真实传输，不证明两台物理电脑或公网 |
 | 双 Editor 两种角色排列 | 各自配置／数据目录和日志有效、MatchId／名单一致、Probe 请求答复可追踪 | 稳定对端联调；缺版本或环境记 NotRun |
 
-本轮仅静态核对。上述动态场景均为未来验收，不因设计表或任务存在而算通过。
+本地会话与真实 KCP 已有小集结果，双 Editor 及其余关闭边界仍按 tasks 验收；不因设计表或任务存在而算通过。
+
+### 实施参数与适用边界
+
+产品 Share 源限定 !DOTNET；Unity Host 仍使用现有客户端装载和 ET 程序集，DotNet 同源代码继续编译但不新增 .NET 产品入口。SceneType 使用独立 long 位 36/37/38，不拼入 Main。Model 保持 noEngineReferences，经 Loader 普通 ProductBootstrapBridge 交接初始化 owner、根定位和同步关闭；桥接不持名单权威。
+
+Proto v1、Probe 最大 1024 UTF-8 bytes、网络请求预算 4000ms、串行心跳间隔 2000ms/预算2000ms。成功 Join 移除既有5秒接入验证超时，保留2秒检查/10秒接收空闲阈值；本地不发网络心跳。KCP Send 先入队，成功 Leave 或 Join 拒绝答复后保留100ms关闭宽限，仍只尽力发送，不保证收件或回滚已提交事实。该宽限仍计入 Peer InFlight。
+
+ProductRuntimeBootstrap 只负责建树和启动非阻塞 Join；ProductRuntimeComponentSystem 负责阶段与关闭，避免静态 System 循环依赖。入口在 await 前捕获 EntityRef，Session 的有限超时回调也核对原实例。Init 统一退出清理捕获 World/异常订阅，Runner 尚未创建也可清理；旧装载和旧配置恢复不写新轮。沿用原 OnShutdown Invoke 键，不新增第二 handler。
+
+首次真实启动暴露既有并发配置加载：DTStartSceneConfig 人工 LubanPartial 在 PostInit 读 Process 表。其索引改在全部加载后的 PostResolveRef 构建；相邻自动生成 Luban/DT/DR/数据不手改。ConfigLoader 捕获原 Config/Tables，恢复后拒绝失效 owner。UdpTransport 在绑定失败时释放 socket，KService 不再额外创建未使用的 TCP transport。
 
 ## Risks / Trade-offs
 
@@ -242,11 +252,11 @@ UTF 验证真实树、mailbox 路由、共同裁决、名单版本／对象回�
 
 ## Migration Plan
 
-1. 按业务交接校准成员和连接生命周期；后续明确 apply 授权才实施产品会话。当前不修改代码或主规格。
+1. 按业务交接校准成员和连接生命周期；本轮已明确授权 apply、必要主规格同步及本地提交。
 2. 启动项及本地请求 Stop 能力实际可用后，先实现公共树和本地加入，再接 wire 桥与真实 loopback。
 3. 更新源协议与生成输出、相关用法和模块索引，验证适用程序集与本机 UTF；不启动示例服务或打包。
 4. 稳定第二端按必要维护纳入获准版本，再做双 Editor 实测；缺条件记 NotRun，相应任务未完成。
-5. 回退本项时移除产品接入、保留原不可用拒绝和普通路线，不删用户数据、不停止别的工程。实现与验证完成后再按流程同步 delta／归档，不自动提交或推送。
+5. 回退本项时移除产品接入、保留原不可用拒绝和普通路线，不删用户数据、不停止别的工程。主规格按已实施契约同步，任务仍按真实验收勾选；本轮仅本地提交，禁止归档、推送或合回 main。
 
 ## 业务交接校准与后续边界
 
