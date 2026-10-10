@@ -29,4 +29,4 @@
 - 本项只维护第二端环境与协作；角色配置和 Play 交接见 [multiplayer-instance-bootstrap](../multiplayer-instance-bootstrap/proposal.md)，产品 ET owner 树与会话见 [product-session-bootstrap](../product-session-bootstrap/proposal.md)。
 - 环境与终端通信可独立验收。使用角色入口的双 Editor 验收要求第一项在两端均可用；产品网络结果还要求产品会话能力，不因目录和消息通过就宣称联机通过。
 - 不使用 Unity 子仓或固定 Player 包，不修改 BuildPKG；不共享活动 Library，不自动拉取／更新基线，不新增目录锁、写根重定向、端口注册表或持久消息编排。
-- 本项尚未实施，不创建长期 worktree、不修改 ProjectSettings、不启动第二 Editor；当前用户单独授权补充主线 AGENTS 的 ET 设计约定，不代表两端协作职责片段已落实。实施与实际工作区建立须按后续明确授权执行，此前临时通信探针授权不延伸为永久工作区授权。
+- 用户已明确授权长期第二目录 `D:/MyWork/CarzyCooker-NetTest`、固定分支 `multiplayer-baseline`、必要本地版本纳入与联调。共用规程与开发端职责已开始落实，实际目录/Editor 尚待准备。针对数据共写和目标误选做实际路径、保存重读及终端消息核对，验证取舍与当前证据见 [execution-notes.md](execution-notes.md)；此前临时探针不能替代本项实测。

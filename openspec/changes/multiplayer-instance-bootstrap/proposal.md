@@ -29,4 +29,4 @@
 - 本项不修改 AGENTS、ProductName、GF 写路径、目录锁或 Editor 进程日志，不创建 worktree、代理会话、协作协议、基线构建或多实例编排工具。
 - 第二 worktree 的固定分支、独立缓存、ProductName／真实数据路径、原生日志、AGENTS 职责、Orca 消息与基线更新归已建立的 [multiplayer-peer-workspace](../multiplayer-peer-workspace/proposal.md)，独立规划和验收。
 - 产品 ET owner 树、本地消息及最小 Host／Client 会话见独立 [product-session-bootstrap](../product-session-bootstrap/proposal.md)；配置 Prepared 与产品就绪状态分开。固定 Player 构建与多人回归范围后续逐项讨论，不在本项预先展开。
-- 当前只修订五份规划文件，所有实现任务尚未执行。
+- 当前已进入获准实施；主要风险是请求串工程、旧轮角色残留和就绪误报，采用配置/真实请求小集与单 Editor Play 核对。进度、复用证据及未验证触发条件见 [execution-notes.md](execution-notes.md)。

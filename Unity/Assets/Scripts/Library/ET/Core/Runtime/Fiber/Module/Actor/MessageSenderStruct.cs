@@ -10,15 +10,18 @@ namespace ET
 
         public Type RequestType { get; }
 
+        public Type ResponseType { get; }
+
         private readonly AutoResetUniTaskCompletionSource<IResponse> tcs;
 
         public bool NeedException { get; }
 
-        public MessageSenderStruct(ActorId actorId, Type requestType, bool needException)
+        public MessageSenderStruct(ActorId actorId, Type requestType, bool needException, Type responseType = null)
         {
             this.ActorId = actorId;
 
             this.RequestType = requestType;
+            this.ResponseType = responseType;
 
             this.tcs = AutoResetUniTaskCompletionSource<IResponse>.Create();
             this.NeedException = needException;

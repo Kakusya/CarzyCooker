@@ -1,6 +1,10 @@
 # CarzyCooker — Agent 指令
 
-本仓库只维护 Codex 接入；当前工作分支为 `main`，跟踪 `origin/main`；底座来自原 `ET` 分支。需要公共基础设施时主动提醒。
+本仓库只维护 Codex 接入；当前开发工作分支为 `feat/multiplayer-bootstrap`；底座来自 `main`（跟踪 `origin/main`）及原 `ET` 分支。需要公共基础设施时主动提醒。
+
+## 联机开发端职责
+
+本目录 `D:/MyWork/CarzyCooker` 为开发端，负责需求、OpenSpec、实现、自审、必要基线维护决策和验证汇总；运行角色可为 Host 或 Client。稳定对端业务源码默认只读，职责不决定运行角色。共同规程见 [联机对端协作](Docs/AI/multiplayer-peer-workflow.md)。本轮用户已明确授权建立 `D:/MyWork/CarzyCooker-NetTest` / `multiplayer-baseline`、必要版本纳入及联调；开发任务继续在当前 worktree 执行。只作本地中文提交，禁止 push、发布、PR、合回 main 和自动归档；长期第二目录保留。
 
 ## 项目定位与开发优先级（最高工程取舍原则）
 

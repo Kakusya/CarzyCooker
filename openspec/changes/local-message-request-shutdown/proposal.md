@@ -29,4 +29,4 @@
 - 使用说明同步 references/reactive-and-network.md 与 Docs/AI/module-index.md；主规格同步在完成实施与验证后进行，本轮只创建增量规格。
 - 本项独立于已建立的启动项和第二工作区 change，不创建 worktree，不调整 ProductName、日志或端口。后续产品会话再调用该停止能力，本项不创建产品 SceneType、成员、网络桥接或自动重连。
 - 结束等待不等于撤销接收端已经执行的操作；本项不提供跨进程重启或托管域重载后的请求恢复。
-- 当前源码事实与新增契约分开记录。本轮只形成规划，未修改代码、运行 Editor 或测试。
+- 当前已进入获准实施；按重入、实例复用和共享源码的实际风险做真实消息/Timer 小集及双端编译，不扩展为全量测试。进度、验证取舍及未验证范围见 [execution-notes.md](execution-notes.md)。

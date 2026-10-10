@@ -8,6 +8,7 @@
 |---|---|
 | [startup](specs/startup/spec.md) | 启动/模式 |
 | [runtime-foundation](specs/runtime-foundation/spec.md) | 公共组件/流程/示例 |
+| [runtime-instances](specs/runtime-instances/spec.md) | 显式实例配置、工程范围请求、Play 交接与本轮入口收尾 |
 | [ui](specs/ui/spec.md) | GF UI/ETUI/Widget |
 | [entity](specs/entity/spec.md) | GF Entity/ETEntity/UIEntity |
 | [resource-management](specs/resource-management/spec.md) | 容器/资源/AssetSet |

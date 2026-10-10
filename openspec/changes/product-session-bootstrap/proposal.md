@@ -51,6 +51,6 @@ Host 本地玩家 -- 本地消息 --+
 - 本机 loopback 监听由本轮 Host owner 持有，端口 0 以实际绑定结果为准；必要时只在既有 UdpTransport 暴露只读绑定地址，不引入 PortRegistry、网络服务端进程、Realm／Gate／MongoDB 服务或第三份 RPC 等待表。Mongo 类型注册不等于启动数据库服务。
 - 实施后同步 references/reactive-and-network.md、Book/快速开始.md、Book/Unity启动与验证SOP.md 与 Docs/AI/module-index.md，保持正式传输选型仍待裁决。
 - [业务交接 A3／G3](../../../Docs/handoff/Cooking-设计交接-2026-10-09.md) 已明确逻辑成员不随连接销毁，撤销原草案的删除／保留裁决门槛。关联 [业务目标规格](../../../Docs/Product/specs/README.md)，本项只落实最小身份和离线保留，不实现自动重连、Profile 认证、餐厅或领取系统。
-- 本轮只生成规划；不创建 worktree、不改业务代码、不启动监听或 Editor、不运行测试，也不把规划视为联机已通过。
+- 本轮已获准实施，当前等待启动项与 Stop 前置收口。按共同裁决、桥接编号和 Peer 生命周期风险先做本地消息/KCP 小集，再做双 Editor；不扩展厨房或正式传输。验证取舍与未验证触发条件见 [execution-notes.md](execution-notes.md)，规划不作为联机证据。
 
 用户审核从本文“快速审核”开始；技术核对参见 [详细设计](design.md)、[会话规格](specs/product-session/spec.md)、[启动规格](specs/startup/spec.md) 和 [实施任务](tasks.md)。启动配置、第二工作区及框架 Stop 继续由各自 change 承接；本项只消费这些能力，不重复建立它们。

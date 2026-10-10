@@ -4,7 +4,7 @@
 
 范围见 [proposal.md](proposal.md)。本项回答“一个实例如何按指定角色启动”，第二 worktree 的环境和代理协作已经移出。
 
-当前事实：
+原基线事实（实施前）：
 
 - SceneHelper 的 StartScene、BeforeSceneLoad 和 AfterSceneLoad 共用全局 EditorPrefs 键 `UnityEditorSceneToOpen`，不同工程可能互相消费请求。
 - ProcedurePreset 直接进入 ProcedureET，后者启动 ET.Init；当前 ET.Init／Entry 尚未消费产品 Host／Client 配置。
@@ -12,6 +12,8 @@
 - 当前默认 Play 保留 Domain Reload 与 Scene Reload；运行时上下文须处理进入 Play 和连续运行的生命周期。
 
 配置和场景请求的独立验收可以在当前 Editor 完成。已有跨 worktree 通信探针不计入本项启动验收；双 Editor、应用数据隔离和产品会话均未验证。
+
+当前实现位于既有 Game/Game.Editor：不可变配置与统一校验、工程路径 SessionState 请求、Play 交接和本轮 CodeRunner owner 均已接入。产品尚未接入时 Host/Client 拒绝，legacy/普通入口保留。真实配置 UTF 与单 Editor 范围见 [execution-notes.md](execution-notes.md)，第二工作区和产品联机不由本项结果推断。
 
 ## Goals / Non-Goals
 
@@ -68,7 +70,7 @@ SessionState 跨程序集重载保留，Editor 退出清空；首期不加入跨
 
 建议稳定层用 SubsystemRegistration 清理上一轮状态，并在 AfterAssembliesLoaded 取得已提交请求，早于 SceneHelper 的 BeforeSceneLoad 场景消费。只建立本轮上下文，不接管 GF 文件初始化或写根。
 
-首期支持默认 Play，以及关闭 Domain Reload、保留 Scene Reload 的连续两轮。关闭 Scene Reload 的显式入口在进入 Play 前拒绝，不修改用户选项。Play 中编译域重载将本轮标为中断，不透明恢复、自动启动新轮或回落到 Demo。
+首期支持默认 Play，以及关闭 Domain Reload、保留 Scene Reload 的连续两轮。关闭 Scene Reload 的显式入口在进入 Play 前拒绝，不修改用户选项。Play 中编译域重载将本轮标为中断，并按工程 SessionState 的本轮提交标记结束自身 Play；保留中断标记供新域恢复失败报告，新一轮进入 Edit→Play 时清理，不透明恢复、自动启动新轮或回落到 Demo。普通未提交运行不由此入口停止。
 
 建议状态为 NotRequested、Preparing、Prepared、Failed、Stopping、Stopped。Prepared 仅表示配置已交接，不证明 GF 预加载、ET 初始化、实际端口或产品会话。后续失败必须保留为最终失败。
 
