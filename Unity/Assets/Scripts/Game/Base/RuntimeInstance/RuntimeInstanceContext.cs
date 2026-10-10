@@ -45,6 +45,14 @@ namespace Game
             State = RuntimeInstanceState.Failed;
         }
 
+        public static void Fail(RuntimeInstanceConfig owner, string reason)
+        {
+            if (ReferenceEquals(owner, Config) && State != RuntimeInstanceState.Stopping && State != RuntimeInstanceState.Stopped)
+            {
+                Fail(reason);
+            }
+        }
+
         public static void ReportProductStage(RuntimeInstanceConfig owner, string stage)
         {
             if (!ReferenceEquals(owner, Config) || State != RuntimeInstanceState.Prepared)

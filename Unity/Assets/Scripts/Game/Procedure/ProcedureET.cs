@@ -17,13 +17,7 @@ namespace Game
                 Log.Warning(RuntimeInstanceContext.Failure);
                 return;
             }
-            RuntimeInstanceConfig config = RuntimeInstanceContext.Config;
-            if (config != null && config.Role != RuntimeInstanceRole.Legacy)
-            {
-                RuntimeInstanceContext.Fail("ProductBootstrapUnavailable");
-                Log.Warning("ProductBootstrapUnavailable");
-                return;
-            }
+            // 产品能力在既有 Loader 装载后由 Entry 核对；字节模式不能按未装载程序集误拒绝。
             try
             {
                 GameEntry.CodeRunner.StartRun("ET.Init");

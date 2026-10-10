@@ -1,5 +1,10 @@
 ﻿using Cysharp.Threading.Tasks;
 
+using System;
+#if !DOTNET
+using Game;
+#endif
+
 namespace ET
 {
     public struct EntryEvent1
@@ -28,6 +33,13 @@ namespace ET
         
         private static async UniTaskVoid StartAsync()
         {
+            CodeLoaderComponent loader = CodeLoaderComponent.Instance;
+#if !DOTNET
+            World world = ProductBootstrapBridge.CurrentWorld;
+            RuntimeInstanceConfig config = RuntimeInstanceContext.Config;
+            try
+            {
+#endif
             WinPeriod.Init();
 
             // 注册Mongo type
@@ -46,8 +58,42 @@ namespace ET
             CodeTypes.Instance.CreateCode();
 
             await ConfigComponent.Instance.LoadAllAsync();
-
+#if !DOTNET
+            if (CodeLoaderComponent.Instance != loader || !ProductBootstrapBridge.IsCurrentInitialization(world))
+            {
+                return;
+            }
+            if (config != null && config.Role != RuntimeInstanceRole.Legacy)
+            {
+                if (!ReferenceEquals(config, RuntimeInstanceContext.Config) || RuntimeInstanceContext.State != RuntimeInstanceState.Prepared)
+                {
+                    return;
+                }
+                if (!CodeTypes.Instance.GetTypes().ContainsKey("ET.FiberInit_ProductRoot"))
+                {
+                    throw new InvalidOperationException("ProductBootstrapUnavailable");
+                }
+                await FiberManager.Instance.Create(SchedulerType.Main, ConstFiberId.Main, 0, SceneType.ProductRoot, "ProductRoot");
+                if (RuntimeInstanceContext.State == RuntimeInstanceState.Failed)
+                {
+                    ProductBootstrapBridge.StopInitialization(world);
+                }
+                return;
+            }
+#endif
             await FiberManager.Instance.Create(SchedulerType.Main, ConstFiberId.Main, 0, SceneType.Main, "");
+#if !DOTNET
+            }
+            catch (Exception e)
+            {
+                if (ProductBootstrapBridge.IsCurrentInitialization(world))
+                {
+                    RuntimeInstanceContext.Fail(config, $"ETEntryFailed: {e.Message}");
+                    Log.Warning($"ET Entry failed: {e}");
+                    ProductBootstrapBridge.StopInitialization(world);
+                }
+            }
+#endif
         }
     }
 }

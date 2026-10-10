@@ -5,6 +5,7 @@
         "ET.Core",
         "ET.ThirdParty",
         "Game.ET.Loader",
+        "Game",
         "Unity.Mathematics",
         "LubanLib",
         "UniTask",

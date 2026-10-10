@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System;
 
 namespace ET
 {
@@ -7,6 +8,18 @@ namespace ET
     [FriendOf(typeof(NetComponent))]
     public static partial class NetComponentSystem
     {
+        [EntitySystem]
+        private static void Awake(this NetComponent self, AService service, bool accept)
+        {
+            self.AService = service;
+            if (accept)
+            {
+                self.AService.AcceptCallback = self.OnAccept;
+            }
+            self.AService.ReadCallback = self.OnRead;
+            self.AService.ErrorCallback = self.OnError;
+        }
+
         [EntitySystem]
         private static void Awake(this NetComponent self, IPEndPoint address, NetworkProtocol protocol)
         {
@@ -68,12 +81,33 @@ namespace ET
             Session session = self.GetChild<Session>(channelId);
             if (session == null)
             {
+                self.AService.Recycle(memoryBuffer);
                 return;
             }
             session.LastRecvTime = TimeInfo.Instance.ClientNow();
-            
-            (ActorId _, object message) = MessageSerializeHelper.ToMessage(self.AService, memoryBuffer);
-            self.AService.Recycle(memoryBuffer);
+            object message;
+            try
+            {
+                (ActorId _, object decoded) = MessageSerializeHelper.ToMessage(self.AService, memoryBuffer);
+                message = decoded;
+            }
+#if !DOTNET
+            catch (Exception e)
+            {
+                if (self.IScene.SceneType is SceneType.ProductHost or SceneType.ProductClient)
+                {
+                    session.Error = ProductError.InvalidRequest;
+                    session.Dispose();
+                    Log.Warning($"Product message decode rejected: {e.Message}");
+                    return;
+                }
+                throw;
+            }
+#endif
+            finally
+            {
+                self.AService.Recycle(memoryBuffer);
+            }
             
             LogMsg.Instance.Debug(self.Fiber(), message);
             

@@ -27,7 +27,7 @@ namespace ET.Client
         {
             public override void Handle(OnShutdown arg)
             {
-                
+                ProductBootstrapBridge.StopCurrent();
             }
         }
     }

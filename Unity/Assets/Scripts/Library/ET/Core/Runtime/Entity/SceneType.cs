@@ -35,6 +35,10 @@ namespace ET
 		DemoView = 1L << 34,
 		NetClient = 1L << 35,
 
+		ProductRoot = 1L << 36,
+		ProductHost = 1L << 37,
+		ProductClient = 1L << 38,
+
 		All = long.MaxValue,
 	}
 

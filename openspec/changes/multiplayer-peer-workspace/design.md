@@ -9,7 +9,7 @@
 - Unity 公司名为 GDK，产品名为 GameDevelopmentKit。DefaultSettingHelper 在 Awake 固定设置文件路径，AssetSet 在初始化及扩展时使用 persistentDataPath，Resource 则按当前配置选择 persistentDataPath 或 temporaryCachePath。
 - 完整工程不仅包含 Unity：DotNet 链接 Unity 的 ET 源码，Share 提供 Analyzer、SourceGenerator、Excel／Proto 工具，Design 和 Config 包含生成源及运行配置。只抽出 Unity 为子仓会增加版本组合和工具路径问题。
 - 当前 .gitignore 已排除 Unity Library、Temp、Logs 和 UserSettings 等缓存，不需要把主线活动缓存复制给第二端。
-- 根 AGENTS 当前声明 main／origin/main，尚无稳定对端职责片段。Unity CLI 已要求按完整 projectPath 选择工程；项目没有 PortRegistry 或专用 worker 编排器。
+- 两端 AGENTS 已落实开发/稳定职责和真实分支；开发为 feat/multiplayer-bootstrap，稳定为 multiplayer-baseline。Unity CLI 已要求按完整 projectPath 选择工程；项目没有 PortRegistry 或专用 worker 编排器。
 - 此前临时 Orca worktree 已验证一次主线发送、对端实际检查并回复、主线收到回复，然后已删除临时目录和分支。没有启动第二 Unity，没有验证数据或产品网络。
 
 该通信探针证明当前活跃终端可双向通信。发送入队本身不会证明对端已读；当时通过终端输入明确触发收件检查。普通终端消息不保证终端关闭后持久存在，也不是有后台 Run 的 worker。
@@ -18,13 +18,13 @@
 
 **Goals:** 复用现有 Git／Orca 与 Unity CLI，形成能保持稳定源码版本的第二端环境和可审核协作规程；分开报告环境、消息、启动与产品会话。
 
-**Non-Goals:** 不实现第一项的启动配置、不实现产品网络、不新增自动启动脚本或常驻代理，不建设持久任务队列；不以本规划授权建立真实长期 worktree。
+**Non-Goals:** 不实现第一项的启动配置、不实现产品网络、不新增自动启动脚本或常驻代理，不建设持久任务队列；建立与维护许可来自本轮用户明确授权，不从规划自行推断。
 
 ## Decisions
 
 ### 1. 完整同仓 worktree，稳定分支按需更新
 
-采用完整同仓 worktree，而非 Unity 子仓或频繁打包。建议固定分支名 `multiplayer-baseline`，名称与绝对目录在实际建立时确定；固定分支名不意味着内容自动冻结，稳定性来自明确选定版本和禁止自动更新。
+采用完整同仓 worktree，而非 Unity 子仓或频繁打包。已落实分支 `multiplayer-baseline`、目录 `D:/MyWork/CarzyCooker-NetTest`；固定分支名不意味着内容自动冻结，稳定性来自明确选定版本和禁止自动更新。
 
 基线选用已存在且明确指定的提交／版本标记，直接记录可读版本身份，不进行 hash 校验或源码／产物比对。主线未提交改动不会自然进入 worktree；需要的启动或产品能力应通过明确维护流程纳入，不能复制一份 DLL 就宣称版本匹配。
 
@@ -32,7 +32,7 @@
 
 ### 2. 固定产品身份隔离数据，进程日志另配
 
-主线保留 `GDK / GameDevelopmentKit`；稳定端候选为 `GDK / GameDevelopmentKit-NetTest`。产品名在稳定分支 ProjectSettings 中固定，不随每轮或 Host／Client 切换，也不进入第一项运行配置。固定身份允许稳定端保留自己的设置和缓存。
+主线保留 `GDK / GameDevelopmentKit`；稳定端固定为 `GDK / GameDevelopmentKit-NetTest`。产品名在稳定分支 ProjectSettings 中固定，不随每轮或 Host／Client 切换，也不进入第一项运行配置。固定身份允许稳定端保留自己的设置和缓存。
 
 ProductName 改动必须在该工程运行前生效，不在组件 Awake 后临时切换。针对 Windows 双 Editor 核对实际路径，而不是只依据默认目录规则作结论：
 
@@ -49,7 +49,7 @@ Editor 原生日志由进程启动参数控制，产品名不会自动隔离它�
 
 ### 3. 两端 AGENTS 共同主体，职责片段分开
 
-建议新增共用正文 `Docs/AI/multiplayer-peer-workflow.md`，在主线与稳定分支沿用相同版本；两端根 AGENTS 只增加短职责片段和入口，并使分支描述符合所在工作区。该新文件是实施时拟创建的协作正文，本轮不存在、不作为现有能力引用。
+已建立共用正文 `Docs/AI/multiplayer-peer-workflow.md`，在主线与稳定分支沿用相同版本；两端根 AGENTS 只增加短职责片段和入口，并使分支描述符合所在工作区。该正文已存在，双方沿用同一必要版本；独立职责差异不替代共同规范。
 
 | 角色 | 默认职责 |
 | --- | --- |
@@ -123,3 +123,7 @@ Pipeline 的工具连接端口动态发现，ET 的业务 listen／connect 由�
 - [设置 helper](../../../Unity/Assets/Scripts/Library/UGF/UnityGameFramework/Runtime/Setting/DefaultSettingHelper.cs)、[AssetSet](../../../Unity/Assets/Scripts/Library/UGF/UnityGameFramework.Extension/Runtime/AssetSet/AssetSetComponent.FileSystem.cs)、[Resource](../../../Unity/Assets/Scripts/Library/UGF/UnityGameFramework/Runtime/Resource/ResourceComponent.cs)
 - [AGENTS](../../../AGENTS.md)、[Unity CLI](../../../Book/UnityCLI.md)、[端口 SOP](../../../references/port-management.md)
 - [Unity 数据目录](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/Application-persistentDataPath.html)、[Editor 日志参数](https://docs.unity3d.com/6000.3/Documentation/Manual/EditorCommandLineArguments.html)
+
+## 当前实测边界
+
+环境和消息实测见 execution-notes：两端真实 Editor/Pipeline、独立缓存/日志、固定产品身份及不同设置值交错保存重读已核实。B 完整原线程与四项启动前拒绝完成，各自只清理临时键和本轮 Play，长期资源保留。AssetSet 初次/扩展写入未触发；稳定端旧版本仍为 ProductBootstrapUnavailable，不把开发端本地/KCP 结果算作双 Editor 产品联机。剩余版本维护、角色反转和最终严格核对依 tasks 收口。

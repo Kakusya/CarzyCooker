@@ -69,7 +69,6 @@ namespace ET
         {
             this.ServiceType = serviceType;
             this.startTime = TimeInfo.Instance.ClientFrameTime();
-            this.Transport = new TcpTransport(addressFamily);
             this.Protocol = protocol;
             switch (this.Protocol)
             {

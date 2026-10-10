@@ -9,6 +9,8 @@
 | [startup](specs/startup/spec.md) | 启动/模式 |
 | [runtime-foundation](specs/runtime-foundation/spec.md) | 公共组件/流程/示例 |
 | [runtime-instances](specs/runtime-instances/spec.md) | 显式实例配置、工程范围请求、Play 交接与本轮入口收尾 |
+| [product-session](specs/product-session/spec.md) | Unity 本机最小产品树、共同裁决、逻辑成员/连接分离、本地/远端消息与收尾 |
+| [multiplayer-peer-workspaces](specs/multiplayer-peer-workspaces/spec.md) | 稳定第二端、独立缓存/身份/日志、精确目标及必要维护 |
 | [ui](specs/ui/spec.md) | GF UI/ETUI/Widget |
 | [entity](specs/entity/spec.md) | GF Entity/ETEntity/UIEntity |
 | [resource-management](specs/resource-management/spec.md) | 容器/资源/AssetSet |

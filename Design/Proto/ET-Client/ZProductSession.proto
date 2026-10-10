@@ -1,0 +1,121 @@
+syntax = "proto3";
+package ET;
+
+// 本机产品会话原型 v1。追加文件以保持既有 Opcode；内部消息不允许从 wire 接入。
+message ProductRosterMember
+{
+    int32 MemberId = 1;
+    bool Online = 2;
+}
+
+// ResponseType ProductJoinResponse
+message ProductJoinRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+}
+
+message ProductJoinResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    string MatchId = 4;
+    int32 MemberId = 5;
+    int64 BindingGeneration = 6;
+    int64 RosterVersion = 7;
+    repeated ProductRosterMember Members = 8;
+}
+
+// ResponseType ProductProbeResponse
+message ProductProbeRequest // IRequest
+{
+    int32 RpcId = 1;
+    string MatchId = 2;
+    int32 Sequence = 3;
+    string Payload = 4;
+}
+
+message ProductProbeResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int32 MemberId = 4;
+    int32 Sequence = 5;
+    string Payload = 6;
+}
+
+// ResponseType ProductLeaveResponse
+message ProductLeaveRequest // IRequest
+{
+    int32 RpcId = 1;
+    string MatchId = 2;
+}
+
+message ProductLeaveResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    bool Committed = 4;
+}
+
+message ProductRosterSnapshot // IMessage
+{
+    string MatchId = 1;
+    int64 BindingGeneration = 2;
+    int64 RosterVersion = 3;
+    repeated ProductRosterMember Members = 4;
+}
+
+// ResponseType ProductHeartbeatResponse
+message ProductHeartbeatRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+}
+
+message ProductHeartbeatResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+}
+
+message ProductMatchClosed // IMessage
+{
+    string MatchId = 1;
+    int64 BindingGeneration = 2;
+    string Reason = 3;
+}
+
+// ResponseType ProductControlResponse
+message ProductControlRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 Action = 2;
+    int64 PeerId = 3;
+    int64 PeerInstanceId = 4;
+    int64 BindingGeneration = 5;
+    int32 ProtocolVersion = 6;
+    string MatchId = 7;
+    int32 Sequence = 8;
+    string Payload = 9;
+}
+
+message ProductControlResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    string MatchId = 4;
+    int32 MemberId = 5;
+    int64 BindingGeneration = 6;
+    int64 RosterVersion = 7;
+    repeated ProductRosterMember Members = 8;
+    int32 Sequence = 9;
+    string Payload = 10;
+    bool Committed = 11;
+}
