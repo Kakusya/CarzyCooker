@@ -1,6 +1,6 @@
 # 自动测试框架与 SOP 迁移
 
-2026-10-09，用户在确认缺口后明确要求迁移。实施 change：[migrate-testing-and-sops](../../openspec/changes/migrate-testing-and-sops/tasks.md)。本轮接入授权已给定，不为同一迁移重复申请；产品构建和玩法运行仍按具体任务授权。
+2026-10-09，用户在确认缺口后明确要求迁移。实施 change：[migrate-testing-and-sops](../../openspec/changes/archive/2026-10-11-migrate-testing-and-sops/tasks.md)，已于 2026-10-11 按用户要求归档。本轮接入授权已给定，不为同一迁移重复申请；产品构建和玩法运行仍按具体任务授权。
 
 ## 交付与边界
 
@@ -53,6 +53,6 @@
 
 21 项技能的 frontmatter/name/description 和 OpenSpec YAML 通过既有 Node 校验器。skill-creator 的 quick_validate.py 因本机缺少 PyYAML 未运行成功；没有新增该依赖，改用现有 OpenSpec YAML 库完成元数据检查，并另外检查引用及脚本行为。
 
-两份压缩器文件与参考正文直接比较一致，不使用 hash。文档引用、源码路径、严格格式和 Git whitespace 的检查均通过；最终详细结果见 change 下 [验证记录](../../openspec/changes/migrate-testing-and-sops/verification.md)。
+两份压缩器文件与参考正文直接比较一致，不使用 hash。文档引用、源码路径、严格格式和 Git whitespace 的检查均通过；最终详细结果见归档 change 下 [验证记录](../../openspec/changes/archive/2026-10-11-migrate-testing-and-sops/verification.md)。
 
-产品构建、Play/玩法、联网、AOT、资源实际刷新与导表均 NotRun，不把工具回归解释为产品通过。既有未提交修改保留，没有提交或推送；change 保留供审阅，没有自动归档。
+产品构建、Play/玩法、联网、AOT、资源实际刷新与导表均 NotRun，不把工具回归解释为产品通过。既有未提交修改保留，没有提交或推送；change 已按用户要求归档，原验证范围保持不变。

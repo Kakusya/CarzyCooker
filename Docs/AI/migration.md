@@ -30,11 +30,11 @@
 
 ## 接入与全局核对
 
-剩余十二项 Trellis 项目技能的文件、三项代理、三项 hooks 和 hooks.json 已删除；Codex config 保留通用 AGENTS 入口，移除旧工作流默认和 depth 覆盖。CLAUDE.md 仅保留文档指针，不再维护独立接入。用户已有旧工作流/Claude 文件删除保持。
+剩余十二项旧项目技能的文件、三项代理、三项 hooks 和 hooks.json 已删除；Codex config 保留通用 AGENTS 入口，移除旧工作流默认和 depth 覆盖。CLAUDE.md 仅保留文档指针，不再维护独立接入。用户已有旧工作流/Claude 文件删除保持。
 
-PATH 没有 trellis；npm 全局列表未安装 Trellis CLI/core，当前 Python 环境未发现 trellis/mindfold-trellis，当前用户与账号技能根未发现全局 Trellis 技能。未找到可卸载的全局安装，因此没有执行无目标卸载或删全局历史记录。新安装是已授权 OpenSpec；profile/workflows 全局设置范围见 [工作流](workflow.md)。
+此前全局核对未找到可卸载的旧工作流安装，因此没有执行无目标卸载或删除全局历史记录。新安装是已授权 OpenSpec；profile/workflows 全局设置范围见 [工作流](workflow.md)。
 
-自动审批拒绝清理残留空目录，工具仅返回 `blocked by policy`，没有具体理由。目录保留，但不存在技能或 hooks 文件，不构成活跃接入。
+此前残留空目录的清理曾被自动审批阻止；2026-10-11 按用户本轮明确要求，确认其中没有文件后完成清理，同时删除旧合并规则及历史资料中的旧工具名称与目录路径。旧技能和 hooks 不恢复执行，产品规则、来源编号和候选状态保留。
 
 ## 验证范围
 
@@ -69,7 +69,7 @@ ET 文本扫描范围见模块索引。十五项主规格再次通过严格验�
 
 本机已有有效 Editor 6000.3.18f1，实际路径 D:/MyUnityEditor/6000.3.18f1/Editor/Unity.exe；用户指定 D:/UnityEditor 用于缺版本时下载。复用现有 CLI 1.0.0-beta.11，项目固定 Pipeline 0.8.0-exp.1。包解析、项目连接与编译状态已验证，真实探测错误与原日志见 [Unity CLI](../../Book/UnityCLI.md)。这一轮的实际 Editor 检查与初始迁移的 NotRun 分开记录。
 
-新技能尚未安装，首项及后续候选见 [逐项审批清单](skill-roadmap.md)。本次变更在 openspec/changes/unity-cli-editor-setup 保留审阅；不运行 Play/玩法测试或产品构建，不提交或推送。
+这一阶段新技能尚未安装，首项及后续候选见 [逐项审批清单](skill-roadmap.md)。本次变更已于 2026-10-11 按用户要求归档：[unity-cli-editor-setup](../../openspec/changes/archive/2026-10-11-unity-cli-editor-setup/tasks.md)；未运行 Play/玩法测试或产品构建，未提交或推送。
 
 ## 后续补齐 OpenSpec 全部官方技能
 
