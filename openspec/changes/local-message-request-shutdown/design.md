@@ -2,9 +2,11 @@
 
 ## Context
 
+当前实施：原 owner 已补 Stop、身份核对及不复用编号，真实本地消息 UTF 9/9 Passed，Unity/DotNet.Core 编译通过；取舍与自审见 [execution-notes.md](execution-notes.md)。
+
 目标见 [proposal.md](proposal.md)，验收见 [network 增量规格](specs/network/spec.md)。用浅显的话说：发送器已有一份“等答复的名单”，本项在关门时把名单上的人全部通知到，并防止旧回信打扰下一轮。
 
-当前源码事实：
+原基线源码事实（实施前）：
 
 - ProcessInnerSenderSystem.Destroy 只按 Fiber.Id 删除队列。Call 的等待者保存在 requestCallback，未被 Destroy 结束或清空。
 - 正常响应先从名单移除 RpcId，再完成等待。Call 的超时为 40 秒，异步任务持有 self 和 fiber；退出后不能依赖该计时继续运转。
@@ -114,7 +116,7 @@ Destroy 调用相同收尾；已经 Stop 后再 Destroy 不重复删队列或通
 
 ## Migration Plan
 
-1. 审核本项规划后按明确 apply 请求实现，先写真实生命周期回归并修原 owner；本轮不动代码。
+1. 审核本项规划后按明确 apply 请求实现，先写真实生命周期回归并修原 owner；当前已获准实施。
 2. 分步验证停止终态、直接销毁、交错／重入和旧生命周期隔离，同步对应使用说明。
 3. 按当轮授权执行精确工程的 Pipeline 编译及 UTF，并核对 DotNet 适用编译；没有环境的项目记 NotRun，相关任务保持未完成。
 4. 完成验证后按项目流程同步 network 增量并归档；不自动提交、推送或开工产品会话。

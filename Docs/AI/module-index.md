@@ -1,5 +1,13 @@
 # 模块索引
 
+## 本轮联机基础实施
+
+当前开发分支 `feat/multiplayer-bootstrap`。稳定层配置与 Editor 入口位于 `Game/Base/RuntimeInstance`、`Game/Editor/Multiplayer` 和既有 SceneHelper；Prepared 只表示配置交接，当前产品尚未接入时显式角色拒绝。用法见 [快速开始](../../Book/快速开始.md)、[启动 SOP](../../Book/Unity启动与验证SOP.md)，真实结果见 [启动执行记录](../../openspec/changes/multiplayer-instance-bootstrap/execution-notes.md)。
+
+原 ET.Core 的 ProcessInnerSender 提供整体 Stop 和 Destroy 兜底，当前托管域编号不复用、异步恢复核对实例身份；只停止当前 Fiber 的发送器，不作为单 Peer 取消接口。测试在 `Unity/Assets/Tests/Editor/ET` 的独占 PlayMode UTF 程序集，路径不代表 EditMode；树、消息及消费边界见 [网络约定](../../references/reactive-and-network.md)、[执行记录](../../openspec/changes/local-message-request-shutdown/execution-notes.md)。
+
+稳定第二端用法仅维护在 [共用协作规程](multiplayer-peer-workflow.md)，实际建立/数据/消息/联调结果分开报告，不能由文件存在推断。产品会话实施仍见 [产品 change](../../openspec/changes/product-session-bootstrap/proposal.md)。
+
 当前基线为 `main` 分支，来自原 ET 底座。先读 [实现约定](../../references/business-code-conventions.md)，再读适用行和实际源码。表内路径从本文解析；源码目录定位整个模块，不只一个示例。技能适用不代表获准启动工具、服务或编辑器。
 
 | 模块 | 源码/资料入口 | 用法/约定 | 主规格 | 技能 |

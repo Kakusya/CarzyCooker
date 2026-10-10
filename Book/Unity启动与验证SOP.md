@@ -14,6 +14,16 @@
 
 没有迁入参考的玩法 Profile、座位、投币前置、工具栏 Demo 或专用测试入口。
 
+## 显式单实例请求
+
+通过 `Game/Multiplayer/Instance Launch` 统一校验并提交本轮配置，再复用 Launcher。场景及实例请求只存本工程完整路径范围的 SessionState，旧全局 EditorPrefs 请求不读取、不清理、不回退。窗口草稿和已提交请求分开，普通 Launcher 清理本工程显式请求并保留旧 ET 路线。
+
+支持默认 Play 和关闭 Domain Reload、保留 Scene Reload；显式启动拒绝关闭 Scene Reload。正常域重载在 AfterAssembliesLoaded 交接配置，BeforeSceneLoad 消费 Launcher 场景，AfterSceneLoad 清场景请求；进入 EditMode 清本轮请求并收尾。Play 中编译域重载报告 `PlayDomainReloadInterrupted` 并结束自身显式实例 Play，保留中断失败，不透明恢复或重启；普通 Launcher 不由本项自动结束。
+
+`Prepared` 不等于 ET 或产品 Ready；产品尚未接入时显式 Host/Client 失败为 `ProductBootstrapUnavailable`。ProcedureET 只停止本轮实际启动的 CodeRunner，保留 GF 原设置保存/关闭 owner。配置/作用域小集、普通/legacy、两种 Play 模式的连续两轮及真实编译中断收尾已核对，见 [执行记录](../openspec/changes/multiplayer-instance-bootstrap/execution-notes.md)。
+
+双 Editor 的目录、日志、终端请求与维护仅按 [共用对端规程](../Docs/AI/multiplayer-peer-workflow.md) 操作，环境可用与产品会话分别验收。
+
 ## 当前启动参数事实
 
 - 现有 Unity Editor 已运行后无法追加操作系统启动参数；需要重启才能改变进程参数，重启仍须属于任务范围。

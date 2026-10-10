@@ -25,16 +25,29 @@ namespace Game.Editor
         }
     }
 
-    internal static class SceneHelper
+    public static class SceneHelper
     {
-        private const string UnityEditorSceneToOpenKey = "UnityEditorSceneToOpen";
+        public static void Submit(string projectPath, string scenePath)
+        {
+            SessionState.SetString(RuntimeInstanceRequest.Key(projectPath, "Scene"), scenePath);
+        }
+
+        public static string Read(string projectPath)
+        {
+            return SessionState.GetString(RuntimeInstanceRequest.Key(projectPath, "Scene"), "");
+        }
+
+        public static void Clear(string projectPath)
+        {
+            SessionState.EraseString(RuntimeInstanceRequest.Key(projectPath, "Scene"));
+        }
         
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void OnBeforeSceneLoad()
         {
-            if (EditorPrefs.HasKey(UnityEditorSceneToOpenKey))
+            string scenePath = Read(RuntimeInstanceRequest.ProjectPath);
+            if (!string.IsNullOrEmpty(scenePath))
             {
-                string scenePath = EditorPrefs.GetString(UnityEditorSceneToOpenKey);
                 if (!SceneManager.GetActiveScene().path.Equals(scenePath))
                 {
                     SceneManager.LoadScene(scenePath);
@@ -45,19 +58,22 @@ namespace Game.Editor
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void OnAfterSceneLoad()
         {
-            if (EditorPrefs.HasKey(UnityEditorSceneToOpenKey))
-            {
-                EditorPrefs.DeleteKey(UnityEditorSceneToOpenKey);
-            }
+            Clear(RuntimeInstanceRequest.ProjectPath);
         }
 
-        public static void StartScene(string scenePathName)
+        public static void StartScene(string scenePathName, RuntimeInstanceConfig config = null)
         {
-            if (EditorApplication.isPlaying)
+            if (!InstanceLaunchWindow.CanLaunch(out string reason, config != null))
             {
+                UnityGameFramework.Runtime.Log.Warning(reason);
                 return;
             }
-            EditorPrefs.SetString(UnityEditorSceneToOpenKey, scenePathName);
+            RuntimeInstanceRequest.Clear(RuntimeInstanceRequest.ProjectPath);
+            if (config != null)
+            {
+                RuntimeInstanceRequest.Submit(config);
+            }
+            Submit(RuntimeInstanceRequest.ProjectPath, scenePathName);
             EditorApplication.isPlaying = true;
         }
     }
