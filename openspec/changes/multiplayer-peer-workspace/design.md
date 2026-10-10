@@ -110,7 +110,7 @@ Pipeline 的工具连接端口动态发现，ET 的业务 listen／connect 由�
 
 ## Migration Plan
 
-1. 规划审核后，明确实施范围及真实长期 worktree 建立授权；本轮仅生成产物。
+1. 规划审核后明确实施范围及真实长期 worktree 建立授权；本轮用户已授权建立、必要版本维护与联调。
 2. 编写共用规程与主线职责片段；在获准稳定端建立／维护中保存其产品名和职责差异。
 3. 独立准备依赖、缓存和日志，用精确 projectPath 核对环境及数据消费者；缺环境记 NotRun，不勾选对应实测任务。
 4. 验证当前活跃终端双向请求与回报；接入第一项后再验证双 Editor 交错启动及角色切换。
@@ -126,4 +126,4 @@ Pipeline 的工具连接端口动态发现，ET 的业务 listen／connect 由�
 
 ## 当前实测边界
 
-环境和消息实测见 execution-notes：两端真实 Editor/Pipeline、独立缓存/日志、固定产品身份及不同设置值交错保存重读已核实。B 完整原线程与四项启动前拒绝完成，各自只清理临时键和本轮 Play，长期资源保留。AssetSet 初次/扩展写入未触发；稳定端旧版本仍为 ProductBootstrapUnavailable，不把开发端本地/KCP 结果算作双 Editor 产品联机。剩余版本维护、角色反转和最终严格核对依 tasks 收口。
+环境和消息实测见 execution-notes：两端真实 Editor/Pipeline、独立缓存/日志、固定产品身份及不同设置值交错保存重读已核实。B 完整原线程与四项启动前拒绝完成，各自只清理临时键和本轮 Play，长期资源保留。AssetSet 初次/扩展写入未触发；B旧基线的ProductBootstrapUnavailable为历史结果，维护C已纳入20582007并完成实际编译。双Editor产品结果按D/E原线程及真实运行单独记录，不以开发端本地小集代替。

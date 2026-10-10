@@ -1,6 +1,6 @@
 # Tasks
 
-本轮已授权实施，当前核心实现和本地/KCP 小集已有结果，尚未收口的任务保持未勾选，真实结果见 [execution-notes.md](execution-notes.md)。业务交接已经明确逻辑成员独立于连接，删除／保留不是待裁决问题；自动重连与厨房规则仍不在本项实现范围。
+本轮已授权实施，核心实现、本地/KCP小集及双Editor两种角色排列均有实际结果，真实范围与未验证项见 [execution-notes.md](execution-notes.md)。业务交接已经明确逻辑成员独立于连接，删除／保留不是待裁决问题；自动重连与厨房规则仍不在本项实现范围。
 
 本期目标及三条范围已在会话中确认，短摘要见 [proposal 的快速审核](proposal.md)。下列技术任务由 Agent 按规格实现和验证，本轮 apply 已明确授权，不再次要求用户逐项审阅；新增行为取舍另行说明。任务未勾选不表示已确认范围需要重新裁决。
 
@@ -37,8 +37,8 @@
 ## 6. 集成验收
 
 - [x] 6.1 按精确本工程 projectPath 执行获准 Pipeline 编译、Console groundTruth 及实际发现的本项 UTF，核对 ET.Core、Model／Hotfix、Loader／HotfixView 和测试程序集；核对同源 DotNet 的适用编译，不启动服务或 BuildPKG。未运行、空集、跳过和失败分别报告。
-- [ ] 6.2 第二工作区真实可用且两端包含必要版本后，按 design 验收矩阵验证开发 Host／稳定 Client 及角色反转，观察实际 endpoint、MatchId、成员号、同版本名单、Probe 请求／答复、心跳空闲、单端断线和整体退出；原日志保留原位，未满足条件记 NotRun，不把同机双 Editor 视为物理两机 LAN 验收。
-- [ ] 6.3 核对本项五份规划与已实施行为、Book/Unity启动与验证SOP.md 和模块索引一致，检查所有引用、空白和 OpenSpec 严格格式；分别报告单端、本地消息、实际 KCP 和双 Editor 范围，不以编译或代理通信冒充产品联机。
+- [x] 6.2 第二工作区真实可用且两端包含必要版本后，按 design 验收矩阵验证开发 Host／稳定 Client 及角色反转，观察实际 endpoint、MatchId、成员号、同版本名单、Probe 请求／答复、心跳空闲、单端断线和整体退出；原日志保留原位，未满足条件记 NotRun，不把同机双 Editor 视为物理两机 LAN 验收。
+- [x] 6.3 核对本项五份规划与已实施行为、Book/Unity启动与验证SOP.md 和模块索引一致，检查所有引用、空白和 OpenSpec 严格格式；分别报告单端、本地消息、实际 KCP 和双 Editor 范围，不以编译或代理通信冒充产品联机。
 
 ## Workflow follow-up
 
