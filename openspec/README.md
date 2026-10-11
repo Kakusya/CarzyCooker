@@ -4,7 +4,7 @@
 
 2026-10-09 的 [深度扫描](../Docs/AI/spec-scan.md) 已细化十四项底座规格；合计十六份主规格、74 项要求、120 个场景。新增 31 项要求和 70 个场景，保留原要求；仅给固定 ET 入口补充实际编译条件。增量、来源和验证见 [deepen-foundation-specs](changes/archive/2026-10-09-deepen-foundation-specs/proposal.md) 与 [verification](changes/archive/2026-10-09-deepen-foundation-specs/verification.md)。场景是契约及后续验证目标，不代表这些动态场景已运行。
 
-已增加 runtime-instances、product-session、multiplayer-peer-workspaces 和 owned-async-lifecycle，当前共二十份主规格。启动、本地消息、真实 KCP、双 Editor 和所属异步的结果分别见对应 change 的 execution-notes，不能以格式验证代替动态运行。
+已增加 runtime-instances、product-session、grid-kitchen、multiplayer-peer-workspaces 和 owned-async-lifecycle，当前共二十一份主规格。启动、本地消息、真实 KCP、双 Editor、格子样机和所属异步的结果分别见对应 change 的 execution-notes，不能以格式验证代替动态运行。
 
 | 规格 | 范围 |
 |---|---|
@@ -12,6 +12,7 @@
 | [runtime-foundation](specs/runtime-foundation/spec.md) | 公共组件/流程/示例 |
 | [runtime-instances](specs/runtime-instances/spec.md) | 显式实例配置、工程范围请求、Play 交接与本轮入口收尾 |
 | [product-session](specs/product-session/spec.md) | Unity 本机最小产品树、共同裁决、逻辑成员/连接分离、本地/远端消息与收尾 |
+| [grid-kitchen](specs/grid-kitchen/spec.md) | 竖屏固定地图、四方向行走、台面交接、断线落物与同格拾取 |
 | [multiplayer-peer-workspaces](specs/multiplayer-peer-workspaces/spec.md) | 稳定第二端、独立缓存/身份/日志、精确目标及必要维护 |
 | [ui](specs/ui/spec.md) | GF UI/ETUI/Widget |
 | [entity](specs/entity/spec.md) | GF Entity/ETEntity/UIEntity |

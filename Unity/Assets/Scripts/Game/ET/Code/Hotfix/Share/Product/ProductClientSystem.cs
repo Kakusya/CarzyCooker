@@ -35,6 +35,7 @@ namespace ET
             self.CandidateGeneration = 0;
             self.CandidateVersion = 0;
             self.CandidateRoster.Clear();
+            self.AddComponent<GridClientComponent>();
         }
 
         [EntitySystem]
@@ -94,6 +95,24 @@ namespace ET
             }
         }
 
+        public static async UniTask<T> CallProductValueAsync<T>(this ClientSessionComponent self, AsyncContext context, IRequest request, Func<IResponse, T> read)
+        {
+            try { context.ThrowIfStopped(); }
+            catch { ((MessageObject)request).Dispose(); throw; }
+            LocalMessageComponent local = self.Local;
+            if (local == null)
+            {
+                Session session = self.Session;
+                if (session == null) { ((MessageObject)request).Dispose(); throw new InvalidOperationException("Product session unavailable"); }
+                return await context.CallSessionValueAsync(session, request, read, ProductSessionRules.RequestTimeout);
+            }
+            HostPeer peer = local.Peer;
+            if (peer == null || !peer.BeginEntry()) { ((MessageObject)request).Dispose(); throw new RpcException(ProductError.PeerClosed, "Product local entry closed"); }
+            EntityRef<HostPeer> peerRef = peer;
+            try { return await context.CallLocalValueAsync(local.Root().GetComponent<ProcessInnerSender>(), peer.GetActorId(), request, read); }
+            finally { peer = peerRef; peer?.EndEntry(); }
+        }
+
         public static async UniTask JoinProduct(this ClientSessionComponent self, int version = ProductSessionRules.ProtocolVersion)
         {
             if (self.Stage != ProductClientStage.Connecting)
@@ -140,8 +159,10 @@ namespace ET
                 self.CandidateRoster.Clear();
                 self.CandidateMatchId = null;
                 self.Stage = ProductClientStage.Joined;
+                self.GetComponent<GridClientComponent>().ConfirmGridProjection();
                 runtime = self.Runtime;
-                runtime.Report(runtime.Config.Role == RuntimeInstanceRole.Host ? ProductStage.HostReady : ProductStage.ClientReady);
+                runtime.Report(runtime.Config.Role == RuntimeInstanceRole.Solo ? ProductStage.SoloReady :
+                    runtime.Config.Role == RuntimeInstanceRole.Host ? ProductStage.HostReady : ProductStage.ClientReady);
                 EventSystem.Instance.Publish((Scene)self.IScene, new ProductClientJoined { MemberId = self.MemberId });
                 Log.Info($"Product Joined: match={self.MatchId} member={self.MemberId} version={self.RosterVersion}");
                 if ((Session)self.Session != null)

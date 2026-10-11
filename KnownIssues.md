@@ -10,6 +10,7 @@
 | Proto 手册漏 ET-Admin | Design/Proto/ET-Admin/proto.conf active=true、ET、startOpcode=30000，输出 DotNet/Model/Generate/Message | 本次补文档；不同服务/生成域的重叠编号不能简单合成一份全局区间 |
 | 已配置依赖不等于可编译 | manifest 部分 Git 依赖浮动；DotNet.ThirdParty 链接 Unity PackageCache 数学源码，第三方/付费插件和 Editor 状态未验证 | 当前版本由项目配置/锁文件与实际环境确定，不自动升级/补依赖 |
 | 历史原件引用失效 | 两份原件含旧工程路径与链接 | 保留原件；现行路由仅在 AGENTS/references/Docs/OpenSpec，不沿旧路径执行 |
+| 示例业务数据清空后的使用边界 | UIEntity／Scene／音频／Unit／AI 表保留类型、无数据，DTDemo／OneConfig 整表删除；旧登录页与 Product Solo 地图曾分别验证，普通 Launcher 现改为默认 Solo 并通过直接 Play／HUD 操作；旧 Demo 代码硬编码的单位 1001／AI 配置不再存在 | 旧入口仅显式 legacy 可用，单位／AI 演示不再可用；保留初始化链路不表示继续支持旧示例玩法。新业务按实际需求注册配置，不回填演示行 |
 
 ## 2026-10-09 规格深度扫描补充
 
@@ -23,4 +24,4 @@
 
 源码：[ResourceContainer](Unity/Assets/Scripts/Game/Container/ResourceContainer.cs)、[字典 helper](Unity/Assets/Scripts/Game/Localization/LubanLocalizationHelper.cs)、[语言加载](Unity/Assets/Scripts/Game/Localization/LocalizationExtension.cs)、[AOT helper](Unity/Assets/Scripts/Game/HybridCLR/HybridCLRHelper.cs)。
 
-暂停命令、断线手持物、NPC 收口、跨关许可和传输选择属于 [产品待裁决](Docs/Product/backlog.md)，不是当前底座 bug 已被证明。
+暂停命令、NPC 收口、跨关许可和正式传输选择属于 [产品待裁决](Docs/Product/backlog.md)，不是当前底座 bug 已被证明。断线手持物已按 [格子样机 change](openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/design.md) 裁决。

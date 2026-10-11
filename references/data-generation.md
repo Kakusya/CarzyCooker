@@ -25,6 +25,8 @@ try {
 
 Check 不写产物且跳过本地化输出。缺工具说明前置，不把构建自动加入文档任务。目标与选项见 [Luban手册](../Book/Luban配置.md) 与 [规格](../openspec/specs/data-generation/spec.md)。
 
+当前源表按实际用途清理示例业务数据：公共 UI／Entity／UIEntity／Scene／Sound／UISound／Music 保留结构，UIEntity、Scene 和三类音频为空表；ET UnitConfig／AIConfig 保留公共类型、数据为空。UI 保留 ET Demo／Lockstep 初始化链路六条注册和 Product 地图 HUD 一条，Entity 仅 GridKitchenBoard 一条。无手写消费者的 DTDemo／OneConfig 已从 __tables__ 和源表删除，派生输出经正常导表移除。登录页测试 Widget 的加载代码、嵌入节点、独立资源和脚本已删除；旧 Demo 单位／AI 演示不再作为可用玩法。四张 StartConfig 源表及 Builtin 初始化资源保留。
+
 所有启用 Luban 子命令退出且完整输出读取成功后，非 Check 才复制和派生 ID。启动/执行异常、非零退出及现有错误输出判据命中均抛出失败，经 CLI 返回非零，阻断 ExportAll 后续本地化。两个 Editor 导表菜单收到失败后停止刷新、缓存清理和选择恢复。
 
 子命令期间可能已有部分源输出；复制/派生自身失败前也可能已有写入，没有整批回滚保证。复制目标只放该生成链路产物。当前修正和验证见 [导表失败变更](../openspec/changes/archive/2026-10-11-fix-foundation-entry-and-export-errors/execution-notes.md)，对应契约已同步主规格。

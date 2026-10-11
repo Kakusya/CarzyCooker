@@ -7,7 +7,8 @@ namespace Game
     {
         Legacy,
         Host,
-        Client
+        Client,
+        Solo
     }
 
     // 每轮启动意图；不包含工作区职责、产品身份或实际监听结果。
@@ -37,13 +38,14 @@ namespace Game
                 "legacy" => RuntimeInstanceRole.Legacy,
                 "host" => RuntimeInstanceRole.Host,
                 "client" => RuntimeInstanceRole.Client,
-                _ => throw new ArgumentException("role 必须是 legacy、host 或 client。")
+                "solo" => RuntimeInstanceRole.Solo,
+                _ => throw new ArgumentException("role 必须是 legacy、solo、host 或 client。")
             };
-            if (parsedRole == RuntimeInstanceRole.Legacy)
+            if (parsedRole is RuntimeInstanceRole.Legacy or RuntimeInstanceRole.Solo)
             {
                 if (!string.IsNullOrEmpty(listen) || !string.IsNullOrEmpty(connect))
                 {
-                    throw new ArgumentException("legacy 不接受 endpoint。 ");
+                    throw new ArgumentException("legacy／solo 不接受 endpoint。 ");
                 }
                 return new RuntimeInstanceConfig(runId, instanceId, parsedRole, null, 0);
             }

@@ -13,7 +13,8 @@ namespace ET
         ClientReady,
         Failed,
         Stopping,
-        Stopped
+        Stopped,
+        SoloReady
     }
 
     public enum ProductClientStage
@@ -36,7 +37,7 @@ namespace ET
 
     public static class ProductSessionRules
     {
-        public const int ProtocolVersion = 1;
+        public const int ProtocolVersion = 2;
         public const int MaxPayloadBytes = 1024;
         public const int RequestTimeout = 4000;
         public const int HeartbeatInterval = 2000;

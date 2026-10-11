@@ -34,7 +34,7 @@ namespace Game
                 InstanceId = config.InstanceId,
                 Role = config.Role.ToString().ToLowerInvariant()
             };
-            if (config.Role != RuntimeInstanceRole.Legacy)
+            if (config.Role is RuntimeInstanceRole.Host or RuntimeInstanceRole.Client)
             {
                 string address = config.Address.Contains(":") ? GameFramework.Utility.Text.Format("[{0}]", config.Address) : config.Address;
                 string endpoint = GameFramework.Utility.Text.Format("{0}:{1}", address, config.Port);

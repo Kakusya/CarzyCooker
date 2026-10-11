@@ -20,6 +20,11 @@ namespace Game
             // 产品能力在既有 Loader 装载后由 Entry 核对；字节模式不能按未装载程序集误拒绝。
             try
             {
+                if (RuntimeInstanceContext.State == RuntimeInstanceState.NotRequested)
+                {
+                    RuntimeInstanceContext.Prepare(RuntimeInstanceConfig.Create(
+                        System.Guid.NewGuid().ToString("N"), "launcher", "solo"));
+                }
                 GameEntry.CodeRunner.StartRun("ET.Init");
                 m_Started = true;
             }

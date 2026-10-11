@@ -14,6 +14,7 @@ namespace ET
             self.MatchId = Guid.NewGuid().ToString("N");
             self.RosterVersion = 0;
             self.NextMemberId = 0;
+            self.AddComponent<GridKitchenComponent>();
         }
     }
 

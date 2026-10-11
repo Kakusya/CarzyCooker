@@ -1,0 +1,135 @@
+syntax = "proto3";
+package ET;
+
+// ResponseType GridCommandResponse
+message GridCommandRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    string WorldId = 4;
+    int64 WorldGeneration = 5;
+    int64 BindingGeneration = 6;
+    int64 CommandId = 7;
+    int32 Action = 8;
+    int32 X = 9;
+    int32 Y = 10;
+    int64 TargetId = 11;
+    int64 ExpectedItemId = 12;
+}
+
+message GridCommandResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+// 内部可信转交，不进入 wire 白名单。
+// ResponseType GridSubmitResponse
+message GridSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int64 PeerGeneration = 4;
+    int32 ProtocolVersion = 5;
+    string MatchId = 6;
+    string WorldId = 7;
+    int64 WorldGeneration = 8;
+    int64 BindingGeneration = 9;
+    int64 CommandId = 10;
+    int32 Action = 11;
+    int32 X = 12;
+    int32 Y = 13;
+    int64 TargetId = 14;
+    int64 ExpectedItemId = 15;
+}
+
+message GridSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+message GridPathCell
+{
+    int32 X = 1;
+    int32 Y = 2;
+}
+
+message GridActorState
+{
+    int32 MemberId = 1;
+    int64 Generation = 2;
+    int32 X = 3;
+    int32 Y = 4;
+    int32 NextX = 5;
+    int32 NextY = 6;
+    int64 StepStartTick = 7;
+    int32 Motion = 8;
+    int32 Facing = 9;
+    int64 HandItemId = 10;
+    int32 GoalX = 11;
+    int32 GoalY = 12;
+    repeated GridPathCell Path = 13;
+    int64 LastCommandId = 14;
+    int32 LastStatus = 15;
+    string LastReason = 16;
+}
+
+message GridStationState
+{
+    int64 StationId = 1;
+    int32 X = 2;
+    int32 Y = 3;
+    string Name = 4;
+    int64 ItemId = 5;
+}
+
+message GridItemState
+{
+    int64 ItemId = 1;
+    string Name = 2;
+    int32 Location = 3;
+    int64 HolderId = 4;
+    int32 X = 5;
+    int32 Y = 6;
+    repeated string Contents = 7;
+}
+
+message GridWorldSnapshot // IMessage
+{
+    string MatchId = 1;
+    string WorldId = 2;
+    int64 WorldGeneration = 3;
+    int64 BindingGeneration = 4;
+    int32 MemberId = 5;
+    int64 Version = 6;
+    int64 Tick = 7;
+    int32 Width = 8;
+    int32 Height = 9;
+    int32 KitchenBottom = 10;
+    int32 TickMilliseconds = 11;
+    int32 StepTicks = 12;
+    repeated GridActorState Actors = 13;
+    repeated GridStationState Stations = 14;
+    repeated GridItemState Items = 15;
+}
+
+message GridCommandResult // IMessage
+{
+    string MatchId = 1;
+    string WorldId = 2;
+    int64 WorldGeneration = 3;
+    int64 BindingGeneration = 4;
+    int64 CommandId = 5;
+    int32 Status = 6;
+    string Reason = 7;
+    int64 Version = 8;
+}

@@ -8,27 +8,23 @@
 
 ### Requirement: ET 固定入口
 
-ProcedurePreset SHALL 直接进入 ProcedureET；在 UNITY_ET 编译条件成立且本轮为普通／合法 legacy 路线时，由 CodeRunner.StartRun("ET.Init") 启动，离开时仅对本轮已启动入口 StopRun。显式实例配置错误、交接失效或产品 Host／Client 能力未接入时 MUST 明确失败，不调用旧 ET 示例入口。不声明已删除的 GameHot／纯 GF 示例分支仍可切换，也不把进入 ProcedureET 等同于 ET 已成功初始化。
+ProcedurePreset SHALL 直接进入 ProcedureET；在 UNITY_ET 编译条件成立时，由 CodeRunner.StartRun("ET.Init") 启动，离开时仅对本轮已启动入口 StopRun。普通 Launcher 无显式请求时 MUST 在启动 Loader 前建立本轮默认 Solo 配置，进入 ProductRoot 并加载临时地图与 HUD；显式 legacy 继续走旧 ET 示例路线，显式 Solo／Host／Client 使用其原配置。显式实例配置错误、交接失效或产品能力缺失时 MUST 明确失败，不回退到默认 Solo 或旧示例。不声明已删除的 GameHot／纯 GF 示例分支仍可切换，也不把进入 ProcedureET 等同于 ET 已成功初始化。
 
 #### Scenario: ET 固定入口的适用行为
-
-- **WHEN** GF Procedure 进入 Preset，且本轮为普通或合法 legacy 启动
-- **THEN** 启动 ET 路线，不根据旧文档建立 HotEntry
+- **WHEN** GF Procedure 进入 Preset，且本轮没有显式实例请求
+- **THEN** ProcedureET 建立新的 Solo 配置后启动 ET 路线，产品根加载 Board／HUD，不要求使用实例窗口
 
 #### Scenario: ET 编译条件成立时退出
-
 - **WHEN** 已编译 UNITY_ET 路线且 ProcedureET 离开
 - **THEN** 仅在本轮确实启动 CodeRunner 时停止它；缺少 UNITY_ET 时不能从流程类存在推断 ET 启动回调已编译
 
 #### Scenario: 显式产品角色尚无启动能力
-
-- **WHEN** 用户显式请求 Host 或 Client，但产品启动能力尚未接入
+- **WHEN** 用户显式请求产品角色，但适用产品启动能力尚未接入
 - **THEN** 报告 ProductBootstrapUnavailable，不调用旧 ET 示例入口，不创建 Demo 服务／客户端，不报告产品 Ready
 
 #### Scenario: 实例请求交接失败
-
 - **WHEN** 本轮显式实例配置或跨 Play 交接失效
-- **THEN** 不推进 ET 业务启动，不回落到默认参数或旧 Demo 链路；不宣称该检查能撤销此前 GF 初始化读写
+- **THEN** 不推进 ET 业务启动，不回落到默认参数、默认 Solo 或旧 Demo 链路；不宣称该检查能撤销此前 GF 初始化读写
 
 ### Requirement: ET 程序集装载
 
@@ -88,19 +84,23 @@ CodeLoader MUST 按热更与 CodeBytes 配置取得 Model/ModelView/Hotfix/Hotfi
 
 ### Requirement: 产品角色 ET 根入口分流
 
-产品启动能力实际接入后，合法显式 Host／Client 请求 SHALL 经现有 ET 稳定装载入口创建独立产品根场景及适用角色子树；普通／合法 legacy 保留旧 ET Main 路线。产品路径不得触发 Demo 根启动处理，不得用工作区职责或 CodeMode 替代运行角色。能力缺失、配置失效及初始化失败仍须明确拒绝，不回落 Demo。
+产品启动能力实际接入后，普通 Launcher 默认 Solo 以及合法显式 Solo／Host／Client 请求 SHALL 经现有 ET 稳定装载入口创建独立产品根场景及适用角色子树；只有显式合法 legacy 保留旧 ET Main 路线。产品路径不得触发 Demo 根启动处理，不得用工作区职责或 CodeMode 替代运行角色。能力缺失、配置失效及初始化失败仍须明确拒绝，不回落 Demo。
 
 #### Scenario: 显式产品角色启动
-- **WHEN** 合法 Host／Client 配置且适用产品能力已编译并装载
+- **WHEN** 合法 Solo／Host／Client 配置且适用产品能力已编译并装载
 - **THEN** 创建产品根与适用角色子树，不发布旧 Main 的示例启动事件，不连接 Realm／Gate 或启动数据库服务
 
 #### Scenario: 产品能力不适用
-- **WHEN** 显式角色所需代码未装载或本轮初始化失败
-- **THEN** 保留具体失败并收尾本轮实际资源，不改成普通入口或报告就绪
+- **WHEN** 产品角色所需代码未装载或本轮初始化失败
+- **THEN** 保留具体失败并收尾本轮实际资源，不改成 legacy 入口或报告就绪
 
 #### Scenario: 普通 Launcher 回归
-- **WHEN** 未提交产品请求或明确选择合法 legacy
-- **THEN** 保留原 ET Main 的适用入口，不继承上一轮产品角色与会话
+- **WHEN** 未提交显式实例请求而运行普通 Launcher
+- **THEN** 建立新的 Solo 配置并进入产品根，不继承上一轮产品角色与会话，不进入示例 Main
+
+#### Scenario: 显式 legacy 回归
+- **WHEN** 明确选择合法 legacy 请求
+- **THEN** 保留原 ET Main 的适用入口，不创建 Solo 产品会话
 
 ### Requirement: 产品启动状态按实际阶段报告
 
@@ -133,3 +133,5 @@ CodeLoader MUST 按热更与 CodeBytes 配置取得 Model/ModelView/Hotfix/Hotfi
 - [预加载](../../../Unity/Assets/Scripts/Game/Procedure/ProcedurePreload.cs)
 - [资源完成](../../../Unity/Assets/Scripts/Game/Procedure/ProcedureCompleteResources.cs)
 - [版本检查](../../../Unity/Assets/Scripts/Game/Procedure/ProcedureCheckVersion.cs)
+
+- [格子样机与默认入口执行记录](../../changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)。

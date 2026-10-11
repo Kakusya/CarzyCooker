@@ -1639,4 +1639,447 @@ namespace ET
         }
     }
 
+    // proto file : ET-Client/ZZGridKitchen.proto (line:5)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridCommandRequest)]
+    [ResponseType(nameof(GridCommandResponse))]
+    public partial class GridCommandRequest: MessageObject, IRequest
+    {
+        public static GridCommandRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridCommandRequest), isFromPool) as GridCommandRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(2)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(3)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(4)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(5)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(7)]
+        public int Action { get; set; }
+        [MemoryPackOrder(8)]
+        public int X { get; set; }
+        [MemoryPackOrder(9)]
+        public int Y { get; set; }
+        [MemoryPackOrder(10)]
+        public long TargetId { get; set; }
+        [MemoryPackOrder(11)]
+        public long ExpectedItemId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.BindingGeneration = default;
+            this.CommandId = default;
+            this.Action = default;
+            this.X = default;
+            this.Y = default;
+            this.TargetId = default;
+            this.ExpectedItemId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZGridKitchen.proto (line:21)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridCommandResponse)]
+    public partial class GridCommandResponse: MessageObject, IResponse
+    {
+        public static GridCommandResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridCommandResponse), isFromPool) as GridCommandResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(4)]
+        public int Status { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.CommandId = default;
+            this.Status = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 内部可信转交，不进入 wire 白名单。
+    // proto file : ET-Client/ZZGridKitchen.proto (line:32)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridSubmitRequest)]
+    [ResponseType(nameof(GridSubmitResponse))]
+    public partial class GridSubmitRequest: MessageObject, IRequest
+    {
+        public static GridSubmitRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridSubmitRequest), isFromPool) as GridSubmitRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public long PeerId { get; set; }
+        [MemoryPackOrder(2)]
+        public long PeerInstanceId { get; set; }
+        [MemoryPackOrder(3)]
+        public long PeerGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(5)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(6)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(7)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(8)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(9)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(10)]
+        public int Action { get; set; }
+        [MemoryPackOrder(11)]
+        public int X { get; set; }
+        [MemoryPackOrder(12)]
+        public int Y { get; set; }
+        [MemoryPackOrder(13)]
+        public long TargetId { get; set; }
+        [MemoryPackOrder(14)]
+        public long ExpectedItemId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.PeerId = default;
+            this.PeerInstanceId = default;
+            this.PeerGeneration = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.BindingGeneration = default;
+            this.CommandId = default;
+            this.Action = default;
+            this.X = default;
+            this.Y = default;
+            this.TargetId = default;
+            this.ExpectedItemId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZGridKitchen.proto (line:51)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridSubmitResponse)]
+    public partial class GridSubmitResponse: MessageObject, IResponse
+    {
+        public static GridSubmitResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridSubmitResponse), isFromPool) as GridSubmitResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(4)]
+        public int Status { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.CommandId = default;
+            this.Status = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZGridKitchen.proto (line:60)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridPathCell)]
+    public partial class GridPathCell: MessageObject
+    {
+        public static GridPathCell Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridPathCell), isFromPool) as GridPathCell;
+        }
+
+        [MemoryPackOrder(0)]
+        public int X { get; set; }
+        [MemoryPackOrder(1)]
+        public int Y { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.X = default;
+            this.Y = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZGridKitchen.proto (line:66)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridActorState)]
+    public partial class GridActorState: MessageObject
+    {
+        public static GridActorState Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridActorState), isFromPool) as GridActorState;
+        }
+
+        [MemoryPackOrder(0)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(1)]
+        public long Generation { get; set; }
+        [MemoryPackOrder(2)]
+        public int X { get; set; }
+        [MemoryPackOrder(3)]
+        public int Y { get; set; }
+        [MemoryPackOrder(4)]
+        public int NextX { get; set; }
+        [MemoryPackOrder(5)]
+        public int NextY { get; set; }
+        [MemoryPackOrder(6)]
+        public long StepStartTick { get; set; }
+        [MemoryPackOrder(7)]
+        public int Motion { get; set; }
+        [MemoryPackOrder(8)]
+        public int Facing { get; set; }
+        [MemoryPackOrder(9)]
+        public long HandItemId { get; set; }
+        [MemoryPackOrder(10)]
+        public int GoalX { get; set; }
+        [MemoryPackOrder(11)]
+        public int GoalY { get; set; }
+        [MemoryPackOrder(12)]
+        public List<GridPathCell> Path { get; set; } = new List<GridPathCell>();
+        [MemoryPackOrder(13)]
+        public long LastCommandId { get; set; }
+        [MemoryPackOrder(14)]
+        public int LastStatus { get; set; }
+        [MemoryPackOrder(15)]
+        public string LastReason { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MemberId = default;
+            this.Generation = default;
+            this.X = default;
+            this.Y = default;
+            this.NextX = default;
+            this.NextY = default;
+            this.StepStartTick = default;
+            this.Motion = default;
+            this.Facing = default;
+            this.HandItemId = default;
+            this.GoalX = default;
+            this.GoalY = default;
+            this.Path.Clear();
+            this.LastCommandId = default;
+            this.LastStatus = default;
+            this.LastReason = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZGridKitchen.proto (line:86)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridStationState)]
+    public partial class GridStationState: MessageObject
+    {
+        public static GridStationState Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridStationState), isFromPool) as GridStationState;
+        }
+
+        [MemoryPackOrder(0)]
+        public long StationId { get; set; }
+        [MemoryPackOrder(1)]
+        public int X { get; set; }
+        [MemoryPackOrder(2)]
+        public int Y { get; set; }
+        [MemoryPackOrder(3)]
+        public string Name { get; set; }
+        [MemoryPackOrder(4)]
+        public long ItemId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.StationId = default;
+            this.X = default;
+            this.Y = default;
+            this.Name = default;
+            this.ItemId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZGridKitchen.proto (line:95)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridItemState)]
+    public partial class GridItemState: MessageObject
+    {
+        public static GridItemState Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridItemState), isFromPool) as GridItemState;
+        }
+
+        [MemoryPackOrder(0)]
+        public long ItemId { get; set; }
+        [MemoryPackOrder(1)]
+        public string Name { get; set; }
+        [MemoryPackOrder(2)]
+        public int Location { get; set; }
+        [MemoryPackOrder(3)]
+        public long HolderId { get; set; }
+        [MemoryPackOrder(4)]
+        public int X { get; set; }
+        [MemoryPackOrder(5)]
+        public int Y { get; set; }
+        [MemoryPackOrder(6)]
+        public List<string> Contents { get; set; } = new List<string>();
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ItemId = default;
+            this.Name = default;
+            this.Location = default;
+            this.HolderId = default;
+            this.X = default;
+            this.Y = default;
+            this.Contents.Clear();
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZGridKitchen.proto (line:106)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridWorldSnapshot)]
+    public partial class GridWorldSnapshot: MessageObject, IMessage
+    {
+        public static GridWorldSnapshot Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridWorldSnapshot), isFromPool) as GridWorldSnapshot;
+        }
+
+        [MemoryPackOrder(0)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(1)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(2)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(5)]
+        public long Version { get; set; }
+        [MemoryPackOrder(6)]
+        public long Tick { get; set; }
+        [MemoryPackOrder(7)]
+        public int Width { get; set; }
+        [MemoryPackOrder(8)]
+        public int Height { get; set; }
+        [MemoryPackOrder(9)]
+        public int KitchenBottom { get; set; }
+        [MemoryPackOrder(10)]
+        public int TickMilliseconds { get; set; }
+        [MemoryPackOrder(11)]
+        public int StepTicks { get; set; }
+        [MemoryPackOrder(12)]
+        public List<GridActorState> Actors { get; set; } = new List<GridActorState>();
+        [MemoryPackOrder(13)]
+        public List<GridStationState> Stations { get; set; } = new List<GridStationState>();
+        [MemoryPackOrder(14)]
+        public List<GridItemState> Items { get; set; } = new List<GridItemState>();
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.BindingGeneration = default;
+            this.MemberId = default;
+            this.Version = default;
+            this.Tick = default;
+            this.Width = default;
+            this.Height = default;
+            this.KitchenBottom = default;
+            this.TickMilliseconds = default;
+            this.StepTicks = default;
+            this.Actors.Clear();
+            this.Stations.Clear();
+            this.Items.Clear();
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZGridKitchen.proto (line:125)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridCommandResult)]
+    public partial class GridCommandResult: MessageObject, IMessage
+    {
+        public static GridCommandResult Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridCommandResult), isFromPool) as GridCommandResult;
+        }
+
+        [MemoryPackOrder(0)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(1)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(2)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(5)]
+        public int Status { get; set; }
+        [MemoryPackOrder(6)]
+        public string Reason { get; set; }
+        [MemoryPackOrder(7)]
+        public long Version { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.BindingGeneration = default;
+            this.CommandId = default;
+            this.Status = default;
+            this.Reason = default;
+            this.Version = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
 }
