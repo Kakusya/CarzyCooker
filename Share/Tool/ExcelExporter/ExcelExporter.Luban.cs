@@ -37,6 +37,7 @@ namespace ET
                 public List<string> copyCodePath;
                 public string sourceDataPath;
                 public List<string> copyDataPath;
+                public string failureReason;
             }
 
             public class GenConfig
@@ -196,7 +197,6 @@ namespace ET
                     }
                 }
 
-                bool isSuccess = true;
                 int processCount = 0;
                 Parallel.ForEachAsync(cmdInfos,
                     async (cmdInfo, _) =>
@@ -206,16 +206,25 @@ namespace ET
                             Log.Info($"{cmdInfo.dirName} : {cmdInfo.cmd}");
                         }
 
-                        if (await RunCommand(cmdInfo.cmd, Define.WorkDir, cmdInfo.dirName, showInfo))
+                        cmdInfo.failureReason = await RunCommand(cmdInfo.cmd, Define.WorkDir, cmdInfo.dirName, showInfo);
+                        if (cmdInfo.failureReason == null)
                         {
                             Log.Info($"Luban {actionStr} process : {Interlocked.Add(ref processCount, 1)}/{cmdInfos.Count}");
                         }
                         else
                         {
-                            isSuccess = false;
                             Log.Warning($"Luban {actionStr} process : {Interlocked.Add(ref processCount, 1)}/{cmdInfos.Count}");
                         }
                     }).Wait();
+
+                var failures = cmdInfos.Where(cmdInfo => cmdInfo.failureReason != null).ToList();
+                if (failures.Count > 0)
+                {
+                    string details = string.Join(Environment.NewLine, failures.Select(cmdInfo =>
+                            $"{cmdInfo.dirName} : {cmdInfo.cmd}{Environment.NewLine}{cmdInfo.failureReason}"));
+                    throw new InvalidOperationException($"Luban excel {actionStr} failed!{Environment.NewLine}{details}{Environment.NewLine}" +
+                            "Source outputs may be partial. Copy, ID generation and subsequent localization export were skipped.");
+                }
 
                 if (!isCheck)
                 {
@@ -248,20 +257,13 @@ namespace ET
                     GenerateUGFSceneId.GenerateCode();
                 }
 
-                if (isSuccess)
-                {
-                    Log.Info($"Luban excel {actionStr} success!");
-                }
-                else
-                {
-                    Log.Warning($"Luban excel {actionStr} fail!");
-                }
+                Log.Info($"Luban excel {actionStr} success!");
             }
 
-            private static async Task<bool> RunCommand(string cmd, string workDir, string logHeader, bool showInfo)
+            // null 表示成功；失败原因由编排层附上工程、目标命令并传播给 CLI。
+            private static async Task<string> RunCommand(string cmd, string workDir, string logHeader, bool showInfo)
             {
-                bool isSuccess = true;
-                Process process = new();
+                using Process process = new();
                 try
                 {
                     string app = "bash";
@@ -287,46 +289,47 @@ namespace ET
                     start.StandardOutputEncoding = s_Encoding;
                     start.StandardErrorEncoding = s_Encoding;
 
-                    process.OutputDataReceived += (sender, args) =>
-                    {
-                        if (!string.IsNullOrEmpty(args.Data))
-                        {
-                            if (args.Data.Contains("|ERROR|"))
-                            {
-                                isSuccess = false;
-                                Log.Warning($"{logHeader} : {args.Data}");
-                            }
-                            else if (showInfo)
-                            {
-                                Log.Info(args.Data);
-                            }
-                        }
-                    };
-                    process.ErrorDataReceived += (sender, args) =>
-                    {
-                        if (!string.IsNullOrEmpty(args.Data))
-                        {
-                            isSuccess = false;
-                            Log.Warning($"{logHeader} : {args.Data}");
-                        }
-                    };
-
                     process.Start();
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-                    await process.WaitForExitAsync();
+                    Task<List<string>> stdout = ReadOutputAsync(process.StandardOutput, false, logHeader, showInfo);
+                    Task<List<string>> stderr = ReadOutputAsync(process.StandardError, true, logHeader, showInfo);
+                    // 进程退出和两个流的 EOF 都到达后才能判断，保留末尾错误。
+                    await Task.WhenAll(process.WaitForExitAsync(), stdout, stderr);
+                    var errors = new List<string>();
+                    if (process.ExitCode != 0)
+                    {
+                        errors.Add($"Exit code: {process.ExitCode}");
+                    }
+                    errors.AddRange(await stdout);
+                    errors.AddRange(await stderr);
+                    return errors.Count == 0 ? null : string.Join(Environment.NewLine, errors);
                 }
                 catch (Exception e)
                 {
-                    isSuccess = false;
-                    Log.Error(e);
+                    return e.ToString();
                 }
-                finally
-                {
-                    process.Close();
-                }
+            }
 
-                return isSuccess;
+            private static async Task<List<string>> ReadOutputAsync(StreamReader reader, bool isError, string logHeader, bool showInfo)
+            {
+                var errors = new List<string>();
+                string line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    if (string.IsNullOrEmpty(line))
+                    {
+                        continue;
+                    }
+                    if (isError || line.Contains("|ERROR|"))
+                    {
+                        errors.Add(line);
+                        Log.Warning($"{logHeader} : {line}");
+                    }
+                    else if (showInfo)
+                    {
+                        Log.Info(line);
+                    }
+                }
+                return errors;
             }
         }
     }

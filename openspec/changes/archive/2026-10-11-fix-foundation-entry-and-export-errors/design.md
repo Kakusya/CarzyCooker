@@ -2,12 +2,12 @@
 
 ## Context
 
-动机见 [proposal.md](proposal.md)。当前差异已在 [KnownIssues](../../../KnownIssues.md) 记录，不属于已修复能力：
+动机见 [proposal.md](proposal.md)。以下是提案时的差异；本 change 已修正，结果见 [执行说明](execution-notes.md)，对应问题已从 [KnownIssues](../../../../KnownIssues.md) 移除：
 
-- [EntityExtension](../../../Unity/Assets/Scripts/Game/Entity/EntityExtension.cs) 的同步泛型 ShowUIEntity 转给普通 ShowEntity；Type 入口已查询 DTUIEntity。
-- [Luban 导出](../../../Share/Tool/ExcelExporter/ExcelExporter.Luban.cs) 未用子进程退出码判定结果，失败汇总后仍复制并派生 ID。[ExportAll](../../../Share/Tool/ExcelExporter/ExcelExporter.cs) 随后调用本地化。
-- [CLI](../../../Share/Tool/Loader/Init.cs) 正常返回 0；[ShellTool](../../../Unity/Assets/Scripts/Game/Editor/Tool/ShellTool.cs) 不返回失败结果，[EditorTool](../../../Unity/Assets/Scripts/Game/Editor/Tool/EditorTool.cs) 在 await 后继续刷新。
-- 当前 [ET 配置](../../../Design/Excel/ET/luban.conf) active=true，保留 gameclient/gameeditor/client/clientserver/editor 五目标。第一输出可以已经是正式生成目录，失败不能承诺无任何文件变化。
+- [EntityExtension](../../../../Unity/Assets/Scripts/Game/Entity/EntityExtension.cs) 的同步泛型 ShowUIEntity 转给普通 ShowEntity；Type 入口已查询 DTUIEntity。
+- [Luban 导出](../../../../Share/Tool/ExcelExporter/ExcelExporter.Luban.cs) 未用子进程退出码判定结果，失败汇总后仍复制并派生 ID。[ExportAll](../../../../Share/Tool/ExcelExporter/ExcelExporter.cs) 随后调用本地化。
+- [CLI](../../../../Share/Tool/Loader/Init.cs) 正常返回 0；[ShellTool](../../../../Unity/Assets/Scripts/Game/Editor/Tool/ShellTool.cs) 不返回失败结果，[EditorTool](../../../../Unity/Assets/Scripts/Game/Editor/Tool/EditorTool.cs) 在 await 后继续刷新。
+- 当前 [ET 配置](../../../../Design/Excel/ET/luban.conf) active=true，保留 gameclient/gameeditor/client/clientserver/editor 五目标。第一输出可以已经是正式生成目录，失败不能承诺无任何文件变化。
 
 ## Goals / Non-Goals
 

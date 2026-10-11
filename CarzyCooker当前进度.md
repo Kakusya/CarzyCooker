@@ -5,7 +5,8 @@
 | 范围 | 当前事实 | 入口 |
 | --- | --- | --- |
 | 框架底座 | 当前 main 分支的 ET 底座保留 GF + ET 双端、HybridCLR、UniTask、Luban 与 ET 示例；GameHot/GF Network 已移除 | [框架总览](Docs/Framework/README.md)、[模块索引](Docs/AI/module-index.md) |
-| 协作体系 | Codex 入口、十二项官方 OpenSpec 技能、四项项目技能、官方 unity-cli 与四项 SOP 技能，合计二十一项；十六份中文主规格已建立，十四项底座契约已细化 | [AGENTS](AGENTS.md)、[工作流](Docs/AI/workflow.md)、[规格索引](openspec/README.md)、[扫描记录](Docs/AI/spec-scan.md) |
+| 底座入口与导表 | 已纳入 main 的同步泛型 UIEntity 独立路由、Luban 失败传播及 Editor 导表失败阻断。主工作区的隔离验证与编译结果见源执行记录；本端本轮编译与行为验证尚未执行 | [源执行记录](openspec/changes/archive/2026-10-11-fix-foundation-entry-and-export-errors/execution-notes.md)、[Entity 用法](Book/Entity开发.md)、[导表用法](Book/Luban配置.md) |
+| 协作体系 | 本端保留6项项目技能，独立业务开发仍由主工作区承担；版本维护完整采用 main 已有代码，代码冲突优先 main，文档冲突自主合并。现有十九份主规格保留 | [AGENTS](AGENTS.md)、[同步技能](.agents/skills/second-workspace-sync/SKILL.md)、[规格索引](openspec/README.md) |
 | 做饭玩法 | 房间、厨房、订单、顾客、伙伴、供应和产品存档尚未实施 | [未来产品设计](Docs/Product/README.md) |
 | 联机启动基础 | 显式 legacy/host/client 配置、工程范围请求、普通 Launcher 兼容与本轮 owner 收尾已实施；产品未接入时 Host/Client 拒绝，不启动 Demo | [执行记录](openspec/changes/multiplayer-instance-bootstrap/execution-notes.md)、[实例规格](openspec/specs/runtime-instances/spec.md) |
 | 本地请求退出 | 原 ProcessInnerSender 的幂等 Stop/Destroy、等待取消、旧计时/答复隔离已实施；真实消息 UTF 9/9 Passed，Unity/DotNet.Core 编译通过，不证明产品联机 | [执行记录](openspec/changes/local-message-request-shutdown/execution-notes.md)、[网络规格](openspec/specs/network/spec.md) |
