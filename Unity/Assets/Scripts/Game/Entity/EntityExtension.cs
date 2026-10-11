@@ -45,7 +45,7 @@ namespace Game
 
         public static int? ShowUIEntity<T>(this EntityComponent entityComponent, int entityTypeId, object userData = null) where T : EntityLogic
         {
-            return entityComponent.ShowEntity(entityTypeId, typeof (T), userData);
+            return entityComponent.ShowUIEntity(entityTypeId, typeof (T), userData);
         }
 
         public static int? ShowUIEntity(this EntityComponent entityComponent, int entityTypeId, Type logicType, object userData = null)

@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using Cysharp.Threading.Tasks;
 using ThunderFireUITool;
@@ -18,11 +19,15 @@ namespace Game.Editor
                 const string TOOL = ".\\Tool.exe";
 #endif
                 Stopwatch stopwatch = Stopwatch.StartNew();
-#if UNITY_EDITOR_OSX || UNITY_EDITOR_LINUX
-                await ShellTool.RunAsync($"{TOOL} --AppType=ExcelExporter --Console=1", "../Bin/");
-#else
-                await ShellTool.RunAsync($"{TOOL} --AppType=ExcelExporter --Console=1", "../Bin/");
-#endif
+                try
+                {
+                    await ShellTool.RunAsync($"{TOOL} --AppType=ExcelExporter --Console=1", "../Bin/");
+                }
+                catch (Exception e)
+                {
+                    UnityEngine.Debug.LogError($"Excel export failed: {e}");
+                    return;
+                }
                 stopwatch.Stop();
                 UnityEngine.Debug.Log($"Export cost {stopwatch.ElapsedMilliseconds} Milliseconds!");
                 AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
@@ -49,11 +54,15 @@ namespace Game.Editor
                 const string TOOL = ".\\Tool.exe";
 #endif
                 Stopwatch stopwatch = Stopwatch.StartNew();
-#if UNITY_EDITOR_OSX || UNITY_EDITOR_LINUX
-                await ShellTool.RunAsync($"{TOOL} --AppType=ExcelExporter --Console=1 --Customs=Json", "../Bin/");
-#else
-                await ShellTool.RunAsync($"{TOOL} --AppType=ExcelExporter --Console=1 --Customs=Json", "../Bin/");
-#endif
+                try
+                {
+                    await ShellTool.RunAsync($"{TOOL} --AppType=ExcelExporter --Console=1 --Customs=Json", "../Bin/");
+                }
+                catch (Exception e)
+                {
+                    UnityEngine.Debug.LogError($"Excel JSON export failed: {e}");
+                    return;
+                }
                 stopwatch.Stop();
                 UnityEngine.Debug.Log($"Export cost {stopwatch.ElapsedMilliseconds} Milliseconds!");
                 AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);

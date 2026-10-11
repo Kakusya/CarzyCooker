@@ -157,10 +157,14 @@ namespace Game.Editor
                 {
                     process.WaitForExit();
                 });
+                if (process.ExitCode != 0)
+                {
+                    throw new InvalidOperationException($"Command failed with exit code {process.ExitCode}: {cmd} (working directory: {workDirectory})");
+                }
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogError(e.ToString());
+                throw new InvalidOperationException($"Command execution failed: {cmd} (working directory: {workDirectory})", e);
             }
             finally
             {

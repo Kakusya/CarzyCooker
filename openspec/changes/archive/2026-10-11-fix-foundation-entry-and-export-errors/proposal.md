@@ -28,4 +28,4 @@
 
 影响 EntityExtension、Share.Tool 的 ExcelExporter/Loader、Editor 的 ShellTool/EditorTool 及对应说明。不改 Excel 内容、表结构、生成代码、传输或玩法，也不升级 OpenSpec、Luban 或 Unity。现有把导表失败当成功的调用将收到明确失败；正常调用签名尽量保持兼容。
 
-采用局部路由检查和隔离临时目录的成功/失败验证，不扩大到全量产品测试。严谨程度、接受的部分输出和 NotRun 范围见 [execution-notes.md](execution-notes.md)。本次授权创建规划产物，实施另按 apply 指令开始。
+采用局部路由检查和隔离临时目录的成功/失败验证，不扩大到全量产品测试。严谨程度、接受的部分输出和 NotRun 范围见 [execution-notes.md](execution-notes.md)。2026-10-11 用户通过 apply 施工请求授权实施；不自动提交或归档。

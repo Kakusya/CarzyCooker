@@ -23,4 +23,4 @@ UIEntity MUST 保持独立 DTUIEntity、资源根和生成 ID；同步泛型与 
 
 ## References
 
-本文件定义拟修正的行为，尚未实施；对应入口见 [EntityExtension.cs](../../../../../Unity/Assets/Scripts/Game/Entity/EntityExtension.cs)，当前差异见 [KnownIssues.md](../../../../../KnownIssues.md)。
+对应入口见 [EntityExtension.cs](../../../../../../Unity/Assets/Scripts/Game/Entity/EntityExtension.cs)，验证范围见 [执行说明](../../execution-notes.md)。

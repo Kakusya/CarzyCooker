@@ -229,7 +229,9 @@ entity.Dispose(); // 自动隐藏 GF Entity
 
 ## Entity 与 UIEntity
 
-普通世界对象使用 `Entity.xlsx` 和 `UGFEntityId`。UI 内可复用的实体资源使用 `UIEntity.xlsx` 和 `UGFUIEntityId`，加载接口为 `ShowUIEntityAsync`。
+普通世界对象使用 `Entity.xlsx` 和 `UGFEntityId`。UI 内可复用的实体资源使用 `UIEntity.xlsx` 和 `UGFUIEntityId`，同步加载入口为 `ShowUIEntity<T>` / `ShowUIEntity(..., Type, ...)`，异步入口为 `ShowUIEntityAsync`。
+
+同步泛型入口委托 Type 入口，两者都查询 `DTUIEntity`，使用 `Assets/Res/UI/UIEntity/` 资源根及该行的分组、优先级，分配运行 serial ID 并传递原 `userData`。UIEntity 缺行时记录警告并返回 null，即使普通 Entity 表存在同 ID 也不回退。
 
 两张表的资源根目录和 GF 分组可以不同。UIWidget 内部加载的视图属于 UIEntity，不要把普通 EntityId 传给 UIEntity 接口。
 

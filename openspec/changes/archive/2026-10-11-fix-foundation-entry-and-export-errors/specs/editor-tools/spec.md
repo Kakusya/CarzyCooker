@@ -23,4 +23,4 @@ Editor 导表入口 MUST 消费工具的真实执行结果。工具启动异常�
 
 ## References
 
-本文件新增导表入口契约，不修改现有工作区标签能力；当前入口见 [EditorTool.cs](../../../../../Unity/Assets/Scripts/Game/Editor/Tool/EditorTool.cs) 和 [ShellTool.cs](../../../../../Unity/Assets/Scripts/Game/Editor/Tool/ShellTool.cs)。
+本文件新增导表入口契约，不修改现有工作区标签能力；当前入口见 [EditorTool.cs](../../../../../../Unity/Assets/Scripts/Game/Editor/Tool/EditorTool.cs) 和 [ShellTool.cs](../../../../../../Unity/Assets/Scripts/Game/Editor/Tool/ShellTool.cs)。

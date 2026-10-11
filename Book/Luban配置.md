@@ -37,7 +37,7 @@ dotnet build Kit.sln
 | `Game/Tool/ExcelExporterForJson` | 代码 + JSON 数据 |
 | Toolbar 的 `ExportExcel` | 与 ExcelExporter 相同 |
 
-Unity 入口会在导出后刷新 AssetDatabase，并清理 UXTool 的编辑器本地化缓存。
+两个 Unity 导表菜单只在工具成功退出后刷新 AssetDatabase、清理 UXTool 的编辑器本地化缓存并恢复选择对象。启动异常或非零退出会记录失败原因并结束菜单流程，不执行这些后续步骤。
 
 ### 修改 Excel 源表
 
@@ -148,7 +148,7 @@ macOS 或 Linux 使用 `dotnet Tool.dll`。
 
 ## 多目标输出
 
-`outputCodeDir` 或 `outputDataDir` 可用逗号分隔多个路径。工具以第一个目录为源，导出完成后清空并复制到其余目录。
+`outputCodeDir` 或 `outputDataDir` 可用逗号分隔多个路径。工具以第一个目录为源，所有 Luban 子命令成功后清空并复制到其余目录。
 
 ```text
 -x outputDataDir=%UNITY_ASSETS%/Res/ET/ClientServer/Luban,%ROOT%/Config/Luban
@@ -158,7 +158,7 @@ macOS 或 Linux 使用 `dotnet Tool.dll`。
 
 ## 二次生成
 
-Luban 命令完成后，ExcelExporter 会读取 `Assets/Res/Editor/Luban` 中的 JSON，并生成：
+所有 Luban 命令成功且输出读取完成后，非 Check 的 ExcelExporter 会读取 `Assets/Res/Editor/Luban` 中的 JSON，并生成：
 
 | 数据表 | 生成常量 |
 | --- | --- |
@@ -191,7 +191,11 @@ Pop-Location
 
 ## 并行行为
 
-所有启用工程的 `cmds` 会通过 `Parallel.ForEachAsync` 并行执行。日志顺序不代表配置顺序；判断成功与否应看每个工程名和最终汇总。
+所有启用工程的 `cmds` 会通过 `Parallel.ForEachAsync` 并行执行。每条命令等待进程退出及 stdout/stderr 读取完成；启动/执行异常、非零退出、stdout 中的 `|ERROR|` 或非空 stderr 都判为失败。即使没有错误文本，非零退出也会失败；错误文本不因零退出而被忽略。
+
+全部已启动命令正常收尾后再汇总结果。任一命令失败会抛出包含工程、完整目标命令和原因的异常，经现有 Tool CLI 返回非零，停止后续复制、目标清理、ID 和本地化。复制、ID 或本地化自身的异常同样传播并停止剩余步骤。日志顺序不代表配置顺序，不以输出文件存在判断成功。
+
+非 Check 子命令可能已经写入第一个输出目录；失败不回滚这些源产物，也不回滚后处理失败前已完成的写入。先处理具体失败再按授权重新生成，不能把部分或旧输出当作本轮有效结果。
 
 多个命令不得写同一个源输出目录。需要相同产物时使用逗号配置复制目标，而不是让两个并行命令直接覆盖同一路径。
 

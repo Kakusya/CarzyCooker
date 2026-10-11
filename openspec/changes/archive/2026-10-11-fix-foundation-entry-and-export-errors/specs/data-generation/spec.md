@@ -47,4 +47,4 @@
 
 ## References
 
-本文件定义拟修正的失败契约；当前链路见 [ExcelExporter.Luban.cs](../../../../../Share/Tool/ExcelExporter/ExcelExporter.Luban.cs)、[ExcelExporter.cs](../../../../../Share/Tool/ExcelExporter/ExcelExporter.cs) 和 [Tool Init.cs](../../../../../Share/Tool/Loader/Init.cs)。
+当前链路见 [ExcelExporter.Luban.cs](../../../../../../Share/Tool/ExcelExporter/ExcelExporter.Luban.cs)、[ExcelExporter.cs](../../../../../../Share/Tool/ExcelExporter/ExcelExporter.cs) 和 [Tool Init.cs](../../../../../../Share/Tool/Loader/Init.cs)；实际验证与部分输出边界见 [执行说明](../../execution-notes.md)。
