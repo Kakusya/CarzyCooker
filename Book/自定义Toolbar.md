@@ -56,8 +56,17 @@ namespace Game.Editor
 | Open 文件夹组 | Right | -1 | 打开 Excel、Proto、Build 目录 |
 | `ReloadExcel` | Right | 98 | 播放中重载 ET 表 |
 | `ExportExcel` | Right | 99 | 执行 ExcelExporter |
+| Git 分支标签 | Right | 100 | 显示当前工作区的 Git 分支或短提交号 |
 
 模块按钮受编译符号控制，不会在所有模式同时出现。
+
+### 当前工作区标识
+
+右侧 Git 标签读取本工程所在仓库的 HEAD，显示完整分支名，兼容普通 `.git` 目录与 linked worktree 的 `.git` 文件；gitdir 可为绝对路径或相对于仓库根的路径。detached HEAD 显示提交号前七位（不足七位完整显示），无法取得 Git 信息时显示 `-`。
+
+鼠标悬停可查看 HEAD 引用或 `Detached HEAD`。标签沿用参考项目的首次绘制缓存：脚本域重载或重开 Editor 后重新读取，运行中切分支不保证实时更新。
+
+实现见 [GitBranchToolBar.cs](../Unity/Assets/Scripts/Game/Editor/ToolBar/GitBranchToolBar.cs)，编入现有 `Game.Editor`，复用 `ToolbarExtension.Editor`。
 
 ![Toolbar 示例](png/toolbar.png)
 
