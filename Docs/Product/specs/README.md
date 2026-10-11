@@ -1,6 +1,6 @@
 # 做饭业务目标规格
 
-八份规格已按两份交接完成文档核对与定稿，作为后续实施 change 的长期需求依据。**所有业务能力仍未实施，文档定稿不是玩法验收或开工授权。** 当前已支持的底座契约继续见 [OpenSpec 主规格](../../../openspec/README.md)。
+八份规格已按两份交接完成文档核对与定稿，作为后续实施 change 的长期需求依据。**会话、临时格子及备料手工作业子集已有实现，完整厨房／经营仍未实施；文档定稿不是玩法验收或开工授权。** 实施与验收见 [当前进度](../../../CarzyCooker当前进度.md) 和 [备料记录](../../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)，底座契约继续见 [OpenSpec 主规格](../../../openspec/README.md)。
 
 ## 规格与来源身份
 

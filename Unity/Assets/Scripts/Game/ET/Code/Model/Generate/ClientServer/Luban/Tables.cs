@@ -19,6 +19,8 @@ public partial class Tables
     public DTStartZoneConfig DTStartZoneConfig { private set; get; }
     public DTAIConfig DTAIConfig { private set; get; }
     public DTUnitConfig DTUnitConfig { private set; get; }
+    public DTGridItemConfig DTGridItemConfig { private set; get; }
+    public DTGridManualRecipeConfig DTGridManualRecipeConfig { private set; get; }
     private System.Collections.Generic.Dictionary<string, IDataTable> _tables;
     public System.Collections.Generic.IEnumerable<IDataTable> DataTables => _tables.Values;
     public IDataTable GetDataTable(string tableName) => _tables.TryGetValue(tableName, out var v) ? v : null;
@@ -48,6 +50,12 @@ public partial class Tables
         DTUnitConfig = new DTUnitConfig(() => loader("dtunitconfig"));
         loadTasks.Add(DTUnitConfig.LoadAsync());
         _tables.Add("DTUnitConfig", DTUnitConfig);
+        DTGridItemConfig = new DTGridItemConfig(() => loader("dtgriditemconfig"));
+        loadTasks.Add(DTGridItemConfig.LoadAsync());
+        _tables.Add("DTGridItemConfig", DTGridItemConfig);
+        DTGridManualRecipeConfig = new DTGridManualRecipeConfig(() => loader("dtgridmanualrecipeconfig"));
+        loadTasks.Add(DTGridManualRecipeConfig.LoadAsync());
+        _tables.Add("DTGridManualRecipeConfig", DTGridManualRecipeConfig);
 
         await Cysharp.Threading.Tasks.UniTask.WhenAll(loadTasks);
 
@@ -64,6 +72,8 @@ public partial class Tables
         DTStartZoneConfig.ResolveRef(this);
         DTAIConfig.ResolveRef(this);
         DTUnitConfig.ResolveRef(this);
+        DTGridItemConfig.ResolveRef(this);
+        DTGridManualRecipeConfig.ResolveRef(this);
         PostResolveRef();
     }
 

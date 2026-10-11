@@ -1,0 +1,16 @@
+[
+  {
+    "Id": 1,
+    "Mode": 1,
+    "InputDefinitionId": 1,
+    "OutputDefinitionId": 2,
+    "RequiredTicks": 60
+  },
+  {
+    "Id": 2,
+    "Mode": 2,
+    "InputDefinitionId": 3,
+    "OutputDefinitionId": 4,
+    "RequiredTicks": 60
+  }
+]

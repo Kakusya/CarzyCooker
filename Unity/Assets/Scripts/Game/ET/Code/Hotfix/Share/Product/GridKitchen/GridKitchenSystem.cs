@@ -26,28 +26,25 @@ namespace ET
             self.Accumulator = 0;
             self.Stopped = false;
             self.Dirty = true;
-            self.Blocked.Clear(); self.Actors.Clear(); self.Stations.Clear(); self.Items.Clear();
+            ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTGridManualRecipeConfig.DataList);
+            self.Blocked.Clear(); self.Actors.Clear(); self.Stations.Clear(); self.Items.Clear(); self.Processes.Clear();
             self.MemberChanges.Clear(); self.Incoming.Clear(); self.Results.Clear(); self.PendingResults.Clear();
-            self.AddStation(new GridCell(1, 11), "备料台", "番茄");
-            self.AddStation(new GridCell(3, 11), "碗台", "碗");
-            self.AddStation(new GridCell(5, 11), "食材台", "鸡蛋");
-            self.AddStation(new GridCell(3, 8), "交接台", null);
-            self.AddStation(new GridCell(5, 8), "空台面", null);
+            self.AddStation(new GridCell(1, 11), "备料台", GridKitchenRules.Tomato);
+            self.AddStation(new GridCell(3, 11), "碗台", GridKitchenRules.Bowl);
+            self.AddStation(new GridCell(5, 11), "食材台", GridKitchenRules.Egg);
+            self.AddStation(new GridCell(3, 8), "交接台", 0);
+            self.AddStation(new GridCell(5, 8), "切配台", 0, GridStationKind.Chopping);
         }
 
-        private static void AddStation(this GridKitchenComponent self, GridCell cell, string name, string itemName)
+        private static void AddStation(this GridKitchenComponent self, GridCell cell, string name, int definition, GridStationKind kind = GridStationKind.Counter)
         {
             GridStation station = self.AddChild<GridStation>();
-            station.Cell = cell; station.Name = name; station.ItemId = 0;
+            station.Cell = cell; station.Name = name; station.ItemId = 0; station.Kind = kind;
             self.Stations.Add(station.Id, station);
             self.Blocked.Add(cell);
-            if (itemName == null) return;
-            GridItem item = self.AddChild<GridItem>();
-            item.Name = itemName; item.Location = GridItemLocation.Counter;
-            item.HolderId = station.Id; item.Cell = cell; item.Contents.Clear();
-            if (itemName == "碗") item.Contents.Add("占位食材");
+            if (definition == 0) return;
+            GridItem item = self.CreateGridItem(definition, GridItemLocation.Counter, station.Id, cell);
             station.ItemId = item.Id;
-            self.Items.Add(item.Id, item);
         }
 
         [EntitySystem]
@@ -72,7 +69,10 @@ namespace ET
             if (self.Stopped) return;
             self.Stopped = true;
             foreach (GridActor actor in self.OrderedActors())
+            {
+                self.PauseWork(actor);
                 if (actor.HasIntent) self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "WorldStopped");
+            }
             self.Incoming.Clear(); self.MemberChanges.Clear();
         }
 
@@ -105,6 +105,7 @@ namespace ET
                 if (!change.Joined)
                 {
                     if (actor == null || actor.Generation != change.Generation) continue;
+                    self.PauseWork(actor);
                     if (actor.HasIntent) self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "MemberLeft");
                     GridItem held = self.Item(actor.HandItemId);
                     if (held != null)
@@ -138,11 +139,11 @@ namespace ET
         {
             GridActor actor = self.Actor(memberId);
             if (self.Stopped || !self.HasBinding(memberId, generation) || actor == null || actor.Generation != generation) return "EntryClosed";
-            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.PickupDrop) return "InvalidCommand";
+            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.StopWork) return "InvalidCommand";
             if (intent.CommandId <= actor.LastReceivedCommandId)
                 return intent.CommandId == actor.LastReceivedCommandId && intent.Equals(actor.LastReceivedIntent) ? null : "ExpiredCommand";
             if (intent.Action == GridAction.Move && !self.IsWalkable(intent.Cell)) return "BlockedCell";
-            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter && self.Station(intent.TargetId) == null) return "UnknownCounter";
+            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork && self.Station(intent.TargetId) == null) return "UnknownCounter";
             if (intent.Action == GridAction.PickupDrop && self.Item(intent.TargetId) == null) return "UnknownItem";
             // 接收元数据不移动角色/物品；世界修改留给固定 Tick。
             actor.LastReceivedCommandId = intent.CommandId; actor.LastReceivedIntent = intent;
@@ -192,6 +193,7 @@ namespace ET
                 actor.HasIntent = false; actor.Motion = GridMotion.Standing;
                 self.Dirty = true;
             }
+            self.AdvanceWork();
             if (self.Dirty)
             {
                 ++self.Version;
@@ -203,8 +205,11 @@ namespace ET
 
         private static void InstallIntent(this GridKitchenComponent self, GridActor actor, GridIntent intent)
         {
+            // 冲突开始在改路线前拒绝，避免先移动再因依赖失效暂停原工作。
+            if (intent.Action is GridAction.StartStationWork or GridAction.StartHeldWork && actor.WorkId != 0)
+            { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "WorkBusy"); return; }
             GridCell goal = intent.Cell;
-            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter)
+            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork)
             {
                 GridStation station = self.Station(intent.TargetId);
                 if (station == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "UnknownCounter"); return; }
@@ -216,8 +221,9 @@ namespace ET
                 }
                 if (shortest == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable"); return; }
             }
-            if (intent.Action == GridAction.PickupDrop) goal = actor.Cell;
+            if (intent.Action is GridAction.PickupDrop or GridAction.StartHeldWork or GridAction.StopWork) goal = actor.Cell;
             if (!self.PlanRoute(actor, goal)) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable"); return; }
+            if (intent.Action == GridAction.Move) self.PauseWork(actor);
             if (actor.HasIntent)
                 self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "Replaced");
             actor.ActiveIntent = intent; actor.HasIntent = true;
@@ -294,12 +300,14 @@ namespace ET
         {
             GridIntent intent = actor.ActiveIntent;
             string error = null;
-            if (intent.Action == GridAction.PickupDrop)
+            if (intent.Action == GridAction.StartHeldWork) error = self.StartWork(actor, null, intent);
+            else if (intent.Action == GridAction.StopWork) error = self.StopWork(actor, intent);
+            else if (intent.Action == GridAction.PickupDrop)
             {
                 GridItem item = self.Item(intent.TargetId);
                 if (item == null || item.Location != GridItemLocation.Ground || item.Cell != actor.Cell) error = "PickupRequiresSameCell";
                 else if (actor.HandItemId != 0) error = "HandFull";
-                else { item.Location = GridItemLocation.Hand; item.HolderId = actor.MemberId; actor.HandItemId = item.Id; }
+                else { self.PauseWork(actor); item.Location = GridItemLocation.Hand; item.HolderId = actor.MemberId; actor.HandItemId = item.Id; }
             }
             else
             {
@@ -312,13 +320,16 @@ namespace ET
                     {
                         GridItem item = self.Item(station.ItemId);
                         if (actor.HandItemId != 0 || item == null || item.Id != intent.ExpectedItemId || item.Location != GridItemLocation.Counter || item.HolderId != station.Id) error = "TargetChanged";
-                        else { station.ItemId = 0; actor.HandItemId = item.Id; item.Location = GridItemLocation.Hand; item.HolderId = actor.MemberId; }
+                        else if (self.ItemWorking(item.Id)) error = "WorkBusy";
+                        else { self.PauseWork(actor); station.ItemId = 0; actor.HandItemId = item.Id; item.Location = GridItemLocation.Hand; item.HolderId = actor.MemberId; }
                     }
+                    else if (intent.Action == GridAction.AddToContainer) error = self.AddToContainer(actor, station, intent);
+                    else if (intent.Action == GridAction.StartStationWork) error = self.StartWork(actor, station, intent);
                     else
                     {
                         GridItem item = self.Item(actor.HandItemId);
                         if (station.ItemId != 0 || item == null || item.Id != intent.ExpectedItemId || item.Location != GridItemLocation.Hand || item.HolderId != actor.MemberId) error = "TargetChanged";
-                        else { actor.HandItemId = 0; station.ItemId = item.Id; item.Location = GridItemLocation.Counter; item.HolderId = station.Id; item.Cell = station.Cell; }
+                        else { self.PauseWork(actor); actor.HandItemId = 0; station.ItemId = item.Id; item.Location = GridItemLocation.Counter; item.HolderId = station.Id; item.Cell = station.Cell; }
                     }
                 }
             }
@@ -345,7 +356,7 @@ namespace ET
         private static void Awake(this GridActor self)
         {
             self.MemberId = 0; self.Generation = 0; self.Cell = default; self.NextCell = default;
-            self.StepStartTick = 0; self.Motion = GridMotion.Standing; self.Facing = 2; self.HandItemId = 0;
+            self.StepStartTick = 0; self.Motion = GridMotion.Standing; self.Facing = 2; self.HandItemId = 0; self.WorkId = 0;
             self.Goal = default; self.StopCell = default; self.HasStopReservation = false;
             self.Path.Clear(); self.PathIndex = 0; self.ActiveIntent = default; self.HasIntent = false;
             self.LastReceivedCommandId = 0; self.LastReceivedIntent = default;

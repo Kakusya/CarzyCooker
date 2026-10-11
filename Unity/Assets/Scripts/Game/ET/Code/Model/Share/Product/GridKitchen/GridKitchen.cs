@@ -17,9 +17,11 @@ namespace ET
         public override string ToString() => $"({X},{Y})";
     }
 
-    public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4 }
+    public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4, AddToContainer = 5, StartStationWork = 6, StartHeldWork = 7, StopWork = 8 }
     public enum GridMotion { Standing, Transit, Waiting }
-    public enum GridItemLocation { Counter = 1, Hand = 2, Ground = 3 }
+    public enum GridItemLocation { Counter = 1, Hand = 2, Ground = 3, Container = 4 }
+    public enum GridStationKind { Counter, Chopping }
+    public enum GridWorkState { Paused, Working, Completed }
     public enum GridResultStatus { Accepted = 1, PendingApproach = 2, Executed = 3, Rejected = 4, Cancelled = 5 }
 
     public static class GridKitchenRules
@@ -31,6 +33,7 @@ namespace ET
         public const int TickMilliseconds = 50;
         public const int StepTicks = 5;
         public const int StandingCapacity = 2;
+        public const int Tomato = 1, TomatoChunks = 2, Egg = 3, EggLiquid = 4, Bowl = 5;
     }
 
     public readonly struct GridIntent : IEquatable<GridIntent>
@@ -40,9 +43,11 @@ namespace ET
         public GridCell Cell { get; }
         public long TargetId { get; }
         public long ExpectedItemId { get; }
-        public GridIntent(long commandId, GridAction action, GridCell cell, long targetId = 0, long expectedItemId = 0)
-        { CommandId = commandId; Action = action; Cell = cell; TargetId = targetId; ExpectedItemId = expectedItemId; }
-        public bool Equals(GridIntent other) => CommandId == other.CommandId && Action == other.Action && Cell == other.Cell && TargetId == other.TargetId && ExpectedItemId == other.ExpectedItemId;
+        public long ExpectedTargetItemId { get; }
+        public long ExpectedProcessId { get; }
+        public GridIntent(long commandId, GridAction action, GridCell cell, long targetId = 0, long expectedItemId = 0, long expectedTargetItemId = 0, long expectedProcessId = 0)
+        { CommandId = commandId; Action = action; Cell = cell; TargetId = targetId; ExpectedItemId = expectedItemId; ExpectedTargetItemId = expectedTargetItemId; ExpectedProcessId = expectedProcessId; }
+        public bool Equals(GridIntent other) => CommandId == other.CommandId && Action == other.Action && Cell == other.Cell && TargetId == other.TargetId && ExpectedItemId == other.ExpectedItemId && ExpectedTargetItemId == other.ExpectedTargetItemId && ExpectedProcessId == other.ExpectedProcessId;
     }
 
     public readonly struct GridMemberChange
@@ -81,6 +86,7 @@ namespace ET
         public readonly Dictionary<int, EntityRef<GridActor>> Actors = new();
         public readonly Dictionary<long, EntityRef<GridStation>> Stations = new();
         public readonly Dictionary<long, EntityRef<GridItem>> Items = new();
+        public readonly Dictionary<long, EntityRef<GridManualProcess>> Processes = new();
         public readonly Queue<GridMemberChange> MemberChanges = new();
         public readonly Dictionary<int, GridIntent> Incoming = new();
         public readonly List<GridResultValue> Results = new();
@@ -99,6 +105,7 @@ namespace ET
         public GridMotion Motion;
         public int Facing;
         public long HandItemId;
+        public long WorkId;
         public GridCell Goal;
         public GridCell StopCell;
         public bool HasStopReservation;
@@ -120,17 +127,27 @@ namespace ET
         public GridCell Cell;
         public string Name;
         public long ItemId;
+        public GridStationKind Kind;
     }
 
     [ChildOf(typeof(GridKitchenComponent))]
     public sealed class GridItem : Entity, IAwake
     {
         public string Name;
+        public int DefinitionId;
         public GridItemLocation Location;
         public long HolderId;
         public GridCell Cell;
         // 内容始终属于这个容器，拿放不重新创建内容。
-        public readonly List<string> Contents = new();
+        public readonly List<long> Contents = new();
+    }
+
+    [ChildOf(typeof(GridKitchenComponent))]
+    public sealed class GridManualProcess : Entity, IAwake
+    {
+        public int RecipeId, RequiredTicks, ProgressTicks, WorkerMemberId;
+        public long InputItemId, TargetItemId, StationId, WorkerGeneration, OutputItemId, StartedTick;
+        public GridWorkState State;
     }
 
     public struct GridWorldCommitted { public long Version; }

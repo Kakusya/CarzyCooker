@@ -124,7 +124,7 @@ namespace ET
             Assert.That(Grid.Actor(second.MemberId).LastResultStatus, Is.EqualTo(GridResultStatus.Rejected));
             Assert.That(bowl.ItemId, Is.Zero);
             GridItem item = Grid.Item(itemId);
-            Assert.That(item.Contents, Is.EqualTo(new[] { "占位食材" }));
+            Assert.That(item.Contents, Is.Empty);
             GridCell dropCell = Grid.Actor(first.MemberId).Cell;
             GridSubmit(first, 2, GridAction.Move, new GridCell(4, 9));
             Pump(4);
@@ -146,7 +146,7 @@ namespace ET
             GridSubmit(second, 5, GridAction.PickupDrop, target: itemId);
             Pump(8);
             Assert.That(Grid.Actor(second.MemberId).HandItemId, Is.EqualTo(itemId));
-            Assert.That(item.Contents, Is.EqualTo(new[] { "占位食材" }));
+            Assert.That(item.Contents, Is.Empty);
             Assert.That(Grid.Items.Values.Count(value => ((GridItem)value).Id == itemId), Is.EqualTo(1));
         }
 
@@ -228,7 +228,7 @@ namespace ET
             GridClientComponent remoteProjection = remote.GetComponent<GridClientComponent>(), localProjection = local.GetComponent<GridClientComponent>();
             Assert.That(remoteProjection.WorldId, Is.EqualTo(localProjection.WorldId));
             Assert.That(remoteProjection.Version, Is.EqualTo(localProjection.Version));
-            Assert.That(remoteProjection.Items[bowlId].Contents, Is.EqualTo(new[] { "占位食材" }));
+            Assert.That(remoteProjection.Items[bowlId].Contents, Is.Empty);
             ClientSessionComponent remaining = GridJoin();
             Session remoteSession = remote.Session; remoteSession.Dispose();
             Pump(900); // Host 的现有 Session idle 检测处理真实传输断开。

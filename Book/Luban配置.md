@@ -245,6 +245,8 @@ if (table != null)
 
 ## 相关文档
 
+临时格子备料配置源为 `Design/Excel/ET/Datas/Product/GridItemConfig.xlsx` 和 `GridManualRecipeConfig.xlsx`，注册使用 c,s,e，正常输出 ET Client／ClientServer bytes、Config/Luban 副本及 Editor JSON。五种物品及两条手工配方由启动已加载的 `Tables.Instance` 使用；碗容量 1、切配／打蛋各 60 Tick 是样机初值。修改源后仍须五目标 Check 通过再正常导出，不修改生成的 DT／DR。验收范围见 [备料执行说明](../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。
+
 - [多语言](多语言.md)
 - [UI 开发](UI开发.md)
 - [Entity 开发](Entity开发.md)
