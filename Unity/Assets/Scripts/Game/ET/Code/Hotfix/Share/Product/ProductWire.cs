@@ -15,7 +15,7 @@ namespace ET
         public override void Handle(NetComponentOnRead args)
         {
             Session session = args.Session;
-            if (args.Message is not ProductJoinRequest && args.Message is not ProductProbeRequest && args.Message is not ProductLeaveRequest && args.Message is not ProductHeartbeatRequest)
+            if (args.Message is not ProductJoinRequest && args.Message is not ProductProbeRequest && args.Message is not ProductLeaveRequest && args.Message is not ProductHeartbeatRequest && args.Message is not GridCommandRequest)
             {
                 (args.Message as MessageObject)?.Dispose();
                 session.Error = ProductError.InvalidRequest;
@@ -76,6 +76,13 @@ namespace ET
                         ProductJoinRequest join => ProductMessages.Create<ProductJoinRequest>(message => { message.ProtocolVersion = join.ProtocolVersion; }),
                         ProductProbeRequest probe => ProductMessages.Create<ProductProbeRequest>(message => { message.MatchId = probe.MatchId; message.Sequence = probe.Sequence; message.Payload = probe.Payload; }),
                         ProductLeaveRequest leave => ProductMessages.Create<ProductLeaveRequest>(message => { message.MatchId = leave.MatchId; }),
+                        GridCommandRequest grid => ProductMessages.Create<GridCommandRequest>(message =>
+                        {
+                            message.ProtocolVersion = grid.ProtocolVersion; message.MatchId = grid.MatchId; message.WorldId = grid.WorldId;
+                            message.WorldGeneration = grid.WorldGeneration; message.BindingGeneration = grid.BindingGeneration;
+                            message.CommandId = grid.CommandId; message.Action = grid.Action; message.X = grid.X; message.Y = grid.Y;
+                            message.TargetId = grid.TargetId; message.ExpectedItemId = grid.ExpectedItemId;
+                        }),
                         _ => throw new InvalidOperationException("Product wire whitelist mismatch")
                     };
                     using var result = (MessageObject)await peer.Root().GetComponent<ProcessInnerSender>().Call(peer.GetActorId(), inner, false);
@@ -144,6 +151,8 @@ namespace ET
                     return ProductMessages.Create<ProductProbeResponse>(message => { message.Error = probe.Error; message.Message = probe.Message; message.MemberId = probe.MemberId; message.Sequence = probe.Sequence; message.Payload = probe.Payload; });
                 case ProductLeaveResponse leave:
                     return ProductMessages.Create<ProductLeaveResponse>(message => { message.Error = leave.Error; message.Message = leave.Message; message.Committed = leave.Committed; });
+                case GridCommandResponse grid:
+                    return ProductMessages.Create<GridCommandResponse>(message => { message.Error = grid.Error; message.Message = grid.Message; message.CommandId = grid.CommandId; message.Status = grid.Status; });
                 default:
                     throw new InvalidOperationException("Unexpected product actor response");
             }
@@ -165,7 +174,7 @@ namespace ET
                 message?.Dispose();
                 return;
             }
-            if (message is ProductJoinResponse or ProductProbeResponse or ProductLeaveResponse or ProductHeartbeatResponse)
+            if (message is ProductJoinResponse or ProductProbeResponse or ProductLeaveResponse or ProductHeartbeatResponse or GridCommandResponse)
             {
                 IResponse response = (IResponse)message;
                 if (!session.requestCallbacks.TryGetValue(response.RpcId, out RpcInfo pending))
@@ -183,7 +192,7 @@ namespace ET
                 session.OnResponse(response);
                 return; // 有效响应交调用者消费。
             }
-            if (message is ProductRosterSnapshot or ProductMatchClosed)
+            if (message is ProductRosterSnapshot or ProductMatchClosed or GridWorldSnapshot or GridCommandResult)
             {
                 session.Root().GetComponent<ProcessInnerSender>().Send(client.GetActorId(), (IMessage)message);
                 return;

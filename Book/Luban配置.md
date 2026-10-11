@@ -208,7 +208,7 @@ Pop-Location
 单表重载示例：
 
 ```csharp
-IDataTable table = Tables.Instance.GetDataTable("DTDemo");
+IDataTable table = Tables.Instance.GetDataTable("DTUnitConfig");
 if (table != null)
 {
     await table.LoadAsync();
@@ -216,6 +216,8 @@ if (table != null)
 ```
 
 表名是生成类名，不是 Excel 文件名。重载只刷新当前进程内存，不会自动通知其他进程。
+
+当前 `DTUnitConfig`／`DTAIConfig` 保留类型、数据为空；`DTUIEntity`／场景／三类音频表也为空。`DTDemo` 和 `DTOneConfig` 演示表已删除，不能再按旧表名重载。UI／Entity 只保留初始化链路及当前地图／HUD 所需注册，四张 StartConfig 源表保留。登录页已移除测试 Widget，旧 Demo 单位与 AI 演示不再作为当前可用玩法。
 
 ## 常见问题
 

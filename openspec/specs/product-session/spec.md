@@ -10,7 +10,7 @@
 
 ### Requirement: 产品会话所有者与角色分离
 
-产品会话 MUST 通过 ET Child／Component 关系持有本轮状态、入口及下级资源。Host 同时包含权威会话和本地客户端，远端 Client 仅包含客户端；运行角色不得由主线／稳定工作区职责决定。成员权威和客户端投影须分开，不共享可变业务状态。
+产品会话 MUST 通过 ET Child／Component 关系持有本轮状态、入口及下级资源。Host 同时包含权威会话和本地客户端，Solo 包含相同权威会话和本地客户端但不创建网络监听，远端 Client 仅包含客户端；运行角色不得由主线／稳定工作区职责决定。成员权威和客户端投影须分开，不共享可变业务状态。
 
 #### Scenario: 启动 Host
 - **WHEN** 合法 Host 配置进入产品入口
@@ -19,6 +19,10 @@
 #### Scenario: 启动远端 Client
 - **WHEN** 合法 Client 配置进入产品入口
 - **THEN** 仅创建本端客户端，通过指定目标加入，不创建本端成员权威或使用 Demo 账号服务
+
+#### Scenario: 启动 Solo
+- **WHEN** 合法 Solo 配置进入产品入口
+- **THEN** 创建本地权威及独立客户端，完成真实本地加入，不创建网络监听或对自身 UDP 连接，不报告网络监听就绪
 
 ### Requirement: 逻辑成员独立于连接
 
@@ -176,6 +180,60 @@ Host MUST 唯一维护 Match 的逻辑成员名单及在线／离线状态，每
 - **WHEN** Host 本轮运行结束或启动中失败
 - **THEN** 拒绝新加入和命令，结清本轮本地／网络等待并清理已创建资源，旧异步结果不写入下一轮，不释放其他工程资源
 
+### Requirement: 固定 Tick 玩法权威与共同命令
+
+地图玩法 MUST 由 Host 的固定业务 Tick 唯一修改世界事实。本地、Solo 和远端玩家使用相同命令及执行验证；传输入口、UI、动画、心跳和客户端插值均不得写入权威位置或物品。成员控制保持既有有序处理，玩法入口只快速接收意图，不等待完整行走才能处理其他请求。
+
+#### Scenario: 三种入口执行相同玩法
+- **WHEN** Solo、本地 Host 玩家和远端玩家在相同地图条件下提交同一动作
+- **THEN** 使用同一业务验证与 Tick 提交规则，不存在单机直接改物品或本地绕过停驻检查的捷径
+
+#### Scenario: 自动行走仍在进行
+- **WHEN** 某成员正在自动接近台面，同时另一成员请求操作或退出
+- **THEN** 其他请求继续被处理，不被前一成员等待到达的请求占住公共入口
+
+### Requirement: 接收结果与最终结果分离
+
+系统 MUST 区分传输入口拒绝、意图已接收、动作最终成功、业务拒绝和被替换／退出取消。每条意图具有所属世界与绑定的业务编号，不以网络 RPC 编号作为动作身份；重复提交同一编号不得重复执行。调用超时不等于动作未执行，不自动重试或把旧结果交给新绑定。
+
+行走或目的格满员等待期间 MUST 保持进行中；安装目的地不等于动作完成。只有 Host 已提交到达目的格才能报告行走成功，被新目标替换的旧行走须报告取消。
+
+#### Scenario: 台面动作已接收但尚未到达
+- **WHEN** Host 已接收自动接近意图，角色尚未走到操作格
+- **THEN** 客户端只显示进行中；只有最终提交成功才显示物品转移完成
+
+#### Scenario: 重复命令与迟到结果
+- **WHEN** 同一业务编号重复进入，或旧绑定动作结果在新一轮到达
+- **THEN** 重复命令不再转移物品，旧轮结果不改变当前投影或当前动作状态
+
+#### Scenario: 行走、等待与改目标的结果
+- **WHEN** 行走命令已经接收，但角色尚未到达目的格或仍在等待空位
+- **THEN** 保持进行中，到达后才报告一次成功；若改去新目标，原行走报告取消，新目标继续保持独立结果
+
+### Requirement: 独立地图投影与就绪边界
+
+Host SHALL 发布包含世界身份、版本和 Tick 的地图快照；各端复制为独立只读投影，拒绝旧版本、错误世界及失效绑定数据。成功 Join 只证明成员加入；地图可操作还要求取得匹配世界的地图、本人角色及必要视图。通知先于 Join 时不能自行确立本人身份。
+
+#### Scenario: 初次加入与地图初始化
+- **WHEN** Client 收到成功 Join，但地图快照或本人角色尚未可用
+- **THEN** 保持地图初始化状态，不允许缺少世界身份的操作；匹配数据和视图就绪后才开启地图输入
+
+#### Scenario: 旧快照或池化消息回收
+- **WHEN** 旧世界快照迟到，或当前快照消息被回收
+- **THEN** 旧数据不能覆盖当前世界，已安装投影仍保持有效且不引用回收消息或 Host 实体
+
+### Requirement: 地图角色与成员退出分离
+
+地图角色 MUST 引用逻辑成员而不由连接持有。单成员断线保留离线成员、移除角色并保留其手持物；已提交 Leave 移除成员并采用同样物品保留收尾。旧绑定未提交玩法失效，其他成员和共用资源继续运行。整体退出停止 Tick、结束本轮意图并释放临时地图，不形成存档或下一轮残留。
+
+#### Scenario: 单成员退出仍可继续交接
+- **WHEN** 一名成员断线或已提交 Leave
+- **THEN** 其场上角色不再参与行走，手持物可按同格规则拾取；其他成员继续操作，同一角色重复收尾不重复落物
+
+#### Scenario: 地图整轮结束
+- **WHEN** Host 停止本轮运行，同时有等待到达的动作和视图加载
+- **THEN** 本轮 Tick 与动作结束，晚到结果不修改下一轮；临时地图被释放，不保存持久餐厅进度
+
 ## Sources
 
 - [产品设计与当前验证边界](../../changes/product-session-bootstrap/design.md)、[执行记录](../../changes/product-session-bootstrap/execution-notes.md)
@@ -184,3 +242,5 @@ Host MUST 唯一维护 Match 的逻辑成员名单及在线／离线状态，每
 - [客户端投影](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductClientSystem.cs)、[wire 入口](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)
 - [根启动](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductRuntimeBootstrap.cs)、[整体生命周期](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductRuntimeSystem.cs)
 - [协议源](../../../Design/Proto/ET-Client/ZProductSession.proto)、[网络约定](../../../references/reactive-and-network.md)
+
+- [格子样机与默认入口执行记录](../../changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)。

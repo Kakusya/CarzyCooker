@@ -80,6 +80,7 @@ namespace ET
             self.Stage = ProductStage.Stopping;
             HostSessionComponent authority = self.Authority;
             Match match = authority?.Match ?? default;
+            match?.GetComponent<GridKitchenComponent>()?.StopGrid();
             if (authority != null)
             {
                 foreach (HostPeer peer in authority.Children.Values.Cast<HostPeer>().ToArray())
@@ -88,7 +89,7 @@ namespace ET
                     peer.Closing = true;
                     try
                     {
-                        ProductAuthority.Deliver(peer, ProductMessages.Create<ProductMatchClosed>(message => { message.MatchId = match?.MatchId; message.BindingGeneration = peer.Generation; message.Reason = "HostStopped"; }));
+                        ProductDelivery.Send(peer, ProductMessages.Create<ProductMatchClosed>(message => { message.MatchId = match?.MatchId; message.BindingGeneration = peer.Generation; message.Reason = "HostStopped"; }));
                     }
                     catch (Exception e)
                     {
@@ -100,6 +101,7 @@ namespace ET
             if (client != null)
             {
                 client.Stage = ProductClientStage.Stopping;
+                EventSystem.Instance.Publish((Scene)client.IScene, new ProductClientLeft());
             }
             ProcessInnerSender sender = self.Sender;
             sender?.Stop();

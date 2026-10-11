@@ -49,6 +49,7 @@ namespace ET
                 {
                     member.Online = false;
                     member.BoundPeer = default;
+                    match.GetComponent<GridKitchenComponent>().QueueGridMember(member.MemberId, member.BindingGeneration, false);
                     Changed(authority, match);
                 }
                 peer.CloseFinished = true;
@@ -82,6 +83,7 @@ namespace ET
                         member.BoundPeer = peer;
                         member.BindingGeneration = peer.Generation;
                         peer.MemberId = memberId;
+                        match.GetComponent<GridKitchenComponent>().QueueGridMember(memberId, peer.Generation, true);
                         Changed(authority, match);
                     }
                     FillJoin(match, peer, response);
@@ -111,6 +113,7 @@ namespace ET
                         response.Payload = request.Payload;
                         return;
                     }
+                    match.GetComponent<GridKitchenComponent>().QueueGridMember(participant.MemberId, participant.BindingGeneration, false);
                     participant.Dispose();
                     peer.EntryOpen = false;
                     peer.Closing = true;
@@ -150,35 +153,12 @@ namespace ET
                 {
                     snapshot.Members.Add(ProductMessages.Create<ProductRosterMember>(message => { message.MemberId = member.MemberId; message.Online = member.Online; }));
                 }
-                Deliver(peer, snapshot);
+                ProductDelivery.Send(peer, snapshot);
             }
             EventSystem.Instance.Publish((Scene)authority.IScene, new ProductMemberChanged { MatchId = match.MatchId, RosterVersion = match.RosterVersion });
         }
 
-        public static void Deliver(HostPeer peer, MessageObject message)
-        {
-            LocalDelivery local = peer.GetComponent<LocalDelivery>();
-            ClientSessionComponent client = local?.Client ?? default;
-            if (client != null)
-            {
-                ProcessInnerSender sender = peer.Root().GetComponent<ProcessInnerSender>();
-                sender.Send(client.GetActorId(), (IMessage)message);
-                return; // 本地消息由接收 handler 释放。
-            }
-            RemoteDelivery remote = peer.GetComponent<RemoteDelivery>();
-            Session session = remote?.Session ?? default;
-            try
-            {
-                if (session != null)
-                {
-                    session.Send((IMessage)message);
-                }
-            }
-            finally
-            {
-                message.Dispose(); // Session.Send 已完成序列化，不负责回收输入。
-            }
-        }
+
     }
 
     [MessageHandler(SceneType.ProductHost)]

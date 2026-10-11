@@ -36,7 +36,30 @@ ProductRoot Scene（每进程一个适用 Fiber；独立 SceneType）
     LocalMessageComponent 或 NetComponent／Session
 ```
 
-Host 的 Match 是唯一领域事实，HostSession 的索引只是关联，不能复制一份可写成员名单；Client 的名单和厨房为独立投影。第一期 HostSession 的有序 MailBox 序列化控制请求并修改其引用的 Match，未来烹饪动作必须另经固定业务 Tick，不能把 MailBox 的有序性当作已实现游戏时钟。
+Host 的 Match 是唯一领域事实，HostSession 的索引只是关联，不能复制一份可写成员名单；Client 的名单和厨房为独立投影。HostSession 的有序 MailBox 序列化控制请求；格子样机通过地图 Component 的固定 Tick 推进移动／拿放，未来完整烹饪复用该单写者原则。
+
+当前临时样机树（不是上图的正式餐厅）：
+
+```text
+现有 Main Fiber / ProductRoot Scene
+├─ ProductRuntime / Timer / ProcessInnerSender（Component）
+├─ ProductHost Scene（Child，Solo／Host）
+│  ├─ Match（Child）
+│  │  ├─ Participant...（Child，断线保留，Leave 移除）
+│  │  └─ GridKitchenComponent（Component，唯一格子权威／固定 Tick）
+│  │     └─ GridActor / GridStation / GridItem（Child）
+│  ├─ HostSession + Ordered MailBox（Component）
+│  │  └─ HostPeer + Ordered MailBox + LocalDelivery／RemoteDelivery（Child）
+│  └─ NetComponent / Session（仅联网 Host）
+└─ ProductClient Scene（Child，所有操作端）
+   ├─ ClientSession（Component）→ GridClientComponent（Component，独立值投影）
+   ├─ LocalMessage 或 NetComponent / Session
+   ├─ GridPresentation（Component，输入／展示生命周期）
+   ├─ UIComponent → UIGridKitchen（唯一 Component）
+   └─ GFEntityComponent → GridKitchenBoard（唯一 Component）
+```
+
+创建顺序为根／Sender、权威地图与入口、可选监听、客户端 Join、Tick 角色与快照、视图加载。单成员退出在下次 Tick 落物并移除角色，不停止公共 Sender；整体退出先停止 Tick，再关闭视图、客户端等待和场景树。样机不创建 LoadedSave、RestaurantRuntime、Kitchen／Level，不写存档。
 
 Parent 表示释放责任；Participant↔Connection、Process↔Station、Order↔Customer、Profile↔SaveSlot 使用稳定业务身份。跨 await 同时检查 EntityRef／InstanceId 和 Match／Level／绑定代次；不能用业务 ID 相同证明对象仍存活。业务正常收尾在树 Dispose 前完成。
 
@@ -58,7 +81,8 @@ Host 本地 Client
 共同处理
   → 以绑定生成内部身份，不信任请求自报 ParticipantId
   → 第一期间接进入 HostSession Ordered MailBox：Join／Probe／Leave
-  → 未来玩法：意图入业务队列 → 固定 Tick 预检 → 原子提交
+  → 格子玩法：GridPeerHandler 注入可信 Peer 身份 → GridSubmitHandler 接收普通值意图
+  → 快速答复 Accepted／Rejected；固定地图 Tick 再验证 → 提交移动／物品
   → 生成明确最终结果 → 发送独立答复／完整快照 → 发布观察事件
 ```
 
@@ -70,14 +94,16 @@ SceneType 用于精确产品入口及适用 handler 匹配；Main 调度不等�
 
 [最小会话 change](../../openspec/changes/product-session-bootstrap/design.md) 只规划 Match、Participant、连接绑定、加入、探测、名单和退出；本地与远端共用有序控制入口。连接断开保留离线成员，已提交显式 Leave 移除成员，Host 整体退出解散 Match。
 
-该原型不创建 LoadedSave、RestaurantRuntime、Kitchen 或 Level，不实现 Profile 认证、成员恢复凭证、自动重连、存档或固定业务 Tick。新连接的 Join 仅加入新成员，不允许凭自报编号接管原成员。完整产品的原成员恢复规则是后续目标，不作为本原型已实现能力。
+会话历史原型不包含地图；当前 [格子样机](../../openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/design.md) 另加 Match 的地图 Component、固定 Tick、无监听 Solo 和独立客户端快照。GridCommandResult 与 GridWorldSnapshot 经每端独立消息返回 ClientSession MailBox，GridSnapshotHandler／GridResultHandler 复制后释放 DTO，再发布 GridProjectionApplied；事件不承担网络或 RPC 回答。外部请求不能自报可信成员或内部 ActorId，wire 不接受 GridSubmitRequest。
+
+当前不创建 LoadedSave、RestaurantRuntime、Kitchen 或 Level，不实现 Profile 认证、成员恢复凭证、自动重连或存档。新连接的 Join 仅加入新成员，不允许凭自报编号接管原成员。完整产品的原成员恢复规则是后续目标。
 
 ## 候选和待裁决范围
 
 | 项目 | 保留状态 | 本轮处理 |
 | --- | --- | --- |
 | 暂停未执行队列 | H2：早期明确取消、参考保留、后续终结存在冲突 | 只定义业务时钟暂停，具体队列处理实施前裁决 |
-| 断线手持物 | H2：合法位置落地与不自动转移冲突 | 不选择物品去向；确定连接失效和工作释放 |
+| 断线手持物 | 2026-10-11 用户已裁决 | 最后提交格落物、移除角色、保留离线成员；空手且仅同格选择拾取 |
 | NPC 收口模式 | 历史自动模式与人工 Flow 模式不同 | 两者限定范围，不推广瞬间完成 |
 | 缩小菜单许可 | 历史授权细化 | 保留旧物和已受理工作，禁新生产；UX 可重审 |
 | 87 菜、60 准备状态、72 物料、19 工位 | 候选目录 | 仅捕获定义和依赖规则，不复制为正式配置或首发承诺 |

@@ -44,7 +44,7 @@ namespace ET
     [FriendOf(typeof(Participant))]
     [FriendOf(typeof(LocalMessageComponent))]
     [FriendOf(typeof(ProcessInnerSender))]
-    public sealed class ProductSessionTests
+    public sealed partial class ProductSessionTests
     {
         private World world;
         private ShutdownTestClock clock;
@@ -219,7 +219,7 @@ namespace ET
             HostPeer peer = ((LocalMessageComponent)client.Local).Peer;
             EntityRef<HostPeer> peerRef = peer;
             var request = ProductJoinRequest.Create();
-            request.ProtocolVersion = 1;
+            request.ProtocolVersion = ProductSessionRules.ProtocolVersion;
             UniTask<IResponse> pending = client.CallProduct(request);
             Pump(); // Peer 接收后共同控制请求已入队，尚未提交。
             peer.CloseEntry();
@@ -241,7 +241,7 @@ namespace ET
             ClientSessionComponent client = AddLocalClient();
             HostPeer peer = ((LocalMessageComponent)client.Local).Peer;
             var request = ProductJoinRequest.Create();
-            request.ProtocolVersion = 1;
+            request.ProtocolVersion = ProductSessionRules.ProtocolVersion;
             UniTask<IResponse> pending = client.CallProduct(request);
             Pump(2); // 共同入口已提交，答复尚未返回原调用者。
             peer.CloseEntry();
@@ -444,7 +444,7 @@ namespace ET
             Session session = client.Session;
             var request = ProductControlRequest.Create();
             request.Action = (int)ProductControlAction.Join;
-            request.ProtocolVersion = 1;
+            request.ProtocolVersion = ProductSessionRules.ProtocolVersion;
             request.PeerId = ((HostSessionComponent)host.Authority).Id;
             request.BindingGeneration = 1;
             session.Send(request);
@@ -522,7 +522,7 @@ namespace ET
             Session original = client.Session;
             NetComponent net = original.GetParent<NetComponent>();
             var oldRequest = ProductJoinRequest.Create();
-            oldRequest.ProtocolVersion = 1;
+            oldRequest.ProtocolVersion = ProductSessionRules.ProtocolVersion;
             UniTask<IResponse> oldTask = original.Call(oldRequest, 100);
             int oldRpcId = oldRequest.RpcId;
             client.Stage = ProductClientStage.Stopping;
@@ -532,7 +532,7 @@ namespace ET
             Assert.That(ReferenceEquals(replacement, original), Is.True, "Exercise actual pooled Session reuse");
             replacement.RpcId = oldRpcId - 1;
             var request = ProductJoinRequest.Create();
-            request.ProtocolVersion = 1;
+            request.ProtocolVersion = ProductSessionRules.ProtocolVersion;
             UniTask<IResponse> pending = replacement.Call(request, 1000);
             Assert.That(request.RpcId, Is.EqualTo(oldRpcId));
             Pump(14); // 210ms 超过旧100ms计时，未到新1000ms预算。
@@ -659,7 +659,7 @@ namespace ET
             Assert.That(localResponse.Error, Is.EqualTo(ProductError.NotJoined));
             ClientSessionComponent remote = CreateRemoteClient();
             var heartbeat = ProductHeartbeatRequest.Create();
-            heartbeat.ProtocolVersion = 1;
+            heartbeat.ProtocolVersion = ProductSessionRules.ProtocolVersion;
             heartbeat.MatchId = "before-join";
             using var response = (ProductHeartbeatResponse)Finish(remote.CallProduct(heartbeat), 200);
             Assert.That(response.Error, Is.Not.Zero);

@@ -17,6 +17,7 @@
 2. 执行 `Game Framework/Resource Tools/Refresh Activate Resource Collection`；需要优化时执行 `Refresh Activate Resource Collection With Optimize`。
 3. Console 应见 `Refresh ResourceCollection.xml success.`；CheckRule 或 SaveCollection 失败会抛异常。Warning 按内容判断，不能直接全部忽略。
 4. 核对 XML 与 Git diff：新增/删除资产、资源名、分组和 packed/loadType；UI、Entity、Luban、HybridCLR 与 ET.Code 等实际所需资源必须保留。
+   当前规则包含 Product UI／Entity，LockStep 路径指向实际 LockStep 目录，已移除不存在的 Hot 目录规则。只刷新规则会移除 Optimize 生成的 Launcher／共享字体条目；要保留这些启动依赖，使用既有 With Optimize 入口。ET.Code／HybridCLR 规则仍保留，但没有 DLL 输入的空目录不会出现在生成集合中，资源刷新不证明热更包已准备或 Player 构建通过。
 5. 输出检查失败停止后续构建，修规则/资源来源再生成，不手改 XML 伪装结果。
 
 ## 自动化（Agent）

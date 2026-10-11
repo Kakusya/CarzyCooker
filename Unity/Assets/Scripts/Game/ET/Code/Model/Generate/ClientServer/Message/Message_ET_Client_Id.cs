@@ -65,5 +65,15 @@ namespace ET
          public const ushort ProductMatchClosed = 10059;
          public const ushort ProductControlRequest = 10060;
          public const ushort ProductControlResponse = 10061;
+         public const ushort GridCommandRequest = 10062;
+         public const ushort GridCommandResponse = 10063;
+         public const ushort GridSubmitRequest = 10064;
+         public const ushort GridSubmitResponse = 10065;
+         public const ushort GridPathCell = 10066;
+         public const ushort GridActorState = 10067;
+         public const ushort GridStationState = 10068;
+         public const ushort GridItemState = 10069;
+         public const ushort GridWorldSnapshot = 10070;
+         public const ushort GridCommandResult = 10071;
     }
 }

@@ -26,16 +26,18 @@ namespace Game.Editor
         {
             m_RunId = EditorGUILayout.TextField("runId", m_RunId);
             m_InstanceId = EditorGUILayout.TextField("instanceId", m_InstanceId);
-            m_Role = EditorGUILayout.TextField("role", m_Role);
-            m_Listen = EditorGUILayout.TextField("listen (host)", m_Listen);
-            m_Connect = EditorGUILayout.TextField("connect (client)", m_Connect);
+            string[] roles = { "solo", "host", "client", "legacy" };
+            m_Role = roles[EditorGUILayout.Popup("role", Math.Max(0, Array.IndexOf(roles, m_Role)), roles)];
+            if (m_Role == "host") m_Listen = EditorGUILayout.TextField("listen (host)", m_Listen);
+            if (m_Role == "client") m_Connect = EditorGUILayout.TextField("connect (client)", m_Connect);
             EditorGUILayout.LabelField("Config", RuntimeInstanceContext.State.ToString());
             EditorGUILayout.LabelField("Product", RuntimeInstanceContext.ProductStage ?? "未启动");
             if (GUILayout.Button("提交并启动 Launcher"))
             {
                 try
                 {
-                    RuntimeInstanceConfig config = RuntimeInstanceConfig.Create(m_RunId, m_InstanceId, m_Role, m_Listen, m_Connect);
+                    RuntimeInstanceConfig config = RuntimeInstanceConfig.Create(m_RunId, m_InstanceId, m_Role,
+                        m_Role == "host" ? m_Listen : null, m_Role == "client" ? m_Connect : null);
                     if (!CanLaunch(out string reason))
                     {
                         throw new InvalidOperationException(reason);

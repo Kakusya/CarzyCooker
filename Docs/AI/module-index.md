@@ -10,6 +10,8 @@
 
 产品数据在 [Model/Share/Product](../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product)，建树、共同裁决、客户端、wire 桥及生命周期在 [Hotfix/Share/Product](../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product)。ProcedureET→Loader/Entry→ProductRoot 精确初始化；原 HotfixView OnShutdown 键复用 Loader 根交接。Match 拥有 Participant，HostSession 只引用，Client 独立值投影；完整树/请求答复/所有权见 [网络约定](../../references/reactive-and-network.md)，当前实测与剩余边界见 [产品执行记录](../../openspec/changes/product-session-bootstrap/execution-notes.md)。协议源是 Design/Proto/ET-Client/ZProductSession.proto，既有工具生成 Client/ClientServer，无新业务程序集、消息框架或等待表。
 
+临时格子样机在上述 Product 的 GridKitchen 子目录中：Match.GridKitchenComponent 是玩法权威，ClientSession.GridClientComponent 是独立投影；[ModelView/Client/Product](../../Unity/Assets/Scripts/Game/ET/Code/ModelView/Client/Product) 和 [HotfixView/Client/Product](../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product) 托管 2D Board／HUD。追加协议源为 ZZGridKitchen.proto；Solo 复用本地权威而不监听。公共 UIEntity／Scene／音频及 ET Unit／AI 表数据已清空，无消费者的 DTDemo／OneConfig 整表删除，登录测试 Widget 已移除；保留公共类型、启动链路与当前地图注册。旧 Demo 单位／AI 演示退出当前可用范围。真实验证见 [格子执行记录](../../openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)，不是正式 RestaurantRuntime 或完整烹饪。
+
 当前基线为 `main` 分支，来自原 ET 底座。先读 [实现约定](../../references/business-code-conventions.md)，再读适用行和实际源码。表内路径从本文解析；源码目录定位整个模块，不只一个示例。技能适用不代表获准启动工具、服务或编辑器。
 
 | 模块 | 源码/资料入口 | 用法/约定 | 主规格 | 技能 |

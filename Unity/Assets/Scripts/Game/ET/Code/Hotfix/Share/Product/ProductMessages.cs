@@ -13,5 +13,34 @@ namespace ET
             return message;
         }
     }
+    [FriendOf(typeof(LocalDelivery))]
+    [FriendOf(typeof(RemoteDelivery))]
+    public static class ProductDelivery
+    {
+        public static void Send(HostPeer peer, MessageObject message)
+        {
+            LocalDelivery local = peer.GetComponent<LocalDelivery>();
+            ClientSessionComponent client = local?.Client ?? default;
+            if (client != null)
+            {
+                ProcessInnerSender sender = peer.Root().GetComponent<ProcessInnerSender>();
+                sender.Send(client.GetActorId(), (IMessage)message);
+                return; // 本地消息由接收 handler 释放。
+            }
+            RemoteDelivery remote = peer.GetComponent<RemoteDelivery>();
+            Session session = remote?.Session ?? default;
+            try
+            {
+                if (session != null)
+                {
+                    session.Send((IMessage)message);
+                }
+            }
+            finally
+            {
+                message.Dispose(); // Session.Send 已完成序列化，不负责回收输入。
+            }
+        }
+    }
 }
 #endif

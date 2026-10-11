@@ -22,7 +22,7 @@ namespace ET
             Scene root = self.Root();
             try
             {
-                if (self.Config.Role == RuntimeInstanceRole.Host)
+                if (self.Config.Role is RuntimeInstanceRole.Host or RuntimeInstanceRole.Solo)
                 {
                     Scene host = EntitySceneFactory.CreateScene(root, IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(), SceneType.ProductHost, "ProductHost");
                     self.HostScene = host;
@@ -30,6 +30,8 @@ namespace ET
                     HostSessionComponent authority = host.AddComponent<HostSessionComponent, Match, ProductRuntimeComponent>(match, self);
                     authority.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
                     self.Authority = authority;
+                    if (self.Config.Role == RuntimeInstanceRole.Host)
+                    {
                     var service = new KService(new IPEndPoint(IPAddress.Parse(self.Config.Address), self.Config.Port), NetworkProtocol.UDP, ServiceType.Outer);
                     try
                     {
@@ -43,6 +45,7 @@ namespace ET
                     self.ListenEndpoint = ((UdpTransport)service.Transport).LocalEndPoint.ToString();
                     self.Report(ProductStage.HostListening);
                     Log.Info($"Product listening: {self.ListenEndpoint} match={match.MatchId}");
+                    }
                     if (!joinLocal)
                     {
                         return;

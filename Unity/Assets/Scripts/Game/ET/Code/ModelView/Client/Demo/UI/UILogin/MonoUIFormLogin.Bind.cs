@@ -4,41 +4,29 @@ namespace ET.Client
 {
     public partial class MonoUIFormLogin
     {
-        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("BindData"), Sirenix.OdinInspector.ReadOnly]
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.InputField m_AccountInputField;
-        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("BindData"), Sirenix.OdinInspector.ReadOnly]
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Button m_LoginButton;
-        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("BindData"), Sirenix.OdinInspector.ReadOnly]
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.InputField m_PasswordInputField;
-        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("BindData"), Sirenix.OdinInspector.ReadOnly]
-        private ET.Client.MonoUIWidgetTest m_TestWidgetTest;
-        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("BindData"), Sirenix.OdinInspector.ReadOnly]
-        private UnityEngine.RectTransform m_Test1RectTransform;
-        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("BindData"), Sirenix.OdinInspector.ReadOnly]
-        private UnityEngine.RectTransform m_Test2RectTransform;
 
         public UnityEngine.UI.InputField AccountInputField => this.m_AccountInputField;
         public UnityEngine.UI.Button LoginButton => this.m_LoginButton;
         public UnityEngine.UI.InputField PasswordInputField => this.m_PasswordInputField;
-        public ET.Client.MonoUIWidgetTest TestWidgetTest => this.m_TestWidgetTest;
-        public UnityEngine.RectTransform Test1RectTransform => this.m_Test1RectTransform;
-        public UnityEngine.RectTransform Test2RectTransform => this.m_Test2RectTransform;
 
 #if UNITY_EDITOR
-        [Sirenix.OdinInspector.OnInspectorGUI, Sirenix.OdinInspector.PropertyOrder(-99999), Sirenix.OdinInspector.ShowIf(nameof(CheckBindDataExitEmpty))]
-        private void DrawBindDataExitEmptyWarning()
+        [Sirenix.OdinInspector.OnInspectorGUI, Sirenix.OdinInspector.PropertyOrder(-99999), Sirenix.OdinInspector.ShowIf(nameof(HasMissingTargets))]
+        private void DrawMissingTargetsWarning()
         {
-            Sirenix.Utilities.Editor.SirenixEditorGUI.MessageBox("BindData contains empty reference.", UnityEditor.MessageType.Warning);
+            Sirenix.Utilities.Editor.SirenixEditorGUI.MessageBox("Binding targets contain missing references.", UnityEditor.MessageType.Warning);
         }
 
-        private bool CheckBindDataExitEmpty()
+        private bool HasMissingTargets()
         {
             if (this.m_AccountInputField == null) return true;
             if (this.m_LoginButton == null) return true;
             if (this.m_PasswordInputField == null) return true;
-            if (this.m_TestWidgetTest == null) return true;
-            if (this.m_Test1RectTransform == null) return true;
-            if (this.m_Test2RectTransform == null) return true;
             return false;
         }
 #endif
