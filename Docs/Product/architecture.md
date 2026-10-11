@@ -68,7 +68,7 @@ SceneType 用于精确产品入口及适用 handler 匹配；Main 调度不等�
 
 ## 最小会话与完整产品的边界
 
-[最小会话 change](../../openspec/changes/product-session-bootstrap/design.md) 只规划 Match、Participant、连接绑定、加入、探测、名单和退出；本地与远端共用有序控制入口。连接断开保留离线成员，已提交显式 Leave 移除成员，Host 整体退出解散 Match。
+[已归档的最小会话原型](../../openspec/changes/archive/2026-10-11-product-session-bootstrap/design.md) 已实现 Match、Participant、连接绑定、加入、探测、名单和退出；本地与远端共用有序控制入口。连接断开保留离线成员，已提交显式 Leave 移除成员，Host 整体退出解散 Match。
 
 该原型不创建 LoadedSave、RestaurantRuntime、Kitchen 或 Level，不实现 Profile 认证、成员恢复凭证、自动重连、存档或固定业务 Tick。新连接的 Join 仅加入新成员，不允许凭自报编号接管原成员。完整产品的原成员恢复规则是后续目标，不作为本原型已实现能力。
 

@@ -178,7 +178,7 @@ Host MUST 唯一维护 Match 的逻辑成员名单及在线／离线状态，每
 
 ## Sources
 
-- [产品设计与当前验证边界](../../changes/product-session-bootstrap/design.md)、[执行记录](../../changes/product-session-bootstrap/execution-notes.md)
+- [产品设计与当前验证边界](../../changes/archive/2026-10-11-product-session-bootstrap/design.md)、[执行记录](../../changes/archive/2026-10-11-product-session-bootstrap/execution-notes.md)
 - [产品数据](../../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product/ProductSession.cs)
 - [共同裁决](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductAuthority.cs)、[Peer 生命周期](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductPeerSystem.cs)
 - [客户端投影](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductClientSystem.cs)、[wire 入口](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)

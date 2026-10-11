@@ -1,16 +1,18 @@
-# 联机稳定对端协作规程
+# 第二工作区执行与维护规程
 
-本轮开发分支为 `feat/multiplayer-bootstrap`，开发工程 `D:/MyWork/CarzyCooker/Unity`。用户已授权建立长期第二目录 `D:/MyWork/CarzyCooker-NetTest`、固定分支 `multiplayer-baseline`，以及纳入四项必要本地版本与双 Editor 联调。实际建立、依赖导入和联调结果见 [执行记录](../../openspec/changes/multiplayer-peer-workspace/execution-notes.md)，未完成不当作环境可用。
+main本地目录固定为 `D:/MyWork/CarzyCooker`，主工作区使用main并跟踪origin/main；临时开发分支不改变目录约定，版本维护始终核对实际main提交。第二工作区固定本地分支为 `multiplayer-baseline`，当前实际工程 `D:/MyWork/CarzyCooker-NetTest/Unity`，目录可以变化。用户已明确新增必要提交维护技能、物理精简与禁止第二工作区开发，见 [精简执行记录](../../openspec/changes/archive/2026-10-11-simplify-second-workspace-executor/execution-notes.md)；之前环境/联调历史见 [环境记录](../../openspec/changes/archive/2026-10-11-multiplayer-peer-workspace/execution-notes.md)。
 
 ## 目录与职责
 
+**工作区识别约定**：`main` 的本地目录固定为 `D:/MyWork/CarzyCooker`。“第二工作区”以固定本地分支 `multiplayer-baseline` 识别，其 worktree 本地目录可以变化；`D:/MyWork/CarzyCooker-NetTest` 是本轮实际位置，不是固定路径约束。即使另有多个 worktree，也保持这个名称，不按创建顺序或数量编号；Host／Client 切换不改变称呼。下文“稳定端／稳定对端”描述第二工作区的职责，沟通和汇报统一使用“第二工作区”。操作前按固定分支发现当前实际目录，再用完整 projectPath 选择 Editor，不凭历史目录或终端句柄推断目标。
+
 稳定端使用同仓完整 worktree，包含 Unity、Share、Design、Config、DotNet 和 Tools；不拆 Unity 子仓，不复制开发端 DLL/生成物到旧基线。两端各用自己的 Library、Temp、Logs、UserSettings；不共享、链接或复制活动 Library。版本记录使用可读提交身份，不做 hash 校验。
 
-开发端负责需求、实现、自审、维护版本决策与汇总；稳定端默认只运行、诊断和回报，业务源码只读，不自动 pull、修代码、建 change、归档。两端均保留根 AGENTS 的共同纪律和 ET 树/本地消息约定，都可选择 Host 或 Client。职责与运行角色无关。
+主工作区负责需求、开发、OpenSpec、自审、提交选择与汇总。第二工作区只听明确命令，执行、观察、诊断到足以回报及指定版本维护；**禁止承担开发工作**，包括写/修源码、表/协议源、修改测试、创建提案或修源码冲突。发现缺陷回报主工作区处理。两端都可选择Host或Client，运行角色不改变职责。
 
-稳定端 AGENTS 使用以下短片段，主体规范随获准版本维护：
+第二工作区AGENTS使用唯一 [短执行模板](../../.agents/skills/second-workspace-sync/references/second-workspace-agents.md)，主工作区保留完整开发入口。共同授权、现场保护和结果真实性规则一致，开发流程仅放主工作区。
 
-> 当前工作分支为 `multiplayer-baseline`，工程为 `D:/MyWork/CarzyCooker-NetTest/Unity`。本端是联调稳定对端，默认只运行、观察与回报，业务源码只读；改代码或更新版本须有明确维护授权。运行角色可选择 Host 或 Client，不由分支决定。共同纪律与 ET 树/本地消息约定保留；协作正文见 `Docs/AI/multiplayer-peer-workflow.md`。本轮用户已授权必要版本纳入和联调，仍禁止 push、发布、PR、合回 main、自动归档或删除长期目录。
+第二工作区只保留6项项目技能：second-workspace-sync、unity-cli、unity-error-extraction、port-management、auto-testing-sop、build-acceptance-sop；按指定动作加载。12项OpenSpec和4项业务开发技能在第二工作区实际删除，不用禁用开关替代。账户共享技能不在本端删除，也不得用于绕过禁止开发的职责。项目工程源码与运行依赖完整保留。
 
 ## 运行前核对
 
@@ -30,7 +32,9 @@
 
 ## 必要版本维护与收尾
 
-只有明确维护请求才更新稳定端。本轮已授权纳入四项必要本地提交；等待开发端可审查提交后记录目标版本，核对启动、产品协议、配置、包和工具依赖。稳定端保留固定 ProductName 与职责差异，按真实状态验证包解析和编译，不自动更新到最新 main、不 pull、不单独复制程序集，不自动把身份差异合回开发端。
+维护统一使用 [second-workspace-sync](../../.agents/skills/second-workspace-sync/SKILL.md)。主工作区从本地main挑选必要已提交commit，核对依赖/等效补丁并提供明确有序清单；第二工作区只执行指定cherry-pick，不自行选提交、改清单、全量merge/pull或复制DLL。源码修复和冲突解决属于主工作区。指定cherry-pick生成的提交是维护结果，不是第二工作区开发提交。
+
+Git维护前需干净现场且无其他Git操作；AGENTS、ProductName、精简删除等未提交差异也须回报，由主工作区安排保存或维护提交，不自动stash/reset/clean。冲突仅abort本轮自己启动的序列，并回报实际最后版本和冲突路径，不修改源码。维护后由主工作区核对固定产品身份、短AGENTS和6项技能清单；指定配置维护或文件删除也只能由主工作区安排，不能恢复完整开发职责。命令参数与版本源/目标记录以技能为唯一详细正文。
 
 若失败，报告发生的变化和缺口，保留未提交现场，不 reset 清空。联调只释放本轮拥有且获准结束的 Session、监听、Editor 或终端；长期目录保留，删除另须明确授权。
 
@@ -39,3 +43,5 @@
 2026-10-11 两个精确工程的 Pipeline、稳定端实际编译、独立缓存/原生日志和固定产品名已核实。B 原线程完整收件/开始/观察/终态回报完成；同名临时设置键在两端交错写不同值，磁盘重读仍各自原值，最后只清理各自指定键和 Play。四项错误目标/忙碌/重复/作废请求均在启动前拒绝，B 身份和 Play 未被替换；去重属于当前代理上下文，没有持久执行器。
 
 环境B使用8b95e509，实际产品入口为ProductBootstrapUnavailable；维护C已明确纳入20582007并实际编译通过，固定身份/职责保持。随后产品D开发Host/稳定Client与E稳定Host/开发Client均完成：名单/Probe一致、空闲心跳持续，D断线保留离线成员，E显式Leave移除一次，存活端Probe仍成功。双方只结束自身Play和产品资源，长期Editor/终端/目录及20582007选定代码基线保留；最终开发收口提交仅为文档，不自动升级稳定端。AssetSet文件系统初次/扩展写入与其他自定义写入仍未验证，本机双Editor不证明物理两机LAN或独立包体。用户授权不因转发扩大；详细终态、历史失败和原日志位置见本项execution-notes与产品execution-notes。
+
+随后用户明确授权F盲发收件与退出两个Editor；Host单次发送，第二工作区从真实KCP收件日志读取文本并原样回复，两个Editor均正常退出、进程及Pipeline实例已消失。工作区、缓存、日志与代理终端继续保留；此授权不扩大为自动重启或删除长期目录，实测细节见产品execution-notes。

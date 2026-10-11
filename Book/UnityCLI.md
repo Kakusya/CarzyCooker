@@ -68,6 +68,8 @@ Editor 原日志位于 `C:/Users/Administrator/AppData/Local/Temp/CarzyCooker-Un
 
 ## 已授权双 Editor 用法
 
-长期稳定工程为 `D:/MyWork/CarzyCooker-NetTest/Unity`，固定分支 `multiplayer-baseline`；共同流程见 [联机稳定对端](../Docs/AI/multiplayer-peer-workflow.md)。启动时显式指定该完整目录和本端 `Unity/Logs/Multiplayer-Peer-Editor.log`（UPM 另用 Multiplayer-Peer-UPM.log），提前建立日志父目录。每次通过 `unity pipeline list` 发现后，命令仍显式传本端 `--project-path`，不固定工具端口。
+第二工作区以固定分支 `multiplayer-baseline` 识别，本地目录可以变化，当前实际工程为 `D:/MyWork/CarzyCooker-NetTest/Unity`；共同流程见 [第二工作区规程](../Docs/AI/multiplayer-peer-workflow.md)。启动前发现实际完整目录，使用本端 `Unity/Logs/Multiplayer-Peer-Editor.log`（UPM另用Multiplayer-Peer-UPM.log），提前建立父目录。每次通过 `unity pipeline list` 发现后，命令显式传实际 `--project-path`，不固定工具端口。
+
+第二工作区只按主工作区命令执行、观察和回报，禁止开发或修源码冲突；AGENTS为短执行入口，项目技能物理精简到6项。必要本地main提交维护见 [second-workspace-sync](../.agents/skills/second-workspace-sync/SKILL.md)，提交选择和依赖判断由主工作区负责。
 
 本端 Library/Temp/Logs/UserSettings 独立；运行前保存 GDK/GameDevelopmentKit-NetTest。实际设置文件与 Resource PersistentData 根均在该产品目录，与开发端 GameDevelopmentKit 分离，已以同名临时键不同值交错保存重读并清理验证；AssetSet 初次/扩展文件写入尚未触发。终端收件、启动配置、产品 Joined、真实 KCP 与双 Editor 联机分别验收，环境可用不表示产品联机完成。原生日志和 Console 保留，不为统一命名重启开发端。创建/更新仅在用户明确授权内执行。

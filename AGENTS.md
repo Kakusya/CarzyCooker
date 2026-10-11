@@ -1,10 +1,12 @@
 # CarzyCooker — Agent 指令
 
-本仓库只维护 Codex 接入；当前开发工作分支为 `feat/multiplayer-bootstrap`；底座来自 `main`（跟踪 `origin/main`）及原 `ET` 分支。需要公共基础设施时主动提醒。
+本仓库只维护 Codex 接入；主工作区使用 `main`（跟踪 `origin/main`）；底座来自原 `ET` 分支。需要公共基础设施时主动提醒。
 
 ## 联机开发端职责
 
-本目录 `D:/MyWork/CarzyCooker` 为开发端，负责需求、OpenSpec、实现、自审、必要基线维护决策和验证汇总；运行角色可为 Host 或 Client。稳定对端业务源码默认只读，职责不决定运行角色。共同规程见 [联机对端协作](Docs/AI/multiplayer-peer-workflow.md)。本轮用户已明确授权建立 `D:/MyWork/CarzyCooker-NetTest` / `multiplayer-baseline`、必要版本纳入及联调；开发任务继续在当前 worktree 执行。只作本地中文提交，禁止 push、发布、PR、合回 main 和自动归档；长期第二目录保留。
+**工作区约定**：`main` 的本地目录固定为 `D:/MyWork/CarzyCooker`。“第二工作区”按固定本地分支 `multiplayer-baseline` 识别，指该分支对应的 worktree；其本地目录可以变化。`D:/MyWork/CarzyCooker-NetTest` 只是第二工作区当前的实际位置，不是固定路径约束。即使另有多个 worktree，也始终使用“第二工作区”，不按创建顺序或数量重新编号；Host／Client 角色切换不改变称呼。操作第二工作区前按分支发现实际目录，再以实际完整 projectPath 匹配 Editor。
+
+本目录为主工作区开发端，负责需求、OpenSpec、实现、自审、main必要提交选择与验证汇总；运行角色可为Host或Client。**第二工作区禁止承担开发工作**，只接收主工作区明确命令执行、观察、回报和指定提交维护；不写/修源码、表/协议源、测试、提案或解决源码冲突。共同保护规则保留，第二AGENTS使用短执行模板，技能按职责物理删除，不复制完整开发主体。共同规程见 [协作规程](Docs/AI/multiplayer-peer-workflow.md)，维护入口见 [second-workspace-sync](.agents/skills/second-workspace-sync/SKILL.md)。新技能、物理精简与严格执行职责已有用户授权；不得把feature/未提交代码当main提交，提交、push、发布、PR、合回main及归档须有相应用户授权；长期第二工作区保留。
 
 ## 项目定位与开发优先级（最高工程取舍原则）
 
@@ -98,6 +100,7 @@
 | 已授权产品构建与独立 Player 包体验收 | [build-acceptance-sop](.agents/skills/build-acceptance-sop/SKILL.md) |
 | 当前 Unity Console 错误提取与压缩 | [unity-error-extraction](.agents/skills/unity-error-extraction/SKILL.md) |
 | 新监听 / 固定 endpoint / 多 Editor 的端口核对 | [port-management](.agents/skills/port-management/SKILL.md) |
+| 主工作区挑选 main 必要提交、第二工作区执行指定 cherry-pick | [second-workspace-sync](.agents/skills/second-workspace-sync/SKILL.md) |
 
 Unity CLI 与项目 Pipeline 已接入；官方 CLI 技能、自动测试编排及配套 SOP 已按本轮授权迁入，用法见 [Unity CLI](Book/UnityCLI.md) 与 [迁移清单](Docs/AI/skill-roadmap.md)。打包验收和端口 SOP 使用当前入口，专用双包编排、PortRegistry 与 UI 结构 runner 尚未接入。已存在的 OpenSpec 技能继续按阶段加载。
 
@@ -223,7 +226,7 @@ Unity/
 ### 当前架构边界
 
 - 玩法「已有什么」优先看：**代码 + 表** + [CarzyCooker当前进度.md](CarzyCooker当前进度.md) + 相关 `references/`；冲突时以代码/表与用户最新意图为准并提议同步文档。
-- 当前源码保留底座与示例；另已接入 Unity 本机产品会话原型（Match/Participant、共同裁决、本地消息、UDP-KCP、独立客户端投影）。联机实测和剩余边界见 [产品执行记录](openspec/changes/product-session-bootstrap/execution-notes.md)，不是完整做饭房间或玩法。厨房、订单、顾客、伙伴、供应和存档仍未实施；正式设计见 [Docs/Product/](Docs/Product/README.md)。
+- 当前源码保留底座与示例；另已接入 Unity 本机产品会话原型（Match/Participant、共同裁决、本地消息、UDP-KCP、独立客户端投影）。联机实测和剩余边界见 [产品执行记录](openspec/changes/archive/2026-10-11-product-session-bootstrap/execution-notes.md)，不是完整做饭房间或玩法。厨房、订单、顾客、伙伴、供应和存档仍未实施；正式设计见 [Docs/Product/](Docs/Product/README.md)。
 - 未来业务保留“已确认、授权补足、候选、待裁决”的区别；历史授权、候选目录、文件和标签不增加本轮实施授权。
 - 已确认的未来边界：Host 是世界权威但不自动是存档 Owner；本地/远端玩家走同一裁决；运行世界、持久进度、领取凭证分开；PC/Android 生态隔离。这些是设计，不是现有底座保证。
 - 普通手槽/台面一格一物、容器内容随容器移动、分装守恒、加工命令完整验证后提交等详见 [产品设计](Docs/Product/design.md)，不在文档整理中新增实现。

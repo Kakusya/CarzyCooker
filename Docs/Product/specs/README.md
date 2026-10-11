@@ -17,7 +17,7 @@
 
 ## ET 树与消息入口
 
-详细归属及本地／远端发送、接收、答复见 [产品架构](../architecture.md)。最小会话规划见 [product-session-bootstrap](../../../openspec/changes/product-session-bootstrap/proposal.md)，只覆盖加入、名单和通信，不包含厨房、存档、自动重连或固定业务 Tick。
+详细归属及本地／远端发送、接收、答复见 [产品架构](../architecture.md)。已实现并归档的最小会话原型见 [product-session-bootstrap](../../../openspec/changes/archive/2026-10-11-product-session-bootstrap/proposal.md)，只覆盖加入、名单和通信，不包含厨房、存档、自动重连或固定业务 Tick。
 
 本地玩家走 ET 本地消息，远端消息由可信入口转交；两者共同裁决。Parent 表示释放责任，业务关联使用稳定身份。Match 持有 Participant，连接只绑定成员；Kitchen 与 Level 并列，Process 不归 Station 释放。
 

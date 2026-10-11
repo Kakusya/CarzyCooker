@@ -99,7 +99,7 @@ SceneType 用于精确产品入口及适用 handler 匹配；Main 调度不等�
 
 ### 4. 校准会话原型，保持分期边界
 
-[product-session-bootstrap](../../product-session-bootstrap/design.md) 已在规划中明确最小 Match／Participant 归属和在线／离线名单。断线关闭 HostPeer／绑定／Session，逻辑成员保留；明确 Leave 才退出逻辑协作，Host 整体 Stop 解散 Match。本轮核对其规划并更新长期规格引用，不实施该会话能力。
+[product-session-bootstrap](../2026-10-11-product-session-bootstrap/design.md) 已在规划中明确最小 Match／Participant 归属和在线／离线名单。断线关闭 HostPeer／绑定／Session，逻辑成员保留；明确 Leave 才退出逻辑协作，Host 整体 Stop 解散 Match。本轮核对其规划并更新长期规格引用，不实施该会话能力。
 
 原型不做自动重连、Profile 认证或存档。首期每次 Join 仅是当前绑定的新成员加入，不宣称找回旧身份；没有验证凭证，不允许凭自报编号重绑。旧成员可保持离线直到显式离开或 Match 解散。未来原成员恢复协议遵守本组契约，另案设计凭证签发、绑定代次及完整状态恢复。
 

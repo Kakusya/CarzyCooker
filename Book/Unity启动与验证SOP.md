@@ -20,7 +20,7 @@
 
 支持默认 Play 和关闭 Domain Reload、保留 Scene Reload；显式启动拒绝关闭 Scene Reload。正常域重载在 AfterAssembliesLoaded 交接配置，BeforeSceneLoad 消费 Launcher 场景，AfterSceneLoad 清场景请求；进入 EditMode 清本轮请求并收尾。Play 中编译域重载报告 `PlayDomainReloadInterrupted` 并结束自身显式实例 Play，保留中断失败，不透明恢复或重启；普通 Launcher 不由本项自动结束。
 
-`Prepared` 不等于 ET 或产品 Ready；适用代码装载后进入 ProductRoot，缺能力仍失败为 `ProductBootstrapUnavailable`。Host 必须实际监听且本地 Joined 才 HostReady，Client 须本人确认和名单才 ClientReady；普通/legacy 保留 Main。ProcedureET 只停止本轮实际启动的 CodeRunner，Init/原 OnShutdown Invoke 在 World.Dispose 前结束产品等待和监听，失败保留具体终态。GF 设置保存/关闭仍归原 owner。配置/作用域小集、普通/legacy、两种 Play 模式的连续两轮及真实编译中断收尾见 [启动执行记录](../openspec/changes/multiplayer-instance-bootstrap/execution-notes.md)；本地/KCP 与产品退出见 [产品执行记录](../openspec/changes/product-session-bootstrap/execution-notes.md)。
+`Prepared` 不等于 ET 或产品 Ready；适用代码装载后进入 ProductRoot，缺能力仍失败为 `ProductBootstrapUnavailable`。Host 必须实际监听且本地 Joined 才 HostReady，Client 须本人确认和名单才 ClientReady；普通/legacy 保留 Main。ProcedureET 只停止本轮实际启动的 CodeRunner，Init/原 OnShutdown Invoke 在 World.Dispose 前结束产品等待和监听，失败保留具体终态。GF 设置保存/关闭仍归原 owner。配置/作用域小集、普通/legacy、两种 Play 模式的连续两轮及真实编译中断收尾见 [启动执行记录](../openspec/changes/archive/2026-10-11-multiplayer-instance-bootstrap/execution-notes.md)；本地/KCP 与产品退出见 [产品执行记录](../openspec/changes/archive/2026-10-11-product-session-bootstrap/execution-notes.md)。
 
 双 Editor 的目录、日志、终端请求与维护仅按 [共用对端规程](../Docs/AI/multiplayer-peer-workflow.md) 操作，环境可用与产品会话分别验收。
 

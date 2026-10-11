@@ -8,17 +8,15 @@
 
 ### Requirement: 稳定对端工作区与明确基线
 
-稳定对端 MUST 使用同仓完整 worktree 与独立固定分支，覆盖 Unity 及其根目录源码、配置和工具依赖；记录选定版本，只在明确维护请求下更新。主线未提交修改不得被视为已包含于基线。
+第二工作区MUST使用同仓完整worktree和固定本地分支multiplayer-baseline，覆盖Unity及根目录源码、配置和工具依赖；其本地目录可变，身份不得按目录名称或worktree序号判断。记录实际HEAD及来源提交，只在主工作区明确维护请求下接收挑选后的本地main提交；未提交源码与其他分支提交不得冒充main来源。
 
 #### Scenario: 准备稳定对端
-
-- **WHEN** 用户明确授权建立稳定工作区并指定或确认基线版本
-- **THEN** 工作区具有自己的源码和 Unity 工程路径，能够指出分支与选定版本，并列明必要依赖准备情况
+- **WHEN** 用户明确授权建立第二工作区并指定或确认版本
+- **THEN** 记录固定分支及当前实际目录、版本和必要依赖；目录变化后重新发现完整工程路径，不把历史路径当固定约束
 
 #### Scenario: 主线继续开发
-
-- **WHEN** 主线新增提交或存在未提交代码，而未请求更新稳定端
-- **THEN** 稳定端保持原基线，不自动拉取、合并或复制主线热更程序集及生成物
+- **WHEN** main新增提交或主工作区存在未提交代码，而没有请求维护第二工作区
+- **THEN** 第二工作区保持现有版本，不自动拉取、合并或复制程序集/生成物
 
 ### Requirement: 工作区缓存独立
 
@@ -73,26 +71,27 @@
 
 ### Requirement: 维护保留差异与验收范围
 
-稳定端更新 MUST 保留其产品身份及协作职责，核对所需配置、协议、包和工具的一致可用版本，并重新验证环境；结束联调只释放本轮拥有的资源。环境、终端通信、角色启动与产品会话 MUST 分别报告，缺环境记 NotRun。
+第二工作区版本维护MUST保留固定产品身份、短执行入口和精简技能；主工作区负责挑选main必要提交、核对依赖和已应用结果，第二工作区只对干净且未处于其他Git操作的现场执行明确有序清单的cherry-pick。未提交现场、空清单、来源不符或冲突须如实回报；不得丢弃用户文件或让第二工作区开发。环境、运行、产品及维护结果分别报告。
 
 #### Scenario: 明确升级稳定基线
-
-- **WHEN** 用户因兼容性或必要能力批准更新选定版本
-- **THEN** 更新后仍保持稳定端产品名和角色规则，核对编译与适用验证结果，不将分支差异自动合回主线
+- **WHEN** 主工作区提供有明确用途、依赖顺序和范围的main提交清单
+- **THEN** 核对来源与已应用提交后按清单cherry-pick，记录实际源/目标提交和结果，维护完成仍保留产品身份和执行职责，不自动同步整个main
 
 #### Scenario: 首项启动能力尚不可用
-
-- **WHEN** 第二端环境与消息已验证，但启动入口或产品会话未实施
-- **THEN** 仅报告环境和消息结果；角色启动或产品网络列为 NotRun 或其实际拒绝结果，不宣称 Host／Client 已连通
+- **WHEN** 环境与通信可用，但目标版本缺启动入口或产品会话
+- **THEN** 报告实际不可用结果，由主工作区决定必要提交，不用其他示例冒充产品联机
 
 #### Scenario: 一轮协作结束
+- **WHEN** 指定维护或运行完成或失败
+- **THEN** 只收尾本轮自己的Git操作和运行资源，保留长期工作区及用户现场；删除长期目录另需明确授权
 
-- **WHEN** 本轮运行完成或失败
-- **THEN** 只清理自身运行资源，保留长期工作区及用户现场，删除长期目录须另有明确授权
+#### Scenario: 维护遇到未提交修改或源码冲突
+- **WHEN** 维护前存在未提交修改/在途Git操作，或本轮cherry-pick出现冲突
+- **THEN** 前者拒绝启动并回报；后者仅中止自己发起的cherry-pick并回报冲突文件，不自动stash/reset、编造空提交、扩大清单或修改冲突源码
 
 ## Sources
 
-- [共同协作规程](../../../Docs/AI/multiplayer-peer-workflow.md)、[环境执行记录](../../changes/multiplayer-peer-workspace/execution-notes.md)
+- [共同协作规程](../../../Docs/AI/multiplayer-peer-workflow.md)、[环境执行记录](../../changes/archive/2026-10-11-multiplayer-peer-workspace/execution-notes.md)
 - [CLI 与双 Editor](../../../Book/UnityCLI.md)、[启动 SOP](../../../Book/Unity启动与验证SOP.md)
 - [产品身份源](../../../Unity/ProjectSettings/ProjectSettings.asset)、[缓存排除](../../../.gitignore)
 - [设置路径](../../../Unity/Assets/Scripts/Library/UGF/UnityGameFramework/Runtime/Setting/DefaultSettingHelper.cs)
