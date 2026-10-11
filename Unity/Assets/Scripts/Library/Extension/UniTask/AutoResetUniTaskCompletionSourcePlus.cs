@@ -14,6 +14,8 @@ namespace Cysharp.Threading.Tasks
         AutoResetUniTaskCompletionSourcePlus nextNode;
         event Action onExceptionAction;
         event Action onCancelAction;
+        bool completing;
+        bool returnRequested;
         event Action onResultAction;
         public ref AutoResetUniTaskCompletionSourcePlus NextNode => ref nextNode;
 
@@ -110,46 +112,64 @@ namespace Cysharp.Threading.Tasks
         [DebuggerHidden]
         public bool TrySetResult()
         {
-            if (version == core.Version && core.TrySetResult(AsyncUnit.Default))
+            if (version != core.Version || core.UnsafeGetStatus() != UniTaskStatus.Pending) return false;
+            // A synchronous continuation may consume the result. Hold the record until its callbacks finish.
+            var callback = onResultAction;
+            onResultAction = null;
+            completing = true;
+            try
             {
-                if (onResultAction != null)
-                {
-                    onResultAction.Invoke();
-                    onResultAction = null;
-                }
-                return true;
+                bool completed = core.TrySetResult(AsyncUnit.Default);
+                if (completed) callback?.Invoke();
+                return completed;
             }
-            return false;
+            finally
+            {
+                completing = false;
+                if (returnRequested) TryReturn();
+            }
         }
 
         [DebuggerHidden]
         public bool TrySetCanceled(CancellationToken cancellationToken = default)
         {
-            if (version == core.Version && core.TrySetCanceled(cancellationToken))
+            if (version != core.Version || core.UnsafeGetStatus() != UniTaskStatus.Pending) return false;
+            // A synchronous continuation may consume the result. Hold the record until its callbacks finish.
+            var callback = onCancelAction;
+            onCancelAction = null;
+            completing = true;
+            try
             {
-                if (onCancelAction != null)
-                {
-                    onCancelAction.Invoke();
-                    onCancelAction = null;
-                }
-                return true;
+                bool completed = core.TrySetCanceled(cancellationToken);
+                if (completed) callback?.Invoke();
+                return completed;
             }
-            return false;
+            finally
+            {
+                completing = false;
+                if (returnRequested) TryReturn();
+            }
         }
 
         [DebuggerHidden]
         public bool TrySetException(Exception exception)
         {
-            if (version == core.Version && core.TrySetException(exception))
+            if (version != core.Version || core.UnsafeGetStatus() != UniTaskStatus.Pending) return false;
+            // A synchronous continuation may consume the result. Hold the record until its callbacks finish.
+            var callback = onExceptionAction;
+            onExceptionAction = null;
+            completing = true;
+            try
             {
-                if (onExceptionAction != null)
-                {
-                    onExceptionAction.Invoke();
-                    onExceptionAction = null;
-                }
-                return true;
+                bool completed = core.TrySetException(exception);
+                if (completed) callback?.Invoke();
+                return completed;
             }
-            return false;
+            finally
+            {
+                completing = false;
+                if (returnRequested) TryReturn();
+            }
         }
 
         [DebuggerHidden]
@@ -186,6 +206,8 @@ namespace Cysharp.Threading.Tasks
         [DebuggerHidden]
         bool TryReturn()
         {
+            if (completing) { returnRequested = true; return false; }
+            returnRequested = false;
             onExceptionAction = null;
             onCancelAction = null;
             onResultAction = null;
@@ -201,6 +223,8 @@ namespace Cysharp.Threading.Tasks
         AutoResetUniTaskCompletionSourcePlus<T> nextNode;
         event Action onExceptionAction;
         event Action onCancelAction;
+        bool completing;
+        bool returnRequested;
         event Action onResultAction;
         public ref AutoResetUniTaskCompletionSourcePlus<T> NextNode => ref nextNode;
 
@@ -297,46 +321,64 @@ namespace Cysharp.Threading.Tasks
         [DebuggerHidden]
         public bool TrySetResult(T result)
         {
-            if (version == core.Version && core.TrySetResult(result))
+            if (version != core.Version || core.UnsafeGetStatus() != UniTaskStatus.Pending) return false;
+            // A synchronous continuation may consume the result. Hold the record until its callbacks finish.
+            var callback = onResultAction;
+            onResultAction = null;
+            completing = true;
+            try
             {
-                if (onResultAction != null)
-                {
-                    onResultAction.Invoke();
-                    onResultAction = null;
-                }
-                return true;
+                bool completed = core.TrySetResult(result);
+                if (completed) callback?.Invoke();
+                return completed;
             }
-            return false;
+            finally
+            {
+                completing = false;
+                if (returnRequested) TryReturn();
+            }
         }
 
         [DebuggerHidden]
         public bool TrySetCanceled(CancellationToken cancellationToken = default)
         {
-            if (version == core.Version && core.TrySetCanceled(cancellationToken))
+            if (version != core.Version || core.UnsafeGetStatus() != UniTaskStatus.Pending) return false;
+            // A synchronous continuation may consume the result. Hold the record until its callbacks finish.
+            var callback = onCancelAction;
+            onCancelAction = null;
+            completing = true;
+            try
             {
-                if (onCancelAction != null)
-                {
-                    onCancelAction.Invoke();
-                    onCancelAction = null;
-                }
-                return true;
+                bool completed = core.TrySetCanceled(cancellationToken);
+                if (completed) callback?.Invoke();
+                return completed;
             }
-            return false;
+            finally
+            {
+                completing = false;
+                if (returnRequested) TryReturn();
+            }
         }
 
         [DebuggerHidden]
         public bool TrySetException(Exception exception)
         {
-            if (version == core.Version && core.TrySetException(exception))
+            if (version != core.Version || core.UnsafeGetStatus() != UniTaskStatus.Pending) return false;
+            // A synchronous continuation may consume the result. Hold the record until its callbacks finish.
+            var callback = onExceptionAction;
+            onExceptionAction = null;
+            completing = true;
+            try
             {
-                if (onExceptionAction != null)
-                {
-                    onExceptionAction.Invoke();
-                    onExceptionAction = null;
-                }
-                return true;
+                bool completed = core.TrySetException(exception);
+                if (completed) callback?.Invoke();
+                return completed;
             }
-            return false;
+            finally
+            {
+                completing = false;
+                if (returnRequested) TryReturn();
+            }
         }
 
         [DebuggerHidden]
@@ -379,6 +421,8 @@ namespace Cysharp.Threading.Tasks
         [DebuggerHidden]
         bool TryReturn()
         {
+            if (completing) { returnRequested = true; return false; }
+            returnRequested = false;
             onExceptionAction = null;
             onCancelAction = null;
             onResultAction = null;

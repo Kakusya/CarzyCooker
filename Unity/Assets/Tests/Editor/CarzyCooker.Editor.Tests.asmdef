@@ -1,7 +1,7 @@
 {
     "name": "CarzyCooker.Editor.Tests",
     "rootNamespace": "CarzyCooker.Tests",
-    "references": ["Game", "Game.Editor", "ET.Core", "ET.ThirdParty", "Game.ET.Code.Model", "Game.ET.Code.Hotfix", "UniTask"],
+    "references": ["Game", "Game.Editor", "GameFramework", "UnityGameFramework.Runtime", "UnityGameFramework.Extension", "Game.ET.Loader", "ET.Core", "ET.ThirdParty", "Game.ET.Code.Model", "Game.ET.Code.Hotfix", "UniTask"],
     "includePlatforms": ["Editor"],
     "optionalUnityReferences": ["TestAssemblies"],
     "defineConstraints": ["UNITY_ET"],

@@ -7,8 +7,17 @@ namespace Game
     [BindingRoot]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(RectTransform))]
-    public abstract class AUIWidget : MonoBehaviour
+    public abstract class AUIWidget : MonoBehaviour, IAsyncOwner
     {
+        public AsyncScope AsyncScope { get; private set; }
+        public event System.Action<AsyncScope> AsyncScopeOpened;
+        protected virtual void StopAsyncScope()
+        {
+            var old = AsyncScope;
+            AsyncScope = null;
+            old?.Stop();
+        }
+        protected virtual void OnDestroy() => StopAsyncScope();
         private AUIForm m_UIFormOwner;
         private RectTransform m_CachedRectTransform = null;
         private bool m_Initialized = false;
@@ -112,6 +121,7 @@ namespace Game
         /// </summary>
         protected internal virtual void OnRecycle()
         {
+            StopAsyncScope();
         }
 
         /// <summary>
@@ -120,8 +130,13 @@ namespace Game
         /// <param name="userData">用户自定义数据。</param>
         protected internal virtual void OnOpen(object userData)
         {
+            StopAsyncScope();
+            var parentWidget = transform.parent == null ? null : transform.parent.GetComponentInParent<AUIWidget>(true);
+            var parent = parentWidget?.AsyncScope ?? (m_UIFormOwner as IAsyncOwner)?.AsyncScope;
+            AsyncScope = new AsyncScope(AsyncRuntime.Current, parent: parent);
             m_Available = true;
             Visible = true;
+            AsyncScopeOpened?.Invoke(AsyncScope);
         }
 
         /// <summary>
@@ -131,6 +146,14 @@ namespace Game
         /// <param name="userData">用户自定义数据。</param>
         protected internal virtual void OnClose(bool isShutdown, object userData)
         {
+            CompleteClose(isShutdown, userData, AsyncScope);
+        }
+
+        protected void CompleteClose(bool isShutdown, object userData, AsyncScope exitedScope)
+        {
+            if (ReferenceEquals(AsyncScope, exitedScope)) StopAsyncScope();
+            exitedScope?.Stop();
+            if (AsyncScope != null && !ReferenceEquals(AsyncScope, exitedScope)) return;
             Visible = false;
             m_Available = false;
         }

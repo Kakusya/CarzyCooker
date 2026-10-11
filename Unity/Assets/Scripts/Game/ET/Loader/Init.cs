@@ -7,7 +7,7 @@ using Game;
 namespace ET
 {
     [DisallowMultipleComponent]
-    public class Init : MonoBehaviour
+    public class Init : MonoBehaviour, IAsyncOwner
     {
         public static Init Instance { get; private set; }
 
@@ -60,6 +60,7 @@ namespace ET
         private bool m_Stopped;
         private RuntimeInstanceConfig m_Config;
         private UnhandledExceptionEventHandler m_ExceptionHandler;
+        public AsyncScope AsyncScope { get; private set; }
 
         public bool IsCurrent(World world) => !m_Stopped && Instance == this && ReferenceEquals(m_World, world);
         public World OwnedWorld => m_World;
@@ -68,6 +69,7 @@ namespace ET
         {
             Instance = this;
             m_Stopped = false;
+            AsyncScope = new AsyncScope(AsyncRuntime.Current, () => !m_Stopped && Instance == this, GameEntry.RuntimeOwner.AsyncScope);
             m_Config = RuntimeInstanceContext.Config;
 #if UNITY_ET_VIEW && UNITY_EDITOR
             Entity.SetRootView(this.transform);
@@ -76,7 +78,7 @@ namespace ET
 
         private void Start()
         {
-            StartAsync().Forget();
+            this.RunAsync(_ => StartAsync());
         }
 
         private void OnDestroy()
@@ -101,6 +103,9 @@ namespace ET
                 return;
             }
             m_Stopped = true;
+            var oldScope = AsyncScope;
+            AsyncScope = null;
+            oldScope?.Stop();
             World world = m_World;
             m_World = null;
             ProductBootstrapBridge.ClearInitialization(world);
@@ -120,7 +125,7 @@ namespace ET
             }
         }
 
-        private async UniTaskVoid StartAsync()
+        private async UniTask StartAsync()
         {
             m_ExceptionHandler = (sender, e) =>
             {

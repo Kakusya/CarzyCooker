@@ -28,4 +28,4 @@
 
 ## References
 
-本新增要求不修改第一项 change 的 UIEntity 路由 Requirement；当前入口见 [UGFComponent.cs](../../../../../Unity/Assets/Scripts/Game/ET/Loader/UGF/UGFComponent.cs)、[AExEntity.cs](../../../../../Unity/Assets/Scripts/Game/Entity/EntityLogic/AExEntity.cs) 和 [Entity 手册](../../../../../Book/Entity开发.md)。
+本新增要求不修改第一项 change 的 UIEntity 路由 Requirement；当前入口见 [UGFComponent.cs](../../../../../../Unity/Assets/Scripts/Game/ET/Loader/UGF/UGFComponent.cs)、[AExEntity.cs](../../../../../../Unity/Assets/Scripts/Game/Entity/EntityLogic/AExEntity.cs) 和 [Entity 手册](../../../../../../Book/Entity开发.md)。

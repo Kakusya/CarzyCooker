@@ -5,6 +5,11 @@ namespace ET
 {
     public sealed class ETDynamicUIWidgetLoader : ADynamicUIWidgetLoader
     {
+        protected override void OnUIWidgetUnloading(AUIWidget widget)
+        {
+            ((AETMonoUGFUIWidget)widget).UGFUIWidget?.Dispose();
+            base.OnUIWidgetUnloading(widget);
+        }
         protected override void OnUIWidgetLoaded(AUIWidget uiWidget)
         {
             AETMonoUGFUIWidget monoUIWidget = uiWidget as AETMonoUGFUIWidget;
@@ -12,7 +17,7 @@ namespace ET
             {
                 throw new GameFrameworkException(Utility.Text.Format("'{0}' is not AETMonoUGFUIWidget.", uiWidget.GetType().FullName));
             }
-            AETMonoUGFUIWidget parentUIWidget = uiWidget.GetComponentInParent<AETMonoUGFUIWidget>();
+            AETMonoUGFUIWidget parentUIWidget = uiWidget.transform.parent.GetComponentInParent<AETMonoUGFUIWidget>(true);
             if (parentUIWidget != null)
             {
                 parentUIWidget.UGFUIWidget.AddChildUIWidget(monoUIWidget);

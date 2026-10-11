@@ -19,15 +19,24 @@ namespace ET
     [ComponentOf(typeof(Scene))]
     public sealed class UGFComponent : Entity, IAwake
     {
-        public async UniTask<T> LoadAssetAsync<T>(string assetName) where T : UnityEngine.Object
+        public UniTask<T> LoadAssetAsync<T>(string assetName) where T : UnityEngine.Object
         {
-            T asset = await GameEntry.Resource.LoadAssetAsync<T>(assetName);
-            return asset;
+            return LoadAssetAsync<T>(Parent, assetName);
+        }
+
+        public UniTask<T> LoadAssetAsync<T>(Entity owner, string assetName) where T : UnityEngine.Object
+        {
+            return owner.GetAsyncOwner().GetOwnedResources().LoadAssetAsync<T>(assetName);
+        }
+
+        public void UnloadAsset(Entity owner, UnityEngine.Object asset)
+        {
+            owner.GetAsyncOwner().GetOwnedResources().UnloadAsset(asset);
         }
 
         public void UnloadAsset(UnityEngine.Object asset)
         {
-            GameEntry.Resource.UnloadAsset(asset);
+            UnloadAsset(Parent, asset);
         }
 
         public async UniTask LoadSceneAsync(string sceneAssetName)

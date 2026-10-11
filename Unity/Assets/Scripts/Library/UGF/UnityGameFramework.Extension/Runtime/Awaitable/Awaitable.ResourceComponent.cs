@@ -9,212 +9,76 @@ namespace UnityGameFramework.Extension
 {
     public static partial class Awaitable
     {
-        private class LoadAssetInfo : IReference
-        {
-            public object AssetResult;
-            public bool IsFinished;
-            public bool IsError;
-            public string ErrorMessage;
-            public Action<float> UpdateEvent;
-            public Action<string> DependencyAssetEvent;
-
-            public static LoadAssetInfo Create(Action<float> updateEvent, Action<string> dependencyAssetEvent)
-            {
-                LoadAssetInfo loadAssetInfo = ReferencePool.Acquire<LoadAssetInfo>();
-                loadAssetInfo.UpdateEvent = updateEvent;
-                loadAssetInfo.DependencyAssetEvent = dependencyAssetEvent;
-                return loadAssetInfo;
-            }
-
-            public void Clear()
-            {
-                AssetResult = null;
-                IsFinished = false;
-                IsError = false;
-                ErrorMessage = null;
-                UpdateEvent = null;
-                DependencyAssetEvent = null;
-            }
-        }
-
-        private static readonly LoadAssetCallbacks s_LoadAssetDefaultCallbacks = new LoadAssetCallbacks(
-            LoadAssetSuccessCallback,
-            LoadAssetFailureCallback,
-            null,
-            null);
-
-        private static readonly LoadAssetCallbacks s_LoadAssetAllCallbacks = new LoadAssetCallbacks(
-            LoadAssetSuccessCallback,
-            LoadAssetFailureCallback,
-            LoadAssetUpdateCallback,
-            LoadAssetDependencyAssetCallback);
-
-        private static readonly LoadAssetCallbacks s_LoadAssetUpdateCallbacks = new LoadAssetCallbacks(
-            LoadAssetSuccessCallback,
-            LoadAssetFailureCallback,
-            LoadAssetUpdateCallback,
-            null);
-
-        private static readonly LoadAssetCallbacks s_LoadAssetDependencyCallbacks = new LoadAssetCallbacks(
-            LoadAssetSuccessCallback,
-            LoadAssetFailureCallback,
-            null,
-            LoadAssetDependencyAssetCallback);
-
-        /// <summary>
-        /// 加载资源（可等待）
-        /// </summary>
+        /// <summary>Explicit-owner foundation API. Cancellation ends the wait before native completion.</summary>
         public static UniTask<T> LoadAssetAsync<T>(this ResourceComponent resourceComponent, string assetName, int priority = 0,
             CancellationToken cancellationToken = default, Action<float> updateEvent = null, Action<string> dependencyAssetEvent = null) where T : UnityEngine.Object
         {
-            Type type = typeof(T);
 #if UNITY_EDITOR
             TipsSubscribeEvent();
-#if UNITY_5_3_OR_NEWER
-            //https://docs.unity3d.com/ScriptReference/AssetBundle.LoadAssetAsync.html
-            //Prior to version 5.0, users could fetch individual components directly using LoadAsync.
-            //This is not supported anymore. Instead, please use LoadAssetAsync to load the game object first and then look up the component on the object.
-            if (type.IsSubclassOf(typeof(UnityEngine.Component)))
-            {
-                throw new GameFrameworkException("Can't fetch individual components directly. Please load the game object first and then look up the component on the object");
-            }
+            if (typeof(T).IsSubclassOf(typeof(UnityEngine.Component)))
+                throw new GameFrameworkException("Load the GameObject before fetching its components.");
 #endif
-#endif
-            if (!IsValid)
+            if (!IsValid || cancellationToken.IsCancellationRequested) return UniTask.FromCanceled<T>(cancellationToken);
+            var manager = resourceComponent.ResourceManager;
+            var runtimeBase = UnityGameFramework.Runtime.GameEntry.GetComponent<BaseComponent>();
+            var completion = new UniTaskCompletionSource<T>();
+            bool finished = false;
+            bool canceled = false;
+            CancellationTokenRegistration registration = default;
+            void Detach()
             {
-                // ReSharper disable once MethodSupportsCancellation
-                return UniTask.FromCanceled<T>();
+                registration.Dispose();
+                if (runtimeBase != null) runtimeBase.ShuttingDown -= Cancel;
             }
-            if (cancellationToken.IsCancellationRequested)
+            void Cancel()
             {
-                return UniTask.FromCanceled<T>(cancellationToken);
+                if (finished || canceled) return;
+                canceled = true;
+                Detach();
+                completion.TrySetCanceled(cancellationToken);
             }
-
-            LoadAssetInfo loadAssetInfo = LoadAssetInfo.Create(updateEvent, dependencyAssetEvent);
-            if(loadAssetInfo.UpdateEvent == null && loadAssetInfo.DependencyAssetEvent == null)
+            void Unload(object asset)
             {
-                resourceComponent.LoadAsset(assetName, type, priority, s_LoadAssetDefaultCallbacks, loadAssetInfo);
+                if (runtimeBase != null && !runtimeBase.ModulesStopped) manager.UnloadAsset(asset);
             }
-            else if(loadAssetInfo.UpdateEvent != null)
-            {
-                resourceComponent.LoadAsset(assetName, type, priority, s_LoadAssetUpdateCallbacks, loadAssetInfo);
-            }
-            else if(loadAssetInfo.DependencyAssetEvent != null)
-            {
-                resourceComponent.LoadAsset(assetName, type, priority, s_LoadAssetDependencyCallbacks, loadAssetInfo);
-            }
-            else
-            {
-                resourceComponent.LoadAsset(assetName, type, priority, s_LoadAssetAllCallbacks, loadAssetInfo);
-            }
-
-            bool MoveNext(ref UniTaskCompletionSourceCore<T> core)
-            {
-                if (!IsValid)
+            if (runtimeBase == null || runtimeBase.ModulesStopped) return UniTask.FromCanceled<T>();
+            runtimeBase.ShuttingDown += Cancel;
+            registration = cancellationToken.Register(Cancel);
+            var callbacks = new LoadAssetCallbacks(
+                (_, asset, duration, data) =>
                 {
-                    core.TrySetCanceled();
-                    return false;
-                }
-                if (!loadAssetInfo.IsFinished)
-                {
-                    return true;
-                }
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    if (!loadAssetInfo.IsError)
+                    if (finished) return;
+                    finished = true;
+                    Detach();
+                    if (canceled) { Unload(asset); return; }
+                    if (!(asset is T typed))
                     {
-                        resourceComponent.UnloadAsset(loadAssetInfo.AssetResult);
+                        Unload(asset);
+                        completion.TrySetException(new GameFrameworkException($"Load '{assetName}' expected {typeof(T)}, got {asset?.GetType()}."));
+                        return;
                     }
-                    core.TrySetCanceled(cancellationToken);
-                    return false;
-                }
-                if (loadAssetInfo.IsError)
+                    completion.TrySetResult(typed);
+                },
+                (_, status, message, data) =>
                 {
-                    core.TrySetException(new GameFrameworkException(loadAssetInfo.ErrorMessage));
-                }
-                else
-                {
-                    T asset = loadAssetInfo.AssetResult as T;
-                    if (asset == null)
-                    {
-                        resourceComponent.UnloadAsset(loadAssetInfo.AssetResult);
-                        core.TrySetException(new GameFrameworkException(Utility.Text.Format("Load asset '{0}' failure load type is {1} but asset type is {2}.", assetName, loadAssetInfo.AssetResult.GetType(), type)));
-                    }
-                    else
-                    {
-                        core.TrySetResult(asset);
-                    }
-                }
-                return false;
-            }
-
-            void ReturnAction()
-            {
-                ReferencePool.Release(loadAssetInfo);
-            }
-            return NewUniTask<T>(MoveNext, ReturnAction);
+                    if (finished) return;
+                    finished = true;
+                    Detach();
+                    if (!canceled) completion.TrySetException(new GameFrameworkException(message));
+                },
+                updateEvent == null ? null : (LoadAssetUpdateCallback)((_, progress, data) => { if (!finished && !canceled) updateEvent(progress); }),
+                dependencyAssetEvent == null ? null : (LoadAssetDependencyAssetCallback)((_, name, loaded, total, data) => { if (!finished && !canceled) dependencyAssetEvent(name); }));
+            try { manager.LoadAsset(assetName, typeof(T), priority, callbacks); }
+            catch { Detach(); throw; }
+            return completion.Task;
         }
 
-        private static void LoadAssetSuccessCallback(string _, object asset, float duration, object userData)
-        {
-            LoadAssetInfo loadAssetInfo = userData as LoadAssetInfo;
-            if (loadAssetInfo == null)
-            {
-                throw new GameFrameworkException("Load asset info is invalid.");
-            }
-            loadAssetInfo.IsFinished = true;
-            loadAssetInfo.AssetResult = asset;
-        }
-
-        private static void LoadAssetFailureCallback(string _, LoadResourceStatus status, string errorMsg, object userData)
-        {
-            LoadAssetInfo loadAssetInfo = userData as LoadAssetInfo;
-            if (loadAssetInfo == null)
-            {
-                throw new GameFrameworkException("Load asset info is invalid.");
-            }
-            loadAssetInfo.IsFinished = true;
-            loadAssetInfo.IsError = true;
-            loadAssetInfo.ErrorMessage = errorMsg;
-        }
-
-        private static void LoadAssetUpdateCallback(string _, float progress, object userData)
-        {
-            LoadAssetInfo loadAssetInfo = userData as LoadAssetInfo;
-            if (loadAssetInfo == null)
-            {
-                throw new GameFrameworkException("Load asset info is invalid.");
-            }
-            loadAssetInfo.UpdateEvent.Invoke(progress);
-        }
-
-        private static void LoadAssetDependencyAssetCallback(string _, string dependencyAssetName, int loadedCount, int totalCount, object userData)
-        {
-            LoadAssetInfo loadAssetInfo = userData as LoadAssetInfo;
-            if (loadAssetInfo == null)
-            {
-                throw new GameFrameworkException("Load asset info is invalid.");
-            }
-            loadAssetInfo.DependencyAssetEvent.Invoke(dependencyAssetName);
-        }
-
-        /// <summary>
-        /// 更新资源组（可等待）
-        /// 注意不要调用StopUpdateResources
-        /// </summary>
-        /// <param name="resourceComponent">资源组件</param>
-        /// <param name="resourceGroupName">资源组名称</param>
-        /// <returns></returns>
+        /// <summary>Update a resource group. Do not call StopUpdateResources while awaiting this API.</summary>
         public static UniTask<bool> UpdateResourcesAsync(this ResourceComponent resourceComponent, string resourceGroupName)
         {
-            AutoResetUniTaskCompletionSource<bool> tcs = AutoResetUniTaskCompletionSource<bool>.Create();
-            void OnUpdateResourcesComplete(IResourceGroup resourceGroup, bool result)
-            {
-                tcs.TrySetResult(result);
-            }
-            resourceComponent.UpdateResources(resourceGroupName, OnUpdateResourcesComplete);
-            return tcs.Task;
+            var completion = AutoResetUniTaskCompletionSource<bool>.Create();
+            resourceComponent.UpdateResources(resourceGroupName, (group, result) => completion.TrySetResult(result));
+            return completion.Task;
         }
     }
 }

@@ -6,7 +6,7 @@
 
 Runtime GameEntry/Base 拆卸会关闭 GF 模块，资源队列和代理 Reset 会清掉业务回调；默认资源 helper 将进行中的 AssetBundle 请求引用置空，不等于已经证明原生操作停止。当前 Game 稳定程序集能引用 UniTask，Game.ET.Loader 同时引用 Game 和 ET.Core；公共契约放在这条现有依赖方向上。
 
-本设计、[test-conditions.md](test-conditions.md) 和 [execution-notes.md](execution-notes.md) 是拟实施契约，不表示这些能力已经存在。
+本设计与 [test-conditions.md](test-conditions.md) 固定实施契约；当前实现、实际通过证据及明确 NotRun 范围以 [execution-notes.md](execution-notes.md) 为准，规划文本不替代行为证据。
 
 ## Goals / Non-Goals
 

@@ -7,8 +7,26 @@ using UnityGameFramework.Runtime;
 
 namespace Game
 {
-    public abstract class AExUIForm : AUIForm
+    public abstract class AExUIForm : AUIForm, IAsyncOwner
     {
+        public AsyncScope AsyncScope { get; private set; }
+        public event Action<AsyncScope> AsyncScopeOpened;
+        private void StopAsyncScope()
+        {
+            var old = AsyncScope;
+            var resources = m_ResourceContainer;
+            m_ResourceContainer = null;
+            AsyncScope = null;
+            old?.Stop();
+            if (resources != null) { resources.UnloadAllAssets(); ReferencePool.Release(resources); }
+        }
+        protected override void OnOpen(object userData)
+        {
+            StopAsyncScope();
+            AsyncScope = new AsyncScope(AsyncRuntime.Current);
+            base.OnOpen(userData);
+            AsyncScopeOpened?.Invoke(AsyncScope);
+        }
         private UIWidgetContainer m_UIWidgetContainer;
         private EventContainer m_EventContainer;
         private EntityContainer m_EntityContainer;
@@ -74,22 +92,24 @@ namespace Game
 
         protected override void OnRecycle()
         {
+            StopAsyncScope();
             base.OnRecycle();
             m_UIWidgetContainer?.OnRecycle();
         }
 
         protected virtual void OnDestroy()
         {
+            StopAsyncScope();
             RemoveAllUIWidget();
             ClearContainer();
         }
 
         protected override void OnClose(bool isShutdown, object userData)
         {
+            StopAsyncScope();
             m_UIWidgetContainer?.OnClose(isShutdown, userData);
             HideAllEntity(isShutdown);
             UnsubscribeAll(isShutdown);
-            UnloadAllAssets(isShutdown);
             if (isShutdown)
             {
                 RemoveAllUIWidget();

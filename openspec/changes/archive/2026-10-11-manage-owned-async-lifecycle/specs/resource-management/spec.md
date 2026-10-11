@@ -49,4 +49,4 @@
 
 ## References
 
-这是拟实施契约，当前入口见 [ResourceContainer.cs](../../../../../Unity/Assets/Scripts/Game/Container/ResourceContainer.cs)、[资源等待](../../../../../Unity/Assets/Scripts/Library/UGF/UnityGameFramework.Extension/Runtime/Awaitable/Awaitable.ResourceComponent.cs) 和 [原生请求 helper](../../../../../Unity/Assets/Scripts/Library/UGF/UnityGameFramework/Runtime/Resource/DefaultLoadResourceAgentHelper.cs)。真实原生验证范围见 [test-conditions.md](../../test-conditions.md)。
+这是拟实施契约，当前入口见 [ResourceContainer.cs](../../../../../../Unity/Assets/Scripts/Game/Container/ResourceContainer.cs)、[资源等待](../../../../../../Unity/Assets/Scripts/Library/UGF/UnityGameFramework.Extension/Runtime/Awaitable/Awaitable.ResourceComponent.cs) 和 [原生请求 helper](../../../../../../Unity/Assets/Scripts/Library/UGF/UnityGameFramework/Runtime/Resource/DefaultLoadResourceAgentHelper.cs)。真实原生验证范围见 [test-conditions.md](../../test-conditions.md)。

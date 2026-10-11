@@ -251,3 +251,7 @@ Game.GameEntry.AssetSet.SetByResource(
 | UXTool 本地化图片接入 | `Library/UXTool/Runtime/Common/UnityExtension/ResourceManager.cs` |
 
 相关 UI 创建与生命周期见 [UI 开发](UI开发.md)。
+
+## 本轮所属异步
+
+公共 owner 自动建立 scope。业务通过 `owner.RunAsync(context => ...)` 等待，或用 `owner.Run(...)` 启动由入口观察的工作；await 后通过 `context.Apply` 写回。Close/Hide 立即取消旧业务等待，Visible/暂停不取消。详细例子、实际迁移入口与原生退役边界见 [生命周期约定](../references/framework-lifecycle.md#所属异步入口)，证据见 [本次执行说明](../openspec/changes/archive/2026-10-11-manage-owned-async-lifecycle/execution-notes.md)。

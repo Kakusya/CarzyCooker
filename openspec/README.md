@@ -4,7 +4,7 @@
 
 2026-10-09 的 [深度扫描](../Docs/AI/spec-scan.md) 已细化十四项底座规格；合计十六份主规格、74 项要求、120 个场景。新增 31 项要求和 70 个场景，保留原要求；仅给固定 ET 入口补充实际编译条件。增量、来源和验证见 [deepen-foundation-specs](changes/archive/2026-10-09-deepen-foundation-specs/proposal.md) 与 [verification](changes/archive/2026-10-09-deepen-foundation-specs/verification.md)。场景是契约及后续验证目标，不代表这些动态场景已运行。
 
-本轮增加runtime-instances、product-session及multiplayer-peer-workspaces并同步已有startup/network/ai-collaboration契约，当前共十九份主规格。启动、本地消息、真实KCP及双Editor的结果分别见对应change的execution-notes，不能以格式验证代替动态运行。
+已增加 runtime-instances、product-session、multiplayer-peer-workspaces 和 owned-async-lifecycle，当前共二十份主规格。启动、本地消息、真实 KCP、双 Editor 和所属异步的结果分别见对应 change 的 execution-notes，不能以格式验证代替动态运行。
 
 | 规格 | 范围 |
 |---|---|
@@ -16,6 +16,7 @@
 | [ui](specs/ui/spec.md) | GF UI/ETUI/Widget |
 | [entity](specs/entity/spec.md) | GF Entity/ETEntity/UIEntity |
 | [resource-management](specs/resource-management/spec.md) | 容器/资源/AssetSet |
+| [owned-async-lifecycle](specs/owned-async-lifecycle/spec.md) | owner 所属任务、立即取消、轮次隔离、受控写回与整体退出 |
 | [data-generation](specs/data-generation/spec.md) | Excel/Luban/生成 ID |
 | [proto-generation](specs/proto-generation/spec.md) | Proto/Opcode/消息生成 |
 | [localization](specs/localization/spec.md) | 本地化/UX 文本 |

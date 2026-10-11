@@ -67,3 +67,11 @@ Fiber / Root Scene(ProductRoot)
 整体先 Stopping/拒绝新工作，尽力 Send MatchClosed，再 sender.Stop 结束本地等待、Dispose Net/Session 结束网络等待、释放角色树；正常 OnShutdown/Init.Shutdown 再释放捕获 World/Fiber。直接树销毁有 sender/绑定兜底。异步失败先保留 Failure、在原 Fiber 排队收尾，再由 Loader 在 Runner 遍历后的 LastPostLateUpdate 停止原初始化；旧 owner/EntityRef 恢复不能写新轮。
 
 当前本地、真实 KCP 小集及 Editor 单端结果见 [产品执行记录](../openspec/changes/archive/2026-10-11-product-session-bootstrap/execution-notes.md)。双 Editor 两种排列和未触发的资源消费者分别列明，不将 KCP loopback 当物理两机、正式传输或厨房验收。
+
+## owner 所属等待
+
+`OwnedRequestExtensions` 位于既有 Hotfix 程序集。Session 值适配使用原 Session.Call(token)、原等待表及 Timer 超时；ERR_Cancel 转为取消，超时单独报告。适配器在响应有效期内读取独立值，finally 释放自己拿到的池化响应及 Session 输出请求；返回值不保留池化消息。Session RpcInfo 改用不复用的记录，移除等待/取消注册后再通知续体；迟到未匹配响应由 Session 收尾。
+
+本地值适配沿原 sender.Call → ActorId → MessageQueue → Ordered MailBox → SceneType/Handler → 原答复路径。单 owner Stop 只结束其业务等待，内部唯一观察者继续等原答复/40秒超时并释放响应；不 Stop 共用 sender，也不宣称已清空物理等待。整个运行退出保留原 sender.Stop。输入由现有 sender/handler 收尾，适配器不抢收件端所有权；取消不会回滚已经提交的动作。
+
+普通 ET 延时走 `context.DelayAsync(timer, time)`，维持原 Fiber 执行上下文；本轮 Ping 消费者已迁移，其他产品 Join/Probe/Heartbeat、wire 和未迁移旧业务保持原契约。原 AutoResetUniTaskCompletionSourcePlus 在同步续体读取结果时，延后池回收直到原完成通知/取消动作全部返回，避免丢取消注册或误触下一任务。实际四项 ET 适配测试与必要计时回归见 [执行说明](../openspec/changes/archive/2026-10-11-manage-owned-async-lifecycle/execution-notes.md)。

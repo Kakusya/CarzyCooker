@@ -28,8 +28,10 @@ namespace ET
 
         protected override void OnHide(bool isShutdown, object userData)
         {
+            var exitedScope = AsyncScope;
+            StopAsyncScope();
             UGFSystemSingleton.Instance.UGFEntityOnHide(m_UGFEntity, isShutdown);
-            base.OnHide(isShutdown, userData);
+            CompleteHide(isShutdown, userData, exitedScope);
         }
 
         protected override void OnRecycle()

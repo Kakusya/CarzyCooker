@@ -8,20 +8,15 @@ namespace ET
 {
     public class ConfigReader : IConfigReader
     {
+        private readonly IAsyncOwner m_Owner = Init.Instance;
         public async UniTask<byte[]> ReadBytesAsync(string file)
         {
-            TextAsset textAsset = await GameEntry.Resource.LoadAssetAsync<TextAsset>(GetLubanAssetPath(file, false));
-            byte[] bytes = textAsset.bytes;
-            GameEntry.Resource.UnloadAsset(textAsset);
-            return bytes;
+            return await m_Owner.ReadAssetAsync<TextAsset, byte[]>(GetLubanAssetPath(file, false), asset => asset.bytes);
         }
 
         public async UniTask<string> ReadTextAsync(string file)
         {
-            TextAsset textAsset = await GameEntry.Resource.LoadAssetAsync<TextAsset>(GetLubanAssetPath(file, true));
-            string text = textAsset.text;
-            GameEntry.Resource.UnloadAsset(textAsset);
-            return text;
+            return await m_Owner.ReadAssetAsync<TextAsset, string>(GetLubanAssetPath(file, true), asset => asset.text);
         }
         
         private string GetLubanAssetPath(string fileName, bool isJson)

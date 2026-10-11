@@ -137,16 +137,9 @@ namespace ET
         {
             CheckOwner();
             string assetName = AssetUtility.GetETAsset(Utility.Text.Format("Code/{0}", fileName));
-            TextAsset textAsset = await GameEntry.Resource.LoadAssetAsync<TextAsset>(assetName);
-            try
-            {
-                CheckOwner();
-                return textAsset.bytes;
-            }
-            finally
-            {
-                GameEntry.Resource.UnloadAsset(textAsset);
-            }
+            byte[] bytes = await m_Owner.ReadAssetAsync<TextAsset, byte[]>(assetName, asset => asset.bytes);
+            CheckOwner();
+            return bytes;
         }
     }
 }

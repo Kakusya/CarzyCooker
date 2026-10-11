@@ -15,6 +15,13 @@ namespace Game
         private EventContainer m_EventContainer;
         private EntityContainer m_EntityContainer;
         private ResourceContainer m_ResourceContainer;
+        protected override void StopAsyncScope()
+        {
+            var resources = m_ResourceContainer;
+            m_ResourceContainer = null;
+            base.StopAsyncScope();
+            if (resources != null) { resources.UnloadAllAssets(); ReferencePool.Release(resources); }
+        }
 
         /// <summary>
         /// 父UIWidget
@@ -246,29 +253,32 @@ namespace Game
 
         protected internal override void OnRecycle()
         {
+            StopAsyncScope();
             base.OnRecycle();
             m_UIWidgetContainer?.OnRecycle();
         }
 
-        protected virtual void OnDestroy()
+        protected override void OnDestroy()
         {
+            StopAsyncScope();
             RemoveAllUIWidgets();
             ClearContainer();
         }
 
         protected internal override void OnClose(bool isShutdown, object userData)
         {
+            var exitedScope = AsyncScope;
+            StopAsyncScope();
             m_UIWidgetContainer?.OnClose(isShutdown, userData);
             HideAllEntity(isShutdown);
             UnsubscribeAll(isShutdown);
-            UnloadAllAssets(isShutdown);
             CloseAllUIWidgets(isShutdown, userData);
             if (isShutdown)
             {
                 RemoveAllUIWidgets();
                 ClearContainer();
             }
-            base.OnClose(isShutdown, userData);
+            CompleteClose(isShutdown, userData, exitedScope);
         }
         
         protected internal override void OnPause()

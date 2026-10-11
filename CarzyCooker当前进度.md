@@ -5,6 +5,7 @@
 | 范围 | 当前事实 | 入口 |
 | --- | --- | --- |
 | 框架底座 | 当前 main 分支的 ET 底座保留 GF + ET 双端、HybridCLR、UniTask、Luban 与 ET 示例；GameHot/GF Network 已移除 | [框架总览](Docs/Framework/README.md)、[模块索引](Docs/AI/module-index.md) |
+| 所属异步生命周期 | IAsyncOwner/RunAsync/Apply、公共 UI/Entity 与 ET owner、资源轮次、延时/请求等待和预拆卸取消已实施；27个新增 UTF 各有 Passed 证据，真实 AssetBundle 创建/读取退役及再加载通过，另补1个原计时用例；保持有限迁移范围 | [执行说明](openspec/changes/archive/2026-10-11-manage-owned-async-lifecycle/execution-notes.md)、[生命周期用法](references/framework-lifecycle.md) |
 | 底座入口与导表 | 同步泛型 UIEntity 统一独立路由；Luban 失败传播为 CLI 非零并阻断复制/ID/本地化，Editor 导表失败停止后续刷新。隔离成功/失败验证和工具/Unity 编译通过；真实工作表导出、UIEntity 显示未运行 | [执行记录](openspec/changes/archive/2026-10-11-fix-foundation-entry-and-export-errors/execution-notes.md)、[Entity 用法](Book/Entity开发.md)、[导表用法](Book/Luban配置.md) |
 | 协作体系 | 主工作区保留十二项OpenSpec、五项项目技能、官方unity-cli和四项SOP，共二十二项；第二工作区按执行职责保留6项项目技能，开发技能物理删除；十九份中文主规格已建立，十四项底座契约已细化 | [AGENTS](AGENTS.md)、[工作流](Docs/AI/workflow.md)、[规格索引](openspec/README.md)、[扫描记录](Docs/AI/spec-scan.md) |
 | 做饭玩法 | 房间、厨房、订单、顾客、伙伴、供应和产品存档尚未实施 | [未来产品设计](Docs/Product/README.md) |

@@ -28,4 +28,4 @@
 
 ## References
 
-新增契约以公共 owner 接入为范围，不替换现有 UI 显示等待器；入口见 [AExUIForm.cs](../../../../../Unity/Assets/Scripts/Game/UI/Common/AExUIForm.cs)、[ADynamicUIWidgetLoader.cs](../../../../../Unity/Assets/Scripts/Game/UI/Common/ADynamicUIWidgetLoader.cs) 和 [UI 手册](../../../../../Book/UI开发.md)。
+新增契约以公共 owner 接入为范围，不替换现有 UI 显示等待器；入口见 [AExUIForm.cs](../../../../../../Unity/Assets/Scripts/Game/UI/Common/AExUIForm.cs)、[ADynamicUIWidgetLoader.cs](../../../../../../Unity/Assets/Scripts/Game/UI/Common/ADynamicUIWidgetLoader.cs) 和 [UI 手册](../../../../../../Book/UI开发.md)。

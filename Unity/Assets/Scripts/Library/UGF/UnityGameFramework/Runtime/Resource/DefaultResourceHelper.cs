@@ -76,7 +76,7 @@ namespace UnityGameFramework.Runtime
             AssetBundle assetBundle = objectToRelease as AssetBundle;
             if (assetBundle != null)
             {
-                assetBundle.Unload(true);
+                NativeResourceRetirement.Release(assetBundle);
                 return;
             }
 

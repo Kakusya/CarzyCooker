@@ -14,6 +14,9 @@ namespace ET
         private string m_UIWidgetAssetPath;
 
         private AUIWidget m_UIWidget;
+        private AUIWidget m_ParentWidget;
+        private AExUIForm m_ParentForm;
+        private AsyncScope m_Scope;
 
         /// <summary>
         /// UIWidget资源路径
@@ -29,23 +32,62 @@ namespace ET
 
         private void Start()
         {
-            LoadUIWidgetAsync().Forget();
+            m_ParentWidget = GetComponentInParent<AUIWidget>(true);
+            m_ParentForm = GetComponentInParent<AExUIForm>(true);
+            if (m_ParentWidget != null) m_ParentWidget.AsyncScopeOpened += BeginLoad;
+            else if (m_ParentForm != null) m_ParentForm.AsyncScopeOpened += BeginLoad;
+            else throw new GameFrameworkException("Dynamic UIWidget requires an async UI owner.");
+            BeginLoad(m_ParentWidget != null ? m_ParentWidget.AsyncScope : m_ParentForm.AsyncScope);
         }
 
-        private async UniTaskVoid LoadUIWidgetAsync()
+        private void BeginLoad(AsyncScope parent)
         {
-            GameObject go = await GameEntry.Resource.LoadAssetAsync<GameObject>(m_UIWidgetAssetPath);
-            if (this == null || go == null)
+            if (parent == null || !parent.IsActive || m_Scope != null) return;
+            var scope = new AsyncScope(parent.Runtime, () => this != null, parent);
+            m_Scope = scope;
+            AUIWidget created = null;
+            scope.Stopped += () =>
             {
-                GameEntry.Resource.UnloadAsset(go);
-                return;
+                if (ReferenceEquals(m_Scope, scope)) m_Scope = null;
+                if (created != null)
+                {
+                    OnUIWidgetUnloading(created);
+                    Destroy(created.gameObject);
+                }
+                if (m_UIWidget == created) m_UIWidget = null;
+            };
+            scope.RunAsync(async context =>
+            {
+                GameObject go = await context.LoadAssetAsync<GameObject>(m_UIWidgetAssetPath);
+                context.Apply(() => created = CreateUIWidget(go));
+            });
+        }
+
+        private void OnDestroy()
+        {
+            if (m_ParentWidget != null) m_ParentWidget.AsyncScopeOpened -= BeginLoad;
+            else if (m_ParentForm != null) m_ParentForm.AsyncScopeOpened -= BeginLoad;
+            var old = m_Scope;
+            m_Scope = null;
+            old?.Stop();
+        }
+
+        protected virtual void OnUIWidgetUnloading(AUIWidget widget)
+        {
+            if (widget is AExUIWidget owned)
+            {
+                owned.TryClose();
+                if (owned.Has()) owned.Remove();
             }
+        }
+
+        private AUIWidget CreateUIWidget(GameObject go)
+        {
             GameObject uiWidgetInstance = Instantiate(go, transform);
             AUIWidget uiWidget = uiWidgetInstance.GetComponent<AUIWidget>();
             if (uiWidget == null)
             {
                 Destroy(uiWidgetInstance);
-                GameEntry.Resource.UnloadAsset(go);
                 throw new GameFrameworkException(Utility.Text.Format("DynamicMonoUIWidget: Loaded asset at path {0} does not contain an AUIWidget component.", m_UIWidgetAssetPath));
             }
             RectTransform uiWidgetRectTransform = uiWidgetInstance.GetComponent<RectTransform>();
@@ -60,6 +102,7 @@ namespace ET
 
             m_UIWidget = uiWidget;
             OnUIWidgetLoaded(uiWidget);
+            return uiWidget;
         }
 
         protected abstract void OnUIWidgetLoaded(AUIWidget uiWidget);
