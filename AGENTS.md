@@ -230,7 +230,7 @@ Unity/
 ### 当前架构边界
 
 - 玩法「已有什么」优先看：**代码 + 表** + [CarzyCooker当前进度.md](CarzyCooker当前进度.md) + 相关 `references/`；冲突时以代码/表与用户最新意图为准并提议同步文档。
-- 当前源码保留底座与示例；另已接入 Unity 本机产品会话原型（Match/Participant、共同裁决、本地消息、UDP-KCP、独立客户端投影）。联机实测和剩余边界见 [产品执行记录](openspec/changes/archive/2026-10-11-product-session-bootstrap/execution-notes.md)，不是完整做饭房间或玩法。厨房、订单、顾客、伙伴、供应和存档仍未实施；正式设计见 [Docs/Product/](Docs/Product/README.md)。
+- 当前源码保留底座与示例；已接入 Unity 本机产品会话（Match/Participant、共同裁决、本地消息、UDP-KCP、独立投影），普通 Launcher 默认 Solo 格子样机。临时地图已实施真实材料／碗内容、番茄切配与手持打蛋、Tick 进度／单人认领、暂停接续／合作交接及失联落物，协议为 3；单电脑 UTF、Solo 与独立 Fiber loopback KCP 证据见 [备料执行记录](openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。正式厨房／餐厅／关卡、煮汤／盛装、订单、顾客、伙伴、供应和存档仍未实施；正式设计见 [Docs/Product/](Docs/Product/README.md)。
 - 未来业务保留“已确认、授权补足、候选、待裁决”的区别；历史授权、候选目录、文件和标签不增加本轮实施授权。
 - 已确认的未来边界：Host 是世界权威但不自动是存档 Owner；本地/远端玩家走同一裁决；运行世界、持久进度、领取凭证分开；PC/Android 生态隔离。这些是设计，不是现有底座保证。
 - 普通手槽/台面一格一物、容器内容随容器移动、分装守恒、加工命令完整验证后提交等详见 [产品设计](Docs/Product/design.md)，不在文档整理中新增实现。

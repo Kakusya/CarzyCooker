@@ -1,0 +1,40 @@
+[
+  {
+    "Id": 1,
+    "Name": "番茄",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": []
+  },
+  {
+    "Id": 2,
+    "Name": "番茄块",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": []
+  },
+  {
+    "Id": 3,
+    "Name": "鸡蛋",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": []
+  },
+  {
+    "Id": 4,
+    "Name": "蛋液",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": []
+  },
+  {
+    "Id": 5,
+    "Name": "碗",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      3,
+      4
+    ]
+  }
+]

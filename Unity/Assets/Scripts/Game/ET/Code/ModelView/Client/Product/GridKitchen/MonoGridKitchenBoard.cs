@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Game;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ET.Client
 {
@@ -20,6 +21,24 @@ namespace ET.Client
         private readonly Dictionary<int, SpriteRenderer> actors = new();
         private readonly Dictionary<int, SpriteRenderer> directions = new();
         private readonly Dictionary<long, SpriteRenderer> items = new();
+        private readonly Dictionary<long, Text> labels = new();
+        private Font labelFont;
+
+        private Text Label(long id, Vector3 position)
+        {
+            if (labels.TryGetValue(id, out Text existing)) return existing;
+            if (labelFont == null) labelFont = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "Noto Sans CJK SC", "Arial" }, 36);
+            var go = new GameObject("KitchenLabel", typeof(RectTransform), typeof(Canvas)); go.layer = RenderLayer;
+            go.transform.SetParent(RenderRootTransform, false); go.transform.localPosition = position;
+            go.transform.localScale = Vector3.one * .018f;
+            Canvas canvas = go.GetComponent<Canvas>(); canvas.renderMode = RenderMode.WorldSpace; canvas.worldCamera = boardCamera;
+            canvas.sortingOrder = 600;
+            var caption = new GameObject("Caption", typeof(RectTransform), typeof(Text)); caption.layer = RenderLayer;
+            caption.transform.SetParent(go.transform, false);
+            Text text = caption.GetComponent<Text>(); text.font = labelFont; text.fontSize = 24;
+            text.color = new Color(.08f,.12f,.14f); text.alignment = TextAnchor.MiddleCenter; text.raycastTarget = false;
+            text.rectTransform.sizeDelta = new Vector2(100, 65); labels.Add(id, text); return text;
+        }
         public Camera BoardCamera => boardCamera;
 
         public Vector3 CellToWorld(GridCell cell) => new(cell.X, cell.Y * GroundY, 0);
@@ -78,6 +97,7 @@ namespace ET.Client
         public void Render(IEnumerable<GridActorProjection> people, IEnumerable<GridStationProjection> counters,
             IEnumerable<GridItemProjection> objects, int ownMember, float tick, int stepTicks, GridCell? highlight)
         {
+            GridItemProjection[] objectValues = objects.ToArray();
             foreach (SpriteRenderer tile in tiles.Values)
             {
                 int y = Mathf.RoundToInt(tile.transform.localPosition.y / GroundY), x = Mathf.RoundToInt(tile.transform.localPosition.x);
@@ -109,9 +129,15 @@ namespace ET.Client
             {
                 if (!stations.TryGetValue(counter.Id,out SpriteRenderer renderer))
                 { renderer = CreateSprite(counter.Name,CellToWorld(counter.Cell)+new Vector3(0,.12f,0),new Vector3(.88f,.65f,1),new Color(.38f,.49f,.54f),100-Mathf.RoundToInt(counter.Cell.Y*GroundY*10));stations.Add(counter.Id,renderer); }
+                GridItemProjection item = objectValues.FirstOrDefault(v=>v.Id==counter.ItemId);
+                string contents = item.DefinitionId==GridKitchenRules.Bowl ? "（"+(item.Contents.Count==0?"空":string.Join("、",item.Contents.Select(id=>objectValues.First(v=>v.Id==id).Name)))+"）" : "";
+                Label(counter.Id,CellToWorld(counter.Cell)+new Vector3(0,-.32f,0)).text=counter.Name+"\n"+(item.Id==0?"空":item.Name+contents);
             }
-            foreach (GridItemProjection item in objects)
+            foreach (long id in items.Keys.Except(objectValues.Where(v=>v.Location!=GridItemLocation.Container).Select(v=>v.Id)).ToArray())
+            { Destroy(items[id].gameObject); items.Remove(id); }
+            foreach (GridItemProjection item in objectValues)
             {
+                if(item.Location==GridItemLocation.Container)continue;
                 if (!items.TryGetValue(item.Id,out SpriteRenderer renderer))
                 {renderer=CreateSprite($"{item.Name} #{item.Id}",Vector3.zero,new Vector3(.22f,.22f,1), item.Contents.Count > 0 ? new Color(.94f,.91f,.78f) : new Color(.94f,.73f,.22f),300);items.Add(item.Id,renderer);}
                 Vector3 position=CellToWorld(item.Cell);
@@ -138,7 +164,8 @@ namespace ET.Client
                 }
             }
             for(int i=RenderRootTransform.childCount-1;i>=0;--i)Destroy(RenderRootTransform.GetChild(i).gameObject);
-            tiles.Clear();stations.Clear();actors.Clear();directions.Clear();items.Clear();
+            tiles.Clear();stations.Clear();actors.Clear();directions.Clear();items.Clear();labels.Clear();
+            if(labelFont!=null)Destroy(labelFont);labelFont=null;
             originalCamera=null;
         }
     }

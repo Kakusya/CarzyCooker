@@ -16,6 +16,8 @@ message GridCommandRequest // IRequest
     int32 Y = 10;
     int64 TargetId = 11;
     int64 ExpectedItemId = 12;
+    int64 ExpectedTargetItemId = 13;
+    int64 ExpectedProcessId = 14;
 }
 
 message GridCommandResponse // IResponse
@@ -46,6 +48,8 @@ message GridSubmitRequest // IRequest
     int32 Y = 13;
     int64 TargetId = 14;
     int64 ExpectedItemId = 15;
+    int64 ExpectedTargetItemId = 16;
+    int64 ExpectedProcessId = 17;
 }
 
 message GridSubmitResponse // IResponse
@@ -81,6 +85,7 @@ message GridActorState
     int64 LastCommandId = 14;
     int32 LastStatus = 15;
     string LastReason = 16;
+    int64 WorkId = 17;
 }
 
 message GridStationState
@@ -90,6 +95,7 @@ message GridStationState
     int32 Y = 3;
     string Name = 4;
     int64 ItemId = 5;
+    int32 Kind = 6;
 }
 
 message GridItemState
@@ -100,7 +106,8 @@ message GridItemState
     int64 HolderId = 4;
     int32 X = 5;
     int32 Y = 6;
-    repeated string Contents = 7;
+    repeated int64 Contents = 7;
+    int32 DefinitionId = 8;
 }
 
 message GridWorldSnapshot // IMessage
@@ -120,6 +127,7 @@ message GridWorldSnapshot // IMessage
     repeated GridActorState Actors = 13;
     repeated GridStationState Stations = 14;
     repeated GridItemState Items = 15;
+    repeated GridManualProcessState Processes = 16;
 }
 
 message GridCommandResult // IMessage
@@ -132,4 +140,19 @@ message GridCommandResult // IMessage
     int32 Status = 6;
     string Reason = 7;
     int64 Version = 8;
+}
+
+message GridManualProcessState
+{
+    int64 ProcessId = 1;
+    int32 RecipeId = 2;
+    int64 InputItemId = 3;
+    int64 TargetItemId = 4;
+    int64 StationId = 5;
+    int32 RequiredTicks = 6;
+    int32 ProgressTicks = 7;
+    int32 State = 8;
+    int32 WorkerMemberId = 9;
+    int64 WorkerGeneration = 10;
+    int64 OutputItemId = 11;
 }

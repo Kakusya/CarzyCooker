@@ -75,5 +75,6 @@ namespace ET
          public const ushort GridItemState = 10069;
          public const ushort GridWorldSnapshot = 10070;
          public const ushort GridCommandResult = 10071;
+         public const ushort GridManualProcessState = 10072;
     }
 }

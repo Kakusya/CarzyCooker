@@ -81,6 +81,12 @@ Tick 提交后为每端生成独立 GridWorldSnapshot 与本人 GridCommandResul
 
 ## owner 所属等待
 
+临时格子备料使用产品协议 3：物品投影包含 DefinitionId 与内容 ItemId，Container 位置的 HolderId 是外层容器，内容不另画成地面物品。GridManualProcess、物品及角色在同一 World／Generation／Version 快照安装，进度由 Host Tick 推进，视图不计业务时间。暂停保留进度和输入身份；输出为新物品身份，开始命令 Executed 仅表示开始成功。
+
+输入从 GridPresentation → GridClient.CreateGridCommand → ClientSession 的所属异步值请求。本地经 LocalMessage 的可信 Peer → 根 ProcessInnerSender.Call(peer ActorId) → MessageQueue／Ordered MailBox → ProductHost GridPeerHandler；KCP 经 Session／ProductWire 复制载荷并保留外层 RpcId 后进入同一 Peer。Peer 携可信实例／代次再 Call HostSession ActorId → Ordered GridSubmitHandler → 快速答复，Tick 再核对源／目标 ItemId、ProcessId 和绑定并提交。拒绝不交换／半扣，内部 GridSubmit 不进入 wire 白名单，版本 2 明确拒绝。
+
+提交后每端独立 Snapshot／Result，经 LocalDelivery sender.Send 或 RemoteDelivery Session.Send → ProductClient 的 ClientSession MailBox → GridSnapshotHandler／GridResultHandler；接收者复制独立值集合后释放 DTO，再发观察事件。GridWorldCommitted／GridProjectionApplied 不承担传输或请求答复。材料与 Process 归地图 Child，Match Children 保持 Participant；单成员释放工作与落物不停止共用 Sender。详见 [实际 owner 树和完整路径](../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/design.md)。
+
 `OwnedRequestExtensions` 位于既有 Hotfix 程序集。Session 值适配使用原 Session.Call(token)、原等待表及 Timer 超时；ERR_Cancel 转为取消，超时单独报告。适配器在响应有效期内读取独立值，finally 释放自己拿到的池化响应及 Session 输出请求；返回值不保留池化消息。Session RpcInfo 改用不复用的记录，移除等待/取消注册后再通知续体；迟到未匹配响应由 Session 收尾。
 
 本地值适配沿原 sender.Call → ActorId → MessageQueue → Ordered MailBox → SceneType/Handler → 原答复路径。单 owner Stop 只结束其业务等待，内部唯一观察者继续等原答复/40秒超时并释放响应；不 Stop 共用 sender，也不宣称已清空物理等待。整个运行退出保留原 sender.Stop。输入由现有 sender/handler 收尾，适配器不抢收件端所有权；取消不会回滚已经提交的动作。

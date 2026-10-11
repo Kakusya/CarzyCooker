@@ -24,7 +24,7 @@ namespace ET.Client
         public void AddTarget(string label, Action action)
         {
             Button button=Instantiate(TargetTemplateButton,TargetsRectTransform);button.gameObject.SetActive(true);
-            Text caption=button.GetComponentInChildren<Text>();caption.font=font;caption.fontSize=30;caption.text=label;
+            Text caption=button.GetComponentInChildren<Text>();caption.font=font;caption.fontSize=24;caption.resizeTextForBestFit=true;caption.resizeTextMinSize=16;caption.resizeTextMaxSize=24;caption.text=label;
             button.onClick.AddListener(()=>action());buttons.Add(button);
         }
         public void ReleaseHud()

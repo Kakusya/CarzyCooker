@@ -1,7 +1,7 @@
 {
     "name": "CarzyCooker.ET.Tests",
     "rootNamespace": "ET",
-    "references": ["ET.Core", "ET.ThirdParty", "Game.ET.Code.Model", "Game.ET.Code.Hotfix", "Game.ET.Loader", "Game", "UniTask", "MemoryPack"],
+    "references": ["ET.Core", "ET.ThirdParty", "Game.ET.Code.Model", "Game.ET.Code.Hotfix", "Game.ET.Loader", "Game", "UniTask", "MemoryPack", "LubanLib"],
     "optionalUnityReferences": ["TestAssemblies"],
     "defineConstraints": ["UNITY_ET"],
     "autoReferenced": false

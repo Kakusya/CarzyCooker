@@ -33,6 +33,8 @@ Check 不写产物且跳过本地化输出。缺工具说明前置，不把构�
 
 ## 协议、本地化与绑定
 
+临时格子备料新增两张 `Design/Excel/ET/Datas/Product/` 源表：GridItemConfig（定义、显示名、材料／容器、容量、接受定义）与 GridManualRecipeConfig（方式、输入、输出、Tick 耗时），__tables__ 注册 c,s,e。ET 运行从既有 Tables 读取，测试从当前 CodeMode 的实际导出 bytes 加载，随 World 释放；必需定义或引用非法时产品初始化明确失败。源表及五目标生成证据见 [本轮执行说明](../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。
+
 - Design/Proto/*/proto.conf 选择 active/codeType/起始 Opcode/输出；Proto2CS 排序和消息顺序影响 Opcode。当前配置只有 ET 生成域，使用 ET/MemoryPack。工具保留 UGF 生成器不等于客户端仍有 GF Network packet 运行时；不恢复已删除模式。见 [Proto手册](../Book/Proto生成工具.md)。
 - 本地化源 Design/Excel/Localization.xlsx，由 ExcelExporter.Localization.cs 生成资源与常量。见 [多语言](../Book/多语言.md)。
 - CodeBind 在 prefab 上生成 Mono partial 引用；ET 骨架工具不会自动填表。STATE_CONTROLLER_CODE_BIND 按依赖配置启用，不由宏推断绑定完成。

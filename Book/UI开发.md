@@ -261,4 +261,8 @@ UIWidget 的资源配置使用 `UIEntity.xlsx`，生成常量为 `UGFUIEntityId`
 
 ## 本轮所属异步
 
+`UIGridKitchen` 复用原注册 1101、Prefab 与 CodeBind 引用，由 ProductClient 的 UIComponent 持有；地图由同 Scene 的 GFEntityComponent 持有。动态按钮沿 TargetTemplateButton 创建并在 Close 清除订阅，GridPresentation Dispose 移除所属 HUD／Board，不直接显隐受管根。
+
+备料样机的场景与 HUD 台面入口均取 GridClient.CounterIntent；目标、源物品、目标物品及已有作业身份在意图内固定。兼容碗执行添加，空手切配台执行开始／继续／本人停止；暂停材料提供直接拿取按钮，手持鸡蛋碗提供开始／继续／停止打蛋。按钮仅随物品关系或作业状态变化重建，进度文字随快照刷新。Hint 区分切配／打蛋的加工、暂停和完成，Hand 显示真实碗内容。真实按钮、场景坐标、重开和输入防穿透证据见 [备料验收](../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。
+
 公共 owner 自动建立 scope。业务通过 `owner.RunAsync(context => ...)` 等待，或用 `owner.Run(...)` 启动由入口观察的工作；await 后通过 `context.Apply` 写回。Close/Hide 立即取消旧业务等待，Visible/暂停不取消。详细例子、实际迁移入口与原生退役边界见 [生命周期约定](../references/framework-lifecycle.md#所属异步入口)，证据见 [本次执行说明](../openspec/changes/archive/2026-10-11-manage-owned-async-lifecycle/execution-notes.md)。

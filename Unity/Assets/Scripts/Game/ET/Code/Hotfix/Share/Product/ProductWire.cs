@@ -82,6 +82,7 @@ namespace ET
                             message.WorldGeneration = grid.WorldGeneration; message.BindingGeneration = grid.BindingGeneration;
                             message.CommandId = grid.CommandId; message.Action = grid.Action; message.X = grid.X; message.Y = grid.Y;
                             message.TargetId = grid.TargetId; message.ExpectedItemId = grid.ExpectedItemId;
+                            message.ExpectedTargetItemId = grid.ExpectedTargetItemId; message.ExpectedProcessId = grid.ExpectedProcessId;
                         }),
                         _ => throw new InvalidOperationException("Product wire whitelist mismatch")
                     };

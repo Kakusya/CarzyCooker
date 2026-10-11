@@ -19,6 +19,7 @@ namespace ET
                 message.WorldGeneration = request.WorldGeneration; message.BindingGeneration = request.BindingGeneration;
                 message.CommandId = request.CommandId; message.Action = request.Action; message.X = request.X; message.Y = request.Y;
                 message.TargetId = request.TargetId; message.ExpectedItemId = request.ExpectedItemId;
+                message.ExpectedTargetItemId = request.ExpectedTargetItemId; message.ExpectedProcessId = request.ExpectedProcessId;
             });
             HostSessionComponent authority = peer.Authority;
             using var result = (GridSubmitResponse)await peer.Root().GetComponent<ProcessInnerSender>().Call(authority.GetActorId(), inner, false);
@@ -44,7 +45,7 @@ namespace ET
                 : match.MatchId != request.MatchId ? "WrongMatch"
                 : grid.WorldId != request.WorldId || grid.WorldGeneration != request.WorldGeneration ? "WrongWorld"
                 : grid.SubmitGridIntent(peer.MemberId, peer.Generation, new GridIntent(request.CommandId, (GridAction)request.Action,
-                    new GridCell(request.X, request.Y), request.TargetId, request.ExpectedItemId));
+                    new GridCell(request.X, request.Y), request.TargetId, request.ExpectedItemId, request.ExpectedTargetItemId, request.ExpectedProcessId));
             response.CommandId = request.CommandId;
             response.Error = reason == null ? 0 : ProductError.InvalidRequest;
             response.Message = reason; response.Status = (int)(reason == null ? GridResultStatus.Accepted : GridResultStatus.Rejected);
@@ -56,6 +57,7 @@ namespace ET
     [FriendOf(typeof(GridActor))]
     [FriendOf(typeof(GridStation))]
     [FriendOf(typeof(GridItem))]
+    [FriendOf(typeof(GridManualProcess))]
     [FriendOf(typeof(Match))]
     [FriendOf(typeof(HostPeer))]
     public static class GridBroadcast
@@ -77,18 +79,25 @@ namespace ET
                     state.NextX = actor.NextCell.X; state.NextY = actor.NextCell.Y; state.StepStartTick = actor.StepStartTick;
                     state.Motion = (int)actor.Motion; state.Facing = actor.Facing; state.HandItemId = actor.HandItemId;
                     state.GoalX = actor.Goal.X; state.GoalY = actor.Goal.Y; state.LastCommandId = actor.LastResultCommandId;
-                    state.LastStatus = (int)actor.LastResultStatus; state.LastReason = actor.LastResultReason;
+                    state.LastStatus = (int)actor.LastResultStatus; state.LastReason = actor.LastResultReason; state.WorkId = actor.WorkId;
                 });
                 foreach (GridCell cell in actor.Path.Skip(actor.PathIndex)) value.Path.Add(ProductMessages.Create<GridPathCell>(state => { state.X = cell.X; state.Y = cell.Y; }));
                 snapshot.Actors.Add(value);
             }
             foreach (GridStation station in world.Stations.Values.Select(value => (GridStation)value))
-                snapshot.Stations.Add(ProductMessages.Create<GridStationState>(value => { value.StationId = station.Id; value.Name = station.Name; value.X = station.Cell.X; value.Y = station.Cell.Y; value.ItemId = station.ItemId; }));
+                snapshot.Stations.Add(ProductMessages.Create<GridStationState>(value => { value.StationId = station.Id; value.Name = station.Name; value.X = station.Cell.X; value.Y = station.Cell.Y; value.ItemId = station.ItemId; value.Kind = (int)station.Kind; }));
             foreach (GridItem item in world.Items.Values.Select(value => (GridItem)value))
             {
-                var state = ProductMessages.Create<GridItemState>(value => { value.ItemId = item.Id; value.Name = item.Name; value.Location = (int)item.Location; value.HolderId = item.HolderId; value.X = item.Cell.X; value.Y = item.Cell.Y; });
+                var state = ProductMessages.Create<GridItemState>(value => { value.ItemId = item.Id; value.Name = item.Name; value.DefinitionId = item.DefinitionId; value.Location = (int)item.Location; value.HolderId = item.HolderId; value.X = item.Cell.X; value.Y = item.Cell.Y; });
                 state.Contents.AddRange(item.Contents); snapshot.Items.Add(state);
             }
+            foreach (GridManualProcess p in world.Processes.Values.Select(value => (GridManualProcess)value))
+                snapshot.Processes.Add(ProductMessages.Create<GridManualProcessState>(value =>
+                {
+                    value.ProcessId = p.Id; value.RecipeId = p.RecipeId; value.InputItemId = p.InputItemId; value.TargetItemId = p.TargetItemId;
+                    value.StationId = p.StationId; value.RequiredTicks = p.RequiredTicks; value.ProgressTicks = p.ProgressTicks;
+                    value.State = (int)p.State; value.WorkerMemberId = p.WorkerMemberId; value.WorkerGeneration = p.WorkerGeneration; value.OutputItemId = p.OutputItemId;
+                }));
             return snapshot;
         }
 

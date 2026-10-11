@@ -76,6 +76,13 @@ namespace ET
             world.AddSingleton<MessageQueue>();
             world.AddSingleton<NetServices>();
             world.AddSingleton<LogMsg>();
+            Tables tables = world.AddSingleton<Tables>();
+#if CLIENT
+            const string configMode = "Client";
+#else
+            const string configMode = "ClientServer";
+#endif
+            tables.LoadAsync(name => UniTask.FromResult(new Luban.ByteBuf(System.IO.File.ReadAllBytes(System.IO.Path.Combine(Application.dataPath, "Res/ET", configMode, "Luban", name + ".bytes"))))).GetAwaiter().GetResult();
             viewRoot = new GameObject("ProductTestView");
 #if UNITY_ET_VIEW && UNITY_EDITOR
             Entity.SetRootView(viewRoot.transform);

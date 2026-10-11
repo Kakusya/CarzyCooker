@@ -24,6 +24,7 @@ namespace ET
             {
                 if (self.Config.Role is RuntimeInstanceRole.Host or RuntimeInstanceRole.Solo)
                 {
+                    GridKitchenSystem.ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTGridManualRecipeConfig.DataList);
                     Scene host = EntitySceneFactory.CreateScene(root, IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(), SceneType.ProductHost, "ProductHost");
                     self.HostScene = host;
                     Match match = host.AddChild<Match>();

@@ -133,10 +133,13 @@ namespace ET.Client
             if(!self.Ready)return;
             GridClientComponent grid=((Scene)self.IScene).GetComponent<ClientSessionComponent>().GetComponent<GridClientComponent>();
             if(!grid.Stations.TryGetValue(target,out GridStationProjection station) || !grid.Actors.TryGetValue(grid.MemberId,out GridActorProjection own))return;
-            self.SendGridAction(own.HandItemId==0?GridAction.TakeCounter:GridAction.PlaceCounter,station.Cell,target,own.HandItemId==0?station.ItemId:own.HandItemId);
+            self.SendGridIntent(grid.CounterIntent(target));
         }
 
-        public static void SendGridAction(this GridPresentationComponent self, GridAction action, GridCell cell=default, long target=0, long expected=0)
+        public static void SendGridIntent(this GridPresentationComponent self, GridIntent intent) =>
+            self.SendGridAction(intent.Action, intent.Cell, intent.TargetId, intent.ExpectedItemId, intent.ExpectedTargetItemId, intent.ExpectedProcessId);
+
+        public static void SendGridAction(this GridPresentationComponent self, GridAction action, GridCell cell=default, long target=0, long expected=0, long expectedTarget=0, long process=0)
         {
             if(!self.Ready)return;
             EntityRef<GridPresentationComponent> selfRef=self;
@@ -145,7 +148,7 @@ namespace ET.Client
                 ClientSessionComponent client=((Scene)self.IScene).GetComponent<ClientSessionComponent>();
                 GridClientComponent grid=client.GetComponent<GridClientComponent>();
                 EntityRef<GridClientComponent> gridRef=grid;
-                GridCommandRequest request=grid.CreateGridCommand(action,cell,target,expected);
+                GridCommandRequest request=grid.CreateGridCommand(action,cell,target,expected,expectedTarget,process);
                 long command=request.CommandId, generation=grid.WorldGeneration;
                 self.Highlight=cell;self.HighlightCommand=command;
                 try
@@ -166,21 +169,40 @@ namespace ET.Client
             UIGridKitchen hud=self.Hud;if(hud?.View==null)return;
             GridClientComponent grid=((Scene)self.IScene).GetComponent<ClientSessionComponent>().GetComponent<GridClientComponent>();
             MonoUIGridKitchen view=hud.View;
-            string state=grid.LastStatus switch {GridResultStatus.Accepted=>"已发送",GridResultStatus.PendingApproach=>"正在接近",GridResultStatus.Executed=>"已完成",GridResultStatus.Cancelled=>"已取消",GridResultStatus.Rejected=>"无法操作",_=>"就绪"};
-            string reason=grid.LastReason switch {"HandFull"=>"手中已有物品", "TargetChanged"=>"台面或物品已变化", "PickupRequiresSameCell"=>"需要站在物品所在格", "BlockedCell"=>"此格不可行走", "Unreachable"=>"无法到达", "CounterNotAdjacent"=>"需要靠近台面",_=>grid.LastReason==null?"":"请重新选择目标"};
+            string state=grid.LastStatus switch {GridResultStatus.Accepted=>"已发送",GridResultStatus.PendingApproach=>"正在接近",GridResultStatus.Executed=>"动作已执行",GridResultStatus.Cancelled=>"已取消",GridResultStatus.Rejected=>"无法操作",_=>"就绪"};
+            string reason=grid.LastReason switch {"HandFull"=>"手中已有物品", "TargetChanged"=>"台面或物品已变化", "PickupRequiresSameCell"=>"需要站在物品所在格", "BlockedCell"=>"此格不可行走", "Unreachable"=>"无法到达", "CounterNotAdjacent"=>"需要靠近台面", "WorkBusy"=>"正在工作，先停止或等待队友", "ContainerFull"=>"碗已满", "IncompatibleMaterial"=>"材料不兼容", "NestedContainer"=>"容器不能套容器", "NoRecipe"=>"没有对应配方", "ProcessChanged"=>"作业或执行者已变化", "RequiresHeldEggBowl"=>"需要手持含鸡蛋的碗",_=>grid.LastReason==null?"":grid.LastReason};
             view.StatusText.text=$"玩家 {grid.MemberId} · {state} {reason}";
             if(!grid.Actors.TryGetValue(grid.MemberId,out GridActorProjection own))return;
-            string hand=own.HandItemId!=0 && grid.Items.TryGetValue(own.HandItemId,out GridItemProjection held)?held.Name:"空手";
-            view.HandText.text=$"手持：{hand}  ·  点击目标执行拿放";
+            string hand=own.HandItemId!=0 ? grid.ItemDescription(own.HandItemId):"空手";
+            view.HandText.text=$"手持：{hand}";
+            view.HintText.text=string.Join(" · ",grid.Processes.Values.Select(GridClientSystem.WorkDescription));
+            if(view.HintText.text.Length==0)view.HintText.text="点击目标拿放／切配 · 拖动查看餐厅";
             GridItemProjection[] drops=grid.Items.Values.Where(value=>value.Location==GridItemLocation.Ground && value.Cell==own.Cell).OrderBy(value=>value.Id).ToArray();
-            string targetsKey=$"{own.HandItemId}:"+string.Join(",",drops.Select(value=>value.Id));
+            string targetsKey=$"{own.HandItemId}:{own.WorkId}:"+string.Join(",",drops.Select(value=>value.Id))+"|"+
+                string.Join(";",grid.Stations.Values.OrderBy(v=>v.Id).Select(v=>$"{v.Id}:{v.ItemId}"))+"|"+
+                string.Join(";",grid.Items.Values.OrderBy(v=>v.Id).Select(v=>$"{v.Id}:{string.Join(",",v.Contents)}"))+"|"+
+                string.Join(";",grid.Processes.Values.OrderBy(v=>v.Id).Select(v=>$"{v.Id}:{v.State}:{v.WorkerMemberId}:{v.StationId}"));
             if(self.HudTargetsKey==targetsKey)return;
             self.HudTargetsKey=targetsKey;view.ClearTargets();
             EntityRef<GridPresentationComponent> selfRef=self;
             foreach(GridStationProjection station in grid.Stations.Values.OrderBy(value=>value.Id))
             {
-                long id=station.Id;string name=station.Name;
-                view.AddTarget((own.HandItemId==0?"拿 ":"放 ")+name,()=>{GridPresentationComponent current=selfRef;current?.ChooseGridCounter(id);});
+                long id=station.Id; GridIntent intent=grid.CounterIntent(id);
+                string action=intent.Action switch {GridAction.PlaceCounter=>"放",GridAction.AddToContainer=>"添加",GridAction.StartStationWork=>intent.ExpectedProcessId==0?"切配":"继续切配",GridAction.StopWork=>"停止",_=>"拿"};
+                view.AddTarget($"{action} {station.Name} · {grid.ItemDescription(station.ItemId)}",()=>{GridPresentationComponent current=selfRef;current?.SendGridIntent(intent);});
+                GridProcessProjection paused=grid.Processes.Values.FirstOrDefault(v=>v.InputItemId==station.ItemId && v.State==GridWorkState.Paused);
+                if(own.HandItemId==0 && paused.Id!=0)
+                {
+                    long item=station.ItemId;
+                    view.AddTarget("拿取暂停材料",()=>{GridPresentationComponent current=selfRef;current?.SendGridAction(GridAction.TakeCounter,station.Cell,id,item);});
+                }
+            }
+            if(own.HandItemId!=0 && grid.Items.TryGetValue(own.HandItemId,out GridItemProjection bowl) && bowl.DefinitionId==GridKitchenRules.Bowl && bowl.Contents.Count==1 &&
+                grid.Items.TryGetValue(bowl.Contents[0],out GridItemProjection egg) && egg.DefinitionId==GridKitchenRules.Egg)
+            {
+                GridProcessProjection work=grid.Processes.Values.FirstOrDefault(v=>v.InputItemId==egg.Id && v.State!=GridWorkState.Completed);
+                var intent=new GridIntent(0,own.WorkId==work.Id && work.Id!=0?GridAction.StopWork:GridAction.StartHeldWork,own.Cell,bowl.Id,egg.Id,bowl.Id,work.Id);
+                view.AddTarget(intent.Action==GridAction.StopWork?"停止打蛋":work.Id==0?"开始打蛋":"继续打蛋",()=>{GridPresentationComponent current=selfRef;current?.SendGridIntent(intent);});
             }
             int dropIndex=0;
             foreach(GridItemProjection item in drops)

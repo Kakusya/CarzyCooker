@@ -1,10 +1,10 @@
 # 中文底座规格索引
 
-这些主规格描述当前源码/配置支持的底座、Unity本机产品会话原型与协作契约，不描述做饭玩法已实现。底座以静态基线建立；后续 CLI 接入的实际验证见 [Unity CLI](../Book/UnityCLI.md)，产品构建与玩法验收仍为 NotRun。未来目标读 [产品文档](../Docs/Product/README.md)，模块路由读 [模块索引](../Docs/AI/module-index.md)。
+这些主规格描述当前源码/配置支持的底座、Unity 本机产品会话、临时格子及备料手工加工子集与协作契约，不代表完整做饭／经营已实施。底座以静态基线建立；后续 CLI 接入的实际验证见 [Unity CLI](../Book/UnityCLI.md)。备料的 UTF、普通 Launcher Solo 和同 Editor 独立 Fiber 的真实 KCP 结果见 [备料执行记录](changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)，本次加工双进程与 Player／AOT 包体验收仍为 NotRun。未来目标读 [产品文档](../Docs/Product/README.md)，模块路由读 [模块索引](../Docs/AI/module-index.md)。
 
 2026-10-09 的 [深度扫描](../Docs/AI/spec-scan.md) 已细化十四项底座规格；合计十六份主规格、74 项要求、120 个场景。新增 31 项要求和 70 个场景，保留原要求；仅给固定 ET 入口补充实际编译条件。增量、来源和验证见 [deepen-foundation-specs](changes/archive/2026-10-09-deepen-foundation-specs/proposal.md) 与 [verification](changes/archive/2026-10-09-deepen-foundation-specs/verification.md)。场景是契约及后续验证目标，不代表这些动态场景已运行。
 
-已增加 runtime-instances、product-session、grid-kitchen、multiplayer-peer-workspaces 和 owned-async-lifecycle，当前共二十一份主规格。启动、本地消息、真实 KCP、双 Editor、格子样机和所属异步的结果分别见对应 change 的 execution-notes，不能以格式验证代替动态运行。
+已增加 runtime-instances、product-session、grid-kitchen、kitchen-item-processing、multiplayer-peer-workspaces 和 owned-async-lifecycle，当前共二十二份主规格。启动、本地消息、真实 KCP、历史双 Editor 会话、格子样机、备料和所属异步的结果分别见对应 change 的 execution-notes，不能以格式验证代替动态运行，也不能以历史双 Editor 会话验收替代本次加工的双进程验收。
 
 | 规格 | 范围 |
 |---|---|
@@ -13,6 +13,7 @@
 | [runtime-instances](specs/runtime-instances/spec.md) | 显式实例配置、工程范围请求、Play 交接与本轮入口收尾 |
 | [product-session](specs/product-session/spec.md) | Unity 本机最小产品树、共同裁决、逻辑成员/连接分离、本地/远端消息与收尾 |
 | [grid-kitchen](specs/grid-kitchen/spec.md) | 竖屏固定地图、四方向行走、台面交接、断线落物与同格拾取 |
+| [kitchen-item-processing](specs/kitchen-item-processing/spec.md) | 真实材料／碗内容、切配与手持打蛋、单工作者 Tick、暂停接续与合作交接 |
 | [multiplayer-peer-workspaces](specs/multiplayer-peer-workspaces/spec.md) | 稳定第二端、独立缓存/身份/日志、精确目标及必要维护 |
 | [ui](specs/ui/spec.md) | GF UI/ETUI/Widget |
 | [entity](specs/entity/spec.md) | GF Entity/ETEntity/UIEntity |

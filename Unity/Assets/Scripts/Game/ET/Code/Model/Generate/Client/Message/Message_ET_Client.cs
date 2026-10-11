@@ -1674,6 +1674,10 @@ namespace ET
         public long TargetId { get; set; }
         [MemoryPackOrder(11)]
         public long ExpectedItemId { get; set; }
+        [MemoryPackOrder(12)]
+        public long ExpectedTargetItemId { get; set; }
+        [MemoryPackOrder(13)]
+        public long ExpectedProcessId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1689,11 +1693,13 @@ namespace ET
             this.Y = default;
             this.TargetId = default;
             this.ExpectedItemId = default;
+            this.ExpectedTargetItemId = default;
+            this.ExpectedProcessId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:21)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:23)
     [MemoryPackable]
     [Message(Message_ET_Client.GridCommandResponse)]
     public partial class GridCommandResponse: MessageObject, IResponse
@@ -1726,7 +1732,7 @@ namespace ET
     }
 
     // 内部可信转交，不进入 wire 白名单。
-    // proto file : ET-Client/ZZGridKitchen.proto (line:32)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:34)
     [MemoryPackable]
     [Message(Message_ET_Client.GridSubmitRequest)]
     [ResponseType(nameof(GridSubmitResponse))]
@@ -1767,6 +1773,10 @@ namespace ET
         public long TargetId { get; set; }
         [MemoryPackOrder(14)]
         public long ExpectedItemId { get; set; }
+        [MemoryPackOrder(15)]
+        public long ExpectedTargetItemId { get; set; }
+        [MemoryPackOrder(16)]
+        public long ExpectedProcessId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1785,11 +1795,13 @@ namespace ET
             this.Y = default;
             this.TargetId = default;
             this.ExpectedItemId = default;
+            this.ExpectedTargetItemId = default;
+            this.ExpectedProcessId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:51)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:55)
     [MemoryPackable]
     [Message(Message_ET_Client.GridSubmitResponse)]
     public partial class GridSubmitResponse: MessageObject, IResponse
@@ -1821,7 +1833,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:60)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:64)
     [MemoryPackable]
     [Message(Message_ET_Client.GridPathCell)]
     public partial class GridPathCell: MessageObject
@@ -1844,7 +1856,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:66)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:70)
     [MemoryPackable]
     [Message(Message_ET_Client.GridActorState)]
     public partial class GridActorState: MessageObject
@@ -1886,6 +1898,8 @@ namespace ET
         public int LastStatus { get; set; }
         [MemoryPackOrder(15)]
         public string LastReason { get; set; }
+        [MemoryPackOrder(16)]
+        public long WorkId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1905,11 +1919,12 @@ namespace ET
             this.LastCommandId = default;
             this.LastStatus = default;
             this.LastReason = default;
+            this.WorkId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:86)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:91)
     [MemoryPackable]
     [Message(Message_ET_Client.GridStationState)]
     public partial class GridStationState: MessageObject
@@ -1929,6 +1944,8 @@ namespace ET
         public string Name { get; set; }
         [MemoryPackOrder(4)]
         public long ItemId { get; set; }
+        [MemoryPackOrder(5)]
+        public int Kind { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1937,11 +1954,12 @@ namespace ET
             this.Y = default;
             this.Name = default;
             this.ItemId = default;
+            this.Kind = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:95)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:101)
     [MemoryPackable]
     [Message(Message_ET_Client.GridItemState)]
     public partial class GridItemState: MessageObject
@@ -1964,7 +1982,9 @@ namespace ET
         [MemoryPackOrder(5)]
         public int Y { get; set; }
         [MemoryPackOrder(6)]
-        public List<string> Contents { get; set; } = new List<string>();
+        public List<long> Contents { get; set; } = new List<long>();
+        [MemoryPackOrder(7)]
+        public int DefinitionId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1975,11 +1995,12 @@ namespace ET
             this.X = default;
             this.Y = default;
             this.Contents.Clear();
+            this.DefinitionId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:106)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:113)
     [MemoryPackable]
     [Message(Message_ET_Client.GridWorldSnapshot)]
     public partial class GridWorldSnapshot: MessageObject, IMessage
@@ -2019,6 +2040,8 @@ namespace ET
         public List<GridStationState> Stations { get; set; } = new List<GridStationState>();
         [MemoryPackOrder(14)]
         public List<GridItemState> Items { get; set; } = new List<GridItemState>();
+        [MemoryPackOrder(15)]
+        public List<GridManualProcessState> Processes { get; set; } = new List<GridManualProcessState>();
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -2037,11 +2060,12 @@ namespace ET
             this.Actors.Clear();
             this.Stations.Clear();
             this.Items.Clear();
+            this.Processes.Clear();
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:125)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:133)
     [MemoryPackable]
     [Message(Message_ET_Client.GridCommandResult)]
     public partial class GridCommandResult: MessageObject, IMessage
@@ -2078,6 +2102,56 @@ namespace ET
             this.Status = default;
             this.Reason = default;
             this.Version = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZGridKitchen.proto (line:145)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridManualProcessState)]
+    public partial class GridManualProcessState: MessageObject
+    {
+        public static GridManualProcessState Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridManualProcessState), isFromPool) as GridManualProcessState;
+        }
+
+        [MemoryPackOrder(0)]
+        public long ProcessId { get; set; }
+        [MemoryPackOrder(1)]
+        public int RecipeId { get; set; }
+        [MemoryPackOrder(2)]
+        public long InputItemId { get; set; }
+        [MemoryPackOrder(3)]
+        public long TargetItemId { get; set; }
+        [MemoryPackOrder(4)]
+        public long StationId { get; set; }
+        [MemoryPackOrder(5)]
+        public int RequiredTicks { get; set; }
+        [MemoryPackOrder(6)]
+        public int ProgressTicks { get; set; }
+        [MemoryPackOrder(7)]
+        public int State { get; set; }
+        [MemoryPackOrder(8)]
+        public int WorkerMemberId { get; set; }
+        [MemoryPackOrder(9)]
+        public long WorkerGeneration { get; set; }
+        [MemoryPackOrder(10)]
+        public long OutputItemId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProcessId = default;
+            this.RecipeId = default;
+            this.InputItemId = default;
+            this.TargetItemId = default;
+            this.StationId = default;
+            this.RequiredTicks = default;
+            this.ProgressTicks = default;
+            this.State = default;
+            this.WorkerMemberId = default;
+            this.WorkerGeneration = default;
+            this.OutputItemId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
