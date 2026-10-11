@@ -241,7 +241,30 @@ namespace UnityGameFramework.Runtime
 
         private void OnDestroy()
         {
+            NotifyShutdown();
             GameFrameworkEntry.Shutdown();
+        }
+
+        // Neutral pre-teardown hook. Subscribers capture this Base instance, never the current root.
+        public event System.Action ShuttingDown;
+        public bool ModulesStopped { get; private set; }
+        private bool m_ShutdownNotified;
+
+        internal void NotifyShutdown()
+        {
+            if (m_ShutdownNotified) return;
+            m_ShutdownNotified = true;
+            var handlers = ShuttingDown;
+            ShuttingDown = null;
+            if (handlers != null)
+            {
+                foreach (System.Action handler in handlers.GetInvocationList())
+                {
+                    try { handler(); }
+                    catch (System.Exception e) { Log.Error(e.ToString()); }
+                }
+            }
+            ModulesStopped = true;
         }
 
         /// <summary>
@@ -286,6 +309,7 @@ namespace UnityGameFramework.Runtime
 
         internal void Shutdown()
         {
+            NotifyShutdown();
             Destroy(gameObject);
         }
 

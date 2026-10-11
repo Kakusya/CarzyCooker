@@ -17,10 +17,9 @@
 
 | 事项 | 核实事实 | 使用与后续边界 |
 |---|---|---|
-| 回调式资源加载的退出范围 | ResourceContainer.m_Version 只在 Create 时递增；LoadAsset 成功回调检查该版本，但 UnloadAllAssets 不改版本，也不取消回调式请求。异步入口另外使用 CTS | 版本变化能拦截容器复用后的成功回调；不能据此保证同一容器只执行 UnloadAllAssets 后的迟到结果、失败或进度回调均失效。使用者需核对真实退出路径，修复另行授权 |
 | 字典字节切片参数未消费 | LubanLocalizationHelper 字节 ParseData 接收 startIndex/length，却直接用完整 dictionaryBytes 构造 ByteBuf | 当前完整资源入口不因此被声明失败；不能保证任意子区间解析正确，不将切片支持写成现有能力 |
 | 字典切换与解析不是事务 | LoadLanguageAsync 先清旧字典再初始化内置字典；ParseData 逐键 AddRawString，失败只返回 false，没有撤销先前键 | 外部加载或解析失败后不保证恢复旧字典，也不保证失败前零写入；具体恢复策略须另行设计 |
-| AOT 元数据返回码未检查 | HybridCLRHelper 逐项调用 LoadMetadataForAOTAssembly，却不检查返回的 LoadImageErrorCode；资源卸载也未置于异常收尾中 | 结束日志不足以证明全部元数据成功，异常时不保证配置资源已卸载。本轮仅补规格和限制，Player/AOT 验证仍 NotRun |
+| AOT 元数据返回码未检查 | HybridCLRHelper 逐项调用 LoadMetadataForAOTAssembly，仍未检查 LoadImageErrorCode；所属资源加载和异常/退出收尾已接入 ReadAssetAsync | 结束日志仍不足以证明全部元数据成功；本次只修资源生命周期，Player/AOT 验证仍 NotRun |
 
 源码：[ResourceContainer](Unity/Assets/Scripts/Game/Container/ResourceContainer.cs)、[字典 helper](Unity/Assets/Scripts/Game/Localization/LubanLocalizationHelper.cs)、[语言加载](Unity/Assets/Scripts/Game/Localization/LocalizationExtension.cs)、[AOT helper](Unity/Assets/Scripts/Game/HybridCLR/HybridCLRHelper.cs)。
 

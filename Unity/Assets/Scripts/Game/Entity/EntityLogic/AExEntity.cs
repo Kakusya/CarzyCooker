@@ -8,9 +8,21 @@ namespace Game
 {
     public abstract class AExEntity : AEntity
     {
+        protected override void OnDestroy()
+        {
+            StopAsyncScope();
+            ClearContainer();
+        }
         private EventContainer m_EventContainer;
         private EntityContainer m_EntityContainer;
         private ResourceContainer m_ResourceContainer;
+        protected override void StopAsyncScope()
+        {
+            var resources = m_ResourceContainer;
+            m_ResourceContainer = null;
+            base.StopAsyncScope();
+            if (resources != null) { resources.UnloadAllAssets(); ReferencePool.Release(resources); }
+        }
 
         private void ClearContainer()
         {
@@ -33,20 +45,22 @@ namespace Game
 
         protected override void OnRecycle()
         {
+            StopAsyncScope();
             base.OnRecycle();
             ClearContainer();
         }
 
         protected override void OnHide(bool isShutdown, object userData)
         {
+            var exitedScope = AsyncScope;
+            StopAsyncScope();
             HideAllEntity(isShutdown);
             UnsubscribeAll(isShutdown);
-            UnloadAllAssets(isShutdown);
             if (isShutdown)
             {
                 ClearContainer();
             }
-            base.OnHide(isShutdown, userData);
+            CompleteHide(isShutdown, userData, exitedScope);
         }
 
         public void Subscribe(int id, EventHandler<GameEventArgs> handler)

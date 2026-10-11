@@ -70,3 +70,7 @@ OpenSpec 官方技能已补齐至十二项，完整入口见 [AGENTS 技能加�
 | C# / 收尾 | [规范](../../Book/C%23%20代码规范.md)、[OpenSpec 完成归档](../../Book/OpenSpec完成与归档SOP.md) | 现有 apply/verify/sync/archive |
 
 本轮来源及验证范围见 [SOP 迁移](testing-sop-migration.md)，AGENTS 精确修改见 [逐字审阅](testing-sop-agents-review.md)。
+
+## 所属异步生命周期
+
+公共机制为 `Game/Base/AsyncScope.cs`，资源在 `Game/Container/ResourceContainer.cs`，ET 适配在 `ET/Loader/UGF/AsyncOwnerComponent.cs`，请求值化/原 Fiber 延时在 `ET/Code/Hotfix/Share/Module/Message/OwnedRequestExtensions.cs`。这是有限迁移，未覆盖任意旧 async；用法见 [生命周期](../../references/framework-lifecycle.md)，27个新增 UTF 与真实 AssetBundle 范围见 [执行说明](../../openspec/changes/archive/2026-10-11-manage-owned-async-lifecycle/execution-notes.md)。

@@ -10,15 +10,15 @@ namespace Game
     {
         public static readonly string ConfigAsset = "Assets/Res/HybridCLR/HybridCLRConfig.asset";
         
-        public static async UniTask LoadAsync()
+        public static UniTask LoadAsync()
         {
-            HybridCLRConfig aotGroup = await GameEntry.Resource.LoadAssetAsync<HybridCLRConfig>(ConfigAsset);
-            foreach (TextAsset textAsset in aotGroup.AotAssemblies)
+            return GameEntry.RuntimeOwner.ReadAssetAsync<HybridCLRConfig, bool>(ConfigAsset, aotGroup =>
             {
-                RuntimeApi.LoadMetadataForAOTAssembly(textAsset.bytes, HomologousImageMode.Consistent);
-            }
-            GameEntry.Resource.UnloadAsset(aotGroup);
-            Log.Info("HybridCLR load metadata.");
+                foreach (TextAsset textAsset in aotGroup.AotAssemblies)
+                    RuntimeApi.LoadMetadataForAOTAssembly(textAsset.bytes, HomologousImageMode.Consistent);
+                Log.Info("HybridCLR load metadata.");
+                return true;
+            }).AsUniTask();
         }
     }
 }

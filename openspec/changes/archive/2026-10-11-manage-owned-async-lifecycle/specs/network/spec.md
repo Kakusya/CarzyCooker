@@ -37,4 +37,4 @@
 
 ## References
 
-新增适配契约的实际底座见 [Session.cs](../../../../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Module/Message/Session.cs)、[ProductClientSystem.cs](../../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductClientSystem.cs) 和 [本地/远端桥](../../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)。完整路径与 owner 树见 [design.md](../../design.md)。
+新增适配契约的实际底座见 [Session.cs](../../../../../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Module/Message/Session.cs)、[ProductClientSystem.cs](../../../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductClientSystem.cs) 和 [本地/远端桥](../../../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)。完整路径与 owner 树见 [design.md](../../design.md)。

@@ -97,4 +97,4 @@
 
 ## References
 
-本能力是拟新增契约，当前实现边界见 [生命周期约定](../../../../../references/framework-lifecycle.md)、[ResourceContainer.cs](../../../../../Unity/Assets/Scripts/Game/Container/ResourceContainer.cs) 和 [Awaitable.UniTask.cs](../../../../../Unity/Assets/Scripts/Library/UGF/UnityGameFramework.Extension/Runtime/Awaitable/Awaitable.UniTask.cs)。验收条件见 [test-conditions.md](../../test-conditions.md)。
+本能力是拟新增契约，当前实现边界见 [生命周期约定](../../../../../../references/framework-lifecycle.md)、[ResourceContainer.cs](../../../../../../Unity/Assets/Scripts/Game/Container/ResourceContainer.cs) 和 [Awaitable.UniTask.cs](../../../../../../Unity/Assets/Scripts/Library/UGF/UnityGameFramework.Extension/Runtime/Awaitable/Awaitable.UniTask.cs)。验收条件见 [test-conditions.md](../../test-conditions.md)。

@@ -11,13 +11,13 @@ namespace ET
     {
         public static async UniTask<T> LoadAssetAsync<T>(string assetName) where T : UnityEngine.Object
         {
-            T asset = await GameEntry.Resource.LoadAssetAsync<T>(assetName);
-            return asset;
+            IAsyncOwner owner = Init.Instance;
+            return await owner.RunAsync(context => context.LoadAssetAsync<T>(assetName));
         }
 
         public static void UnloadAsset(UnityEngine.Object asset)
         {
-            GameEntry.Resource.UnloadAsset(asset);
+            Init.Instance?.AsyncScope?.GetResources().UnloadAsset(asset);
         }
 
         public static async UniTask LoadSceneAsync(string sceneAssetName)

@@ -27,6 +27,9 @@ namespace UnityGameFramework.Runtime
         private const int OneMegaBytes = 1024 * 1024;
 
         private IResourceManager m_ResourceManager = null;
+
+        /// <summary>Capture the original backend before asynchronous work; do not resolve a new runtime on completion.</summary>
+        public IResourceManager ResourceManager => m_ResourceManager;
         private EventComponent m_EventComponent = null;
         private bool m_EditorResourceMode = false;
         private bool m_ForceUnloadUnusedAssets = false;

@@ -32,4 +32,4 @@
 
 影响 Game 公共生命周期/容器、Game.ET.Loader 的生命周期适配、既有资源等待及必要退出连接点；必要时在现有资源代理/helper 内补进行中原生操作的收尾交接，不另建加载器。保留 Game/ET 分层、现有资源系统、UniTask 和程序集。涉及共享底座，按真实风险检查原生资源与退出，不引入新测试框架、通用线程调度器、RPC 等待表、私有资源池或缓存。
 
-首版面向当前 Unity 客户端，保留实际 owner 的执行上下文；不扩展服务端架构、联机功能、Player/AOT、LAN、存档或玩法。无法强行中止任意 C# 代码，也不保证强杀进程执行清理。成本与 NotRun 范围见 [execution-notes.md](execution-notes.md)。用户已授权规划，实施仍需后续 apply 指令。
+首版面向当前 Unity 客户端，保留实际 owner 的执行上下文；不扩展服务端架构、联机功能、Player/AOT、LAN、存档或玩法。无法强行中止任意 C# 代码，也不保证强杀进程执行清理。成本与 NotRun 范围见 [execution-notes.md](execution-notes.md)。用户已在本轮发出 apply 指令，当前实施与测试结果见执行说明。

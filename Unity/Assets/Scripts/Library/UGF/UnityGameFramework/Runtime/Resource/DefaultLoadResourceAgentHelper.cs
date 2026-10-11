@@ -38,6 +38,9 @@ namespace UnityGameFramework.Runtime
         private AssetBundleCreateRequest m_BytesAssetBundleCreateRequest = null;
         private AssetBundleRequest m_AssetBundleRequest = null;
         private AsyncOperation m_AsyncOperation = null;
+        private bool m_FileBundleTransferred;
+        private bool m_BytesBundleTransferred;
+        public static int PendingNativeCount => NativeResourceRetirement.PendingCount;
 
         private EventHandler<LoadResourceAgentHelperUpdateEventArgs> m_LoadResourceAgentHelperUpdateEventHandler = null;
         private EventHandler<LoadResourceAgentHelperReadFileCompleteEventArgs> m_LoadResourceAgentHelperReadFileCompleteEventHandler = null;
@@ -149,6 +152,7 @@ namespace UnityGameFramework.Runtime
             }
 
             m_FileFullPath = fullPath;
+            m_FileBundleTransferred = false;
             m_FileAssetBundleCreateRequest = AssetBundle.LoadFromFileAsync(fullPath);
         }
 
@@ -169,6 +173,7 @@ namespace UnityGameFramework.Runtime
             FileInfo fileInfo = fileSystem.GetFileInfo(name);
             m_FileFullPath = fileSystem.FullPath;
             m_FileName = name;
+            m_FileBundleTransferred = false;
             m_FileAssetBundleCreateRequest = AssetBundle.LoadFromFileAsync(fileSystem.FullPath, 0u, (ulong)fileInfo.Offset);
 #else
             Log.Fatal("Load from file async with offset is not supported, use Unity 5.3.5f1 or above.");
@@ -231,6 +236,7 @@ namespace UnityGameFramework.Runtime
                 return;
             }
 
+            m_BytesBundleTransferred = false;
             m_BytesAssetBundleCreateRequest = AssetBundle.LoadFromMemoryAsync(bytes);
         }
 
@@ -292,6 +298,7 @@ namespace UnityGameFramework.Runtime
                 {
                     m_AssetBundleRequest = assetBundle.LoadAssetAsync(assetName);
                 }
+                NativeResourceRetirement.Track(m_AssetBundleRequest);
             }
         }
 
@@ -309,6 +316,7 @@ namespace UnityGameFramework.Runtime
 #if UNITY_5_4_OR_NEWER
             if (m_UnityWebRequest != null)
             {
+                if (!m_UnityWebRequest.isDone) m_UnityWebRequest.Abort();
                 m_UnityWebRequest.Dispose();
                 m_UnityWebRequest = null;
             }
@@ -320,6 +328,8 @@ namespace UnityGameFramework.Runtime
             }
 #endif
 
+            if (!m_FileBundleTransferred) NativeResourceRetirement.Retire(m_FileAssetBundleCreateRequest);
+            if (!m_BytesBundleTransferred) NativeResourceRetirement.Retire(m_BytesAssetBundleCreateRequest);
             m_FileAssetBundleCreateRequest = null;
             m_BytesAssetBundleCreateRequest = null;
             m_AssetBundleRequest = null;
@@ -348,6 +358,7 @@ namespace UnityGameFramework.Runtime
 
             if (disposing)
             {
+                Reset();
 #if UNITY_5_4_OR_NEWER
                 if (m_UnityWebRequest != null)
                 {
@@ -464,6 +475,7 @@ namespace UnityGameFramework.Runtime
                     AssetBundle assetBundle = m_FileAssetBundleCreateRequest.assetBundle;
                     if (assetBundle != null)
                     {
+                        m_FileBundleTransferred = true;
                         AssetBundleCreateRequest oldFileAssetBundleCreateRequest = m_FileAssetBundleCreateRequest;
                         LoadResourceAgentHelperReadFileCompleteEventArgs loadResourceAgentHelperReadFileCompleteEventArgs = LoadResourceAgentHelperReadFileCompleteEventArgs.Create(assetBundle);
                         m_LoadResourceAgentHelperReadFileCompleteEventHandler(this, loadResourceAgentHelperReadFileCompleteEventArgs);
@@ -500,6 +512,7 @@ namespace UnityGameFramework.Runtime
                     AssetBundle assetBundle = m_BytesAssetBundleCreateRequest.assetBundle;
                     if (assetBundle != null)
                     {
+                        m_BytesBundleTransferred = true;
                         AssetBundleCreateRequest oldBytesAssetBundleCreateRequest = m_BytesAssetBundleCreateRequest;
                         LoadResourceAgentHelperParseBytesCompleteEventArgs loadResourceAgentHelperParseBytesCompleteEventArgs = LoadResourceAgentHelperParseBytesCompleteEventArgs.Create(assetBundle);
                         m_LoadResourceAgentHelperParseBytesCompleteEventHandler(this, loadResourceAgentHelperParseBytesCompleteEventArgs);

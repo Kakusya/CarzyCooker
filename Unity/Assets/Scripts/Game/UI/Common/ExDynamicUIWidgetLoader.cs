@@ -12,7 +12,7 @@ namespace Game
             {
                 throw new GameFrameworkException(Utility.Text.Format("'{0}' is not AExUIWidget.", uiWidget.GetType().FullName));
             }
-            AExUIWidget parentUIWidget = uiWidget.GetComponentInParent<AExUIWidget>();
+            AExUIWidget parentUIWidget = uiWidget.transform.parent.GetComponentInParent<AExUIWidget>(true);
             if (parentUIWidget != null)
             {
                 parentUIWidget.AddUIWidget(exUIWidget);

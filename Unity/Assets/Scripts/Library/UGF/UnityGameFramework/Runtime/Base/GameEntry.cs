@@ -122,6 +122,7 @@ namespace UnityGameFramework.Runtime
             BaseComponent baseComponent = GetComponent<BaseComponent>();
             if (baseComponent != null)
             {
+                baseComponent.NotifyShutdown();
                 baseComponent.Shutdown();
                 baseComponent = null;
             }

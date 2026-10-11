@@ -3,6 +3,8 @@ using System.Reflection;
 using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
+using Game;
+using System.Net;
 
 namespace ET
 {
@@ -55,6 +57,17 @@ namespace ET
         public void Error(Exception e) => UnityEngine.Debug.LogException(e);
     }
 
+    public sealed class OwnedTestService : AService
+    {
+        public int Removed;
+        public OwnedTestService() => ServiceType = ServiceType.Outer;
+        public override void Update() { }
+        public override void Remove(long id, int error = 0) => Removed++;
+        public override bool IsDisposed() => false;
+        public override void Create(long id, IPEndPoint endpoint) { }
+        public override void Send(long id, MemoryBuffer buffer) => Recycle(buffer);
+    }
+
     // PlayMode UTF，独占测试 World；不在用户已有 Play 上运行。
     public sealed class LocalMessageShutdownTests
     {
@@ -64,6 +77,7 @@ namespace ET
         private Scene actor;
         private ShutdownTestClock clock;
         private GameObject viewRoot;
+        private AsyncRuntime ownedRuntime;
         private static readonly FieldInfo CurrentFiber = typeof(Fiber).GetField("Instance", BindingFlags.NonPublic | BindingFlags.Static);
 
         [SetUp]
@@ -82,7 +96,7 @@ namespace ET
             world.AddSingleton<TimeInfo, ITimeNow>(clock);
             world.AddSingleton<IdGenerater>();
             world.AddSingleton<ObjectPool>();
-            world.AddSingleton<CodeTypes, Assembly[]>(new[] { typeof(Entity).Assembly, typeof(MessageHandler<,,>).Assembly, typeof(Entry).Assembly, GetType().Assembly });
+            world.AddSingleton<CodeTypes, Assembly[]>(new[] { typeof(Entity).Assembly, typeof(MessageHandler<,,>).Assembly, typeof(Entry).Assembly, typeof(AsyncOwnerComponent).Assembly, GetType().Assembly });
             world.AddSingleton<EntitySystemSingleton>();
             world.AddSingleton<OpcodeType>();
             world.AddSingleton<EventSystem>();
@@ -114,6 +128,8 @@ namespace ET
             }
             try
             {
+                ownedRuntime?.Stop();
+                ownedRuntime = null;
                 ShutdownTestHandler.Gate.TrySetResult();
                 if (TimeInfo.Instance != null && sender != null && !sender.IsStopped)
                 {
@@ -162,6 +178,83 @@ namespace ET
             Pump();
             Assert.That(task.Status, Is.Not.EqualTo(UniTaskStatus.Pending));
             return task.GetAwaiter().GetResult();
+        }
+
+        [Test] public void OwnedEntity_DisposeAndSameIdReuseInvalidateOriginalInstance()
+        {
+            ownedRuntime = AsyncRuntime.Begin();
+            var child = new Scene(fiber, 90003, IdGenerater.Instance.GenerateInstanceId(), (SceneType)(1L << 60), "OwnedChild");
+            actor.AddChild(child);
+            var owner = child.GetAsyncOwner();
+            long original = child.InstanceId;
+            var pending = new UniTaskCompletionSource<int>();
+            AsyncContext context = default;
+            var task = owner.RunAsync(c => { context = c; return pending.Task; });
+            child.Dispose();
+            Assert.That(task.Status, Is.EqualTo(UniTaskStatus.Canceled));
+            var next = new Scene(fiber, 90003, IdGenerater.Instance.GenerateInstanceId(), (SceneType)(1L << 60), "NextChild");
+            actor.AddChild(next);
+            Assert.That(next.InstanceId, Is.Not.EqualTo(original));
+            pending.TrySetResult(8);
+            Assert.That(context.Apply(() => Assert.Fail("stale ET instance")), Is.False);
+            Assert.That(next.GetAsyncOwner().AsyncScope.IsActive, Is.True);
+            Assert.That(actor.IsDisposed, Is.False);
+        }
+
+        [Test] public void OwnedSession_TwoOwnersCancelOneAndDisposeUnconsumedResponse()
+        {
+            ownedRuntime = AsyncRuntime.Begin();
+            world.AddSingleton<LogMsg>();
+            var service = new OwnedTestService();
+            Session session = actor.AddChildWithId<Session, AService>(90004, service);
+            var first = new AsyncScope(ownedRuntime);
+            var second = new AsyncScope(ownedRuntime);
+            C2G_Ping request1 = C2G_Ping.Create(true);
+            C2G_Ping request2 = C2G_Ping.Create(true);
+            var one = first.RunAsync(context => context.CallSessionValueAsync(session, request1, r => ((G2C_Ping)r).Time));
+            var two = second.RunAsync(context => context.CallSessionValueAsync(session, request2, r => ((G2C_Ping)r).Time));
+            int rpc2 = request2.RpcId;
+            Assert.That(session.requestCallbacks.Count, Is.EqualTo(2));
+            first.Stop();
+            Assert.That(one.Status, Is.EqualTo(UniTaskStatus.Canceled));
+            Assert.That(session.requestCallbacks.Count, Is.EqualTo(1));
+            Assert.That(service.Removed, Is.Zero);
+            var response = G2C_Ping.Create(true);
+            response.RpcId = rpc2;
+            response.Time = 123;
+            session.OnResponse(response);
+            Assert.That(two.Status, Is.EqualTo(UniTaskStatus.Succeeded));
+            Assert.That(session.requestCallbacks.Count, Is.Zero);
+            Assert.That(response.Time, Is.Zero);
+            Assert.That(two.GetAwaiter().GetResult(), Is.EqualTo(123));
+        }
+
+        [Test] public void OwnedLocal_CancelOnlyBusinessWaitAndLetOriginalReplyRetire()
+        {
+            ownedRuntime = AsyncRuntime.Begin();
+            var first = new AsyncScope(ownedRuntime);
+            var second = new AsyncScope(ownedRuntime);
+            var one = first.RunAsync(context => context.CallLocalValueAsync(sender, actor.GetActorId(), Request(hold: true), r => r.Error));
+            Pump();
+            first.Stop();
+            Assert.That(one.Status, Is.EqualTo(UniTaskStatus.Canceled));
+            Assert.That(sender.IsStopped, Is.False);
+            var two = second.RunAsync(context => context.CallLocalValueAsync(sender, actor.GetActorId(), Request(), r => r.Error));
+            ShutdownTestHandler.Gate.TrySetResult();
+            Pump();
+            Assert.That(two.GetAwaiter().GetResult(), Is.Zero);
+            Assert.That(one.Status, Is.EqualTo(UniTaskStatus.Canceled));
+        }
+
+        [Test] public void OwnedETDelay_StopBeforeTimerUpdateCancelsAndRemovesWait()
+        {
+            ownedRuntime = AsyncRuntime.Begin();
+            var owner = new AsyncScope(ownedRuntime);
+            var task = owner.RunAsync(context => context.DelayAsync(fiber.Root.GetComponent<TimerComponent>(), 100000));
+            owner.Stop();
+            Assert.That(task.Status, Is.EqualTo(UniTaskStatus.Canceled));
+            Assert.That(owner.PendingCount, Is.Zero);
+            Assert.That(fiber.Root.GetComponent<TimerComponent>().timerActions.Count, Is.Zero);
         }
 
         [Test]

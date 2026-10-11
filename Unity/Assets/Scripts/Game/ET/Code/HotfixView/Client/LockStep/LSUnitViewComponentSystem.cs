@@ -27,13 +27,24 @@ namespace ET.Client
             foreach (long playerId in room.PlayerIds)
             {
                 LSUnit lsUnit = lsUnitComponent.GetChild<LSUnit>(playerId);
-                GameObject prefab = await root.GetComponent<UGFComponent>().LoadAssetAsync<GameObject>(AssetUtility.GetPrefabAsset("Skeleton/Skeleton"));
-
-                GameObject unitGo = UnityEngine.Object.Instantiate(prefab);
-                unitGo.transform.position = lsUnit.Position.ToVector();
-                
-                LSUnitView lsUnitView = self.AddChildWithId<LSUnitView, GameObject>(lsUnit.Id, unitGo);
-                lsUnitView.AddComponent<LSAnimatorComponent>();
+                var owner = self.GetAsyncOwner();
+                EntityRef<LSUnitViewComponent> selfRef = self;
+                var position = lsUnit.Position.ToVector();
+                long id = lsUnit.Id;
+                EntityRef<LSUnit> unitRef = lsUnit;
+                await owner.RunAsync(async context =>
+                {
+                    GameObject prefab = await owner.GetOwnedResources().LoadAssetAsync<GameObject>(AssetUtility.GetPrefabAsset("Skeleton/Skeleton"));
+                    context.Apply(() =>
+                    {
+                        if ((LSUnit)unitRef == null) return;
+                        LSUnitViewComponent current = selfRef;
+                        GameObject unitGo = UnityEngine.Object.Instantiate(prefab);
+                        unitGo.transform.position = position;
+                        LSUnitView view = current.AddChildWithId<LSUnitView, GameObject>(id, unitGo);
+                        view.AddComponent<LSAnimatorComponent>();
+                    });
+                });
             }
         }
     }

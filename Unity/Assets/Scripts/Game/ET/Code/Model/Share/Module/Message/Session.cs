@@ -7,26 +7,38 @@ using Cysharp.Threading.Tasks;
 
 namespace ET
 {
-    public readonly struct RpcInfo
+    [EnableClass]
+    public sealed class RpcInfo
     {
         public Type RequestType { get; }
         
-        private readonly AutoResetUniTaskCompletionSourcePlus<IResponse> tcs;
+        private readonly UniTaskCompletionSource<IResponse> tcs;
+        private CancellationTokenRegistration registration;
+        private Action cancelAction;
+        private bool finished;
 
         public RpcInfo(Type requestType)
         {
             this.RequestType = requestType;
             
-            this.tcs = AutoResetUniTaskCompletionSourcePlus<IResponse>.Create();
+            this.tcs = new UniTaskCompletionSource<IResponse>();
         }
 
         public void SetResult(IResponse response)
         {
+            if (finished) { (response as MessageObject)?.Dispose(); return; }
+            finished = true;
+            registration.Dispose();
+            cancelAction = null;
             this.tcs.TrySetResult(response);
         }
 
         public void SetException(Exception exception)
         {
+            if (finished) return;
+            finished = true;
+            registration.Dispose();
+            cancelAction = null;
             this.tcs.TrySetException(exception);
         }
 
@@ -37,12 +49,14 @@ namespace ET
 
         public void AddOnCancelAction(Action cancelAction)
         {
-            this.tcs.AddOnCancelAction(cancelAction);
+            this.cancelAction += cancelAction;
         }
 
         public void AttachCancellation(CancellationToken token)
         {
-            this.tcs.AttachCancellation(token);
+            if (finished) return;
+            registration = token.Register(() => cancelAction?.Invoke());
+            if (finished) registration.Dispose();
         }
     }
     
@@ -83,6 +97,7 @@ namespace ET
         {
             if (!self.requestCallbacks.Remove(response.RpcId, out RpcInfo action))
             {
+                (response as MessageObject)?.Dispose();
                 return;
             }
             action.SetResult(response);
@@ -90,6 +105,10 @@ namespace ET
         
         public static UniTask<IResponse> Call(this Session self, IRequest request, CancellationToken token)
         {
+            if (self.IsDisposed) throw new ObjectDisposedException(nameof(Session));
+            if (token.IsCancellationRequested) return UniTask.FromCanceled<IResponse>(token);
+            EntityRef<Session> selfRef = self;
+            Type responseType = OpcodeType.Instance.GetResponseType(request.GetType());
             int rpcId = ++self.RpcId;
             RpcInfo rpcInfo = new(request.GetType());
             self.requestCallbacks[rpcId] = rpcInfo;
@@ -99,13 +118,14 @@ namespace ET
             
             void CancelAction()
             {
-                if (!self.requestCallbacks.Remove(rpcId, out RpcInfo action))
+                Session current = selfRef;
+                if (current == null || !current.requestCallbacks.Remove(rpcId, out RpcInfo action))
                 {
                     return;
                 }
 
-                Type responseType = OpcodeType.Instance.GetResponseType(action.RequestType);
                 IResponse response = (IResponse) Activator.CreateInstance(responseType);
+                response.RpcId = rpcId;
                 response.Error = ErrorCore.ERR_Cancel;
                 action.SetResult(response);
             }

@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using Game;
 
 namespace ET.Client
 {
@@ -9,7 +10,7 @@ namespace ET.Client
         [EntitySystem]
         private static void Awake(this PingComponent self)
         {
-            self.PingAsync().Forget();
+            self.GetAsyncOwner().Run(context => self.PingAsync(context));
         }
         
         [EntitySystem]
@@ -18,7 +19,7 @@ namespace ET.Client
             self.Ping = default;
         }
         
-        private static async UniTask PingAsync(this PingComponent self)
+        private static async UniTask PingAsync(this PingComponent self, AsyncContext context)
         {
             Session session = self.GetParent<Session>();
             long instanceId = self.InstanceId;
@@ -28,16 +29,18 @@ namespace ET.Client
             {
                 try
                 {
-                    await fiber.Root.GetComponent<TimerComponent>().WaitAsync(2000);
+                    await context.DelayAsync(fiber.Root.GetComponent<TimerComponent>(), 2000);
                     if (self.InstanceId != instanceId)
                     {
                         return;
                     }
                     long time1 = TimeInfo.Instance.ClientNow();
-                    // C2G_Ping不需要调用dispose，Call中会判断，如果用了对象池会自动回收
                     C2G_Ping c2GPing = C2G_Ping.Create(true);
-                    // 这里response要用using才能回收到池，默认不回收
-                    using G2C_Ping response = await session.Call(c2GPing) as G2C_Ping;
+                    long serverTime = await context.CallSessionValueAsync(session, c2GPing, response =>
+                    {
+                        if (response.Error != 0) throw new RpcException(response.Error, response.Message);
+                        return ((G2C_Ping)response).Time;
+                    });
 
                     if (self.InstanceId != instanceId)
                     {
@@ -45,10 +48,13 @@ namespace ET.Client
                     }
 
                     long time2 = TimeInfo.Instance.ClientNow();
-                    self.Ping = time2 - time1;
-                    
-                    TimeInfo.Instance.ServerMinusClientTime = response.Time + (time2 - time1) / 2 - time2;
+                    context.Apply(() =>
+                    {
+                        self.Ping = time2 - time1;
+                        TimeInfo.Instance.ServerMinusClientTime = serverTime + (time2 - time1) / 2 - time2;
+                    });
                 }
+                catch (OperationCanceledException) { return; }
                 catch (RpcException e)
                 {
                     // session断开导致ping rpc报错，记录一下即可，不需要打成error
