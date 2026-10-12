@@ -20,6 +20,32 @@ namespace ET
             return true;
         }
 
+        public static string CheckProductCommand(this HostPeer self, ProductCommandContext context,
+            ProductCommandKind kind, bool samePayload, out bool replay)
+        {
+            replay = false;
+            if (context.CommandId <= 0) return "InvalidCommand";
+            long previous = self.LastCommandContext.CommandId;
+            if (context.CommandId > previous) return null;
+            if (context.CommandId < previous) return "ExpiredCommand";
+            if (!context.Equals(self.LastCommandContext) || kind != self.LastCommandKind || !samePayload)
+                return "CommandConflict";
+            replay = true;
+            return null;
+        }
+
+        public static void RecordProductCommand(this HostPeer self, ProductCommandContext context, ProductCommandKind kind)
+        {
+            self.LastCommandContext = context; self.LastCommandKind = kind;
+            self.LastCommandStatus = GridResultStatus.Accepted; self.LastCommandReason = null;
+        }
+
+        public static void RecordProductResult(this HostPeer self, long commandId, GridResultStatus status, string reason)
+        {
+            if (self.LastCommandContext.CommandId != commandId) return;
+            self.LastCommandStatus = status; self.LastCommandReason = reason;
+        }
+
         public static void EndEntry(this HostPeer self)
         {
             if (self.InFlight <= 0)

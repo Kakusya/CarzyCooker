@@ -5,21 +5,63 @@ namespace ET.Client
     public partial class MonoUIGridKitchen
     {
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.UI.Text m_BuffText;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.RectTransform m_BuffActionsRectTransform;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.RectTransform m_BuffPanelRectTransform;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.RectTransform m_CameraDragAreaRectTransform;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.UI.Text m_ClockText;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.RectTransform m_ControlPanelRectTransform;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Text m_HandText;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Text m_HintText;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.RectTransform m_OrderActionsRectTransform;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.RectTransform m_OrderPanelRectTransform;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.UI.Text m_OrdersText;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.UI.Text m_PhaseText;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.UI.Text m_ScoreText;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.UI.Text m_SettlementText;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.RectTransform m_SettlementPanelRectTransform;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Text m_StatusText;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Button m_TargetTemplateButton;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.RectTransform m_TargetsRectTransform;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.UI.Text m_WorkText;
 
+        public UnityEngine.UI.Text BuffText => this.m_BuffText;
+        public UnityEngine.RectTransform BuffActionsRectTransform => this.m_BuffActionsRectTransform;
+        public UnityEngine.RectTransform BuffPanelRectTransform => this.m_BuffPanelRectTransform;
+        public UnityEngine.RectTransform CameraDragAreaRectTransform => this.m_CameraDragAreaRectTransform;
+        public UnityEngine.UI.Text ClockText => this.m_ClockText;
+        public UnityEngine.RectTransform ControlPanelRectTransform => this.m_ControlPanelRectTransform;
         public UnityEngine.UI.Text HandText => this.m_HandText;
         public UnityEngine.UI.Text HintText => this.m_HintText;
+        public UnityEngine.RectTransform OrderActionsRectTransform => this.m_OrderActionsRectTransform;
+        public UnityEngine.RectTransform OrderPanelRectTransform => this.m_OrderPanelRectTransform;
+        public UnityEngine.UI.Text OrdersText => this.m_OrdersText;
+        public UnityEngine.UI.Text PhaseText => this.m_PhaseText;
+        public UnityEngine.UI.Text ScoreText => this.m_ScoreText;
+        public UnityEngine.UI.Text SettlementText => this.m_SettlementText;
+        public UnityEngine.RectTransform SettlementPanelRectTransform => this.m_SettlementPanelRectTransform;
         public UnityEngine.UI.Text StatusText => this.m_StatusText;
         public UnityEngine.UI.Button TargetTemplateButton => this.m_TargetTemplateButton;
         public UnityEngine.RectTransform TargetsRectTransform => this.m_TargetsRectTransform;
+        public UnityEngine.UI.Text WorkText => this.m_WorkText;
 
 #if UNITY_EDITOR
         [Sirenix.OdinInspector.OnInspectorGUI, Sirenix.OdinInspector.PropertyOrder(-99999), Sirenix.OdinInspector.ShowIf(nameof(HasMissingTargets))]
@@ -30,11 +72,25 @@ namespace ET.Client
 
         private bool HasMissingTargets()
         {
+            if (this.m_BuffText == null) return true;
+            if (this.m_BuffActionsRectTransform == null) return true;
+            if (this.m_BuffPanelRectTransform == null) return true;
+            if (this.m_CameraDragAreaRectTransform == null) return true;
+            if (this.m_ClockText == null) return true;
+            if (this.m_ControlPanelRectTransform == null) return true;
             if (this.m_HandText == null) return true;
             if (this.m_HintText == null) return true;
+            if (this.m_OrderActionsRectTransform == null) return true;
+            if (this.m_OrderPanelRectTransform == null) return true;
+            if (this.m_OrdersText == null) return true;
+            if (this.m_PhaseText == null) return true;
+            if (this.m_ScoreText == null) return true;
+            if (this.m_SettlementText == null) return true;
+            if (this.m_SettlementPanelRectTransform == null) return true;
             if (this.m_StatusText == null) return true;
             if (this.m_TargetTemplateButton == null) return true;
             if (this.m_TargetsRectTransform == null) return true;
+            if (this.m_WorkText == null) return true;
             return false;
         }
 #endif

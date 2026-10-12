@@ -13,42 +13,62 @@ namespace ET
     [FriendOf(typeof(Match))]
     [FriendOf(typeof(Participant))]
     [FriendOf(typeof(HostPeer))]
+    [FriendOf(typeof(RestaurantRuntime))]
+    [FriendOf(typeof(Level))]
     public static partial class GridKitchenSystem
     {
         [EntitySystem]
         private static void Awake(this GridKitchenComponent self)
         {
+            self.Restaurant = self.Parent as RestaurantRuntime;
+            RestaurantRuntime restaurant = self.Restaurant;
+            self.Match = restaurant == null ? self.Parent as Match : restaurant.Match;
+            if ((Match)self.Match == null) throw new InvalidOperationException("Kitchen requires a Match or Restaurant owner");
             self.WorldId = Guid.NewGuid().ToString("N");
             self.WorldGeneration = self.InstanceId;
             self.Tick = 0;
             self.Version = 0;
+            self.LayoutVersion = 1;
             self.LastFrameTime = TimeInfo.Instance.FrameTime;
             self.Accumulator = 0;
             self.Stopped = false;
             self.Dirty = true;
             ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTGridManualRecipeConfig.DataList);
-            self.Blocked.Clear(); self.Actors.Clear(); self.Stations.Clear(); self.Items.Clear(); self.Processes.Clear();
+            ValidateGridSoupDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTGridAutoRecipeConfig.DataList);
+            GridDishConfig.ValidateAllMenus();
+            self.Blocked.Clear(); self.Actors.Clear(); self.Stations.Clear(); self.Items.Clear(); self.Processes.Clear(); self.AutoProcesses.Clear();
+            self.BakeProcesses.Clear();
             self.MemberChanges.Clear(); self.Incoming.Clear(); self.Results.Clear(); self.PendingResults.Clear();
-            self.AddStation(new GridCell(1, 11), "备料台", GridKitchenRules.Tomato);
-            self.AddStation(new GridCell(3, 11), "碗台", GridKitchenRules.Bowl);
-            self.AddStation(new GridCell(5, 11), "食材台", GridKitchenRules.Egg);
-            self.AddStation(new GridCell(3, 8), "交接台", 0);
-            self.AddStation(new GridCell(5, 8), "切配台", 0, GridStationKind.Chopping);
+            self.LayoutCommands.Clear();
+            self.Blocked.UnionWith(ValidateStationConfiguration());
+            foreach (var initial in Tables.Instance.DTInitialLayoutConfig.DataList) self.AddConfiguredStation(initial);
         }
 
-        private static void AddStation(this GridKitchenComponent self, GridCell cell, string name, int definition, GridStationKind kind = GridStationKind.Counter)
+        public static HashSet<GridCell> ValidateStationConfiguration() => GridStationConfig.ValidateInitialLayout(
+            Tables.Instance.DTStationConfig.DataList, Tables.Instance.DTInitialLayoutConfig.DataList,
+            Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTLevelConfig.DataList.Select(row => new GridCell(row.SpawnX, row.SpawnY)));
+
+        public static bool IsInitialGridWalkable(GridCell cell) => GridStationGeometry.Inside(cell) && !ValidateStationConfiguration().Contains(cell);
+
+        private static void AddConfiguredStation(this GridKitchenComponent self, DRInitialLayoutConfig initial)
         {
+            DRStationConfig definition = Tables.Instance.DTStationConfig.Get(initial.StationDefinitionId);
             GridStation station = self.AddChild<GridStation>();
-            station.Cell = cell; station.Name = name; station.ItemId = 0; station.Kind = kind;
+            station.InitialLayoutId = initial.Id;
+            station.DefinitionId = definition.Id; station.Orientation = initial.Orientation;
+            station.ItemSlotCapacity = definition.ItemSlotCapacity; station.Capabilities = (GridStationCapability)definition.Capabilities;
+            station.Cell = new GridCell(initial.X, initial.Y); station.Name = initial.Name; station.ItemId = 0; station.Kind = (GridStationKind)definition.Kind;
             self.Stations.Add(station.Id, station);
-            self.Blocked.Add(cell);
-            if (definition == 0) return;
-            GridItem item = self.CreateGridItem(definition, GridItemLocation.Counter, station.Id, cell);
+            if (initial.InitialItemDefinitionId == 0) return;
+            GridItem item = self.CreateGridItem(initial.InitialItemDefinitionId, GridItemLocation.Counter, station.Id, station.Cell);
             station.ItemId = item.Id;
         }
 
-        [EntitySystem]
-        private static void Update(this GridKitchenComponent self)
+        public static bool AtStation(this GridKitchenComponent self, GridActor actor, GridStation station) =>
+            self.IsWalkable(actor.Cell) && station.StationApproaches().Contains(actor.Cell);
+
+        // 仅旧 Host 样机由 HostSession 调用；正式 Solo 由 RestaurantRuntime 唯一驱动。
+        public static void AdvanceLegacyGridClock(this GridKitchenComponent self)
         {
             long now = TimeInfo.Instance.FrameTime;
             // Editor 阻塞后有界追赶；每一步仍使用相同业务时长。
@@ -74,6 +94,7 @@ namespace ET
                 if (actor.HasIntent) self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "WorldStopped");
             }
             self.Incoming.Clear(); self.MemberChanges.Clear();
+            self.LayoutCommands.Clear();
         }
 
         public static bool IsWalkable(this GridKitchenComponent self, GridCell cell) =>
@@ -86,7 +107,7 @@ namespace ET
 
         public static bool HasBinding(this GridKitchenComponent self, int memberId, long generation)
         {
-            Participant member = self.GetParent<Match>().GetChild<Participant>(memberId);
+            Participant member = ((Match)self.Match).GetChild<Participant>(memberId);
             HostPeer peer = member?.BoundPeer ?? default;
             return member != null && member.Online && member.BindingGeneration == generation && peer != null && peer.Generation == generation && peer.EntryOpen && !peer.Closing;
         }
@@ -96,7 +117,7 @@ namespace ET
             if (!self.Stopped) self.MemberChanges.Enqueue(new GridMemberChange(memberId, generation, joined));
         }
 
-        private static void ApplyMembers(this GridKitchenComponent self)
+        public static void ApplyGridMembers(this GridKitchenComponent self)
         {
             while (self.MemberChanges.Count > 0)
             {
@@ -106,6 +127,7 @@ namespace ET
                 {
                     if (actor == null || actor.Generation != change.Generation) continue;
                     self.PauseWork(actor);
+                    self.ReleaseActorFrontWork(actor);
                     if (actor.HasIntent) self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "MemberLeft");
                     GridItem held = self.Item(actor.HandItemId);
                     if (held != null)
@@ -119,12 +141,14 @@ namespace ET
                 }
                 if (!self.HasBinding(change.MemberId, change.Generation) || actor != null) continue;
                 bool spawned = false;
-                for (int y = 10; y > 0 && !spawned; --y)
+                Level level = self.ProductLevel();
+                for (int y = level?.SpawnCell.Y ?? 10; y > 0 && !spawned; --y)
                 for (int x = 1; x < GridKitchenRules.Width - 1 && !spawned; ++x)
                 {
                     GridCell cell = new(x, y);
+                    if (level != null && y == level.SpawnCell.Y && x < level.SpawnCell.X) continue;
                     if (!self.IsWalkable(cell) || !self.CanStop(cell, null)) continue;
-                    actor = self.AddChild<GridActor>();
+                    actor = level == null ? self.AddChild<GridActor>() : level.AddChild<GridActor>();
                     actor.MemberId = change.MemberId; actor.Generation = change.Generation;
                     actor.Cell = cell; actor.NextCell = cell; actor.Goal = cell; actor.StopCell = cell;
                     actor.HasStopReservation = true; actor.Motion = GridMotion.Standing;
@@ -139,16 +163,25 @@ namespace ET
         {
             GridActor actor = self.Actor(memberId);
             if (self.Stopped || !self.HasBinding(memberId, generation) || actor == null || actor.Generation != generation) return "EntryClosed";
-            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.StopWork) return "InvalidCommand";
-            if (intent.CommandId <= actor.LastReceivedCommandId)
-                return intent.CommandId == actor.LastReceivedCommandId && intent.Equals(actor.LastReceivedIntent) ? null : "ExpiredCommand";
+            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.StartBake) return "InvalidCommand";
+            Match match = self.Match;
+            Participant member = match.GetChild<Participant>(memberId);
+            HostPeer peer = member.BoundPeer;
+            Level level = self.ProductLevel();
+            var context = new ProductCommandContext(match.MatchId, self.WorldId, self.WorldGeneration, level?.Id ?? 0, level?.Generation ?? 0, generation, intent.CommandId);
+            string prior = peer.CheckProductCommand(context, ProductCommandKind.Grid, intent.Equals(peer.LastGridCommand), out bool replay);
+            if (prior != null || replay) return prior;
+            if (level != null && level.Paused) return "Paused";
+            if (level != null && level.Phase == LevelPhase.Completed) return "LevelCompleted";
             if (intent.Action == GridAction.Move && !self.IsWalkable(intent.Cell)) return "BlockedCell";
-            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork && self.Station(intent.TargetId) == null) return "UnknownCounter";
+            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake && self.Station(intent.TargetId) == null) return "UnknownCounter";
             if (intent.Action == GridAction.PickupDrop && self.Item(intent.TargetId) == null) return "UnknownItem";
             // 接收元数据不移动角色/物品；世界修改留给固定 Tick。
             actor.LastReceivedCommandId = intent.CommandId; actor.LastReceivedIntent = intent;
             if (self.Incoming.TryGetValue(memberId, out GridIntent replaced))
                 self.Result(actor, replaced.CommandId, GridResultStatus.Cancelled, "Replaced");
+            peer.RecordProductCommand(context, ProductCommandKind.Grid);
+            peer.LastGridCommand = intent;
             self.Incoming[memberId] = intent;
             return null;
         }
@@ -157,7 +190,7 @@ namespace ET
         {
             if (self.Stopped) return;
             ++self.Tick;
-            self.ApplyMembers();
+            self.ApplyGridMembers();
             foreach (GridActor actor in self.OrderedActors())
             {
                 if (!self.HasBinding(actor.MemberId, actor.Generation)) continue;
@@ -194,6 +227,13 @@ namespace ET
                 self.Dirty = true;
             }
             self.AdvanceWork();
+            self.AdvanceAutoWork();
+            self.AdvanceBakeWork();
+            if ((RestaurantRuntime)self.Restaurant == null) self.CommitGridState();
+        }
+
+        public static void CommitGridState(this GridKitchenComponent self)
+        {
             if (self.Dirty)
             {
                 ++self.Version;
@@ -209,12 +249,12 @@ namespace ET
             if (intent.Action is GridAction.StartStationWork or GridAction.StartHeldWork && actor.WorkId != 0)
             { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "WorkBusy"); return; }
             GridCell goal = intent.Cell;
-            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork)
+            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake)
             {
                 GridStation station = self.Station(intent.TargetId);
                 if (station == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "UnknownCounter"); return; }
                 List<GridCell> shortest = null;
-                foreach (GridCell adjacent in Neighbours(station.Cell))
+                foreach (GridCell adjacent in station.StationApproaches())
                 {
                     List<GridCell> path = self.FindGridPath(actor.Cell, adjacent);
                     if (path != null && (shortest == null || path.Count < shortest.Count)) { shortest = path; goal = adjacent; }
@@ -223,6 +263,7 @@ namespace ET
             }
             if (intent.Action is GridAction.PickupDrop or GridAction.StartHeldWork or GridAction.StopWork) goal = actor.Cell;
             if (!self.PlanRoute(actor, goal)) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable"); return; }
+            self.ReleaseActorFrontWork(actor, false);
             if (intent.Action == GridAction.Move) self.PauseWork(actor);
             if (actor.HasIntent)
                 self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "Replaced");
@@ -271,7 +312,7 @@ namespace ET
 
         private static int Direction(GridCell from, GridCell to) => to.X > from.X ? 1 : to.X < from.X ? 3 : to.Y > from.Y ? 0 : 2;
         public static int GridDistance(GridCell a, GridCell b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
-        public static GridCell[] Neighbours(GridCell cell) => new[] { new GridCell(cell.X, cell.Y + 1), new GridCell(cell.X + 1, cell.Y), new GridCell(cell.X, cell.Y - 1), new GridCell(cell.X - 1, cell.Y) };
+        public static GridCell[] Neighbours(GridCell cell) => GridStationGeometry.Neighbours(cell);
 
         public static List<GridCell> FindGridPath(this GridKitchenComponent self, GridCell from, GridCell to)
         {
@@ -312,7 +353,9 @@ namespace ET
             else
             {
                 GridStation station = self.Station(intent.TargetId);
-                if (station == null || GridDistance(actor.Cell, station.Cell) != 1) error = "CounterNotAdjacent";
+                if (station == null || !self.AtStation(actor, station)) error = "CounterNotAdjacent";
+                else if (station.Kind == GridStationKind.CleanPool && intent.Action == GridAction.TakeCounter) error = self.TakeCleanUtensil(actor,station,intent);
+                else if (station.Kind is GridStationKind.Table or GridStationKind.Wash or GridStationKind.DirtyPool or GridStationKind.CleanPool) error = "RequiresFrontAction";
                 else
                 {
                     actor.Facing = Direction(actor.Cell, station.Cell);
@@ -325,6 +368,10 @@ namespace ET
                     }
                     else if (intent.Action == GridAction.AddToContainer) error = self.AddToContainer(actor, station, intent);
                     else if (intent.Action == GridAction.StartStationWork) error = self.StartWork(actor, station, intent);
+                    else if (intent.Action == GridAction.PourContents) error = self.PourContents(actor, station, intent);
+                    else if (intent.Action == GridAction.StartAutoWork) error = self.StartAutoWork(actor, station, intent);
+                    else if (intent.Action == GridAction.PortionSoup) error = self.PortionSoup(actor, station, intent);
+                    else if (intent.Action == GridAction.StartBake) error = self.StartBake(actor, station, intent);
                     else
                     {
                         GridItem item = self.Item(actor.HandItemId);
@@ -339,10 +386,16 @@ namespace ET
 
         private static void Result(this GridKitchenComponent self, GridActor actor, long commandId, GridResultStatus status, string reason)
         {
+            if (commandId <= 0) return;
             if (commandId >= actor.LastResultCommandId)
             { actor.LastResultCommandId = commandId; actor.LastResultStatus = status; actor.LastResultReason = reason; }
-            self.Results.Add(new GridResultValue(actor.MemberId, actor.Generation, commandId, status, reason));
-            self.PendingResults.Add(new GridResultValue(actor.MemberId, actor.Generation, commandId, status, reason));
+            Level level = self.ProductLevel();
+            var value = new GridResultValue(actor.MemberId, actor.Generation, commandId, status, reason, level?.Id ?? 0, level?.Generation ?? 0);
+            self.Results.Add(value);
+            self.PendingResults.Add(value);
+            Participant member = ((Match)self.Match).GetChild<Participant>(actor.MemberId);
+            HostPeer peer = member?.BoundPeer ?? default;
+            if (peer != null && peer.Generation == actor.Generation) peer.RecordProductResult(commandId, status, reason);
             if (self.Results.Count > 64) self.Results.RemoveAt(0);
             self.Dirty = true;
         }
@@ -357,6 +410,7 @@ namespace ET
         {
             self.MemberId = 0; self.Generation = 0; self.Cell = default; self.NextCell = default;
             self.StepStartTick = 0; self.Motion = GridMotion.Standing; self.Facing = 2; self.HandItemId = 0; self.WorkId = 0;
+            self.FrontWorkId = 0; self.FrontClaimSerial = 0;
             self.Goal = default; self.StopCell = default; self.HasStopReservation = false;
             self.Path.Clear(); self.PathIndex = 0; self.ActiveIntent = default; self.HasIntent = false;
             self.LastReceivedCommandId = 0; self.LastReceivedIntent = default;
@@ -365,8 +419,18 @@ namespace ET
     }
 
     [EntitySystemOf(typeof(GridStation))]
-    public static partial class GridStationSystem { [EntitySystem] private static void Awake(this GridStation self) { } }
+    [FriendOf(typeof(GridStation))]
+    public static partial class GridStationSystem
+    {
+        [EntitySystem]
+        private static void Awake(this GridStation self) { self.InitialLayoutId = 0; self.PoolItemIds.Clear(); }
+    }
     [EntitySystemOf(typeof(GridItem))]
-    public static partial class GridItemSystem { [EntitySystem] private static void Awake(this GridItem self) { } }
+    [FriendOf(typeof(GridItem))]
+    public static partial class GridItemSystem
+    {
+        [EntitySystem]
+        private static void Awake(this GridItem self) => self.Hygiene = ItemHygiene.Clean;
+    }
 }
 #endif

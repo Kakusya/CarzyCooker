@@ -1,0 +1,56 @@
+syntax = "proto3";
+package ET;
+
+// ResponseType ServeOrderResponse
+message ServeOrderRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    string WorldId = 4;
+    int64 WorldGeneration = 5;
+    int64 BindingGeneration = 6;
+    int64 LevelId = 7;
+    int64 LevelGeneration = 8;
+    int64 CommandId = 9;
+    int64 OrderId = 10;
+    int64 CustomerId = 11;
+    int64 TableStationId = 12;
+    int64 ItemId = 13;
+}
+message ServeOrderResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+// ResponseType ServeOrderSubmitResponse
+message ServeOrderSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int64 PeerGeneration = 4;
+    int32 ProtocolVersion = 5;
+    string MatchId = 6;
+    string WorldId = 7;
+    int64 WorldGeneration = 8;
+    int64 BindingGeneration = 9;
+    int64 LevelId = 10;
+    int64 LevelGeneration = 11;
+    int64 CommandId = 12;
+    int64 OrderId = 13;
+    int64 CustomerId = 14;
+    int64 TableStationId = 15;
+    int64 ItemId = 16;
+}
+message ServeOrderSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}

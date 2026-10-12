@@ -24,4 +24,4 @@
 
 源码：[ResourceContainer](Unity/Assets/Scripts/Game/Container/ResourceContainer.cs)、[字典 helper](Unity/Assets/Scripts/Game/Localization/LubanLocalizationHelper.cs)、[语言加载](Unity/Assets/Scripts/Game/Localization/LocalizationExtension.cs)、[AOT helper](Unity/Assets/Scripts/Game/HybridCLR/HybridCLRHelper.cs)。
 
-暂停命令、NPC 收口、跨关许可和正式传输选择属于 [产品待裁决](Docs/Product/backlog.md)，不是当前底座 bug 已被证明。断线手持物已按 [格子样机 change](openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/design.md) 裁决。
+跨关许可和正式传输选择仍属[产品待裁决](Docs/Product/backlog.md)，不是当前底座bug已被证明。单机暂停取消未执行动作并冻结已开始工作、前厅自然收尾已按用户裁决实施，真实顾客／伙伴及最后洗碗、零星两关均已验收，见[关卡流程](openspec/changes/solo-restaurant-level-flow/execution-notes.md)。当前仅内存连续试玩，无供应补货或产品存档；样机Board标签较密、基础美术保留，手机／Player／AOT及LAN／公网未验收。断线手持物已按[格子样机change](openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/design.md)裁决。

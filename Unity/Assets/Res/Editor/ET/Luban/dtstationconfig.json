@@ -1,0 +1,176 @@
+[
+  {
+    "Id": 1,
+    "Name": "台面",
+    "Kind": 0,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 0
+  },
+  {
+    "Id": 2,
+    "Name": "切配台",
+    "Kind": 1,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 1
+  },
+  {
+    "Id": 3,
+    "Name": "灶台",
+    "Kind": 2,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 2
+  },
+  {
+    "Id": 4,
+    "Name": "烤箱",
+    "Kind": 3,
+    "FootprintOffsets": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "ApproachOffsets": [
+      -1,
+      0,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      1,
+      1,
+      1,
+      0,
+      2
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 4
+  },
+  {
+    "Id": 5,
+    "Name": "餐桌",
+    "Kind": 4,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 8
+  },
+  {
+    "Id": 6,
+    "Name": "洗碗台",
+    "Kind": 5,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 16
+  },
+  {
+    "Id": 7,
+    "Name": "脏餐具池",
+    "Kind": 6,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 4,
+    "Capabilities": 32
+  },
+  {
+    "Id": 8,
+    "Name": "干净餐具池",
+    "Kind": 7,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 4,
+    "Capabilities": 64
+  }
+]

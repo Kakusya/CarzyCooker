@@ -1,0 +1,62 @@
+syntax = "proto3";
+package ET;
+
+// 仅本地；不进入产品 wire 白名单。
+// ResponseType StationLayoutResponse
+message StationLayoutRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    string WorldId = 4;
+    int64 WorldGeneration = 5;
+    int64 BindingGeneration = 6;
+    int64 LevelId = 7;
+    int64 LevelGeneration = 8;
+    int64 CommandId = 9;
+    int64 StationId = 10;
+    int64 ExpectedLayoutVersion = 11;
+    int32 X = 12;
+    int32 Y = 13;
+    int32 Orientation = 14;
+}
+
+message StationLayoutResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+// ResponseType StationLayoutSubmitResponse
+message StationLayoutSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int64 PeerGeneration = 4;
+    int32 ProtocolVersion = 5;
+    string MatchId = 6;
+    string WorldId = 7;
+    int64 WorldGeneration = 8;
+    int64 BindingGeneration = 9;
+    int64 LevelId = 10;
+    int64 LevelGeneration = 11;
+    int64 CommandId = 12;
+    int64 StationId = 13;
+    int64 ExpectedLayoutVersion = 14;
+    int32 X = 15;
+    int32 Y = 16;
+    int32 Orientation = 17;
+}
+
+message StationLayoutSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}

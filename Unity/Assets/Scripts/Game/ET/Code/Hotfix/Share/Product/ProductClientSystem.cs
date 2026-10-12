@@ -22,6 +22,7 @@ namespace ET
             self.MatchId = null;
             self.MemberId = 0;
             self.BindingGeneration = 0;
+            self.NextCommandId = 0;
             self.RosterVersion = 0;
             self.Roster.Clear();
             self.Local = default;
@@ -109,8 +110,12 @@ namespace ET
             HostPeer peer = local.Peer;
             if (peer == null || !peer.BeginEntry()) { ((MessageObject)request).Dispose(); throw new RpcException(ProductError.PeerClosed, "Product local entry closed"); }
             EntityRef<HostPeer> peerRef = peer;
-            try { return await context.CallLocalValueAsync(local.Root().GetComponent<ProcessInnerSender>(), peer.GetActorId(), request, read); }
-            finally { peer = peerRef; peer?.EndEntry(); }
+            return await context.CallLocalValueAsync(local.Root().GetComponent<ProcessInnerSender>(), peer.GetActorId(), request, read,
+                () =>
+                {
+                    HostPeer originalPeer = peerRef;
+                    originalPeer?.EndEntry();
+                });
         }
 
         public static async UniTask JoinProduct(this ClientSessionComponent self, int version = ProductSessionRules.ProtocolVersion)

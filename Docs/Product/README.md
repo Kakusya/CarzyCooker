@@ -1,6 +1,6 @@
 # 做饭产品目标与资料状态
 
-保存产品目标设计，不把 GF/ET 示例写成做饭系统；当前能力按 [交付进度](../../CarzyCooker当前进度.md) 和实施 change 区分。临时格子已支持真实碗内容、番茄切配和手持打蛋，停续／合作／退出的单电脑验收见 [备料记录](../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)；完整汤与经营仍未实施。
+保存产品目标设计，当前能力按[交付进度](../../CarzyCooker当前进度.md)和实施change区分。九案单机制作／工位／关卡／顾客餐具／伙伴／buff／UI已实施，真实默认两关、原餐具回收及退出重开已验收，见[关卡记录](../../openspec/changes/solo-restaurant-level-flow/execution-notes.md)和[UI记录](../../openspec/changes/solo-restaurant-ui/execution-notes.md)。供应、装修、成功检查点及联机餐厅仍是后续目标；单机内存试玩不等于已实现完整长期产品。历史备料合作范围见[备料记录](../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。
 
 | 文件 | 内容 |
 |---|---|

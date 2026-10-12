@@ -76,5 +76,35 @@ namespace ET
          public const ushort GridWorldSnapshot = 10070;
          public const ushort GridCommandResult = 10071;
          public const ushort GridManualProcessState = 10072;
+         public const ushort GridAutoProcessState = 10073;
+         public const ushort LevelCommandRequest = 10074;
+         public const ushort LevelCommandResponse = 10075;
+         public const ushort LevelSubmitRequest = 10076;
+         public const ushort LevelSubmitResponse = 10077;
+         public const ushort StationLayoutRequest = 10078;
+         public const ushort StationLayoutResponse = 10079;
+         public const ushort StationLayoutSubmitRequest = 10080;
+         public const ushort StationLayoutSubmitResponse = 10081;
+         public const ushort GridBakeProcessState = 10082;
+         public const ushort FrontWorkRequest = 10083;
+         public const ushort FrontWorkResponse = 10084;
+         public const ushort FrontWorkSubmitRequest = 10085;
+         public const ushort FrontWorkSubmitResponse = 10086;
+         public const ushort CompanionWorkRequest = 10087;
+         public const ushort CompanionWorkResponse = 10088;
+         public const ushort CompanionWorkResult = 10089;
+         public const ushort GridCompanionState = 10090;
+         public const ushort GridFrontWorkState = 10091;
+         public const ushort GridCustomerState = 10092;
+         public const ushort GridOrderState = 10093;
+         public const ushort GridTableState = 10094;
+         public const ushort ServeOrderRequest = 10095;
+         public const ushort ServeOrderResponse = 10096;
+         public const ushort ServeOrderSubmitRequest = 10097;
+         public const ushort ServeOrderSubmitResponse = 10098;
+         public const ushort ChooseBuffRequest = 10099;
+         public const ushort ChooseBuffResponse = 10100;
+         public const ushort ChooseBuffSubmitRequest = 10101;
+         public const ushort ChooseBuffSubmitResponse = 10102;
     }
 }

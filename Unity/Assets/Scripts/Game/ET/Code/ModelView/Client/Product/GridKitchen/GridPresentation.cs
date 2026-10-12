@@ -15,6 +15,11 @@ namespace ET.Client
         public Vector2 PointerStart, PointerLast;
         public GridCell? Highlight;
         public long HighlightCommand;
+        // 短寿命界面选择；位置和朝向仍从已提交投影读取。
+        public long LayoutStationId, LayoutLevelId, LayoutLevelGeneration;
+        public bool BuffCandidatesVisible;
+        public bool HudLoading;
+        public long HudLoadEpoch;
     }
 
     [ComponentOf(typeof(GFEntityComponent))]

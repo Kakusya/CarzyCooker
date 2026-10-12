@@ -1,0 +1,26 @@
+[
+  {
+    "Id": 1,
+    "Name": "快火煮制",
+    "EffectKind": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 1
+  },
+  {
+    "Id": 2,
+    "Name": "熟练煮制",
+    "EffectKind": 1,
+    "DurationNumerator": 2,
+    "DurationDenominator": 3,
+    "BatchRecipeId": 1
+  },
+  {
+    "Id": 3,
+    "Name": "旺火煮制",
+    "EffectKind": 1,
+    "DurationNumerator": 1,
+    "DurationDenominator": 2,
+    "BatchRecipeId": 1
+  }
+]

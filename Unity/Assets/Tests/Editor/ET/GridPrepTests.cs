@@ -119,6 +119,8 @@ namespace ET
             int paused=work.ProgressTicks;PrepTick(10);Assert.That(work.ProgressTicks,Is.EqualTo(paused));
             PrepDo(first,GridAction.TakeCounter,chopping.Id,tomato);
             GridStation another=Grid.AddChild<GridStation>();another.Name="测试切配台";another.Kind=GridStationKind.Chopping;another.Cell=new GridCell(1,7);another.ItemId=0;
+            DRStationConfig definition=Tables.Instance.DTStationConfig.Get(chopping.DefinitionId);
+            another.DefinitionId=definition.Id;another.Orientation=0;another.ItemSlotCapacity=definition.ItemSlotCapacity;another.Capabilities=(GridStationCapability)definition.Capabilities;
             Grid.Stations.Add(another.Id,another);Grid.Blocked.Add(another.Cell);Grid.Dirty=true;
             PrepDo(first,GridAction.PlaceCounter,another.Id,tomato);
             PrepDo(first,GridAction.StartStationWork,another.Id,tomato,tomato,work.Id);

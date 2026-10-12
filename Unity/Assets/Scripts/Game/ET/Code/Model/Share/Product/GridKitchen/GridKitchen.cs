@@ -17,10 +17,13 @@ namespace ET
         public override string ToString() => $"({X},{Y})";
     }
 
-    public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4, AddToContainer = 5, StartStationWork = 6, StartHeldWork = 7, StopWork = 8 }
+    public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4, AddToContainer = 5, StartStationWork = 6, StartHeldWork = 7, StopWork = 8, PourContents = 9, StartAutoWork = 10, PortionSoup = 11, StartBake = 12 }
     public enum GridMotion { Standing, Transit, Waiting }
-    public enum GridItemLocation { Counter = 1, Hand = 2, Ground = 3, Container = 4 }
-    public enum GridStationKind { Counter, Chopping }
+    public enum GridItemLocation { Counter = 1, Hand = 2, Ground = 3, Container = 4, Table = 5, DirtyPool = 6, CleanPool = 7 }
+    public enum GridStationKind { Counter, Chopping, Stove, Oven, Table, Wash, DirtyPool, CleanPool }
+    [Flags]
+    public enum GridStationCapability { None = 0, Chop = 1, Cook = 2, Bake = 4, Serve = 8, Wash = 16, DirtyPool = 32, CleanPool = 64 }
+    public enum GridAutoState { Cooking, Ready }
     public enum GridWorkState { Paused, Working, Completed }
     public enum GridResultStatus { Accepted = 1, PendingApproach = 2, Executed = 3, Rejected = 4, Cancelled = 5 }
 
@@ -34,6 +37,8 @@ namespace ET
         public const int StepTicks = 5;
         public const int StandingCapacity = 2;
         public const int Tomato = 1, TomatoChunks = 2, Egg = 3, EggLiquid = 4, Bowl = 5;
+        public const int Pot = 6, Soup = 7;
+        public const int Bread = 8, Toast = 9, Plate = 10;
     }
 
     public readonly struct GridIntent : IEquatable<GridIntent>
@@ -66,34 +71,42 @@ namespace ET
         public long CommandId { get; }
         public GridResultStatus Status { get; }
         public string Reason { get; }
-        public GridResultValue(int memberId, long generation, long commandId, GridResultStatus status, string reason)
-        { MemberId = memberId; Generation = generation; CommandId = commandId; Status = status; Reason = reason; }
+        public long LevelId { get; }
+        public long LevelGeneration { get; }
+        public GridResultValue(int memberId, long generation, long commandId, GridResultStatus status, string reason, long levelId = 0, long levelGeneration = 0)
+        { MemberId = memberId; Generation = generation; CommandId = commandId; Status = status; Reason = reason; LevelId = levelId; LevelGeneration = levelGeneration; }
     }
 
-    [ComponentOf(typeof(Match))]
-    public sealed class GridKitchenComponent : Entity, IAwake, IUpdate, IDestroy
+    [ComponentOf]
+    public sealed class GridKitchenComponent : Entity, IAwake, IDestroy
     {
         public string WorldId;
         public long WorldGeneration;
         public long Tick;
         public long Version;
+        public long LayoutVersion;
         public long LastFrameTime;
         public long Accumulator;
         public bool Stopped;
         public bool Dirty;
+        public EntityRef<Match> Match;
+        public EntityRef<RestaurantRuntime> Restaurant;
         public readonly HashSet<GridCell> Blocked = new();
-        // 仅索引本 owner 的 Children；不另持可写角色/物品副本。
+        // 角色归当前 Level（旧 Host 样机仍为厨房 Child），其余对象归厨房；这里只索引。
         public readonly Dictionary<int, EntityRef<GridActor>> Actors = new();
         public readonly Dictionary<long, EntityRef<GridStation>> Stations = new();
         public readonly Dictionary<long, EntityRef<GridItem>> Items = new();
         public readonly Dictionary<long, EntityRef<GridManualProcess>> Processes = new();
+        public readonly Dictionary<long, EntityRef<GridAutoProcess>> AutoProcesses = new();
+        public readonly Dictionary<long, EntityRef<GridBakeProcess>> BakeProcesses = new();
         public readonly Queue<GridMemberChange> MemberChanges = new();
+        public readonly Queue<GridStationLayoutEnvelope> LayoutCommands = new();
         public readonly Dictionary<int, GridIntent> Incoming = new();
         public readonly List<GridResultValue> Results = new();
         public readonly List<GridResultValue> PendingResults = new();
     }
 
-    [ChildOf(typeof(GridKitchenComponent))]
+    [ChildOf]
     public sealed class GridActor : Entity, IAwake
     {
         public int MemberId;
@@ -106,6 +119,7 @@ namespace ET
         public int Facing;
         public long HandItemId;
         public long WorkId;
+        public long FrontWorkId, FrontClaimSerial;
         public GridCell Goal;
         public GridCell StopCell;
         public bool HasStopReservation;
@@ -124,20 +138,29 @@ namespace ET
     [ChildOf(typeof(GridKitchenComponent))]
     public sealed class GridStation : Entity, IAwake
     {
+        public int InitialLayoutId;
+        public int DefinitionId, Orientation, ItemSlotCapacity;
+        public GridStationCapability Capabilities;
         public GridCell Cell;
         public string Name;
         public long ItemId;
         public GridStationKind Kind;
+        public long AutoProcessId;
+        public long BakeProcessId;
+        public readonly List<long> PoolItemIds = new();
     }
 
     [ChildOf(typeof(GridKitchenComponent))]
     public sealed class GridItem : Entity, IAwake
     {
+        public ItemHygiene Hygiene;
         public string Name;
         public int DefinitionId;
         public GridItemLocation Location;
         public long HolderId;
         public GridCell Cell;
+        public long AutoProcessId;
+        public long BakeProcessId;
         // 内容始终属于这个容器，拿放不重新创建内容。
         public readonly List<long> Contents = new();
     }

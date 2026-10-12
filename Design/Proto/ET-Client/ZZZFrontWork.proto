@@ -1,0 +1,161 @@
+syntax = "proto3";
+package ET;
+
+// 仅产品本地入口；不进入 UDP/KCP wire 白名单。
+// ResponseType FrontWorkResponse
+message FrontWorkRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    string WorldId = 4;
+    int64 WorldGeneration = 5;
+    int64 BindingGeneration = 6;
+    int64 LevelId = 7;
+    int64 LevelGeneration = 8;
+    int64 CommandId = 9;
+    int32 Action = 10;
+    int64 WorkId = 11;
+    int64 ClaimSerial = 12;
+}
+message FrontWorkResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+// ResponseType FrontWorkSubmitResponse
+message FrontWorkSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int64 PeerGeneration = 4;
+    int32 ProtocolVersion = 5;
+    string MatchId = 6;
+    string WorldId = 7;
+    int64 WorldGeneration = 8;
+    int64 BindingGeneration = 9;
+    int64 LevelId = 10;
+    int64 LevelGeneration = 11;
+    int64 CommandId = 12;
+    int32 Action = 13;
+    int64 WorkId = 14;
+    int64 ClaimSerial = 15;
+}
+message FrontWorkSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+// ResponseType CompanionWorkResponse
+message CompanionWorkRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    string WorldId = 4;
+    int64 WorldGeneration = 5;
+    int64 LevelId = 6;
+    int64 LevelGeneration = 7;
+    int64 RoleId = 8;
+    int64 RoleInstanceId = 9;
+    int64 RequestId = 10;
+    int32 Action = 11;
+    int64 WorkId = 12;
+    int64 ClaimSerial = 13;
+}
+message CompanionWorkResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 RequestId = 4;
+    int32 Status = 5;
+}
+message CompanionWorkResult // IMessage
+{
+    int64 RoleId = 1;
+    int64 RoleInstanceId = 2;
+    int64 LevelGeneration = 3;
+    int64 RequestId = 4;
+    int64 WorkId = 5;
+    int64 ClaimSerial = 6;
+    int32 Status = 7;
+    string Reason = 8;
+    int32 EventKind = 9;
+}
+
+message GridCompanionState
+{
+    int64 RoleId = 1;
+    int64 CompanionId = 2;
+    int32 DefinitionId = 3;
+    string Name = 4;
+    int32 X = 5;
+    int32 Y = 6;
+    int32 NextX = 7;
+    int32 NextY = 8;
+    int64 StepStartTick = 9;
+    int32 Motion = 10;
+    int64 WorkId = 11;
+    int64 ClaimSerial = 12;
+    int32 CompletedCount = 13;
+    repeated GridPathCell Path = 14;
+}
+message GridFrontWorkState
+{
+    int64 WorkId = 1;
+    int32 Kind = 2;
+    int64 CustomerId = 3;
+    int64 StationId = 4;
+    int64 ItemId = 5;
+    int32 State = 6;
+    double Progress = 7;
+    int32 WorkerKind = 8;
+    int64 WorkerId = 9;
+    int64 ClaimSerial = 10;
+    int32 FrozenTicks = 11;
+    int32 OperationX = 12;
+    int32 OperationY = 13;
+}
+message GridCustomerState
+{
+    int64 CustomerId = 1;
+    int32 ArrivalSequence = 2;
+    int32 Phase = 3;
+    int64 TableStationId = 4;
+    int64 OrderId = 5;
+    int32 X = 6;
+    int32 Y = 7;
+    int32 NextX = 8;
+    int32 NextY = 9;
+    int64 StepStartTick = 10;
+    int32 Motion = 11;
+    int32 RemainingEatTicks = 12;
+    repeated GridPathCell Path = 13;
+}
+message GridOrderState
+{
+    int64 OrderId = 1;
+    int64 CustomerId = 2;
+    int64 TableStationId = 3;
+    int32 DishId = 4;
+    int32 Score = 5;
+    int32 State = 6;
+    int64 DeadlineTick = 7;
+    int64 ServedItemId = 8;
+}
+message GridTableState
+{
+    int64 StationId = 1;
+    int64 CustomerId = 2;
+    int32 State = 3;
+    int32 SeatX = 4;
+    int32 SeatY = 5;
+}

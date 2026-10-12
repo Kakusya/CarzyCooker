@@ -42,7 +42,8 @@ namespace ET
             DRGridItemConfig row = Tables.Instance.DTGridItemConfig.Get(definition);
             GridItem item = self.AddChild<GridItem>();
             item.DefinitionId = definition; item.Name = row.Name; item.Location = location;
-            item.HolderId = holder; item.Cell = cell; item.Contents.Clear();
+            item.HolderId = holder; item.Cell = cell; item.AutoProcessId = 0; item.Contents.Clear();
+            item.BakeProcessId = 0;
             self.Items.Add(item.Id, item);
             return item;
         }
@@ -50,7 +51,7 @@ namespace ET
         public static GridManualProcess Process(this GridKitchenComponent self, long id) => self.Processes.TryGetValue(id, out var value) ? value : null;
         public static GridManualProcess InputProcess(this GridKitchenComponent self, long input) => self.Processes.Values
             .Select(value => (GridManualProcess)value).FirstOrDefault(value => value.InputItemId == input && value.State != GridWorkState.Completed);
-        private static bool ItemWorking(this GridKitchenComponent self, long item) => self.Processes.Values
+        private static bool ItemWorking(this GridKitchenComponent self, long item) => (self.Item(item)?.BakeProcessId ?? 0) != 0 || self.Processes.Values
             .Select(value => (GridManualProcess)value).Any(p => p.State == GridWorkState.Working && (p.InputItemId == item || p.TargetItemId == item));
 
         private static void PauseWork(this GridKitchenComponent self, GridActor actor)
@@ -68,10 +69,17 @@ namespace ET
             if (input == null || input.Id != intent.ExpectedItemId || input.Location != GridItemLocation.Hand || input.HolderId != actor.MemberId ||
                 target == null || target.Id != intent.ExpectedTargetItemId || target.Location != GridItemLocation.Counter || target.HolderId != station.Id) return "TargetChanged";
             if (self.ItemWorking(target.Id) || self.ItemWorking(input.Id)) return "WorkBusy";
+            if (target.Hygiene != ItemHygiene.Clean || input.Hygiene != ItemHygiene.Clean) return "DirtyUtensil";
+            if (target.AutoProcessId != 0) return "ProcessLocked";
             DRGridItemConfig source = Tables.Instance.DTGridItemConfig.Get(input.DefinitionId), bowl = Tables.Instance.DTGridItemConfig.Get(target.DefinitionId);
             if (source.Kind == 2) return "NestedContainer";
             if (bowl.Kind != 2 || !bowl.AcceptedDefinitionIds.Contains(input.DefinitionId)) return "IncompatibleMaterial";
             if (target.Contents.Count >= bowl.ContainerCapacity) return "ContainerFull";
+            if (target.DefinitionId == GridKitchenRules.Pot)
+            {
+                string error = self.CheckPotAddition(target, input.DefinitionId);
+                if (error != null) return error;
+            }
             self.PauseWork(actor);
             actor.HandItemId = 0; input.Location = GridItemLocation.Container; input.HolderId = target.Id; target.Contents.Add(input.Id);
             return null;
@@ -82,10 +90,11 @@ namespace ET
             int mode = intent.Action == GridAction.StartStationWork ? 1 : 2;
             GridItem target = self.Item(mode == 1 ? station?.ItemId ?? 0 : actor.HandItemId);
             if (target == null || target.Id != intent.ExpectedTargetItemId) return "TargetChanged";
+            if (target.Hygiene != ItemHygiene.Clean) return "DirtyUtensil";
             GridItem input;
             if (mode == 1)
             {
-                if (station.Kind != GridStationKind.Chopping) return "RequiresChoppingStation";
+                if ((station.Capabilities & GridStationCapability.Chop) == 0) return "RequiresChoppingStation";
                 if (actor.HandItemId != 0) return "HandFull";
                 if (target.Location != GridItemLocation.Counter || target.HolderId != station.Id) return "TargetChanged";
                 input = target;
@@ -136,8 +145,8 @@ namespace ET
                 bool valid = actor != null && actor.Generation == process.WorkerGeneration && actor.WorkId == process.Id &&
                     self.HasBinding(actor.MemberId, actor.Generation) && actor.Motion == GridMotion.Standing && input != null && target != null;
                 if (process.StationId != 0)
-                    valid &= actor != null && station != null && station.Kind == GridStationKind.Chopping && station.ItemId == process.InputItemId &&
-                        input?.Location == GridItemLocation.Counter && input?.HolderId == station.Id && actor?.HandItemId == 0 && GridDistance(actor.Cell, station.Cell) == 1;
+                    valid &= actor != null && station != null && (station.Capabilities & GridStationCapability.Chop) != 0 && station.ItemId == process.InputItemId &&
+                        input?.Location == GridItemLocation.Counter && input?.HolderId == station.Id && actor?.HandItemId == 0 && self.AtStation(actor, station);
                 else valid &= actor?.HandItemId == process.TargetItemId && target?.Location == GridItemLocation.Hand && target?.HolderId == actor?.MemberId &&
                     target?.Contents.Count == 1 && target.Contents[0] == process.InputItemId && input?.Location == GridItemLocation.Container && input?.HolderId == target.Id;
                 if (!valid)

@@ -6,6 +6,7 @@ using Game;
 
 namespace ET
 {
+    [FriendOf(typeof(ProcessInnerSender))]
     public static class OwnedRequestExtensions
     {
         public static UniTask DelayAsync(this AsyncContext context, TimerComponent timer, long milliseconds)
@@ -67,22 +68,43 @@ namespace ET
 
         // Sender/receiver keep input ownership. Single-owner cancellation does not Stop the sender.
         public static UniTask<T> CallLocalValueAsync<T>(this AsyncContext context, ProcessInnerSender sender,
-            ActorId target, IRequest request, Func<IResponse, T> read)
+            ActorId target, IRequest request, Func<IResponse, T> read, Action physicalFinished = null)
         {
-            context.ThrowIfStopped();
-            return context.Scope.RunAsync(async inner =>
+            bool handedOff = false;
+            try
             {
-                IResponse response = await sender.Call(target, request, false);
-                try
+                context.ThrowIfStopped();
+                if (sender == null || sender.IsDisposed || sender.IsStopped)
+                    throw new ObjectDisposedException(nameof(ProcessInnerSender));
+                return context.Scope.RunAsync(async inner =>
                 {
-                    inner.ThrowIfStopped();
-                    if (response.Error == ErrorCore.ERR_Cancel) throw new OperationCanceledException(inner.CancellationToken);
-                    T value = default;
-                    inner.Apply(() => value = read(response));
-                    return value;
+                    handedOff = true;
+                    IResponse response = null;
+                    try
+                    {
+                        response = await sender.Call(target, request, false);
+                        inner.ThrowIfStopped();
+                        if (response.Error == ErrorCore.ERR_Cancel) throw new OperationCanceledException(inner.CancellationToken);
+                        T value = default;
+                        inner.Apply(() => value = read(response));
+                        return value;
+                    }
+                    finally
+                    {
+                        try { (response as MessageObject)?.Dispose(); }
+                        finally { physicalFinished?.Invoke(); }
+                    }
+                });
+            }
+            catch
+            {
+                if (!handedOff)
+                {
+                    try { (request as MessageObject)?.Dispose(); }
+                    finally { physicalFinished?.Invoke(); }
                 }
-                finally { (response as MessageObject)?.Dispose(); }
-            });
+                throw;
+            }
         }
     }
 }

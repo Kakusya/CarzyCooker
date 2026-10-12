@@ -1,0 +1,48 @@
+[
+  {
+    "Id": 1,
+    "NextLevelConfigId": 2,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true
+  },
+  {
+    "Id": 2,
+    "NextLevelConfigId": 2,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true
+  }
+]

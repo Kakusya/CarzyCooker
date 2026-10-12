@@ -1,6 +1,6 @@
 # kitchen-item-processing Target Specification
 
-> 状态：目标规格文档已定稿；临时格子样机已实施真实材料／碗内容、切番茄与手持碗打蛋、停续交接和成员退出子集，验收见 [备料执行说明](../../../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。完整锅／煮汤、盛装、分装份数和餐具回收仍未实施；已确认、授权补足与未决范围见 [规格索引](../README.md)。
+> 状态：目标规格文档已定稿；备料手工子集见[备料记录](../../../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)，Solo自动汤批次与逐份盛碗见[煮汤记录](../../../../openspec/changes/grid-kitchen-soup-batch-cooking/execution-notes.md)。九案单机订单交付、原餐具洗净回收及实物换关已验收，见[关卡记录](../../../../openspec/changes/solo-restaurant-level-flow/execution-notes.md)；完整合作制作、清空丢弃等后续目标未实施。已确认、授权补足与未决范围见[规格索引](../README.md)。
 
 ## Purpose
 

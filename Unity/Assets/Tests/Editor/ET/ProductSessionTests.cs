@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -47,6 +48,7 @@ namespace ET
     public sealed partial class ProductSessionTests
     {
         private World world;
+        private AsyncRuntime fixtureAsyncRuntime;
         private ShutdownTestClock clock;
         private GameObject viewRoot;
         private readonly List<Fiber> fibers = new();
@@ -61,6 +63,7 @@ namespace ET
                 throw new InvalidOperationException("Refusing to replace an active ET World");
             }
             World.Instance.Dispose();
+            fixtureAsyncRuntime = AsyncRuntime.Begin();
             world = World.Instance;
             world.AddSingleton(new Options { Process = 1 });
             world.AddSingleton<Logger, ILog>(new ShutdownTestLog());
@@ -68,7 +71,7 @@ namespace ET
             world.AddSingleton<TimeInfo, ITimeNow>(clock);
             world.AddSingleton<IdGenerater>();
             world.AddSingleton<ObjectPool>();
-            world.AddSingleton<CodeTypes, Assembly[]>(new[] { typeof(Entity).Assembly, typeof(ProductAuthority).Assembly, typeof(Entry).Assembly, GetType().Assembly });
+            world.AddSingleton<CodeTypes, Assembly[]>(new[] { typeof(Entity).Assembly, typeof(ProductAuthority).Assembly, typeof(Entry).Assembly, typeof(AsyncOwnerComponent).Assembly, GetType().Assembly });
             world.AddSingleton<EntitySystemSingleton>();
             world.AddSingleton<OpcodeType>();
             world.AddSingleton<EventSystem>();
@@ -114,6 +117,8 @@ namespace ET
                 fibers.Clear();
                 CurrentFiber.SetValue(null, null);
                 world.Dispose();
+                fixtureAsyncRuntime?.Stop();
+                fixtureAsyncRuntime = null;
                 world = null;
                 host = null;
                 UnityEngine.Object.DestroyImmediate(viewRoot);
@@ -144,11 +149,30 @@ namespace ET
             return host;
         }
 
-        private void Pump(int frames = 1)
+        private ProductRuntimeComponent StartSolo(bool join = true, bool liveFront = false, bool liveBuff = false)
+        {
+            RuntimeInstanceConfig config = RuntimeInstanceConfig.Create("product-solo-test", "test", "solo", null);
+            RuntimeInstanceContext.Prepare(config);
+            Fiber fiber = CreateFiber();
+            host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
+            if(!liveBuff)UseOptionalBuffFixture();
+            host.InitializeProduct(join);
+            if (!liveFront)
+            {
+                RestaurantRuntime restaurant = ((Match)((HostSessionComponent)host.Authority).Match).Restaurant;
+                Level level = restaurant.CurrentLevel;
+                level.GetComponent<FrontLevelState>().NextArrivalOperatingTick = 100000;
+                foreach (CompanionRole role in level.Children.Values.OfType<CompanionRole>()) role.NextScheduleTick = 100000;
+            }
+            Pump(8);
+            Assert.That(((Scene)host.HostScene).GetComponent<NetComponent>(), Is.Null, "Solo must not create a listener");
+            return host;
+        }
+
+        private void PumpMessages(int frames = 1)
         {
             for (int i = 0; i < frames; ++i)
             {
-                clock.Milliseconds += 15;
                 TimeInfo.Instance.Update();
                 foreach (Fiber fiber in fibers)
                 {
@@ -157,6 +181,24 @@ namespace ET
                     fiber.EntitySystem.LateUpdate();
                     fiber.ThreadSynchronizationContext.Update();
                 }
+            }
+        }
+
+        private void AdvanceTicks(int ticks)
+        {
+            for (int i = 0; i < ticks; ++i)
+            {
+                clock.Milliseconds += GridKitchenRules.TickMilliseconds;
+                PumpMessages();
+            }
+        }
+
+        private void Pump(int frames = 1)
+        {
+            for (int i = 0; i < frames; ++i)
+            {
+                clock.Milliseconds += 15;
+                PumpMessages();
             }
         }
 

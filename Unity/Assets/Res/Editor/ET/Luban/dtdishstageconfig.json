@@ -1,0 +1,115 @@
+[
+  {
+    "Id": 1,
+    "Kind": 0,
+    "RecipeId": 0,
+    "OutputDefinitionId": 1,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": []
+  },
+  {
+    "Id": 2,
+    "Kind": 1,
+    "RecipeId": 1,
+    "OutputDefinitionId": 2,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": [
+      1
+    ]
+  },
+  {
+    "Id": 3,
+    "Kind": 0,
+    "RecipeId": 0,
+    "OutputDefinitionId": 3,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": []
+  },
+  {
+    "Id": 4,
+    "Kind": 1,
+    "RecipeId": 2,
+    "OutputDefinitionId": 4,
+    "ContainerDefinitionId": 5,
+    "DependencyIds": [
+      3,
+      5
+    ]
+  },
+  {
+    "Id": 5,
+    "Kind": 0,
+    "RecipeId": 0,
+    "OutputDefinitionId": 5,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": []
+  },
+  {
+    "Id": 6,
+    "Kind": 0,
+    "RecipeId": 0,
+    "OutputDefinitionId": 6,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": []
+  },
+  {
+    "Id": 7,
+    "Kind": 2,
+    "RecipeId": 1,
+    "OutputDefinitionId": 7,
+    "ContainerDefinitionId": 6,
+    "DependencyIds": [
+      2,
+      4,
+      6
+    ]
+  },
+  {
+    "Id": 8,
+    "Kind": 4,
+    "RecipeId": 0,
+    "OutputDefinitionId": 7,
+    "ContainerDefinitionId": 5,
+    "DependencyIds": [
+      7,
+      5
+    ]
+  },
+  {
+    "Id": 9,
+    "Kind": 0,
+    "RecipeId": 0,
+    "OutputDefinitionId": 8,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": []
+  },
+  {
+    "Id": 10,
+    "Kind": 3,
+    "RecipeId": 1,
+    "OutputDefinitionId": 9,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": [
+      9
+    ]
+  },
+  {
+    "Id": 11,
+    "Kind": 0,
+    "RecipeId": 0,
+    "OutputDefinitionId": 10,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": []
+  },
+  {
+    "Id": 12,
+    "Kind": 5,
+    "RecipeId": 0,
+    "OutputDefinitionId": 9,
+    "ContainerDefinitionId": 10,
+    "DependencyIds": [
+      10,
+      11
+    ]
+  }
+]

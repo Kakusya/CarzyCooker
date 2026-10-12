@@ -25,9 +25,22 @@ namespace ET
                 if (self.Config.Role is RuntimeInstanceRole.Host or RuntimeInstanceRole.Solo)
                 {
                     GridKitchenSystem.ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTGridManualRecipeConfig.DataList);
+                    GridKitchenSystem.ValidateGridSoupDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTGridAutoRecipeConfig.DataList);
+                    GridKitchenSystem.ValidateStationConfiguration();
+                    GridDishConfig.ValidateAllMenus();
+                    if (self.Config.Role == RuntimeInstanceRole.Solo)
+                    {
+                        RestaurantConfig.ValidateLevelDefinitions(Tables.Instance.DTLevelConfig.DataList, GridKitchenSystem.IsInitialGridWalkable);
+                        CompanionConfig.Validate(Tables.Instance.DTCompanionConfig.DataList, GridKitchenSystem.IsInitialGridWalkable);
+                        FrontConfig.Validate(Tables.Instance.DTCustomerFlowConfig.DataList, Tables.Instance.DTOrderConfig.DataList, Tables.Instance.DTTableConfig.DataList);
+                        BuffConfig.ValidateAll();
+                    }
                     Scene host = EntitySceneFactory.CreateScene(root, IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(), SceneType.ProductHost, "ProductHost");
                     self.HostScene = host;
                     Match match = host.AddChild<Match>();
+                    if (self.Config.Role == RuntimeInstanceRole.Solo)
+                        match.Restaurant = match.AddChild<RestaurantRuntime, DRLevelConfig>(Tables.Instance.DTLevelConfig.Get(1));
+                    else match.AddComponent<GridKitchenComponent>();
                     HostSessionComponent authority = host.AddComponent<HostSessionComponent, Match, ProductRuntimeComponent>(match, self);
                     authority.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
                     self.Authority = authority;

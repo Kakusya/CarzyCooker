@@ -21,6 +21,18 @@ public partial class Tables
     public DTUnitConfig DTUnitConfig { private set; get; }
     public DTGridItemConfig DTGridItemConfig { private set; get; }
     public DTGridManualRecipeConfig DTGridManualRecipeConfig { private set; get; }
+    public DTGridAutoRecipeConfig DTGridAutoRecipeConfig { private set; get; }
+    public DTLevelConfig DTLevelConfig { private set; get; }
+    public DTStationConfig DTStationConfig { private set; get; }
+    public DTInitialLayoutConfig DTInitialLayoutConfig { private set; get; }
+    public DTDishConfig DTDishConfig { private set; get; }
+    public DTGridBakeRecipeConfig DTGridBakeRecipeConfig { private set; get; }
+    public DTDishStageConfig DTDishStageConfig { private set; get; }
+    public DTCompanionConfig DTCompanionConfig { private set; get; }
+    public DTOrderConfig DTOrderConfig { private set; get; }
+    public DTTableConfig DTTableConfig { private set; get; }
+    public DTCustomerFlowConfig DTCustomerFlowConfig { private set; get; }
+    public DTBuffConfig DTBuffConfig { private set; get; }
     private System.Collections.Generic.Dictionary<string, IDataTable> _tables;
     public System.Collections.Generic.IEnumerable<IDataTable> DataTables => _tables.Values;
     public IDataTable GetDataTable(string tableName) => _tables.TryGetValue(tableName, out var v) ? v : null;
@@ -56,6 +68,42 @@ public partial class Tables
         DTGridManualRecipeConfig = new DTGridManualRecipeConfig(() => loader("dtgridmanualrecipeconfig"));
         loadTasks.Add(DTGridManualRecipeConfig.LoadAsync());
         _tables.Add("DTGridManualRecipeConfig", DTGridManualRecipeConfig);
+        DTGridAutoRecipeConfig = new DTGridAutoRecipeConfig(() => loader("dtgridautorecipeconfig"));
+        loadTasks.Add(DTGridAutoRecipeConfig.LoadAsync());
+        _tables.Add("DTGridAutoRecipeConfig", DTGridAutoRecipeConfig);
+        DTLevelConfig = new DTLevelConfig(() => loader("dtlevelconfig"));
+        loadTasks.Add(DTLevelConfig.LoadAsync());
+        _tables.Add("DTLevelConfig", DTLevelConfig);
+        DTStationConfig = new DTStationConfig(() => loader("dtstationconfig"));
+        loadTasks.Add(DTStationConfig.LoadAsync());
+        _tables.Add("DTStationConfig", DTStationConfig);
+        DTInitialLayoutConfig = new DTInitialLayoutConfig(() => loader("dtinitiallayoutconfig"));
+        loadTasks.Add(DTInitialLayoutConfig.LoadAsync());
+        _tables.Add("DTInitialLayoutConfig", DTInitialLayoutConfig);
+        DTDishConfig = new DTDishConfig(() => loader("dtdishconfig"));
+        loadTasks.Add(DTDishConfig.LoadAsync());
+        _tables.Add("DTDishConfig", DTDishConfig);
+        DTGridBakeRecipeConfig = new DTGridBakeRecipeConfig(() => loader("dtgridbakerecipeconfig"));
+        loadTasks.Add(DTGridBakeRecipeConfig.LoadAsync());
+        _tables.Add("DTGridBakeRecipeConfig", DTGridBakeRecipeConfig);
+        DTDishStageConfig = new DTDishStageConfig(() => loader("dtdishstageconfig"));
+        loadTasks.Add(DTDishStageConfig.LoadAsync());
+        _tables.Add("DTDishStageConfig", DTDishStageConfig);
+        DTCompanionConfig = new DTCompanionConfig(() => loader("dtcompanionconfig"));
+        loadTasks.Add(DTCompanionConfig.LoadAsync());
+        _tables.Add("DTCompanionConfig", DTCompanionConfig);
+        DTOrderConfig = new DTOrderConfig(() => loader("dtorderconfig"));
+        loadTasks.Add(DTOrderConfig.LoadAsync());
+        _tables.Add("DTOrderConfig", DTOrderConfig);
+        DTTableConfig = new DTTableConfig(() => loader("dttableconfig"));
+        loadTasks.Add(DTTableConfig.LoadAsync());
+        _tables.Add("DTTableConfig", DTTableConfig);
+        DTCustomerFlowConfig = new DTCustomerFlowConfig(() => loader("dtcustomerflowconfig"));
+        loadTasks.Add(DTCustomerFlowConfig.LoadAsync());
+        _tables.Add("DTCustomerFlowConfig", DTCustomerFlowConfig);
+        DTBuffConfig = new DTBuffConfig(() => loader("dtbuffconfig"));
+        loadTasks.Add(DTBuffConfig.LoadAsync());
+        _tables.Add("DTBuffConfig", DTBuffConfig);
 
         await Cysharp.Threading.Tasks.UniTask.WhenAll(loadTasks);
 
@@ -74,6 +122,18 @@ public partial class Tables
         DTUnitConfig.ResolveRef(this);
         DTGridItemConfig.ResolveRef(this);
         DTGridManualRecipeConfig.ResolveRef(this);
+        DTGridAutoRecipeConfig.ResolveRef(this);
+        DTLevelConfig.ResolveRef(this);
+        DTStationConfig.ResolveRef(this);
+        DTInitialLayoutConfig.ResolveRef(this);
+        DTDishConfig.ResolveRef(this);
+        DTGridBakeRecipeConfig.ResolveRef(this);
+        DTDishStageConfig.ResolveRef(this);
+        DTCompanionConfig.ResolveRef(this);
+        DTOrderConfig.ResolveRef(this);
+        DTTableConfig.ResolveRef(this);
+        DTCustomerFlowConfig.ResolveRef(this);
+        DTBuffConfig.ResolveRef(this);
         PostResolveRef();
     }
 

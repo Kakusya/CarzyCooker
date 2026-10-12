@@ -1,0 +1,12 @@
+[
+  {
+    "Id": 1,
+    "Name": "伙伴",
+    "Post": 1,
+    "SpawnX": 2,
+    "SpawnY": 5,
+    "AskTicks": 30,
+    "ClearTicks": 20,
+    "WashTicks": 61
+  }
+]

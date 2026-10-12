@@ -16,12 +16,16 @@ namespace ET.Client
         private Camera boardCamera, originalCamera;
         private bool originalEnabled, configured;
         private int mapWidth, mapHeight, kitchenBottom;
+        private Rect inputViewport=new(0,0,1,1);
+        private bool hudViewportConfigured;
+        private float viewportAspect;
         private readonly Dictionary<GridCell, SpriteRenderer> tiles = new();
         private readonly Dictionary<long, SpriteRenderer> stations = new();
         private readonly Dictionary<int, SpriteRenderer> actors = new();
         private readonly Dictionary<int, SpriteRenderer> directions = new();
         private readonly Dictionary<long, SpriteRenderer> items = new();
         private readonly Dictionary<long, Text> labels = new();
+        private readonly Dictionary<long, SpriteRenderer> frontPeople = new();
         private Font labelFont;
 
         private Text Label(long id, Vector3 position)
@@ -35,11 +39,26 @@ namespace ET.Client
             canvas.sortingOrder = 600;
             var caption = new GameObject("Caption", typeof(RectTransform), typeof(Text)); caption.layer = RenderLayer;
             caption.transform.SetParent(go.transform, false);
-            Text text = caption.GetComponent<Text>(); text.font = labelFont; text.fontSize = 24;
+            Text text = caption.GetComponent<Text>(); text.font = labelFont; text.fontSize = 18;
             text.color = new Color(.08f,.12f,.14f); text.alignment = TextAnchor.MiddleCenter; text.raycastTarget = false;
-            text.rectTransform.sizeDelta = new Vector2(100, 65); labels.Add(id, text); return text;
+            text.rectTransform.sizeDelta = new Vector2(110, 120); labels.Add(id, text); return text;
         }
         public Camera BoardCamera => boardCamera;
+        public Rect InputScreenRect=>new(inputViewport.x*Screen.width,inputViewport.y*Screen.height,inputViewport.width*Screen.width,inputViewport.height*Screen.height);
+
+        public void SetHudViewport(Rect viewport)
+        {
+            if(!configured || viewport.width<=0 || viewport.height<=0)return;
+            if(hudViewportConfigured && inputViewport==viewport && Mathf.Approximately(viewportAspect,boardCamera.aspect))return;
+            float previousCenter=boardCamera.transform.position.y+(inputViewport.center.y-.5f)*2*boardCamera.orthographicSize;
+            inputViewport=viewport;viewportAspect=boardCamera.aspect;
+            float half=Mathf.Max((mapWidth+.4f)/(2*boardCamera.aspect*viewport.width),(mapHeight-kitchenBottom+.7f)*GroundY/(2*viewport.height));
+            // URP 的 UI overlay 继续使用完整 viewport；按中间地图区拟合厨房和限制输入。
+            boardCamera.orthographicSize=half;
+            float center=hudViewportConfigured?previousCenter:(mapHeight+kitchenBottom-1)*GroundY/2;
+            Vector3 position=boardCamera.transform.position;position.y=center-(viewport.center.y-.5f)*2*half;boardCamera.transform.position=position;
+            hudViewportConfigured=true;Pan(0);
+        }
 
         public Vector3 CellToWorld(GridCell cell) => new(cell.X, cell.Y * GroundY, 0);
         public GridCell ScreenToCell(Vector2 point)
@@ -61,6 +80,7 @@ namespace ET.Client
         {
             if (configured) return;
             configured = true; mapWidth = width; mapHeight = height; kitchenBottom = bottom;
+            inputViewport=new Rect(0,0,1,1);hudViewportConfigured=false;viewportAspect=0;
             boardCamera = ViewportTransform.GetComponent<Camera>();
             originalCamera = GameEntry.Camera.CurrentSceneCamera;
             originalEnabled = originalCamera != null && originalCamera.enabled;
@@ -87,17 +107,22 @@ namespace ET.Client
         {
             if (!configured) return;
             float half = boardCamera.orthographicSize;
-            float lower = -.5f * GroundY + half * .6f;
-            float upper = (mapHeight - .5f) * GroundY - half * .8f;
+            float visibleHalf=half*inputViewport.height,offset=(inputViewport.center.y-.5f)*2*half;
+            float lower = -GroundY+visibleHalf-offset;
+            float upper = (mapHeight+.5f)*GroundY-visibleHalf-offset;
             Vector3 position = boardCamera.transform.position;
             position.y = lower <= upper ? Mathf.Clamp(position.y - screenDeltaY * 2 * half / boardCamera.pixelHeight, lower, upper) : (mapHeight - 1) * GroundY / 2;
             boardCamera.transform.position = position;
         }
 
         public void Render(IEnumerable<GridActorProjection> people, IEnumerable<GridStationProjection> counters,
-            IEnumerable<GridItemProjection> objects, int ownMember, float tick, int stepTicks, GridCell? highlight)
+            IEnumerable<GridItemProjection> objects, IEnumerable<GridAutoProcessProjection> automatic, IEnumerable<GridBakeProjection> baking,
+            IEnumerable<GridCompanionProjection> companions, IEnumerable<GridCustomerProjection> customers, IEnumerable<GridFrontWorkProjection> frontWorks,
+            int ownMember, float tick, int stepTicks, GridCell? highlight)
         {
             GridItemProjection[] objectValues = objects.ToArray();
+            GridAutoProcessProjection[] batchValues = automatic.ToArray();
+            GridBakeProjection[] bakeValues = baking.ToArray();
             foreach (SpriteRenderer tile in tiles.Values)
             {
                 int y = Mathf.RoundToInt(tile.transform.localPosition.y / GroundY), x = Mathf.RoundToInt(tile.transform.localPosition.x);
@@ -125,13 +150,47 @@ namespace ET.Client
             }
             foreach (int member in actors.Keys.Except(actorValues.Select(value=>value.MemberId)).ToArray())
             { Destroy(actors[member].gameObject);Destroy(directions[member].gameObject);actors.Remove(member);directions.Remove(member); }
+            GridFrontWorkProjection[] jobs = frontWorks.ToArray();
+            var activeFrontIds = new HashSet<long>();
+            foreach (GridCompanionProjection companion in companions)
+            {
+                foreach (GridCell cell in companion.Path) if (tiles.TryGetValue(cell, out SpriteRenderer tile)) tile.color = new Color(.79f,.75f,.92f);
+                GridFrontWorkProjection work = jobs.FirstOrDefault(value => value.Id == companion.WorkId);
+                string action = work.Id == 0 ? "待命" : work.Kind switch { FrontWorkKind.Ask => "询问", FrontWorkKind.Wash => "洗碗", _ => "清桌" };
+                string progress = work.Id == 0 ? "" : $" {work.Progress:P0}";
+                RenderFrontPerson(companion.Id, companion.Cell, companion.NextCell, companion.Motion, companion.StepStartTick,
+                    tick, stepTicks, new Color(.69f,.43f,.89f), companion.Name + "\n" + action + progress + $" · {companion.CompletedCount}/3");
+                activeFrontIds.Add(companion.Id);
+            }
+            foreach (GridCustomerProjection customer in customers)
+            {
+                string phase = customer.Phase switch { CustomerPhase.WaitingAsk => "等询问", CustomerPhase.Ordered => "等餐", CustomerPhase.Eating => "用餐",
+                    CustomerPhase.Leaving => "离店", CustomerPhase.Queued => "排队", _ => "走位" };
+                RenderFrontPerson(customer.Id, customer.Cell, customer.NextCell, customer.Motion, customer.StepStartTick,
+                    tick, stepTicks, new Color(.93f,.67f,.33f), $"顾客 {customer.ArrivalSequence}\n{phase}");
+                activeFrontIds.Add(customer.Id);
+            }
+            foreach (long id in frontPeople.Keys.Except(activeFrontIds).ToArray())
+            { Destroy(frontPeople[id].gameObject); frontPeople.Remove(id); if (labels.TryGetValue(id, out Text label)) { Destroy(label.transform.parent.gameObject); labels.Remove(id); } }
             foreach (GridStationProjection counter in counters)
             {
                 if (!stations.TryGetValue(counter.Id,out SpriteRenderer renderer))
                 { renderer = CreateSprite(counter.Name,CellToWorld(counter.Cell)+new Vector3(0,.12f,0),new Vector3(.88f,.65f,1),new Color(.38f,.49f,.54f),100-Mathf.RoundToInt(counter.Cell.Y*GroundY*10));stations.Add(counter.Id,renderer); }
+                int minX = counter.Footprint.Min(cell => cell.X), maxX = counter.Footprint.Max(cell => cell.X);
+                int minY = counter.Footprint.Min(cell => cell.Y), maxY = counter.Footprint.Max(cell => cell.Y);
+                renderer.transform.localPosition = new Vector3((minX + maxX) * .5f, (minY + maxY) * .5f * GroundY + .12f, 0);
+                renderer.transform.localScale = new Vector3(maxX - minX + .88f, (maxY - minY) * GroundY + .65f, 1);
+                renderer.sortingOrder = 100 - Mathf.RoundToInt(counter.Cell.Y * GroundY * 10);
                 GridItemProjection item = objectValues.FirstOrDefault(v=>v.Id==counter.ItemId);
-                string contents = item.DefinitionId==GridKitchenRules.Bowl ? "（"+(item.Contents.Count==0?"空":string.Join("、",item.Contents.Select(id=>objectValues.First(v=>v.Id==id).Name)))+"）" : "";
-                Label(counter.Id,CellToWorld(counter.Cell)+new Vector3(0,-.32f,0)).text=counter.Name+"\n"+(item.Id==0?"空":item.Name+contents);
+                string contents = item.Id != 0 && Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Kind == 2 ? "（"+(item.Contents.Count==0?"空":string.Join("、",item.Contents.Select(id=>objectValues.First(v=>v.Id==id).Name)))+"）" : "";
+                GridAutoProcessProjection batch = batchValues.FirstOrDefault(value => value.Id == item.AutoProcessId);
+                string progress = batch.Id == 0 ? "" : batch.State == GridAutoState.Cooking
+                    ? $"\n煮制 {batch.ProgressTicks}/{batch.RequiredTicks}" : $"\n已熟 · 剩 {batch.RemainingPortions} 份";
+                GridBakeProjection bake = bakeValues.FirstOrDefault(value=>value.Id==counter.BakeProcessId);
+                if(bake.Id!=0)progress+=$"\n烘烤 {bake.ProgressTicks}/{bake.RequiredTicks}";
+                Text caption = Label(counter.Id,CellToWorld(counter.Cell)+new Vector3(0,-.32f,0));
+                caption.transform.parent.localPosition = CellToWorld(counter.Cell) + new Vector3(0,-.32f,0);
+                caption.text=counter.Name+"\n"+(item.Id==0?"空":item.Name+contents)+progress;
             }
             foreach (long id in items.Keys.Except(objectValues.Where(v=>v.Location!=GridItemLocation.Container).Select(v=>v.Id)).ToArray())
             { Destroy(items[id].gameObject); items.Remove(id); }
@@ -164,9 +223,20 @@ namespace ET.Client
                 }
             }
             for(int i=RenderRootTransform.childCount-1;i>=0;--i)Destroy(RenderRootTransform.GetChild(i).gameObject);
-            tiles.Clear();stations.Clear();actors.Clear();directions.Clear();items.Clear();labels.Clear();
+            tiles.Clear();stations.Clear();actors.Clear();directions.Clear();items.Clear();labels.Clear();frontPeople.Clear();
             if(labelFont!=null)Destroy(labelFont);labelFont=null;
             originalCamera=null;
+        }
+
+        private void RenderFrontPerson(long id, GridCell cell, GridCell next, GridMotion motion, long start,
+            float tick, int stepTicks, Color color, string text)
+        {
+            if (!frontPeople.TryGetValue(id, out SpriteRenderer renderer))
+            { renderer = CreateSprite($"Front {id}", Vector3.zero, new Vector3(.42f,.6f,1), color, 200); frontPeople.Add(id, renderer); }
+            float progress = motion == GridMotion.Transit ? Mathf.Clamp01((tick - start) / stepTicks) : 0;
+            Vector3 foot = Vector3.Lerp(CellToWorld(cell), CellToWorld(next), progress);
+            renderer.transform.localPosition = foot + new Vector3(0,.25f,0); renderer.sortingOrder = 200 - Mathf.RoundToInt(foot.y * 10);
+            Text label = Label(id, foot + new Vector3(0,.75f,0)); label.transform.parent.localPosition = foot + new Vector3(0,.75f,0); label.text = text;
         }
     }
 }
