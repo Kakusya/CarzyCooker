@@ -49,7 +49,7 @@ namespace ET
                 {
                     member.Online = false;
                     member.BoundPeer = default;
-                    match.GetComponent<GridKitchenComponent>().QueueGridMember(member.MemberId, member.BindingGeneration, false);
+                    match.ProductKitchen().QueueGridMember(member.MemberId, member.BindingGeneration, false);
                     Changed(authority, match);
                 }
                 peer.CloseFinished = true;
@@ -83,7 +83,7 @@ namespace ET
                         member.BoundPeer = peer;
                         member.BindingGeneration = peer.Generation;
                         peer.MemberId = memberId;
-                        match.GetComponent<GridKitchenComponent>().QueueGridMember(memberId, peer.Generation, true);
+                        match.ProductKitchen().QueueGridMember(memberId, peer.Generation, true);
                         Changed(authority, match);
                     }
                     FillJoin(match, peer, response);
@@ -113,7 +113,7 @@ namespace ET
                         response.Payload = request.Payload;
                         return;
                     }
-                    match.GetComponent<GridKitchenComponent>().QueueGridMember(participant.MemberId, participant.BindingGeneration, false);
+                    match.ProductKitchen().QueueGridMember(participant.MemberId, participant.BindingGeneration, false);
                     participant.Dispose();
                     peer.EntryOpen = false;
                     peer.Closing = true;
@@ -133,7 +133,7 @@ namespace ET
             response.MemberId = peer.MemberId;
             response.BindingGeneration = peer.Generation;
             response.RosterVersion = match.RosterVersion;
-            foreach (Participant member in match.Children.Values.Cast<Participant>())
+            foreach (Participant member in match.Children.Values.OfType<Participant>())
             {
                 response.Members.Add(ProductMessages.Create<ProductRosterMember>(message => { message.MemberId = member.MemberId; message.Online = member.Online; }));
             }
@@ -149,7 +149,7 @@ namespace ET
                     continue;
                 }
                 var snapshot = ProductMessages.Create<ProductRosterSnapshot>(message => { message.MatchId = match.MatchId; message.BindingGeneration = peer.Generation; message.RosterVersion = match.RosterVersion; });
-                foreach (Participant member in match.Children.Values.Cast<Participant>())
+                foreach (Participant member in match.Children.Values.OfType<Participant>())
                 {
                     snapshot.Members.Add(ProductMessages.Create<ProductRosterMember>(message => { message.MemberId = member.MemberId; message.Online = member.Online; }));
                 }

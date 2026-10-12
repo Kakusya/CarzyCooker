@@ -1,0 +1,9 @@
+[
+  {
+    "Id": 1,
+    "InputDefinitionId": 8,
+    "OutputDefinitionId": 9,
+    "StationCapability": 4,
+    "RequiredTicks": 80
+  }
+]

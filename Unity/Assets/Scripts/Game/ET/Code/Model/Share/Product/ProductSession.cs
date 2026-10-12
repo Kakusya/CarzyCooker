@@ -37,7 +37,7 @@ namespace ET
 
     public static class ProductSessionRules
     {
-        public const int ProtocolVersion = 3;
+        public const int ProtocolVersion = 12;
         public const int MaxPayloadBytes = 1024;
         public const int RequestTimeout = 4000;
         public const int HeartbeatInterval = 2000;
@@ -90,6 +90,7 @@ namespace ET
         public long RosterVersion;
         // 仅由 HostSession 有序入口分配；本 Match 内不回绕或复用。
         public int NextMemberId;
+        public EntityRef<RestaurantRuntime> Restaurant;
     }
 
     [ChildOf(typeof(Match))]
@@ -102,7 +103,7 @@ namespace ET
     }
 
     [ComponentOf(typeof(Scene))]
-    public sealed class HostSessionComponent : Entity, IAwake<Match, ProductRuntimeComponent>
+    public sealed class HostSessionComponent : Entity, IAwake<Match, ProductRuntimeComponent>, IUpdate
     {
         public EntityRef<Match> Match;
         public EntityRef<ProductRuntimeComponent> Runtime;
@@ -120,6 +121,17 @@ namespace ET
         public bool CloseFinished;
         // 入口在 Call 前增加，整个原调用/回送结束后减少；不是第二份请求等待表。
         public int InFlight;
+        // 仅最近命令的入口记账，最终世界事实仍由领域 owner 保管。
+        public ProductCommandContext LastCommandContext;
+        public ProductCommandKind LastCommandKind;
+        public GridIntent LastGridCommand;
+        public LevelControlIntent LastLevelCommand;
+        public GridStationLayoutIntent LastLayoutCommand;
+        public FrontWorkIntent LastFrontWorkCommand;
+        public ServeOrderIntent LastServeCommand;
+        public BuffChoiceIntent LastBuffCommand;
+        public GridResultStatus LastCommandStatus;
+        public string LastCommandReason;
     }
 
     [ComponentOf(typeof(HostPeer))]
@@ -164,6 +176,7 @@ namespace ET
         public int NextProbeSequence;
         public string LastProbePayload;
         public int LastProbeMemberId;
+        public long NextCommandId;
         // Joining 下候选只属于当前入口，Join 确认后才安装到正式投影。
         public string CandidateMatchId;
         public long CandidateGeneration;

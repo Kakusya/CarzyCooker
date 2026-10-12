@@ -1,0 +1,17 @@
+syntax = "proto3";
+package ET;
+
+// 排在既有协议源之后，保留所有旧 Opcode。
+message GridBakeProcessState
+{
+    int64 ProcessId = 1;
+    int32 RecipeId = 2;
+    int64 StationId = 3;
+    int64 InputItemId = 4;
+    int32 OutputDefinitionId = 5;
+    int32 RequiredTicks = 6;
+    int32 ProgressTicks = 7;
+    int64 OutputItemId = 8;
+    int32 State = 9;
+    int64 StartedTick = 10;
+}

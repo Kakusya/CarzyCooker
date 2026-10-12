@@ -49,6 +49,8 @@ ET 通过 `entity.GetAsyncOwner()` 创建 Component，保存原 EntityRef/Instan
 
 ET 等待使用原 Fiber 的 `context.DelayAsync(timer, milliseconds)` 和请求适配，保留 Timer/Session/ProcessInnerSender 的原执行路径。异步入口在调用原委托前登记；Stop 返回前对外等待为取消并移除登记。内部忽略取消仍由唯一观察者消费其结束，旧 Apply 被拒绝；任意直接字段写入、跨线程调用和未迁移的第三方 async 不属于保证。
 
+产品本地 Call 的 Peer 在途责任由 `CallLocalValueAsync(..., physicalFinished)` 的内部观察者持有；外层 owner 取消立即结束显示等待，但 EndEntry 要等原答复、原超时或整个 sender.Stop。该回调捕获原 Peer EntityRef，不将新实例当旧实例收尾。未交接的停用 owner／sender 输入由发起边界释放，已交接输入由 handler 释放。此处没有另一份等待表，运行证据见 [本地产品调用](../openspec/changes/solo-local-message-contracts/execution-notes.md)。
+
 已迁移的运行加载：CodeLoader（保留 World 检查）、ConfigReader、Recast、UGFHelper、Tables、HybridCLR。后两者只迁移加载与回收，不修 AOT 返回码，也不改表或生成代码。UI/Entity 显示等待器、Scene 事务、AssetSet 的独立对象池、其他旧业务和外部包 async 保持各自契约；底座 ResourceComponent.LoadAssetAsync 保留为明确所有权的原始入口，取消直接结束等待，晚到引用归还原 manager。
 
 ## 正常整体退出和原生尾部

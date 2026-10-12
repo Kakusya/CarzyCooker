@@ -1,0 +1,18 @@
+[
+  {
+    "Id": 1,
+    "ContainerDefinitionId": 6,
+    "InputDefinitionIds": [
+      2,
+      4
+    ],
+    "InputCounts": [
+      1,
+      1
+    ],
+    "RequiredTicks": 120,
+    "OutputDefinitionId": 7,
+    "OutputPortions": 2,
+    "ServingContainerDefinitionId": 5
+  }
+]

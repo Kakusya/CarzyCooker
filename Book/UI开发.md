@@ -259,10 +259,35 @@ UIWidget 的资源配置使用 `UIEntity.xlsx`，生成常量为 `UGFUIEntityId`
 | ETUI 示例 | `Game/ET/Code/ModelView/Client/Demo/UI/UILogin/` |
 | UI 常量生成器 | `Share/Tool/ExcelExporter/Generate/GenerateUGFUIFormId.cs` |
 
+## 煮汤界面用法
+
+沿原 `UIGridKitchen`／`GridKitchenBoard` 的注册、Prefab 与 CodeBind 使用锅动作：蛋液碗对锅显示“倒蛋液”，空手对未开始灶台锅显示“煮汤”并提供“直接拿锅”，空碗对批次锅显示“盛一份”。地图与 HUD 共用 `CounterIntent`，进度及份数都读同版投影；“动作已执行”表示启动或盛装提交，煮好另显示“已熟”。锅内容、煮制进度与剩余份数由原受管标签显示，不另建每锅 UI owner。操作与重开证据见 [煮汤执行说明](../openspec/changes/grid-kitchen-soup-batch-cooking/execution-notes.md)。
+
+## 单机关卡基本控制
+
+正式Solo提供“开始营业／暂停／恢复／下一关”，读取同版厨房／关卡快照；暂停及结算时停止显示插值。按钮冻结关卡身份，旧按钮随关卡／阶段变化清除，保存的旧callback也先核对原UI／世界／关身份。回执表示收到请求，最终阶段由餐厅服务步提交；试玩仅保留本次运行，未提供产品存档。订单、伙伴、buff及零星结算已接入完整面板，实际验收见[关卡执行说明](../openspec/changes/solo-restaurant-level-flow/execution-notes.md)。
+
+## 准备态工位调整
+
+未暂停 Preparing 时，原 HUD 的“调整 工位名”只选中工位；点击地图格提交移动，“旋转 工位名”提交逆时针 90 度变换，“结束调整”返回普通拿放。选中不发业务请求；移动／旋转固定工位身份、关代次和预期布局版本，非法占地／通路、角色或落物冲突显示拒绝原因。设备的第二个占地格同样映射到原 StationId。成功后原物品、容器内容及厨房作业保留，标签跟随新位置；已经离开新操作位的切配者释放认领，玩家从新位置继续同一作业。营业或暂停时不显示调整入口，后台仍重新校验旧按钮请求。此处复用原模板按钮与受管owner，完整餐厅面板现已由UI change接入。实际运行范围见 [工位执行说明](../openspec/changes/solo-workstation-layout/execution-notes.md)。
+
+## 烘烤与盘装
+
+将面包片放进兼容烤箱后，原地图与 HUD 通过同一 CounterIntent 显示“烘烤”；点击后才启动，烘烤期间拿取／追加／再次开始拒绝，HUD 和 Board 显示同一厨房进度。完成后原面包片被消费，原工位出现一个新身份烤面包。拿起烤面包对空盘选择“添加”，再拿起盘时手持显示“盘（烤面包）”；满盘或错误材料不转移，不交换。盘装成品可以先暂存，订单交付和得分由顾客模块负责。设备、物品、作业和菜品信息沿原 owner／快照读取，未新增 UI 表行或私有计时，运行范围见 [菜品执行说明](../openspec/changes/solo-dish-recipe-chain/execution-notes.md)。
+
 ## 本轮所属异步
+
+餐厅完整HUD（协议12）仍使用UI1101、原WorldSpace Canvas／GraphicRaycaster／模板按钮，CodeBind通过安全Prefab编辑和正常菜单生成19字段。顶栏显示阶段／时钟／分星／工作，下面显示订单或准备候选，中间为地图，下方控制和手持／目标滚动区，Completed显示结算。CameraDragArea由实际Canvas相机换算成屏幕范围，厨房初始完整适配；在该区纵向拖动查看前厅，拖动不发命令，HUD不穿透，释放点用当前Board相机换算。
+
+HUD打开／加载等待归GridPresentation.AsyncOwner，轮次由HudLoadEpoch核对；具体操作等待归当前UIGridKitchen.AsyncOwner。关闭使用UIComponent.RemoveComponent，不SetActive受管根；OnClose停止该scope并解绑、禁用／销毁自己创建的按钮，原物理Call继续由原helper收尾，不停共享sender或营业。OpenGridHud重开新ET owner并复用GF Mono；旧EntityRef／世界／关按钮不能写新轮。五项真实资源／Launcher行为UTF和普通Launcher两关均已通过，实际540×960画面已查看，详见[UI记录](../openspec/changes/solo-restaurant-ui/execution-notes.md)。
 
 `UIGridKitchen` 复用原注册 1101、Prefab 与 CodeBind 引用，由 ProductClient 的 UIComponent 持有；地图由同 Scene 的 GFEntityComponent 持有。动态按钮沿 TargetTemplateButton 创建并在 Close 清除订阅，GridPresentation Dispose 移除所属 HUD／Board，不直接显隐受管根。
 
 备料样机的场景与 HUD 台面入口均取 GridClient.CounterIntent；目标、源物品、目标物品及已有作业身份在意图内固定。兼容碗执行添加，空手切配台执行开始／继续／本人停止；暂停材料提供直接拿取按钮，手持鸡蛋碗提供开始／继续／停止打蛋。按钮仅随物品关系或作业状态变化重建，进度文字随快照刷新。Hint 区分切配／打蛋的加工、暂停和完成，Hand 显示真实碗内容。真实按钮、场景坐标、重开和输入防穿透证据见 [备料验收](../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。
 
 公共 owner 自动建立 scope。业务通过 `owner.RunAsync(context => ...)` 等待，或用 `owner.Run(...)` 启动由入口观察的工作；await 后通过 `context.Apply` 写回。Close/Hide 立即取消旧业务等待，Visible/暂停不取消。详细例子、实际迁移入口与原生退役边界见 [生命周期约定](../references/framework-lifecycle.md#所属异步入口)，证据见 [本次执行说明](../openspec/changes/archive/2026-10-11-manage-owned-async-lifecycle/execution-notes.md)。
+
+
+格子前厅基础显示（协议 11）：原受管 Board 显示紫色伙伴、橙色顾客、工作百分比和阶段；拖动地图查看前厅。准备态点击“开始营业”后，默认节奏自动来客、入座和伙伴询问，询问完成才开单；暂停冻结实际角色与工作。营业／收尾的有效订单提供“前往 餐桌”和手持时的“交付 菜名 → 餐桌”，必须先在桌的合法操作格交付匹配干净菜品，普通放物不计分。吃完离席后空手领取“清桌”，原餐具转脏池产生“洗碗”；玩家可洗一部分“停手前厅工作”，伙伴随后按岗位继续同一任务。洗净后干净池出现“取回 碗（空）／盘（空）”，固定原 ItemId，不补免费餐具。按钮冻结目标、ClaimSerial 或订单／顾客／物品及世界／关身份，经原所属等待发送；角色渲染对象归原 RenderRoot，Hide／ReleaseBoard 统一释放。原Prefab已按UI change扩展并正常重生成CodeBind，表注册保持原UI1101；完整排版、候选buff和UI生命周期现已验收。真实输入与运行边界见 [服务记录](../openspec/changes/solo-customer-order-service/execution-notes.md)。
+
+随机加成基础入口（协议12）：准备态提供“隐藏候选加成／查看候选加成”，开关只改变显示，不提交命令或重抽。候选按钮显示名称和耗时比例，选择实际提交后锁定；必选关此后才出现“开始营业”。已选名称从同版投影显示在提示中；旧世界／关按钮和 await 回调核对原身份。真实旧锅不变／新锅加速／暂停与新关重选见 [加成记录](../openspec/changes/solo-random-level-buffs/execution-notes.md)，完整受管重开UTF和排版已通过UI change验收。

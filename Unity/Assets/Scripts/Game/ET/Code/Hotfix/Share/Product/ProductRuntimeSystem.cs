@@ -80,7 +80,8 @@ namespace ET
             self.Stage = ProductStage.Stopping;
             HostSessionComponent authority = self.Authority;
             Match match = authority?.Match ?? default;
-            match?.GetComponent<GridKitchenComponent>()?.StopGrid();
+            ((RestaurantRuntime)(match?.Restaurant ?? default))?.StopRestaurant();
+            match.ProductKitchen()?.StopGrid();
             if (authority != null)
             {
                 foreach (HostPeer peer in authority.Children.Values.Cast<HostPeer>().ToArray())

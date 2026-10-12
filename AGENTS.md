@@ -230,11 +230,11 @@ Unity/
 ### 当前架构边界
 
 - 玩法「已有什么」优先看：**代码 + 表** + [CarzyCooker当前进度.md](CarzyCooker当前进度.md) + 相关 `references/`；冲突时以代码/表与用户最新意图为准并提议同步文档。
-- 当前源码保留底座与示例；已接入 Unity 本机产品会话（Match/Participant、共同裁决、本地消息、UDP-KCP、独立投影），普通 Launcher 默认 Solo 格子样机。临时地图已实施真实材料／碗内容、番茄切配与手持打蛋、Tick 进度／单人认领、暂停接续／合作交接及失联落物，协议为 3；单电脑 UTF、Solo 与独立 Fiber loopback KCP 证据见 [备料执行记录](openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。正式厨房／餐厅／关卡、煮汤／盛装、订单、顾客、伙伴、供应和存档仍未实施；正式设计见 [Docs/Product/](Docs/Product/README.md)。
+- 当前源码保留底座与示例；已接入 Unity 本机产品会话、共同裁决、本地消息、UDP-KCP 和独立投影，普通 Launcher 默认 Solo。九个单机 change 已完成66/66项：本地命令、煮汤、关卡流程、工位布局、两菜链、固定伙伴、顾客餐具、随机buff及完整受管UI。当前协议12；真实UTF与普通Launcher两关已验证原碗回收、伙伴部分接续／暂停、10分1星及0分0星自然结算、实物换关、HUD池复用／旧回调和退出新轮，见[关卡记录](openspec/changes/solo-restaurant-level-flow/execution-notes.md)及[UI记录](openspec/changes/solo-restaurant-ui/execution-notes.md)。540×960真实GameView已检查；供应、产品存档、手机Player/AOT和LAN／公网仍未实施或验收，本轮未新增传输入口或监听。九案尚未归档。正式设计见[Docs/Product/](Docs/Product/README.md)。
 - 未来业务保留“已确认、授权补足、候选、待裁决”的区别；历史授权、候选目录、文件和标签不增加本轮实施授权。
 - 已确认的未来边界：Host 是世界权威但不自动是存档 Owner；本地/远端玩家走同一裁决；运行世界、持久进度、领取凭证分开；PC/Android 生态隔离。这些是设计，不是现有底座保证。
 - 普通手槽/台面一格一物、容器内容随容器移动、分装守恒、加工命令完整验证后提交等详见 [产品设计](Docs/Product/design.md)，不在文档整理中新增实现。
-- 暂停待执行命令、断线手持物、传输选型等仍见 [待裁决](Docs/Product/backlog.md)，助手不代定。
+- 单机暂停取消未执行动作并冻结已开始工作、前厅自然收口已按用户裁决实施；样机断线手持物按既有规则落物。正式传输选型、下一关许可缩小等仍见[待裁决](Docs/Product/backlog.md)，助手不代定。
 - 表默认值可按已授权需求调整；生成常量路径和启用模式见 `carzycooker-luban`，生成物勿手改。
 - UI / Entity 流程见 [Book/UI开发.md](Book/UI开发.md)、[Book/Entity开发.md](Book/Entity开发.md)；表在启用模式的 `Design/Excel/<模式>/Datas/Game/`。
 - ET 的 Model/ModelView/Hotfix/HotfixView 程序集按配置装载，Loader 为稳定层；HybridCLR 保留，不把关闭热更或删除 ET 分层当成整理文档的前置。

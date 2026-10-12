@@ -1,0 +1,36 @@
+[
+  {
+    "Id": 1,
+    "LevelConfigId": 1,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 60,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 200,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      1,
+      2
+    ]
+  },
+  {
+    "Id": 2,
+    "LevelConfigId": 2,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 60,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 200,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      1,
+      2
+    ]
+  }
+]

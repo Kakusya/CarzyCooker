@@ -14,7 +14,7 @@ namespace ET
             self.MatchId = Guid.NewGuid().ToString("N");
             self.RosterVersion = 0;
             self.NextMemberId = 0;
-            self.AddComponent<GridKitchenComponent>();
+            self.Restaurant = default;
         }
     }
 
@@ -34,6 +34,7 @@ namespace ET
 
     [EntitySystemOf(typeof(HostSessionComponent))]
     [FriendOf(typeof(HostSessionComponent))]
+    [FriendOf(typeof(Match))]
     public static partial class HostSessionComponentSystem
     {
         [EntitySystem]
@@ -42,6 +43,13 @@ namespace ET
             self.Match = match;
             self.Runtime = runtime;
             self.NextBindingGeneration = 0;
+        }
+
+        [EntitySystem]
+        private static void Update(this HostSessionComponent self)
+        {
+            Match match = self.Match;
+            if (match != null && (RestaurantRuntime)match.Restaurant == null) match.ProductKitchen()?.AdvanceLegacyGridClock();
         }
     }
 
@@ -59,6 +67,16 @@ namespace ET
             self.Closing = false;
             self.CloseFinished = false;
             self.InFlight = 0;
+            self.LastCommandContext = default;
+            self.LastCommandKind = default;
+            self.LastGridCommand = default;
+            self.LastLevelCommand = default;
+            self.LastLayoutCommand = default;
+            self.LastFrontWorkCommand = default;
+            self.LastServeCommand = default;
+            self.LastBuffCommand = default;
+            self.LastCommandStatus = default;
+            self.LastCommandReason = null;
         }
     }
 

@@ -59,6 +59,14 @@ namespace ET
                 {
                     responseObject = (MessageObject)MessageHelper.CreateResponse(wire.GetType(), wireRpcId, ProductError.InvalidRequest);
                 }
+                else if (wire is GridCommandRequest soloCommand && soloCommand.Action > (int)GridAction.StopWork)
+                {
+                    responseObject = ProductMessages.Create<GridCommandResponse>(message =>
+                    {
+                        message.Error = ProductError.InvalidRequest; message.Message = "SoloCommandOnly";
+                        message.CommandId = soloCommand.CommandId; message.Status = (int)GridResultStatus.Rejected;
+                    });
+                }
                 else if (wire is ProductHeartbeatRequest heartbeat)
                 {
                     HostSessionComponent authority = peer.Authority;
@@ -83,6 +91,7 @@ namespace ET
                             message.CommandId = grid.CommandId; message.Action = grid.Action; message.X = grid.X; message.Y = grid.Y;
                             message.TargetId = grid.TargetId; message.ExpectedItemId = grid.ExpectedItemId;
                             message.ExpectedTargetItemId = grid.ExpectedTargetItemId; message.ExpectedProcessId = grid.ExpectedProcessId;
+                            message.LevelId = grid.LevelId; message.LevelGeneration = grid.LevelGeneration;
                         }),
                         _ => throw new InvalidOperationException("Product wire whitelist mismatch")
                     };

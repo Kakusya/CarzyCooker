@@ -12,7 +12,7 @@ namespace ET
     [FriendOf(typeof(GridClientComponent))]
     public sealed partial class ProductSessionTests
     {
-        private GridKitchenComponent Grid => ((Match)((HostSessionComponent)host.Authority).Match).GetComponent<GridKitchenComponent>();
+        private GridKitchenComponent Grid => ((Match)((HostSessionComponent)host.Authority).Match).ProductKitchen();
 
         private void GridSubmit(ClientSessionComponent client, long command, GridAction action, GridCell cell = default, long target = 0, long expected = 0)
         {
@@ -159,14 +159,16 @@ namespace ET
                 value.ProtocolVersion = ProductSessionRules.ProtocolVersion; value.MatchId = client.MatchId;
                 value.WorldId = grid.WorldId; value.WorldGeneration = grid.WorldGeneration; value.BindingGeneration = client.BindingGeneration;
                 value.CommandId = command; value.Action = (int)action; value.X = cell.X; value.Y = cell.Y; value.TargetId = target; value.ExpectedItemId = expected;
+                value.LevelId = grid.LevelId; value.LevelGeneration = grid.LevelGeneration;
             });
         }
 
-        private void GridCall(ClientSessionComponent client, long command, GridAction action, GridCell cell = default, long target = 0, long expected = 0)
+        private void GridCall(ClientSessionComponent client, long command, GridAction action, GridCell cell = default, long target = 0, long expected = 0, bool replay = false)
         {
             using var receipt = (GridCommandResponse)Finish(client.CallProduct(GridRequest(client, command, action, cell, target, expected)), 300);
             Assert.That(receipt.Error, Is.Zero, receipt.Message);
-            Assert.That(receipt.Status, Is.EqualTo((int)GridResultStatus.Accepted));
+            if (replay) Assert.That(receipt.Status, Is.EqualTo((int)GridResultStatus.Accepted).Or.EqualTo((int)GridResultStatus.PendingApproach).Or.EqualTo((int)GridResultStatus.Executed));
+            else Assert.That(receipt.Status, Is.EqualTo((int)GridResultStatus.Accepted));
         }
 
         [Test]
@@ -184,9 +186,9 @@ namespace ET
             ClientSessionComponent client = host.Client;
             GridCell destination = new(2, 9);
             GridCall(client, 1, GridAction.Move, destination);
-            GridCall(client, 1, GridAction.Move, destination);
+            GridCall(client, 1, GridAction.Move, destination, replay: true);
             using (var rejected = (GridCommandResponse)Finish(client.CallProduct(GridRequest(client, 1, GridAction.Move, new GridCell(2, 8)))))
-                Assert.That(rejected.Message, Is.EqualTo("ExpiredCommand"));
+                Assert.That(rejected.Message, Is.EqualTo("CommandConflict"));
             var stale = GridRequest(client, 2, GridAction.Move, new GridCell(2, 8)); stale.BindingGeneration++;
             using (var rejected = (GridCommandResponse)Finish(client.CallProduct(stale))) Assert.That(rejected.Message, Is.EqualTo("EntryClosed"));
             var oldProtocol = GridRequest(client, 2, GridAction.Move, new GridCell(2, 8)); oldProtocol.ProtocolVersion = 1;
@@ -205,7 +207,7 @@ namespace ET
         {
             HostSessionComponent authority = runtime.Authority;
             Match match = authority?.Match ?? default;
-            return match?.GetComponent<GridKitchenComponent>();
+            return match.ProductKitchen();
         }
 
         [Test]

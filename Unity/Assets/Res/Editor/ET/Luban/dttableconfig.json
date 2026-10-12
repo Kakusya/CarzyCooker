@@ -1,0 +1,14 @@
+[
+  {
+    "Id": 1,
+    "InitialLayoutId": 11,
+    "SeatOffsetX": 1,
+    "SeatOffsetY": 0
+  },
+  {
+    "Id": 2,
+    "InitialLayoutId": 12,
+    "SeatOffsetX": -1,
+    "SeatOffsetY": 0
+  }
+]

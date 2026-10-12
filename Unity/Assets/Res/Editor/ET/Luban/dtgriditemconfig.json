@@ -34,7 +34,48 @@
     "ContainerCapacity": 1,
     "AcceptedDefinitionIds": [
       3,
+      4,
+      7
+    ]
+  },
+  {
+    "Id": 6,
+    "Name": "煮锅",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      2,
       4
+    ]
+  },
+  {
+    "Id": 7,
+    "Name": "番茄蛋花汤",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": []
+  },
+  {
+    "Id": 8,
+    "Name": "面包片",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": []
+  },
+  {
+    "Id": 9,
+    "Name": "烤面包",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": []
+  },
+  {
+    "Id": 10,
+    "Name": "盘",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      9
     ]
   }
 ]
