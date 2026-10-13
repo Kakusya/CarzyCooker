@@ -75,3 +75,7 @@
 ## Planning validation
 
 2026-10-12：修订后的 `openspec validate solo-kitchen-clear-and-discard --strict` 退出码 0，valid；清空、供应、联机三案及两份产品目标共18份 Markdown 的 UTF-8/空白/引用检查通过。`git diff --check` 无格式错误。清空案现为0/7，功能/Unity/UTF全部NotRun，严格校验不代表设施已实现。
+
+## 2026-10-13 本地提交收尾
+
+用户确认授权后，本案实现随本地main提交906829ef保存，原验收记录随4bfe1a2c保存；此前“未提交”描述保留其当时阶段语义。源码与行为未再改变，逐功能UTF／普通Launcher结果直接复用。本轮五案均已实际验收；归档和push未执行。

@@ -97,3 +97,7 @@ UI 沿用原受管 UIGridKitchen/模板与 CodeBind，没有另加根面板或�
 按 openspec-verify-change 对当前六个 ADDED Requirements / 六个 Scenario 核对：轻量身份/选择对应 Repository/Browse/Select 和真实选择 UTF；成功来源对应 Capture/Commit 阶段校验及零星/退出 UTF；提交后换关对应结果 owner、HostSession 完成消息、服务步门槛及失败重试 UTF；最多一次对应 Header 事实重建/不覆盖发布/丢回执重试；持续载荷对应纯值校验及半锅/冻结加工/供应/装修文件往返；新运行恢复对应独立恢复路径、旧请求拒绝及普通 Launcher Stop/Play/选档。任务7/7，规格与运行范围一致；ET owner、两段控制请求、结果观察者和受管 UI 与设计树/消息路径相符，无未处理关键差异。
 
 本案 PC Editor 范围实现与验收完成，未归档、未提交；明确不支持的覆盖/跨设备/授权/联机领取，以及 Player/AOT/任意断电 NotRun 不改为已支持。后续新平台或真实文件异常触发对应补验；未来产品本地消息边界 change 是另案规划，不由本案代替实施。
+
+## 2026-10-13 本地提交收尾
+
+用户确认授权后，本案实现随本地main提交906829ef保存，原验收记录随4bfe1a2c保存；此前“未提交”描述保留其当时阶段语义。源码与行为未再改变，逐功能UTF／普通Launcher结果直接复用。本轮五案均已实际验收；归档和push未执行。
