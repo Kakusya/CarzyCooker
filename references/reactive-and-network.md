@@ -6,7 +6,11 @@
 
 ## 状态与 UI
 
-单机餐厅当前协议12，完整关卡、前厅与buff已接入。玩家操作等待归当次UIGridKitchen.AsyncOwner，HUD加载等待归GridPresentation.AsyncOwner；关闭HUD取消显示等待、解绑所属按钮，原物理请求及Peer在途仍由原观察者收尾。按钮捕获原UI／GridClient EntityRef和World／Level／绑定代次；当前上下文校验先于旧关最新重放，仅已Executed且完整相同的Continue可回报自己换关事实。实际树和请求路径见[关卡设计](../openspec/changes/solo-restaurant-level-flow/design.md)，旧关四参数与当前关重放证据见[执行记录](../openspec/changes/solo-restaurant-level-flow/execution-notes.md)。后文协议3至11的段落保留各阶段边界，后续具体结果按相应change查阅。
+单机餐厅当前协议14，已在协议12关卡／前厅／buff基线上接入设施清理和有限供应。玩家操作等待归当次UIGridKitchen.AsyncOwner，HUD加载等待归GridPresentation.AsyncOwner；关闭HUD取消显示等待、解绑所属按钮，原物理请求及Peer在途仍由原观察者收尾。按钮捕获原UI／GridClient EntityRef和World／Level／绑定代次；当前上下文校验先于旧关最新重放，仅已Executed且完整相同的Continue可回报自己换关事实。实际树和请求路径见[关卡设计](../openspec/changes/solo-restaurant-level-flow/design.md)，旧关四参数与当前关重放证据见[执行记录](../openspec/changes/solo-restaurant-level-flow/execution-notes.md)。后文协议3至12保留阶段边界，当前设施和供应结果见[清理记录](../openspec/changes/solo-kitchen-clear-and-discard/execution-notes.md)及[供应记录](../openspec/changes/solo-supply-delivery/execution-notes.md)。
+
+设施请求沿原 Grid Peer／Submit／固定业务步，不新建入口；完整预期内容列表、剩余份数和布局版本从独立投影冻结，原请求回收前后均不共享可变列表。实际到位再重验和提交，结果及水／固液形态／设施字段属于同一 Version；wire 继续只接受原动作白名单，协议13不自动开放联机清理。
+
+供应使用同一业务编号的SupplyCommandRequest/Response和可信SupplySubmitRequest/Response（10103～10106），三种SupplyAction沿原Peer和authority有序MailBox，采购在Restaurant服务步一次预留，接收／拆份复用原Grid到位互动。KitchenSupply归持续厨房，SupplyShipment归该组件；配额是外部包数，实际材料由GridItem.Contents表达。Snapshot47/48的来源配额／货物状态与实物同版独立复制，DTO回收后只读值仍有效；暂停及Completed停运输，换关保留同一货物，旧关请求／HUD按钮拒绝。协议14仍没有开放供应wire或增加监听。
 
 UI 观察权威领域状态或明确 UI context，不保存网络 response 作为第二事实来源。每项独立表现只有一个更新 owner，首次投影与后续刷新走同一机制；不要叠 event、OnOpen 手动 Refresh、Bind 和 UI cache 更新同一控件。
 
@@ -47,7 +51,9 @@ Fiber / Root Scene(ProductRoot)
   Components: Timer / CoroutineLock / ProcessInnerSender / ProductRuntime
   Child Scene(ProductHost，Host 或 Solo)
     Child Match → Children Participant（唯一成员权威）
-      Component GridKitchen → Children GridActor / GridStation / GridItem（唯一地图权威）
+      Child RestaurantRuntime（唯一业务时钟）
+        Component GridKitchen → Children GridStation / GridItem / 加工作业（持续厨房权威）
+        Child Level → GridActor / Customer / Order / FrontWork / Growth / Buff（当前关状态）
     Component HostSession + Ordered MailBox
       Child HostPeer + Ordered MailBox + LocalDelivery 或 RemoteDelivery
     Component NetComponent → Child Session → ProductPeerBinding(HostPeer EntityRef，仅联网 Host)
@@ -61,7 +67,7 @@ Fiber / Root Scene(ProductRoot)
 
 本地 Client Call 在入队前增加 Peer InFlight，root sender.Call(Peer.GetActorId)→队列→ProductHost Peer handler→独立 ProductControlRequest→sender.Call(HostSession.GetActorId)→共同 Ordered MailBox。身份由 Peer 的 InstanceId/Generation 填入，共同提交前再次核对入口。HostSession 只引用 Match，不持第二份名单，不 await 客户端通知。
 
-远端 Session.Call→UDP-KCP→ProductHost 精确 OnRead Invoke；wire 仅 Join/Probe/Leave/Heartbeat/GridCommand 白名单。入口捕获 wire RpcId、Session EntityRef 和绑定代次，复制请求走同一个 Peer/HostSession 路径，再复制响应恢复 wire RpcId、只回原 Session。两份既有等待表互不代替，没有第三份私有 RPC 字典。内部 ProductControlRequest 和 GridSubmitRequest 不接受网络直达。
+远端Session.Call→UDP-KCP→ProductHost精确OnRead Invoke；协议17显式开放Join/Probe/Leave/Heartbeat、核心Grid动作1–17、Level/Layout/Buff、ServeOrder/FrontWork及SupplyCommand请求。入口捕获wire RpcId、Session EntityRef和绑定代次，复制请求走同一个Peer/HostSession路径，再复制响应恢复wire RpcId、只回原Session。两份既有等待表互不代替，没有第三份私有RPC字典。所有内部Submit／伙伴消息均不接受网络直达，未知动作仍显式拒绝。
 
 玩法 Peer handler 注入可信身份，Sender.Call(HostSession.GetActorId)→ProductHost 的 GridSubmitHandler 快速返回 Accepted/Rejected；GridKitchen 固定 50ms Tick 再校验并提交位置或物品。Move 和自动接近在行走／满格等待时保持 PendingApproach，到达才发最终结果；改目标取消旧动作。Solo、Host 本地和远端走相同规则，UI／插值不写权威世界。
 
@@ -71,7 +77,7 @@ Tick 提交后为每端生成独立 GridWorldSnapshot 与本人 GridCommandResul
 
 产品 actor handler 消费后释放输入；actor 响应由调用者消费/释放。wire 输入/复制响应在桥接 finally 释放；Session.Send 完成序列化但不回收输入。每个远端通知发送后释放，本地通知由接收 handler 释放，不共享可写消息对象。Event 仅观察提交后事实，ProductHost/Client 明确匹配；All 标志仍会匹配新类型，不承诺 DynamicEvent 隔离。
 
-当前协议版本 8（版本 3 为备料、4 为本地命令、5 为汤制作、6 为关卡核心、7 为工位布局的交付基线），Probe 最大 1024 UTF-8 bytes，网络请求 4000ms，串行心跳间隔 2000ms／预算 2000ms；成功加入移除原 5 秒接入超时，保留 2 秒检查／10 秒接收空闲阈值。本地不发网络心跳，Solo 不创建 NetComponent 或对自身 UDP 连接。KCP 响应 Send 后留 100ms 关闭宽限以允许 Update 发出；该段仍计入 InFlight，不保证送达或撤销已提交事实。关卡、布局控制及汤／烘烤新增动作仅本地，不自动开放 wire。
+当前协议版本17（历史版本3为备料、4为本地命令、5为汤制作、6为关卡核心、7为工位布局；17追加Host可信控制资格），Probe 最大 1024 UTF-8 bytes，网络请求 4000ms，串行心跳间隔 2000ms／预算 2000ms；成功加入移除原 5 秒接入超时，保留 2 秒检查／10 秒接收空闲阈值。本地不发网络心跳，Solo 不创建 NetComponent 或对自身 UDP 连接。KCP 响应 Send 后留 100ms 关闭宽限以允许 Update 发出；该段仍计入 InFlight，不保证送达或撤销已提交事实。核心Grid1–12及Level／Layout／Buff已开放wire；共享控制须为当前Host本地可信绑定，前厅ServeOrder／FrontWork和物流SupplyCommand／Grid13–17均为合法成员个人操作，不因共享控制而加HostOnly。
 
 单 Peer Closing 立即关闭资格，独立可信 Close 控制请求经 HostSession 标成员离线；原 Participant 由 Match 保留。CloseFinished且入口在途归零才释放 Peer/MailBox。Leave 提交删除成员一次，允许回送成功结果后关闭自身连接；Host 本地 Leave 不停止监听/sender，也不自动重入。异常仍回退现有本地40秒超时，消息泵永久停止通过整体 Stop 结清，未增加单请求取消接口。
 
@@ -81,7 +87,9 @@ Tick 提交后为每端生成独立 GridWorldSnapshot 与本人 GridCommandResul
 
 当前本地、真实 KCP 小集及 Editor 单端结果见 [产品执行记录](../openspec/changes/product-session-bootstrap/execution-notes.md)。双 Editor 两种排列和未触发的资源消费者分别列明，不将 KCP loopback 当物理两机、正式传输或厨房验收。
 
-格子样机的核心／共同入口 UTF、竖屏操作、真实 KCP 交接与断线拾物见 [地图执行说明](../openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)。本轮双 Editor 新玩法、真实手机 Player/AOT、LAN/公网和持久餐厅 NotRun；前厅只是地图占位。
+Host／Solo当前都持有持续Restaurant／厨房和当前Level；共享控制只来自权威在线Participant／Peer绑定及runtime.Client.Local的当前真实Peer引用。首个快照可以早于Join答复，复制的CanControlRestaurant不替代客户端Join／当前角色／受管视图就绪条件。核心7/7、阶段28个核心UTF及普通Host＋独立Fiber真实KCP受管两菜已验收，见[核心记录](../openspec/changes/cooperative-restaurant-core/execution-notes.md)；前厅5/5、19项UTF及普通入口两菜交付／原餐具循环／自然两关已验收，见[前厅记录](../openspec/changes/cooperative-front-service/execution-notes.md)；物流5/5已有15项真实KCP／受管UI及普通补货制作交付／剩液空壳清理／同一在途货物跨关证据，见[物流记录](../openspec/changes/cooperative-cleanup-supply/execution-notes.md)。当前未知动作0／99两项与受影响核心UI已新运行通过；普通双Editor完整合作3/3已通过，见[集成记录](../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。
+
+早期格子样机的核心／共同入口UTF、竖屏操作、真实KCP交接与断线拾物见[地图执行说明](../openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)。当前普通双Editor完整餐厅两种角色排列已验收3/3，前厅真实交付／原餐具循环、有限供应／清理、自然换关、真实Client失联后Host收货与退出新世界隔离通过，见[集成记录](../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。真实手机Player/AOT、LAN／公网、联机装修／持久餐厅与原成员恢复仍未交付。
 
 ## owner 所属等待
 

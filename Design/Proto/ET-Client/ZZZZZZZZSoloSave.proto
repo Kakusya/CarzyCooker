@@ -1,0 +1,71 @@
+syntax = "proto3";
+package ET;
+
+// 只供 Solo ProductRoot 的 repository 使用，不进入 Peer wire。
+// ResponseType SoloSaveBrowseResponse
+message SoloSaveBrowseRequest // IRequest
+{
+    int32 RpcId = 1;
+}
+
+message SoloSaveBrowseResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    repeated bytes Headers = 4;
+}
+
+// ResponseType SoloSaveSelectResponse
+message SoloSaveSelectRequest // IRequest
+{
+    int32 RpcId = 1;
+    string SlotId = 2;
+}
+
+message SoloSaveSelectResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    bytes Header = 4;
+    bytes Payload = 5;
+}
+
+// ResponseType SoloSaveWriteResponse
+message SoloSaveWriteRequest // IRequest
+{
+    int32 RpcId = 1;
+    bytes Record = 2;
+}
+
+message SoloSaveWriteResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    bytes Header = 4;
+}
+
+// 结果 owner 发给 HostSession 的可信完成，不进入 Peer wire。
+// ResponseType SoloSaveCompletedResponse
+message SoloSaveCompletedRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 ResultEntityId = 2;
+    int64 ResultInstanceId = 3;
+    string WorldId = 4;
+    int64 WorldGeneration = 5;
+    int64 LevelId = 6;
+    int64 LevelGeneration = 7;
+    int32 Error = 8;
+    string Failure = 9;
+    bytes Header = 10;
+}
+
+message SoloSaveCompletedResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+}

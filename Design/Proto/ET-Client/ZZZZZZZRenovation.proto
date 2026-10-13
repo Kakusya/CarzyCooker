@@ -1,0 +1,62 @@
+syntax = "proto3";
+package ET;
+
+// ResponseType ChooseRenovationResponse
+message ChooseRenovationRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    string WorldId = 4;
+    int64 WorldGeneration = 5;
+    int64 BindingGeneration = 6;
+    int64 LevelId = 7;
+    int64 LevelGeneration = 8;
+    int64 CommandId = 9;
+    int64 ChoiceVersion = 10;
+    int32 DefinitionId = 11;
+}
+
+message ChooseRenovationResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+// 内部可信请求，不进入wire。
+// ResponseType ChooseRenovationSubmitResponse
+message ChooseRenovationSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int64 PeerGeneration = 4;
+    int32 ProtocolVersion = 5;
+    string MatchId = 6;
+    string WorldId = 7;
+    int64 WorldGeneration = 8;
+    int64 BindingGeneration = 9;
+    int64 LevelId = 10;
+    int64 LevelGeneration = 11;
+    int64 CommandId = 12;
+    int64 ChoiceVersion = 13;
+    int32 DefinitionId = 14;
+}
+
+message ChooseRenovationSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+message GridRenovationAppliedState
+{
+    int32 DefinitionId = 1;
+    repeated int64 StationIds = 2;
+}
