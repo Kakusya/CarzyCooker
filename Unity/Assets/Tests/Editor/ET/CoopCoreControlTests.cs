@@ -9,7 +9,12 @@ namespace ET
     {
         private ClientSessionComponent CoopRemote()
         {
-            var remote = CreateRemoteClient(); remote.JoinProduct().Forget(); Pump(100);
+            var remote = CreateRemoteClient();
+            remote.JoinProduct().Forget();
+            PumpUntil(() => remote.Stage == ProductClientStage.Joined &&
+                remote.GetComponent<GridClientComponent>() is GridClientComponent view && view.Confirmed &&
+                view.WorldId == Grid.WorldId && view.LevelId == CurrentLevel.Id,
+                "remote Join and matching restaurant projection", 100, advanceTime: true);
             Assert.That(remote.Stage, Is.EqualTo(ProductClientStage.Joined));
             Assert.That(remote.GetComponent<GridClientComponent>().Confirmed, Is.True);
             return remote;

@@ -29,6 +29,14 @@ namespace ET
             Assert.That(actor.LastResultCommandId, Is.EqualTo(command));
             Assert.That(actor.LastResultStatus, Is.EqualTo(rejection==null?GridResultStatus.Executed:GridResultStatus.Rejected),actor.LastResultReason);
             Assert.That(actor.LastResultReason, Is.EqualTo(rejection));
+            if ((LocalMessageComponent)client.Local != null)
+            {
+                PumpMessages(8);
+                var result = ProductOutcomeTestObserver.Received.Single(value => value.Value.Kind == ProductCommandKind.Grid &&
+                    value.Value.Context.CommandId == command && value.Value.Context.BindingGeneration == client.BindingGeneration &&
+                    value.Value.Context.WorldId == Grid.WorldId && value.Value.Context.WorldGeneration == Grid.WorldGeneration);
+                Assert.That(result.Value.Status, Is.EqualTo(actor.LastResultStatus)); Assert.That(result.Value.Reason, Is.EqualTo(rejection));
+            }
         }
 
         private long PrepEggBowl(ClientSessionComponent client)
@@ -41,7 +49,13 @@ namespace ET
             return bowlId;
         }
 
-        private void PrepTick(int count) { for(int i=0;i<count;++i) Grid.AdvanceGridTick(); }
+        private void PrepTick(int count)
+        {
+            for(int i=0;i<count;++i)
+            {
+                PumpMessages(3); Grid.AdvanceGridTick();
+            }
+        }
 
         [Test]
         public void GridPrepContainerDefinitionsAndUniqueContents()
@@ -111,7 +125,8 @@ namespace ET
             PrepDo(second,GridAction.StartStationWork,chopping.Id,tomato,tomato,work.Id,rejection:"WorkBusy");
             Assert.That(work.WorkerMemberId,Is.EqualTo(first.MemberId));
             PrepTick(12);int before=work.ProgressTicks;
-            Assert.That(Grid.SubmitGridIntent(first.MemberId,first.BindingGeneration,new GridIntent(1000,GridAction.Move,new GridCell(0,0))),Is.EqualTo("BlockedCell"));
+            using (var denied = (GridCommandResponse)FinishMessages(first.CallProduct(GridRequest(first,1000,GridAction.Move,new GridCell(0,0))), "blocked move receipt"))
+                Assert.That(denied.Message, Is.EqualTo("BlockedCell"));
             Assert.That(work.State,Is.EqualTo(GridWorkState.Working));
             PrepDo(first,GridAction.StartStationWork,chopping.Id,tomato,tomato,work.Id,rejection:"WorkBusy");
             Assert.That(work.ProgressTicks,Is.GreaterThanOrEqualTo(before));
@@ -150,10 +165,11 @@ namespace ET
             Assert.That(work.WorkerMemberId,Is.EqualTo(second.MemberId));
             GridActor actor=Grid.Actor(second.MemberId);GridCell drop=actor.Cell;
             HostPeer peer=((LocalMessageComponent)second.Local).Peer;long oldGeneration=peer.Generation;
+            var retiredRequest = GridRetiredBindingRequest(second, GridAction.StartHeldWork, drop, bowl, egg, bowl, work.Id);
             peer.CloseEntry();peer.CloseEntry();Pump(12);
             paused=work.ProgressTicks;Assert.That(work.State,Is.EqualTo(GridWorkState.Paused));Assert.That(Grid.Item(bowl).Cell,Is.EqualTo(drop));
             Assert.That(Grid.Item(egg).HolderId,Is.EqualTo(bowl));Assert.That(Grid.Item(bowl).Location,Is.EqualTo(GridItemLocation.Ground));
-            Assert.That(Grid.SubmitGridIntent(second.MemberId,oldGeneration,new GridIntent(999,GridAction.StartHeldWork,drop,bowl,egg,bowl,work.Id)),Is.EqualTo("EntryClosed"));
+            GridRejectRetiredBinding(retiredRequest);
             PrepTick(10);Assert.That(work.ProgressTicks,Is.EqualTo(paused));
             PrepDo(first,GridAction.Move,cell:drop);PrepDo(first,GridAction.PickupDrop,bowl);
             PrepDo(first,GridAction.StartHeldWork,bowl,egg,bowl,work.Id);PrepTick(work.RequiredTicks);

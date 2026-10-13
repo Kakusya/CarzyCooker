@@ -21,10 +21,14 @@ namespace ET
 
         private void LevelDo(LevelControlAction action, string rejection = null)
         {
+            if (action == LevelControlAction.Start && rejection == null && !Buff.Prepared) FrontWait(() => Buff.Prepared, 8);
+            if (action == LevelControlAction.Continue && rejection == null && host.Config.Role == Game.RuntimeInstanceRole.Solo && !Renovation.Prepared)
+                FrontWait(() => Renovation.Prepared, 8);
             ClientSessionComponent client = host.Client;
             using (var reply = LevelReply(client, client.GetComponent<GridClientComponent>().CreateLevelCommand(action)))
                 Assert.That(reply.Error, Is.Zero, reply.Message);
             AdvanceTicks(1); PumpMessages(8);
+            if (action == LevelControlAction.Continue && rejection == null && !Buff.Prepared) FrontWait(() => Buff.Prepared, 8);
             HostPeer peer = ((LocalMessageComponent)client.Local).Peer;
             Assert.That(peer.LastCommandStatus, Is.EqualTo(rejection == null ? GridResultStatus.Executed : GridResultStatus.Rejected), peer.LastCommandReason);
             Assert.That(peer.LastCommandReason, Is.EqualTo(rejection));
@@ -259,7 +263,7 @@ namespace ET
             StartSolo(); ClientSessionComponent client = host.Client; var projection = client.GetComponent<GridClientComponent>();
             GridStation bowlStation = PrepStation("碗台"); long bowl = bowlStation.ItemId;
             PrepDo(client, GridAction.TakeCounter, bowlStation.Id, bowl);
-            LevelDo(LevelControlAction.Start); AdvanceTicks(CurrentLevel.OperatingTicks - CurrentLevel.ElapsedOperatingTicks + 1); PumpMessages(8);
+            LevelDo(LevelControlAction.Start); AdvanceTicks(CurrentLevel.OperatingTicks - CurrentLevel.ElapsedOperatingTicks + 2); PumpMessages(8);
             Level originalLevel = CurrentLevel; GridActor originalRole = Grid.Actor(client.MemberId); GridCell cell = originalRole.Cell;
             long[] items = Grid.Items.Keys.OrderBy(id => id).ToArray();
             var definitions = (System.Collections.Generic.Dictionary<int, DRLevelConfig>)Tables.Instance.DTLevelConfig.DataMap; DRLevelConfig next = definitions[2];
@@ -293,7 +297,7 @@ namespace ET
             GridAutoProcess process = SoupBegin(client, pot); long batch = process.Id;
             PrepDo(client, GridAction.TakeCounter, PrepStation("灶台").Id, pot);
             Level old = CurrentLevel; GridActor oldRole = Grid.Actor(client.MemberId); GridCell drop = oldRole.Cell;
-            AdvanceTicks(old.OperatingTicks - old.ElapsedOperatingTicks + 1); PumpMessages(8);
+            AdvanceTicks(old.OperatingTicks - old.ElapsedOperatingTicks + 2); PumpMessages(8);
             Assert.That(old.Phase, Is.EqualTo(LevelPhase.Completed)); Assert.That(old.Score, Is.Zero); Assert.That(old.Stars, Is.Zero);
             int progress = process.ProgressTicks; Assert.That(progress, Is.LessThan(process.RequiredTicks));
             AdvanceTicks(20); Assert.That(process.ProgressTicks, Is.EqualTo(progress));
@@ -318,6 +322,7 @@ namespace ET
                 value.LevelId = levelId; value.LevelGeneration = generation; value.Action = (int)LevelControlAction.Continue; value.NextLevelConfigId = nextConfig;
             });
             long newId = CurrentLevel.Id;
+            FrontWait(() => Buff.Prepared, 8);
             using (var reply = LevelReply(client, replay)) Assert.That(reply.Status, Is.EqualTo((int)GridResultStatus.Executed));
             Assert.That(CurrentLevel.Id, Is.EqualTo(newId)); Assert.That(Grid.Items.Count, Is.EqualTo(items.Length));
         }

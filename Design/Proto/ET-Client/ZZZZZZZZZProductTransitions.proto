@@ -1,0 +1,289 @@
+syntax = "proto3";
+package ET;
+
+// 内部转换／后继消息：只进入本轮 ProductHost 的 HostSession，不开放 Peer／wire。
+
+message KitchenWorkTransition // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+    int32 ProcessKind = 10;
+    int32 Action = 11;
+}
+
+message CustomerFlowTransition // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+    int32 Action = 10;
+}
+
+message CustomerFlowFinished // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+    int32 Phase = 10;
+    int64 TableStationId = 11;
+}
+
+message FrontWorkTransition // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+    int32 Action = 10;
+    int64 ClaimSerial = 11;
+}
+
+message FrontWorkFinished // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+    int32 Kind = 10;
+    int64 StationId = 11;
+    int64 CustomerId = 12;
+    int64 ItemId = 13;
+    int64 ClaimSerial = 14;
+}
+
+message ShipmentTransition // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+    int32 Action = 10;
+}
+
+message LevelTransition // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+    int32 Action = 10;
+}
+
+message BuffPrepare // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+}
+
+message RenovationPrepare // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+}
+
+// 提交后的具名结果：每收件人独立 DTO，先同版快照后结果。内部转换不由客户端转交。
+
+message ProductCommandOutcome // IMessage
+{
+    string MatchId = 1;
+    string WorldId = 2;
+    int64 WorldGeneration = 3;
+    int64 LevelId = 4;
+    int64 LevelGeneration = 5;
+    int32 MemberId = 6;
+    int64 BindingGeneration = 7;
+    int64 Version = 8;
+    int64 Tick = 9;
+    int32 Kind = 10;
+    int64 CommandId = 11;
+    int32 Status = 12;
+    string Reason = 13;
+    int64 OutcomeSerial = 14;
+    int64 OriginLevelId = 15;
+    int64 OriginLevelGeneration = 16;
+}
+
+message KitchenWorkOutcome // IMessage
+{
+    string MatchId = 1;
+    string WorldId = 2;
+    int64 WorldGeneration = 3;
+    int64 LevelId = 4;
+    int64 LevelGeneration = 5;
+    int32 MemberId = 6;
+    int64 BindingGeneration = 7;
+    int64 Version = 8;
+    int64 Tick = 9;
+    int32 ProcessKind = 10;
+    int64 WorkId = 11;
+    int64 WorkInstanceId = 12;
+    int64 TransitionSerial = 13;
+    int32 Stage = 14;
+    int64 OutputItemId = 15;
+    int64 OutcomeSerial = 16;
+}
+
+message FrontWorkOutcome // IMessage
+{
+    string MatchId = 1;
+    string WorldId = 2;
+    int64 WorldGeneration = 3;
+    int64 LevelId = 4;
+    int64 LevelGeneration = 5;
+    int32 MemberId = 6;
+    int64 BindingGeneration = 7;
+    int64 Version = 8;
+    int64 Tick = 9;
+    int64 WorkId = 10;
+    int64 WorkInstanceId = 11;
+    int64 ClaimSerial = 12;
+    int32 Kind = 13;
+    int32 Stage = 14;
+    int64 OutcomeSerial = 15;
+}
+
+message ShipmentOutcome // IMessage
+{
+    string MatchId = 1;
+    string WorldId = 2;
+    int64 WorldGeneration = 3;
+    int64 LevelId = 4;
+    int64 LevelGeneration = 5;
+    int32 MemberId = 6;
+    int64 BindingGeneration = 7;
+    int64 Version = 8;
+    int64 Tick = 9;
+    int64 ShipmentId = 10;
+    int64 ShipmentInstanceId = 11;
+    int32 Stage = 12;
+    int64 TransitionSerial = 13;
+    int64 OutcomeSerial = 14;
+}
+
+message LevelPhaseChanged // IMessage
+{
+    string MatchId = 1;
+    string WorldId = 2;
+    int64 WorldGeneration = 3;
+    int64 LevelId = 4;
+    int64 LevelGeneration = 5;
+    int32 MemberId = 6;
+    int64 BindingGeneration = 7;
+    int64 Version = 8;
+    int64 Tick = 9;
+    int32 Phase = 10;
+    bool Paused = 11;
+    int64 OutcomeSerial = 12;
+}
+
+message BuffPrepared // IMessage
+{
+    string MatchId = 1;
+    string WorldId = 2;
+    int64 WorldGeneration = 3;
+    int64 LevelId = 4;
+    int64 LevelGeneration = 5;
+    int32 MemberId = 6;
+    int64 BindingGeneration = 7;
+    int64 Version = 8;
+    int64 Tick = 9;
+    int64 DrawVersion = 10;
+    int64 OutcomeSerial = 11;
+}
+
+message RenovationPrepared // IMessage
+{
+    string MatchId = 1;
+    string WorldId = 2;
+    int64 WorldGeneration = 3;
+    int64 LevelId = 4;
+    int64 LevelGeneration = 5;
+    int32 MemberId = 6;
+    int64 BindingGeneration = 7;
+    int64 Version = 8;
+    int64 Tick = 9;
+    int64 ChoiceVersion = 10;
+    int64 OutcomeSerial = 11;
+}
+
+// 前厅完成通知的后继请求；源为当前 Customer 或已完成的 Clear 工作。
+message FrontWorkCreateRequest // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+    int32 Kind = 10;
+}
+
+// 结算提交后的内部完成通知，接收后才请求候选准备。
+message LevelFinished // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    string WorldId = 3;
+    int64 WorldGeneration = 4;
+    int64 LevelId = 5;
+    int64 LevelGeneration = 6;
+    int64 SourceId = 7;
+    int64 SourceInstanceId = 8;
+    int64 TransitionSerial = 9;
+}

@@ -122,6 +122,7 @@ namespace ET
             process.ServingContainerDefinitionId = recipe.ServingContainerDefinitionId; process.State = GridAutoState.Cooking;
             process.InputItemIds.AddRange(pot.Contents);
             self.AutoProcesses.Add(process.Id, process); pot.AutoProcessId = process.Id; station.AutoProcessId = process.Id;
+            self.PublishKitchenStage(process, KitchenProcessKind.Soup, KitchenWorkStage.Started, ++process.TransitionSerial);
             return null;
         }
 
@@ -130,11 +131,23 @@ namespace ET
             foreach (var process in self.AutoProcesses.Values.Select(value => (GridAutoProcess)value))
             {
                 if (process.State != GridAutoState.Cooking || process.StartedTick == self.Tick) continue;
-                ++process.ProgressTicks; self.Dirty = true;
+                if (process.ProgressTicks < process.RequiredTicks) ++process.ProgressTicks;
+                self.Dirty = true;
                 if (process.ProgressTicks < process.RequiredTicks) continue;
+                if (!process.CompletionReceived)
+                {
+                    if (!process.CompletionQueued)
+                    {
+                        self.RequestKitchenCompletion(process, KitchenProcessKind.Soup, process.TransitionSerial);
+                        process.CompletionQueued = true;
+                    }
+                    continue;
+                }
                 process.State = GridAutoState.Ready; process.RemainingPortions = process.TotalPortions;
                 GridStation station = self.Station(process.StartStationId);
                 if (station != null && station.AutoProcessId == process.Id) station.AutoProcessId = 0;
+                process.CompletionQueued = false; process.CompletionReceived = false;
+                self.PublishKitchenStage(process, KitchenProcessKind.Soup, KitchenWorkStage.Finished, ++process.TransitionSerial);
             }
         }
 
@@ -172,6 +185,7 @@ namespace ET
         private static void Awake(this GridAutoProcess self)
         {
             self.RecipeId = 0; self.RequiredTicks = 0; self.ProgressTicks = 0; self.OutputDefinitionId = 0;
+            self.TransitionSerial = 1; self.CompletionQueued = false; self.CompletionReceived = false;
             self.TotalPortions = 0; self.RemainingPortions = 0; self.ServingContainerDefinitionId = 0;
             self.PotItemId = 0; self.StartStationId = 0; self.StartedTick = 0; self.State = default; self.InputItemIds.Clear();
         }

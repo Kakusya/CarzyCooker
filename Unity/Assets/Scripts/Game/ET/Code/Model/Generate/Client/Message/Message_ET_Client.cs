@@ -4483,4 +4483,941 @@ namespace ET
         }
     }
 
+    // 内部转换／后继消息：只进入本轮 ProductHost 的 HostSession，不开放 Peer／wire。
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:6)
+    [MemoryPackable]
+    [Message(Message_ET_Client.KitchenWorkTransition)]
+    public partial class KitchenWorkTransition: MessageObject, IMessage
+    {
+        public static KitchenWorkTransition Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(KitchenWorkTransition), isFromPool) as KitchenWorkTransition;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        [MemoryPackOrder(9)]
+        public int ProcessKind { get; set; }
+        [MemoryPackOrder(10)]
+        public int Action { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            this.ProcessKind = default;
+            this.Action = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:21)
+    [MemoryPackable]
+    [Message(Message_ET_Client.CustomerFlowTransition)]
+    public partial class CustomerFlowTransition: MessageObject, IMessage
+    {
+        public static CustomerFlowTransition Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(CustomerFlowTransition), isFromPool) as CustomerFlowTransition;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        [MemoryPackOrder(9)]
+        public int Action { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            this.Action = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:35)
+    [MemoryPackable]
+    [Message(Message_ET_Client.CustomerFlowFinished)]
+    public partial class CustomerFlowFinished: MessageObject, IMessage
+    {
+        public static CustomerFlowFinished Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(CustomerFlowFinished), isFromPool) as CustomerFlowFinished;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        [MemoryPackOrder(9)]
+        public int Phase { get; set; }
+        [MemoryPackOrder(10)]
+        public long TableStationId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            this.Phase = default;
+            this.TableStationId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:50)
+    [MemoryPackable]
+    [Message(Message_ET_Client.FrontWorkTransition)]
+    public partial class FrontWorkTransition: MessageObject, IMessage
+    {
+        public static FrontWorkTransition Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(FrontWorkTransition), isFromPool) as FrontWorkTransition;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        [MemoryPackOrder(9)]
+        public int Action { get; set; }
+        [MemoryPackOrder(10)]
+        public long ClaimSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            this.Action = default;
+            this.ClaimSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:65)
+    [MemoryPackable]
+    [Message(Message_ET_Client.FrontWorkFinished)]
+    public partial class FrontWorkFinished: MessageObject, IMessage
+    {
+        public static FrontWorkFinished Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(FrontWorkFinished), isFromPool) as FrontWorkFinished;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        [MemoryPackOrder(9)]
+        public int Kind { get; set; }
+        [MemoryPackOrder(10)]
+        public long StationId { get; set; }
+        [MemoryPackOrder(11)]
+        public long CustomerId { get; set; }
+        [MemoryPackOrder(12)]
+        public long ItemId { get; set; }
+        [MemoryPackOrder(13)]
+        public long ClaimSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            this.Kind = default;
+            this.StationId = default;
+            this.CustomerId = default;
+            this.ItemId = default;
+            this.ClaimSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:83)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ShipmentTransition)]
+    public partial class ShipmentTransition: MessageObject, IMessage
+    {
+        public static ShipmentTransition Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ShipmentTransition), isFromPool) as ShipmentTransition;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        [MemoryPackOrder(9)]
+        public int Action { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            this.Action = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:97)
+    [MemoryPackable]
+    [Message(Message_ET_Client.LevelTransition)]
+    public partial class LevelTransition: MessageObject, IMessage
+    {
+        public static LevelTransition Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(LevelTransition), isFromPool) as LevelTransition;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        [MemoryPackOrder(9)]
+        public int Action { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            this.Action = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:111)
+    [MemoryPackable]
+    [Message(Message_ET_Client.BuffPrepare)]
+    public partial class BuffPrepare: MessageObject, IMessage
+    {
+        public static BuffPrepare Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(BuffPrepare), isFromPool) as BuffPrepare;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:124)
+    [MemoryPackable]
+    [Message(Message_ET_Client.RenovationPrepare)]
+    public partial class RenovationPrepare: MessageObject, IMessage
+    {
+        public static RenovationPrepare Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(RenovationPrepare), isFromPool) as RenovationPrepare;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 提交后的具名结果：每收件人独立 DTO，先同版快照后结果。内部转换不由客户端转交。
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:139)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductCommandOutcome)]
+    public partial class ProductCommandOutcome: MessageObject, IMessage
+    {
+        public static ProductCommandOutcome Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductCommandOutcome), isFromPool) as ProductCommandOutcome;
+        }
+
+        [MemoryPackOrder(0)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(1)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(2)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(5)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(6)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(7)]
+        public long Version { get; set; }
+        [MemoryPackOrder(8)]
+        public long Tick { get; set; }
+        [MemoryPackOrder(9)]
+        public int Kind { get; set; }
+        [MemoryPackOrder(10)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(11)]
+        public int Status { get; set; }
+        [MemoryPackOrder(12)]
+        public string Reason { get; set; }
+        [MemoryPackOrder(13)]
+        public long OutcomeSerial { get; set; }
+        [MemoryPackOrder(14)]
+        public long OriginLevelId { get; set; }
+        [MemoryPackOrder(15)]
+        public long OriginLevelGeneration { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.MemberId = default;
+            this.BindingGeneration = default;
+            this.Version = default;
+            this.Tick = default;
+            this.Kind = default;
+            this.CommandId = default;
+            this.Status = default;
+            this.Reason = default;
+            this.OutcomeSerial = default;
+            this.OriginLevelId = default;
+            this.OriginLevelGeneration = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:159)
+    [MemoryPackable]
+    [Message(Message_ET_Client.KitchenWorkOutcome)]
+    public partial class KitchenWorkOutcome: MessageObject, IMessage
+    {
+        public static KitchenWorkOutcome Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(KitchenWorkOutcome), isFromPool) as KitchenWorkOutcome;
+        }
+
+        [MemoryPackOrder(0)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(1)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(2)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(5)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(6)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(7)]
+        public long Version { get; set; }
+        [MemoryPackOrder(8)]
+        public long Tick { get; set; }
+        [MemoryPackOrder(9)]
+        public int ProcessKind { get; set; }
+        [MemoryPackOrder(10)]
+        public long WorkId { get; set; }
+        [MemoryPackOrder(11)]
+        public long WorkInstanceId { get; set; }
+        [MemoryPackOrder(12)]
+        public long TransitionSerial { get; set; }
+        [MemoryPackOrder(13)]
+        public int Stage { get; set; }
+        [MemoryPackOrder(14)]
+        public long OutputItemId { get; set; }
+        [MemoryPackOrder(15)]
+        public long OutcomeSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.MemberId = default;
+            this.BindingGeneration = default;
+            this.Version = default;
+            this.Tick = default;
+            this.ProcessKind = default;
+            this.WorkId = default;
+            this.WorkInstanceId = default;
+            this.TransitionSerial = default;
+            this.Stage = default;
+            this.OutputItemId = default;
+            this.OutcomeSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:179)
+    [MemoryPackable]
+    [Message(Message_ET_Client.FrontWorkOutcome)]
+    public partial class FrontWorkOutcome: MessageObject, IMessage
+    {
+        public static FrontWorkOutcome Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(FrontWorkOutcome), isFromPool) as FrontWorkOutcome;
+        }
+
+        [MemoryPackOrder(0)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(1)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(2)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(5)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(6)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(7)]
+        public long Version { get; set; }
+        [MemoryPackOrder(8)]
+        public long Tick { get; set; }
+        [MemoryPackOrder(9)]
+        public long WorkId { get; set; }
+        [MemoryPackOrder(10)]
+        public long WorkInstanceId { get; set; }
+        [MemoryPackOrder(11)]
+        public long ClaimSerial { get; set; }
+        [MemoryPackOrder(12)]
+        public int Kind { get; set; }
+        [MemoryPackOrder(13)]
+        public int Stage { get; set; }
+        [MemoryPackOrder(14)]
+        public long OutcomeSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.MemberId = default;
+            this.BindingGeneration = default;
+            this.Version = default;
+            this.Tick = default;
+            this.WorkId = default;
+            this.WorkInstanceId = default;
+            this.ClaimSerial = default;
+            this.Kind = default;
+            this.Stage = default;
+            this.OutcomeSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:198)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ShipmentOutcome)]
+    public partial class ShipmentOutcome: MessageObject, IMessage
+    {
+        public static ShipmentOutcome Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ShipmentOutcome), isFromPool) as ShipmentOutcome;
+        }
+
+        [MemoryPackOrder(0)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(1)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(2)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(5)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(6)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(7)]
+        public long Version { get; set; }
+        [MemoryPackOrder(8)]
+        public long Tick { get; set; }
+        [MemoryPackOrder(9)]
+        public long ShipmentId { get; set; }
+        [MemoryPackOrder(10)]
+        public long ShipmentInstanceId { get; set; }
+        [MemoryPackOrder(11)]
+        public int Stage { get; set; }
+        [MemoryPackOrder(12)]
+        public long TransitionSerial { get; set; }
+        [MemoryPackOrder(13)]
+        public long OutcomeSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.MemberId = default;
+            this.BindingGeneration = default;
+            this.Version = default;
+            this.Tick = default;
+            this.ShipmentId = default;
+            this.ShipmentInstanceId = default;
+            this.Stage = default;
+            this.TransitionSerial = default;
+            this.OutcomeSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:216)
+    [MemoryPackable]
+    [Message(Message_ET_Client.LevelPhaseChanged)]
+    public partial class LevelPhaseChanged: MessageObject, IMessage
+    {
+        public static LevelPhaseChanged Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(LevelPhaseChanged), isFromPool) as LevelPhaseChanged;
+        }
+
+        [MemoryPackOrder(0)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(1)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(2)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(5)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(6)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(7)]
+        public long Version { get; set; }
+        [MemoryPackOrder(8)]
+        public long Tick { get; set; }
+        [MemoryPackOrder(9)]
+        public int Phase { get; set; }
+        [MemoryPackOrder(10)]
+        public bool Paused { get; set; }
+        [MemoryPackOrder(11)]
+        public long OutcomeSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.MemberId = default;
+            this.BindingGeneration = default;
+            this.Version = default;
+            this.Tick = default;
+            this.Phase = default;
+            this.Paused = default;
+            this.OutcomeSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:232)
+    [MemoryPackable]
+    [Message(Message_ET_Client.BuffPrepared)]
+    public partial class BuffPrepared: MessageObject, IMessage
+    {
+        public static BuffPrepared Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(BuffPrepared), isFromPool) as BuffPrepared;
+        }
+
+        [MemoryPackOrder(0)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(1)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(2)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(5)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(6)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(7)]
+        public long Version { get; set; }
+        [MemoryPackOrder(8)]
+        public long Tick { get; set; }
+        [MemoryPackOrder(9)]
+        public long DrawVersion { get; set; }
+        [MemoryPackOrder(10)]
+        public long OutcomeSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.MemberId = default;
+            this.BindingGeneration = default;
+            this.Version = default;
+            this.Tick = default;
+            this.DrawVersion = default;
+            this.OutcomeSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:247)
+    [MemoryPackable]
+    [Message(Message_ET_Client.RenovationPrepared)]
+    public partial class RenovationPrepared: MessageObject, IMessage
+    {
+        public static RenovationPrepared Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(RenovationPrepared), isFromPool) as RenovationPrepared;
+        }
+
+        [MemoryPackOrder(0)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(1)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(2)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(5)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(6)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(7)]
+        public long Version { get; set; }
+        [MemoryPackOrder(8)]
+        public long Tick { get; set; }
+        [MemoryPackOrder(9)]
+        public long ChoiceVersion { get; set; }
+        [MemoryPackOrder(10)]
+        public long OutcomeSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.MemberId = default;
+            this.BindingGeneration = default;
+            this.Version = default;
+            this.Tick = default;
+            this.ChoiceVersion = default;
+            this.OutcomeSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 前厅完成通知的后继请求；源为当前 Customer 或已完成的 Clear 工作。
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:263)
+    [MemoryPackable]
+    [Message(Message_ET_Client.FrontWorkCreateRequest)]
+    public partial class FrontWorkCreateRequest: MessageObject, IMessage
+    {
+        public static FrontWorkCreateRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(FrontWorkCreateRequest), isFromPool) as FrontWorkCreateRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        [MemoryPackOrder(9)]
+        public int Kind { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            this.Kind = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 结算提交后的内部完成通知，接收后才请求候选准备。
+    // proto file : ET-Client/ZZZZZZZZZProductTransitions.proto (line:278)
+    [MemoryPackable]
+    [Message(Message_ET_Client.LevelFinished)]
+    public partial class LevelFinished: MessageObject, IMessage
+    {
+        public static LevelFinished Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(LevelFinished), isFromPool) as LevelFinished;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(3)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long LevelId { get; set; }
+        [MemoryPackOrder(5)]
+        public long LevelGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long SourceId { get; set; }
+        [MemoryPackOrder(7)]
+        public long SourceInstanceId { get; set; }
+        [MemoryPackOrder(8)]
+        public long TransitionSerial { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.LevelId = default;
+            this.LevelGeneration = default;
+            this.SourceId = default;
+            this.SourceInstanceId = default;
+            this.TransitionSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
 }

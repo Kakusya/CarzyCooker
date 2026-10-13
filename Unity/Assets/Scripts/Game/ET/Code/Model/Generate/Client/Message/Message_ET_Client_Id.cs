@@ -125,5 +125,23 @@ namespace ET
          public const ushort SoloSaveWriteResponse = 10119;
          public const ushort SoloSaveCompletedRequest = 10120;
          public const ushort SoloSaveCompletedResponse = 10121;
+         public const ushort KitchenWorkTransition = 10122;
+         public const ushort CustomerFlowTransition = 10123;
+         public const ushort CustomerFlowFinished = 10124;
+         public const ushort FrontWorkTransition = 10125;
+         public const ushort FrontWorkFinished = 10126;
+         public const ushort ShipmentTransition = 10127;
+         public const ushort LevelTransition = 10128;
+         public const ushort BuffPrepare = 10129;
+         public const ushort RenovationPrepare = 10130;
+         public const ushort ProductCommandOutcome = 10131;
+         public const ushort KitchenWorkOutcome = 10132;
+         public const ushort FrontWorkOutcome = 10133;
+         public const ushort ShipmentOutcome = 10134;
+         public const ushort LevelPhaseChanged = 10135;
+         public const ushort BuffPrepared = 10136;
+         public const ushort RenovationPrepared = 10137;
+         public const ushort FrontWorkCreateRequest = 10138;
+         public const ushort LevelFinished = 10139;
     }
 }

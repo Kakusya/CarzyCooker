@@ -25,6 +25,49 @@ namespace ET
         public string Message { get; set; }
     }
 
+    [Message(0)]
+    [ResponseType(nameof(OwnershipTestResponse))]
+    public sealed class OwnershipTestRequest : MessageObject, IRequest
+    {
+        public int RpcId { get; set; }
+        public bool Hold;
+        public int DisposeCount;
+        public override void Dispose() => ++DisposeCount;
+    }
+
+    [Message(0)]
+    public sealed class OwnershipTestResponse : MessageObject, IResponse
+    {
+        public int RpcId { get; set; }
+        public int Error { get; set; }
+        public string Message { get; set; }
+        public int DisposeCount;
+        public override void Dispose() => ++DisposeCount;
+    }
+
+    [Message(0)]
+    public sealed class OwnershipTestNotice : MessageObject
+    {
+        public int DisposeCount;
+        public override void Dispose() => ++DisposeCount;
+    }
+
+    [MessageHandler((SceneType)(1L << 60))]
+    public sealed class OwnershipTestHandler : ProductActorRequestHandler<Scene, OwnershipTestRequest, OwnershipTestResponse>
+    {
+        public static int Calls;
+        public static OwnershipTestResponse LastResponse;
+        protected override async UniTask Run(Scene scene, OwnershipTestRequest request, OwnershipTestResponse response)
+        {
+            ++Calls;
+            LastResponse = response;
+            if (request.Hold)
+            {
+                await ShutdownTestHandler.Gate.Task;
+            }
+        }
+    }
+
     [MessageHandler((SceneType)(1L << 60))]
     public sealed class ShutdownTestHandler : MessageHandler<Scene, ShutdownTestRequest, ShutdownTestResponse>
     {
@@ -117,6 +160,8 @@ namespace ET
             fiber.Root.AddChild(actor);
             actor.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
             ShutdownTestHandler.Gate = new UniTaskCompletionSource();
+            OwnershipTestHandler.Calls = 0;
+            OwnershipTestHandler.LastResponse = null;
         }
 
         [TearDown]
@@ -178,6 +223,111 @@ namespace ET
             Pump();
             Assert.That(task.Status, Is.Not.EqualTo(UniTaskStatus.Pending));
             return task.GetAwaiter().GetResult();
+        }
+
+        [Test]
+        public void LocalMessageOwnershipCallValidationFailureReleasesBeforeQueueHandoff()
+        {
+            var invalid = (OwnershipTestRequest)Activator.CreateInstance(typeof(OwnershipTestRequest));
+            Assert.Throws<Exception>(() => sender.Call(default, invalid, false).GetAwaiter().GetResult());
+            Assert.That(invalid.DisposeCount, Is.EqualTo(1));
+            sender.Stop();
+            var stopped = (OwnershipTestRequest)Activator.CreateInstance(typeof(OwnershipTestRequest));
+            Assert.Throws<ObjectDisposedException>(() => sender.Call(actor.GetActorId(), stopped, false).GetAwaiter().GetResult());
+            Assert.That(stopped.DisposeCount, Is.EqualTo(1));
+            Assert.That(OwnershipTestHandler.Calls, Is.Zero);
+        }
+
+        [Test]
+        public void LocalMessageOwnershipMissingQueueReleasesRequestNoticeAndLateResponseOnce()
+        {
+            ActorId absent = new(fiber.Process, fiber.Id + 1, 90003);
+            var request = (OwnershipTestRequest)Activator.CreateInstance(typeof(OwnershipTestRequest));
+            using var response = (OwnershipTestResponse)sender.Call(absent, request, false).GetAwaiter().GetResult();
+            Assert.That(response.Error, Is.EqualTo(ErrorCore.ERR_NotFoundActor));
+            Assert.That(request.DisposeCount, Is.EqualTo(1));
+            var notice = (OwnershipTestNotice)Activator.CreateInstance(typeof(OwnershipTestNotice));
+            sender.Send(absent, notice);
+            Assert.That(notice.DisposeCount, Is.EqualTo(1));
+            var late = (OwnershipTestResponse)Activator.CreateInstance(typeof(OwnershipTestResponse));
+            sender.Reply(absent.Address, late);
+            Assert.That(late.DisposeCount, Is.EqualTo(1));
+            Assert.That(OwnershipTestHandler.Calls, Is.Zero);
+        }
+
+        [Test]
+        public void LocalMessageOwnershipMissingMailboxReleasesUndeliveredInputOnce()
+        {
+            ActorId missing = actor.GetActorId();
+            actor.RemoveComponent<MailBoxComponent>();
+            var request = (OwnershipTestRequest)Activator.CreateInstance(typeof(OwnershipTestRequest));
+            using var response = (OwnershipTestResponse)Finish(sender.Call(missing, request, false));
+            Assert.That(response.Error, Is.EqualTo(ErrorCore.ERR_NotFoundActor));
+            Assert.That(request.DisposeCount, Is.EqualTo(1));
+            var notice = (OwnershipTestNotice)Activator.CreateInstance(typeof(OwnershipTestNotice));
+            sender.Send(missing, notice);
+            Pump();
+            Assert.That(notice.DisposeCount, Is.EqualTo(1));
+            Assert.That(OwnershipTestHandler.Calls, Is.Zero);
+        }
+
+        [Test]
+        public void LocalMessageOwnershipStopDrainsQueuedInputAndCancelsWithoutFuturePump()
+        {
+            var request = (OwnershipTestRequest)Activator.CreateInstance(typeof(OwnershipTestRequest));
+            var notice = (OwnershipTestNotice)Activator.CreateInstance(typeof(OwnershipTestNotice));
+            UniTask<IResponse> pending = sender.Call(actor.GetActorId(), request, false);
+            sender.Send(actor.GetActorId(), notice);
+            sender.Stop();
+            using var cancelled = (OwnershipTestResponse)pending.GetAwaiter().GetResult();
+            Assert.That(cancelled.Error, Is.EqualTo(ErrorCore.ERR_Cancel));
+            Assert.That(request.DisposeCount, Is.EqualTo(1));
+            Assert.That(notice.DisposeCount, Is.EqualTo(1));
+            Assert.That(OwnershipTestHandler.Calls, Is.Zero);
+            sender.Stop();
+            Assert.That(request.DisposeCount, Is.EqualTo(1));
+            Assert.That(notice.DisposeCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void LocalMessageOwnershipOrderedWaitRejectsRetiredMailboxWithoutTouchingReplacement()
+        {
+            var first = (OwnershipTestRequest)Activator.CreateInstance(typeof(OwnershipTestRequest));
+            first.Hold = true;
+            var second = (OwnershipTestRequest)Activator.CreateInstance(typeof(OwnershipTestRequest));
+            UniTask<IResponse> active = sender.Call(actor.GetActorId(), first, false);
+            Pump();
+            UniTask<IResponse> waiting = sender.Call(actor.GetActorId(), second, false);
+            Pump();
+            long id = actor.Id;
+            actor.Dispose();
+            var replacement = new Scene(fiber, id, IdGenerater.Instance.GenerateInstanceId(), (SceneType)(1L << 60), "Replacement");
+            fiber.Root.AddChild(replacement);
+            replacement.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
+            ShutdownTestHandler.Gate.TrySetResult();
+            using var finished = (OwnershipTestResponse)Finish(active);
+            using var rejected = (OwnershipTestResponse)Finish(waiting);
+            Assert.That(rejected.Error, Is.EqualTo(ErrorCore.ERR_NotFoundActor));
+            Assert.That(first.DisposeCount, Is.EqualTo(1));
+            Assert.That(second.DisposeCount, Is.EqualTo(1));
+            Assert.That(OwnershipTestHandler.Calls, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void LocalMessageOwnershipStopDoesNotReleaseHandlerInputBeforeItsLateResponse()
+        {
+            var request = (OwnershipTestRequest)Activator.CreateInstance(typeof(OwnershipTestRequest));
+            request.Hold = true;
+            UniTask<IResponse> pending = sender.Call(actor.GetActorId(), request, false);
+            Pump();
+            OwnershipTestResponse physical = OwnershipTestHandler.LastResponse;
+            sender.Stop();
+            using var cancelled = (OwnershipTestResponse)pending.GetAwaiter().GetResult();
+            Assert.That(cancelled.Error, Is.EqualTo(ErrorCore.ERR_Cancel));
+            Assert.That(request.DisposeCount, Is.Zero, "Already handed to the handler");
+            ShutdownTestHandler.Gate.TrySetResult();
+            Assert.That(request.DisposeCount, Is.EqualTo(1));
+            Assert.That(physical.DisposeCount, Is.EqualTo(1));
         }
 
         [Test] public void OwnedEntity_DisposeAndSameIdReuseInvalidateOriginalInstance()

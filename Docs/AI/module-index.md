@@ -1,18 +1,15 @@
 # 模块索引
 
-## 本轮联机基础实施
+## 当前模块入口
 
-当前开发分支 `feat/multiplayer-bootstrap`。稳定层配置与 Editor 入口位于 `Game/Base/RuntimeInstance`、`Game/Editor/Multiplayer` 和既有 SceneHelper；Prepared 只表示配置交接，缺适用产品能力时仍明确拒绝。用法见 [快速开始](../../Book/快速开始.md)、[启动 SOP](../../Book/Unity启动与验证SOP.md)，真实结果见 [启动执行记录](../../openspec/changes/multiplayer-instance-bootstrap/execution-notes.md)。
+主工作区基线为 main，来自原 ET 底座。动态能力、协议版本和验收环境统一查[当前进度](../../CarzyCooker当前进度.md)；本页维护源码、约定、规格和技能定位，不复制任务与测试计数。先读[实现约定](../../references/business-code-conventions.md)，再读适用行和实际源码；技能适用不增加运行授权。
 
-原 ET.Core 的 ProcessInnerSender 提供整体 Stop 和 Destroy 兜底，当前托管域编号不复用、异步恢复核对实例身份；只停止当前 Fiber 的发送器，不作为单 Peer 取消接口。测试在 `Unity/Assets/Tests/Editor/ET` 的独占 PlayMode UTF 程序集，路径不代表 EditMode；树、消息及消费边界见 [网络约定](../../references/reactive-and-network.md)、[执行记录](../../openspec/changes/local-message-request-shutdown/execution-notes.md)。
-
-稳定第二端用法仅维护在 [共用协作规程](multiplayer-peer-workflow.md)，实际建立/数据/消息/联调结果分开报告，不能由文件存在推断。产品会话实施仍见 [产品 change](../../openspec/changes/product-session-bootstrap/proposal.md)。
-
-产品数据在 [Model/Share/Product](../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product)，建树、共同裁决、客户端、wire 桥及生命周期在 [Hotfix/Share/Product](../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product)。ProcedureET→Loader/Entry→ProductRoot 精确初始化；原 HotfixView OnShutdown 键复用 Loader 根交接。Match 拥有 Participant，HostSession 只引用，Client 独立值投影；完整树/请求答复/所有权见 [网络约定](../../references/reactive-and-network.md)，当前实测与剩余边界见 [产品执行记录](../../openspec/changes/product-session-bootstrap/execution-notes.md)。协议源是 Design/Proto/ET-Client/ZProductSession.proto，既有工具生成 Client/ClientServer，无新业务程序集、消息框架或等待表。
-
-临时格子样机在上述 Product 的 GridKitchen 子目录中：Match.GridKitchenComponent 是玩法权威，ClientSession.GridClientComponent 是独立投影；[ModelView/Client/Product](../../Unity/Assets/Scripts/Game/ET/Code/ModelView/Client/Product) 和 [HotfixView/Client/Product](../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product) 托管 2D Board／HUD。追加协议源为 ZZGridKitchen.proto；Solo 复用本地权威而不监听。公共 UIEntity／Scene／音频及 ET Unit／AI 表数据已清空，无消费者的 DTDemo／OneConfig 整表删除，登录测试 Widget 已移除；保留公共类型、启动链路与当前地图注册。旧 Demo 单位／AI 演示退出当前可用范围。真实验证见 [格子执行记录](../../openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)，不是正式 RestaurantRuntime 或完整烹饪。
-
-当前基线为 `main` 分支，来自原 ET 底座。先读 [实现约定](../../references/business-code-conventions.md)，再读适用行和实际源码。表内路径从本文解析；源码目录定位整个模块，不只一个示例。技能适用不代表获准启动工具、服务或编辑器。
+- 稳定启动配置与 Editor 入口：Game/Base/RuntimeInstance、Game/Editor/Multiplayer 和既有 SceneHelper。Prepared 只表示配置交接，不能证明产品就绪。用法见[快速开始](../../Book/快速开始.md)与[启动 SOP](../../Book/Unity启动与验证SOP.md)；历史接入证据见[启动记录](../../openspec/changes/archive/2026-10-11-multiplayer-instance-bootstrap/execution-notes.md)。
+- 产品数据在[Model/Share/Product](../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product)，建树、共同裁决、客户端、wire 和生命周期在[Hotfix/Share/Product](../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product)。ProcedureET → Loader/Entry → ProductRoot；根退出沿既有 HotfixView OnShutdown／Loader 交接。
+- 当前 Host/Solo：ProductHost → Match → RestaurantRuntime；Match 持成员，Restaurant 持持续 GridKitchenComponent 和当前 Level。HostSession 引用权威，ClientSession.GridClientComponent 持独立投影。核对[实际建树](../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductRuntimeBootstrap.cs)、[餐厅 owner](../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RestaurantRuntimeSystem.cs)及[消息约定](../../references/reactive-and-network.md)。旧样机的 Match 厨房不能作为当前餐厅 owner；[旧样机记录](../../openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)只证明其历史范围。
+- 表现在[ModelView/Client/Product](../../Unity/Assets/Scripts/Game/ET/Code/ModelView/Client/Product)和[HotfixView/Client/Product](../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product)，沿原受管 Board／HUD owner。协议源为 Design/Proto/ET-Client/ZProductSession.proto、ZZGridKitchen.proto 及同域产品协议；按既有工具生成 Client/ClientServer，不手改生成物。
+- 本地 sender／队列与请求收尾：ET.Core、Hotfix/Share/Module/Message；整体 Stop 不作为单 Peer 取消接口。测试在 Unity/Assets/Tests/Editor/ET 的 PlayMode 程序集，目录名不代表模式；发现与执行见[自动测试 SOP](../../Book/自动化测试SOP.md)。已有收尾证据见[原记录](../../openspec/changes/archive/2026-10-11-local-message-request-shutdown/execution-notes.md)，后续消息迁移以其原 change 记录为准。
+- 第二工作区按 multiplayer-baseline 分支发现，只执行、观察、回报和指定版本维护，禁止开发。职责与技能范围唯一查[共用规程](multiplayer-peer-workflow.md)和[维护技能](../../.agents/skills/second-workspace-sync/SKILL.md)；原精简证据见[记录](../../openspec/changes/archive/2026-10-11-simplify-second-workspace-executor/execution-notes.md)。
 
 | 模块 | 源码/资料入口 | 用法/约定 | 主规格 | 技能 |
 |---|---|---|---|---|
@@ -51,7 +48,7 @@
 
 切换后的 ET 分支重新枚举 6794 条文件路径（排除协作资料目录和上述缓存），读取 2606 个源码/配置/工具/文档文本文件及 3644 个 Unity 序列化/元数据文件，其中 3492 个 meta、64 个 asset、48 个 prefab、4 个场景，其余为材质、动画和控制器。`Unity/Assets/Scripts/Library/` 是源码，纳入扫描；排除的 `Unity/Library/` 是缓存。两个无法按文本读取的文件只计路径，不读二进制正文。另检查 52 份维护中的 Markdown 和 409 个本地链接；历史归档保留原 main 范围，不用其描述推断 ET 当前能力。
 
-## 质量与已有测试
+## 历史规格扫描与技能迁移
 
 2026-10-09 继续扫描并细化十四项底座规格，补充模式、异常、取消、清理和兼容边界。十六份主规格当前有 74 项要求、120 个场景；扫描范围、模块与源码对应、保留原文及修改原因见 [深度扫描](spec-scan.md)。这里的数量属于本轮完成记录，后续能力清单以 OpenSpec CLI 为准；静态场景不等于动态测试已执行。
 
@@ -59,7 +56,7 @@ OpenSpec 官方技能已补齐至十二项，完整入口见 [AGENTS 技能加�
 
 适用 [生命周期](../../references/framework-lifecycle.md)、[生成链路](../../references/data-generation.md)、[已知问题](../../KnownIssues.md)。初始迁移只作静态检查；后续已授权接入 [Unity CLI/Pipeline](../../Book/UnityCLI.md)，包解析、连接和编译实际结果见手册。现有 ET Test/RobotCase 仅作定位，产品测试验收和后续 [技能改造](skill-roadmap.md) 逐项批准；未运行项保持 NotRun。
 
-## 已迁入测试与 SOP
+## 测试与 SOP 入口
 
 | 范围 | 正文 / 工具 | 技能 |
 |---|---|---|

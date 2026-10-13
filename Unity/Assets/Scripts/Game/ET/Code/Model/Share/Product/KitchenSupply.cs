@@ -41,6 +41,8 @@ namespace ET
         // 外部剩余包数只在预留时减少；实物材料只由 GridItem.Contents 表达。
         public readonly Dictionary<int, int> RemainingPackages = new();
         public readonly Queue<SupplyEnvelope> Commands = new();
+        public readonly Queue<ShipmentTransitionValue> Transitions = new();
+        public readonly List<ShipmentOutcomeValue> Outcomes = new();
     }
 
     [ChildOf(typeof(KitchenSupply))]
@@ -50,6 +52,8 @@ namespace ET
         public int SourceId, MaterialDefinitionId, PackageDefinitionId, PackageUnits, RequiredTicks, ProgressTicks;
         public long ReceivingStationId, PackageItemId, StartedTick;
         public ShipmentStage Stage;
+        public long TransitionSerial;
+        public bool ReadyQueued;
     }
 
     public readonly struct SupplySourceProjection

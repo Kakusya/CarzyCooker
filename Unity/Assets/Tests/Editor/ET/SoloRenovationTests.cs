@@ -14,13 +14,12 @@ namespace ET
         private ChooseRenovationResponse RenovationReply(ChooseRenovationRequest request)
         {
             ClientSessionComponent client = host.Client;
-            var task = client.CallProduct(request); PumpMessages(8);
-            Assert.That(task.Status, Is.Not.EqualTo(UniTaskStatus.Pending));
-            return (ChooseRenovationResponse)task.GetAwaiter().GetResult();
+            return (ChooseRenovationResponse)FinishMessages(client.CallProduct(request), "renovation two-mailbox receipt");
         }
 
         private void RenovationChoose(int definition, string rejection = null)
         {
+            if (CurrentLevel.Phase == LevelPhase.Completed && !Renovation.Prepared) FrontWait(() => Renovation.Prepared, 8);
             PumpMessages(8);
             using (var receipt = RenovationReply(RenovationView.CreateRenovationChoice(definition, RenovationView.RenovationChoiceVersion)))
                 Assert.That(receipt.Error, Is.Zero, receipt.Message);
@@ -34,6 +33,7 @@ namespace ET
             if (CurrentLevel.Phase == LevelPhase.Preparing) LevelDo(LevelControlAction.Start);
             for (int i = 0; i < 1800 && CurrentLevel.Phase != LevelPhase.Completed; ++i) { AdvanceTicks(1); PumpMessages(3); }
             Assert.That(CurrentLevel.Phase, Is.EqualTo(LevelPhase.Completed)); PumpMessages(8);
+            FrontWait(() => Renovation.Prepared, 8);
             Assert.That(CurrentLevel.Stars, Is.Zero);
         }
 
@@ -111,6 +111,7 @@ namespace ET
             var request = RenovationView.CreateLevelCommand(LevelControlAction.Continue); var replay = CopyReplayRequest(request);
             using (var receipt = LevelReply(client, request)) Assert.That(receipt.Error, Is.Zero);
             AdvanceTicks(1); PumpMessages(8);
+            FrontWait(() => Buff.Prepared, 8);
             using (var receipt = LevelReply(client, replay)) Assert.That(receipt.Status, Is.EqualTo((int)GridResultStatus.Executed));
             Assert.That(Grid.Stations.Count, Is.EqualTo(17)); Assert.That(Grid.Items.Keys.OrderBy(id => id), Is.EqualTo(items));
             Assert.That(Grid.Item(bowl).Contents, Is.EqualTo(new[] { egg })); Assert.That(Grid.Item(bowl).Location, Is.EqualTo(GridItemLocation.Ground));

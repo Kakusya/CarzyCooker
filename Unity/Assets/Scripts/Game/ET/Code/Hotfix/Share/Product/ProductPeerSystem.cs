@@ -46,6 +46,16 @@ namespace ET
             self.LastCommandStatus = status; self.LastCommandReason = reason;
         }
 
+        public static void RecordProductResult(this HostPeer self, ProductCommandContext context, ProductCommandKind kind,
+            GridResultStatus status, string reason, bool changedLevel = false)
+        {
+            self.RecordProductResult(context.CommandId, status, reason);
+            if (kind != ProductCommandKind.Grid && status is GridResultStatus.Executed or GridResultStatus.Rejected or GridResultStatus.Cancelled)
+            {
+                self.PendingOutcomes.Add(new ProductCommandOutcomeValue(context, kind, status, reason, changedLevel));
+            }
+        }
+
         public static void EndEntry(this HostPeer self)
         {
             if (self.InFlight <= 0)

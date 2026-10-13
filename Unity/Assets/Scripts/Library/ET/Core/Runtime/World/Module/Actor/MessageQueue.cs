@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System;
 
 namespace ET
 {
@@ -33,8 +34,16 @@ namespace ET
             {
                 return false;
             }
-            queue.Enqueue(new MessageInfo() {ActorId = new ActorId(fromAddress, actorId.InstanceId), MessageObject = messageObject});
-            return true;
+            lock (queue)
+            {
+                // 与撤队列交接互斥；Send=false 时仍由发送边界持有输入。
+                if (!this.messages.TryGetValue(actorId.Address.Fiber, out var current) || !ReferenceEquals(current, queue))
+                {
+                    return false;
+                }
+                queue.Enqueue(new MessageInfo() {ActorId = new ActorId(fromAddress, actorId.InstanceId), MessageObject = messageObject});
+                return true;
+            }
         }
         
         public void Fetch(int fiberId, int count, List<MessageInfo> list)
@@ -62,7 +71,22 @@ namespace ET
         
         public void RemoveQueue(int fiberId)
         {
-            this.messages.TryRemove(fiberId, out _);
+            if (!this.messages.TryGetValue(fiberId, out var queue))
+            {
+                return;
+            }
+            lock (queue)
+            {
+                if (!((ICollection<KeyValuePair<int, ConcurrentQueue<MessageInfo>>>)this.messages)
+                    .Remove(new KeyValuePair<int, ConcurrentQueue<MessageInfo>>(fiberId, queue)))
+                {
+                    return;
+                }
+                while (queue.TryDequeue(out MessageInfo message))
+                {
+                    message.MessageObject.Dispose();
+                }
+            }
         }
     }
 }

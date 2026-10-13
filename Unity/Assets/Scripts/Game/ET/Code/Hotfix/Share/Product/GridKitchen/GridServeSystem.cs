@@ -34,7 +34,7 @@ namespace ET
                 string error=peer==null || !peer.EntryOpen || !self.HasBinding(peer.MemberId,command.Context.BindingGeneration) ? "EntryClosed"
                     : command.Context.Validate(((Match)self.Match).MatchId,self.WorldId,self.WorldGeneration,level.Id,level.Generation,peer.Generation);
                 if(error==null)error=self.ApplyServe(level,self.Actor(peer.MemberId),command.Intent);
-                peer?.RecordProductResult(command.Context.CommandId,error==null?GridResultStatus.Executed:GridResultStatus.Rejected,error);self.Dirty=true;
+                peer?.RecordProductResult(command.Context, ProductCommandKind.Serve,error==null?GridResultStatus.Executed:GridResultStatus.Rejected,error);self.Dirty=true;
             }
         }
 
@@ -61,6 +61,8 @@ namespace ET
             actor.HandItemId=0;item.Location=GridItemLocation.Table;item.HolderId=station.Id;item.Cell=station.Cell;station.ItemId=item.Id;
             order.State=OrderState.Served;order.ServedItemId=item.Id;order.ServedTick=self.Tick;level.Score+=order.Score;
             customer.Phase=CustomerPhase.Eating;customer.PhaseEnteredTick=self.Tick;
+            ++customer.TransitionSerial; customer.TransitionQueued = false;
+            ++order.TransitionSerial; order.TransitionQueued = false;
             customer.RemainingEatTicks=Tables.Instance.DTCustomerFlowConfig.Get(customer.FlowDefinitionId).EatTicks;
             return null;
         }
@@ -68,7 +70,7 @@ namespace ET
         public static void CancelPendingServes(this GridKitchenComponent self,Level level,string reason)
         {
             var queue=level.GetComponent<FrontLevelState>().Serves;
-            while(queue.Count>0){ServeOrderEnvelope command=queue.Dequeue();HostPeer peer=command.Peer;peer?.RecordProductResult(command.Context.CommandId,GridResultStatus.Cancelled,reason);}
+            while(queue.Count>0){ServeOrderEnvelope command=queue.Dequeue();HostPeer peer=command.Peer;peer?.RecordProductResult(command.Context, ProductCommandKind.Serve,GridResultStatus.Cancelled,reason);}
             self.Dirty=true;
         }
 

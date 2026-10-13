@@ -11,16 +11,19 @@ namespace ET
         private static void Awake(this KitchenSupply self)
         {
             self.RemainingPackages.Clear(); self.Commands.Clear();
+            self.Transitions.Clear(); self.Outcomes.Clear();
             foreach (DRSupplyConfig source in Tables.Instance.DTSupplyConfig.DataList)
                 self.RemainingPackages.Add(source.Id, source.AvailablePackages);
         }
     }
 
     [EntitySystemOf(typeof(SupplyShipment))]
+    [FriendOf(typeof(SupplyShipment))]
     public static partial class SupplyShipmentSystem
     {
         [EntitySystem]
-        private static void Awake(this SupplyShipment self) { }
+        private static void Awake(this SupplyShipment self)
+        { self.TransitionSerial = 1; self.ReadyQueued = false; }
     }
 
     [FriendOf(typeof(KitchenSupply))]
@@ -83,6 +86,7 @@ namespace ET
                             shipment.ReceivingStationId = receiving.Id; shipment.RequiredTicks = source.TransitTicks;
                             shipment.ProgressTicks = 0; shipment.PackageItemId = 0;
                             shipment.StartedTick = kitchen.Tick + 1; shipment.Stage = ShipmentStage.InTransit;
+                            kitchen.PublishShipmentStage(shipment);
                         }
                     }
                 }
@@ -96,16 +100,16 @@ namespace ET
                         var gridIntent = new GridIntent(command.Context.CommandId,
                             intent.Action == SupplyAction.Receive ? GridAction.ReceiveSupply : GridAction.TakeSupplyPortion,
                             station.Cell, station.Id, intent.ContentItemId, intent.PackageId, intent.ShipmentId,
-                            expectedLayoutVersion: intent.LayoutVersion);
+                            expectedLayoutVersion: intent.LayoutVersion, originKind: ProductCommandKind.Supply);
                         if (kitchen.Incoming.TryGetValue(peer.MemberId, out var replaced))
-                            kitchen.Result(actor, replaced.CommandId, GridResultStatus.Cancelled, "Replaced");
+                            kitchen.Result(actor, replaced.CommandId, GridResultStatus.Cancelled, "Replaced", replaced.OriginKind);
                         actor.LastReceivedCommandId = gridIntent.CommandId; actor.LastReceivedIntent = gridIntent;
                         kitchen.Incoming[peer.MemberId] = gridIntent;
                         kitchen.Dirty = true;
                         continue;
                     }
                 }
-                peer?.RecordProductResult(command.Context.CommandId, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error);
+                peer?.RecordProductResult(command.Context, ProductCommandKind.Supply, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error);
                 kitchen.Dirty = true;
             }
         }
@@ -117,20 +121,50 @@ namespace ET
             while (supply.Commands.Count > 0)
             {
                 SupplyEnvelope command = supply.Commands.Dequeue();
-                command.Peer?.RecordProductResult(command.Context.CommandId, GridResultStatus.Cancelled, reason);
+                command.Peer?.RecordProductResult(command.Context, ProductCommandKind.Supply, GridResultStatus.Cancelled, reason);
             }
         }
 
         private static void AdvanceSupplyShipments(this GridKitchenComponent kitchen)
         {
             KitchenSupply supply = kitchen.GetComponent<KitchenSupply>();
+            while (supply.Transitions.Count > 0)
+            {
+                ShipmentTransitionValue transition = supply.Transitions.Dequeue();
+                ProductTransitionIdentity identity = transition.Identity;
+                SupplyShipment shipment = supply.GetChild<SupplyShipment>(identity.SourceId);
+                if (identity.WorldId != kitchen.WorldId || identity.WorldGeneration != kitchen.WorldGeneration ||
+                    shipment == null || shipment.InstanceId != identity.SourceInstanceId || shipment.TransitionSerial != identity.Serial ||
+                    transition.Action != ShipmentTransitionAction.Ready || shipment.Stage != ShipmentStage.InTransit ||
+                    !shipment.ReadyQueued || shipment.ProgressTicks < shipment.RequiredTicks) continue;
+                shipment.Stage = ShipmentStage.Ready; shipment.ReadyQueued = false; ++shipment.TransitionSerial;
+                kitchen.PublishShipmentStage(shipment);
+            }
             foreach (SupplyShipment shipment in supply.Children.Values.OfType<SupplyShipment>())
             {
                 if (shipment.Stage != ShipmentStage.InTransit || shipment.StartedTick == kitchen.Tick) continue;
-                ++shipment.ProgressTicks;
-                if (shipment.ProgressTicks >= shipment.RequiredTicks) shipment.Stage = ShipmentStage.Ready;
+                shipment.ProgressTicks = System.Math.Min(shipment.RequiredTicks, shipment.ProgressTicks + 1);
+                if (shipment.ProgressTicks >= shipment.RequiredTicks && !shipment.ReadyQueued)
+                {
+                    shipment.ReadyQueued = true;
+                    HostSessionComponent authority = ((Scene)kitchen.IScene).GetComponent<HostSessionComponent>();
+                    kitchen.Root().GetComponent<ProcessInnerSender>().Send(authority.GetActorId(), ProductMessages.Create<ShipmentTransition>(value =>
+                    {
+                        value.ProtocolVersion = ProductSessionRules.ProtocolVersion; value.MatchId = ((Match)kitchen.Match).MatchId;
+                        value.WorldId = kitchen.WorldId; value.WorldGeneration = kitchen.WorldGeneration;
+                        // 货物归持续厨房，不借原采购角色／关卡作为后续授权。
+                        value.SourceId = shipment.Id; value.SourceInstanceId = shipment.InstanceId; value.TransitionSerial = shipment.TransitionSerial;
+                        value.Action = (int)ShipmentTransitionAction.Ready;
+                    }));
+                }
                 kitchen.Dirty = true;
             }
+        }
+
+        private static void PublishShipmentStage(this GridKitchenComponent kitchen, SupplyShipment shipment)
+        {
+            kitchen.GetComponent<KitchenSupply>().Outcomes.Add(new ShipmentOutcomeValue(shipment.Id, shipment.InstanceId, shipment.TransitionSerial, shipment.Stage));
+            kitchen.Dirty = true;
         }
 
         private static string SupplyAtStation(this GridKitchenComponent kitchen, GridActor actor, GridStation station, GridIntent intent)
@@ -151,6 +185,7 @@ namespace ET
                     package.Contents.Add(material.Id);
                 }
                 station.ItemId = package.Id; shipment.PackageItemId = package.Id; shipment.Stage = ShipmentStage.Received;
+                ++shipment.TransitionSerial; kitchen.PublishShipmentStage(shipment);
                 return null;
             }
             if (actor.HandItemId != 0) return "HandFull";

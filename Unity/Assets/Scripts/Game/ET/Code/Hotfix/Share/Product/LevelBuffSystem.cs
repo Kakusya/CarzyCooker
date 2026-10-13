@@ -10,8 +10,12 @@ namespace ET
         [EntitySystem]
         private static void Awake(this LevelBuff self,DRLevelConfig definition,int seed)
         {
-            self.Seed=seed;self.DrawVersion=1;self.SelectedId=0;self.RequireChoice=definition.RequireBuffChoice;
-            self.Candidates=BuffConfig.Draw(definition.AllowedBuffIds,definition.CandidateCount,seed);self.Choices.Clear();
+            BuffConfig.ValidateLevel(definition);
+            self.Seed=seed;self.DrawVersion=0;self.SelectedId=0;self.RequireChoice=definition.RequireBuffChoice;
+            self.AllowedIds = definition.AllowedBuffIds.ToArray(); self.CandidateCount = definition.CandidateCount;
+            self.Candidates=Array.Empty<int>();self.Choices.Clear();
+            self.Preparations.Clear();
+            self.PreparationSerial = 1; self.Prepared = self.PreparationQueued = self.NotifyPrepared = false;
         }
     }
     [FriendOf(typeof(LevelBuff))]
@@ -45,16 +49,16 @@ namespace ET
                     :command.Context.Validate(((Match)kitchen.Match).MatchId,kitchen.WorldId,kitchen.WorldGeneration,level.Id,level.Generation,peer.Generation);
                 if(error==null && !peer.CanControlRestaurant())error="HostControlOnly";
                 if(error==null)error=level.Paused?"Paused":level.Phase!=LevelPhase.Preparing?"WrongPhase"
-                    :command.Intent.DrawVersion!=buff.DrawVersion?"DrawChanged":buff.SelectedId!=0?"BuffLocked"
+                    :!buff.Prepared?"BuffNotReady":command.Intent.DrawVersion!=buff.DrawVersion?"DrawChanged":buff.SelectedId!=0?"BuffLocked"
                     :!buff.Candidates.Contains(command.Intent.ChoiceId)?"InvalidBuffChoice":null;
                 if(error==null)buff.SelectedId=command.Intent.ChoiceId;
-                peer?.RecordProductResult(command.Context.CommandId,error==null?GridResultStatus.Executed:GridResultStatus.Rejected,error);kitchen.Dirty=true;
+                peer?.RecordProductResult(command.Context, ProductCommandKind.Buff,error==null?GridResultStatus.Executed:GridResultStatus.Rejected,error);kitchen.Dirty=true;
             }
         }
         public static void CancelBuffChoices(this GridKitchenComponent kitchen,Level level,string reason)
         {
             LevelBuff buff=level.GetComponent<LevelBuff>();
-            while(buff.Choices.Count>0){BuffChoiceEnvelope command=buff.Choices.Dequeue();HostPeer peer=command.Peer;peer?.RecordProductResult(command.Context.CommandId,GridResultStatus.Cancelled,reason);}
+            while(buff.Choices.Count>0){BuffChoiceEnvelope command=buff.Choices.Dequeue();HostPeer peer=command.Peer;peer?.RecordProductResult(command.Context, ProductCommandKind.Buff,GridResultStatus.Cancelled,reason);}
             kitchen.Dirty=true;
         }
     }
@@ -71,10 +75,33 @@ namespace ET
     [FriendOf(typeof(LevelBuff))]
     public static partial class RestaurantRuntimeSystem
     {
+        private static void AdvanceBuffPreparation(this RestaurantRuntime self, Level level)
+        {
+            if (level.Paused || level.Phase != LevelPhase.Preparing) return;
+            LevelBuff buff = level.GetComponent<LevelBuff>(); GridKitchenComponent kitchen = self.Kitchen;
+            while (buff.Preparations.Count > 0)
+            {
+                ProductTransitionIdentity identity = buff.Preparations.Dequeue();
+                if (identity.LevelId != level.Id || identity.LevelGeneration != level.Generation || identity.SourceId != buff.Id ||
+                    identity.SourceInstanceId != buff.InstanceId || identity.Serial != buff.PreparationSerial || !buff.PreparationQueued || buff.Prepared) continue;
+                buff.Candidates = BuffConfig.Draw(buff.AllowedIds, buff.CandidateCount, buff.Seed);
+                buff.DrawVersion = 1; buff.Prepared = true; buff.PreparationQueued = false; ++buff.PreparationSerial;
+                buff.NotifyPrepared = true; kitchen.Dirty = true;
+            }
+            if (buff.Prepared || buff.PreparationQueued) return;
+            buff.PreparationQueued = true;
+            self.Root().GetComponent<ProcessInnerSender>().Send(((Scene)self.IScene).GetComponent<HostSessionComponent>().GetActorId(), ProductMessages.Create<BuffPrepare>(value =>
+            {
+                value.ProtocolVersion = ProductSessionRules.ProtocolVersion; value.MatchId = ((Match)self.Match).MatchId;
+                value.WorldId = kitchen.WorldId; value.WorldGeneration = kitchen.WorldGeneration; value.LevelId = level.Id; value.LevelGeneration = level.Generation;
+                value.SourceId = buff.Id; value.SourceInstanceId = buff.InstanceId; value.TransitionSerial = buff.PreparationSerial;
+            }));
+        }
         static partial void CheckStartAdditions(this RestaurantRuntime self,Level level,ref string error)
         {
             LevelBuff buff=level.GetComponent<LevelBuff>();
-            if(buff.RequireChoice && buff.SelectedId==0)error="BuffChoiceRequired";
+            if(!buff.Prepared)error="BuffNotReady";
+            else if(buff.RequireChoice && buff.SelectedId==0)error="BuffChoiceRequired";
         }
     }
 }

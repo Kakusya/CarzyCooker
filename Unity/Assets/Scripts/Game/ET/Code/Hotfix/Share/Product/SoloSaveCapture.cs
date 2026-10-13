@@ -27,6 +27,8 @@ namespace ET
                 throw new InvalidOperationException("SuccessRequired");
             GridKitchenComponent kitchen = restaurant.Kitchen;
             var renovation = restaurant.GetComponent<RestaurantRenovation>();
+            if (!renovation.Prepared || renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation)
+                throw new InvalidOperationException("RenovationNotReady");
             if (renovation.Candidates.Count > 0 && renovation.SelectedDefinitionId == 0)
                 throw new InvalidOperationException("RenovationRequired");
             var stationKeys = kitchen.Stations.Keys.OrderBy(id => id).Select((id, index) => (id, key: index + 1)).ToDictionary(p => p.id, p => p.key);

@@ -220,11 +220,11 @@ namespace ET.Client
             if (grid.LastReason == "RequiresOven") reason="需要兼容烤箱";
             reason=grid.LastReason switch{"RequiresTablePosition"=>"请先走到餐桌旁","WrongDish"=>"手中菜品与订单不符","DirtyUtensil"=>"餐具需要先洗净",
                 "OrderChanged" or "OrderEnded"=>"订单已结束或顾客已更换","ItemChanged"=>"手持物已变化","TableBusy"=>"餐桌暂时不能交付","RequiresFrontAction"=>"请使用前厅工作或交付按钮",_=>reason};
-            reason=grid.LastReason switch {"BuffChoiceRequired"=>"请先选择本关加成","BuffLocked"=>"本关加成已锁定","InvalidBuffChoice"=>"此加成不在本关候选中","DrawChanged"=>"候选已变化",_=>reason};
+            reason=grid.LastReason switch {"BuffNotReady"=>"本关加成准备中，请稍候","BuffChoiceRequired"=>"请先选择本关加成","BuffLocked"=>"本关加成已锁定","InvalidBuffChoice"=>"此加成不在本关候选中","DrawChanged"=>"候选已变化",_=>reason};
             reason=grid.LastReason switch {"SupplyExhausted"=>"供应配额不足","ReceivingFull"=>"收货台已满，腾空后再接收",
                 "ShipmentNotReady"=>"货物仍在运输","AlreadyReceived"=>"这份货物已经接收","ShipmentChanged"=>"货物或收货台已变化",
                 "RequiresSupplyPackage"=>"需要合法原料包装","InvalidQuantity"=>"采购数量必须为正数",_=>reason};
-            reason=grid.LastReason switch {"RenovationChanged"=>"结算候选已变化","RenovationLocked"=>"本次装修已锁定",
+            reason=grid.LastReason switch {"RenovationNotReady"=>"正在准备装修候选，请稍候","RenovationChanged"=>"结算候选已变化","RenovationLocked"=>"本次装修已锁定",
                 "InvalidRenovationChoice"=>"此装修不在本次候选中","RenovationOccupied"=>"安装位置仍有角色或落物",
                 "RenovationBlocked"=>"安装会重叠或堵住通路","RenovationRelationshipsChanged"=>"厨房物品或加工关系已变化",_=>reason};
             reason=grid.LastReason switch {"RequiresSink"=>"液体必须带到水池处理","RequiresTrash"=>"固体必须带到垃圾桶处理",
@@ -288,16 +288,16 @@ namespace ET.Client
             if (grid.LevelId != 0 && grid.CanControlRestaurant)
             {
                 long level = grid.LevelId, levelGeneration = grid.LevelGeneration;
-                if (grid.LevelPhase == LevelPhase.Completed)
+                if (grid.LevelPhase == LevelPhase.Completed && RenovationReadyForContinue(grid))
                 {
                     if (!grid.SaveEnabled)
                         view.AddControl("下一关", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.Continue, level, levelGeneration); });
                     else if (grid.SaveState != SoloSaveState.Writing && (grid.RenovationCandidates.Count == 0 || grid.SelectedRenovationId != 0))
                         view.AddControl(grid.SaveState == SoloSaveState.Committed ? "继续下一关" : "保存并继续", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.SaveAndContinue, level, levelGeneration); });
                 }
-                else
+                else if (grid.LevelPhase != LevelPhase.Completed)
                 {
-                    if (grid.LevelPhase == LevelPhase.Preparing && !grid.LevelPaused && (!grid.RequireBuffChoice || grid.SelectedBuffId!=0))
+                    if (grid.LevelPhase == LevelPhase.Preparing && grid.BuffDrawVersion > 0 && !grid.LevelPaused && (!grid.RequireBuffChoice || grid.SelectedBuffId!=0))
                         view.AddControl("开始营业", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.Start, level, levelGeneration); });
                     bool paused = grid.LevelPaused;
                     view.AddControl(paused ? "恢复" : "暂停", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(paused ? LevelControlAction.Resume : LevelControlAction.Pause, level, levelGeneration); });
@@ -447,6 +447,18 @@ namespace ET.Client
     {
         protected override UniTask Run(Scene scene,GridProjectionApplied args)
         {GridPresentationComponent view=scene.GetComponent<GridPresentationComponent>();view?.TryGridReady();view?.RefreshGridHud();return UniTask.CompletedTask;}
+    }
+    [Event(SceneType.ProductClient)]
+    public sealed class KitchenWorkOutcomeView : AEvent<Scene, KitchenWorkOutcomeApplied>
+    {
+        protected override UniTask Run(Scene scene, KitchenWorkOutcomeApplied args)
+        { scene.GetComponent<GridPresentationComponent>()?.RefreshGridHud(); return UniTask.CompletedTask; }
+    }
+    [Event(SceneType.ProductClient)]
+    public sealed class FrontWorkOutcomeView : AEvent<Scene, FrontWorkOutcomeApplied>
+    {
+        protected override UniTask Run(Scene scene, FrontWorkOutcomeApplied args)
+        { scene.GetComponent<GridPresentationComponent>()?.RefreshGridHud(); return UniTask.CompletedTask; }
     }
     [Event(SceneType.ProductClient)]
     public sealed class GridLeftView : AEvent<Scene,ProductClientLeft>

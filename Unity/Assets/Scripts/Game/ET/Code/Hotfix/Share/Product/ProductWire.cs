@@ -267,7 +267,7 @@ namespace ET
                 session.OnResponse(response);
                 return; // 有效响应交调用者消费。
             }
-            if (message is ProductRosterSnapshot or ProductMatchClosed or GridWorldSnapshot or GridCommandResult)
+            if (message is ProductRosterSnapshot or ProductMatchClosed or GridWorldSnapshot or GridCommandResult or ProductCommandOutcome or KitchenWorkOutcome or ShipmentOutcome or FrontWorkOutcome or BuffPrepared or RenovationPrepared or LevelPhaseChanged)
             {
                 session.Root().GetComponent<ProcessInnerSender>().Send(client.GetActorId(), (IMessage)message);
                 return;

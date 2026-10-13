@@ -13,12 +13,16 @@ namespace ET
     [FriendOf(typeof(GridKitchenComponent))]
     [FriendOf(typeof(GridActor))]
     [FriendOf(typeof(GridItem))]
+    [FriendOf(typeof(LevelBuff))]
     public static partial class RestaurantRuntimeSystem
     {
         [EntitySystem]
         private static void Awake(this RestaurantRuntime self, DRLevelConfig first)
         {
             self.Match = self.GetParent<Match>(); self.Stopped = false; self.Controls.Clear();
+            self.Transitions.Clear();
+            self.FinishedTransitions.Clear();
+            self.PhaseOutcomes.Clear();
             self.NextLevelGeneration = 0; self.LastFrameTime = TimeInfo.Instance.FrameTime; self.Accumulator = 0;
             self.AddComponent<RestaurantRenovation>();
             self.Kitchen = self.AddComponent<GridKitchenComponent>();
@@ -29,6 +33,7 @@ namespace ET
         {
             self.CurrentLevel = self.AddChild<Level, DRLevelConfig, long>(definition, checked(++self.NextLevelGeneration));
             self.InstallLevelAdditions(self.CurrentLevel);
+            self.PublishLevelPhase(self.CurrentLevel);
         }
 
         [EntitySystem]
@@ -74,7 +79,7 @@ namespace ET
             {
                 // The exact successful Continue may report its fact after it replaced its own Level.
                 if (identity == "WrongLevel" && prior == null && replay && intent.Action is LevelControlAction.Continue or LevelControlAction.SaveAndContinue &&
-                    peer.LastCommandStatus == GridResultStatus.Executed) return null;
+                    (peer.LastCommandStatus == GridResultStatus.Executed || level.PreparationControl?.Context.Equals(context) == true)) return null;
                 return identity;
             }
             if (prior != null || replay) return prior;
@@ -91,6 +96,8 @@ namespace ET
             GridKitchenComponent kitchen = self.Kitchen;
             long startingLevelId = ((Level)self.CurrentLevel).Id;
             kitchen.ApplyGridMembers();
+            self.AdvanceBuffPreparation(self.CurrentLevel);
+            self.AdvanceRenovationPreparation(self.CurrentLevel);
             self.AdvanceRenovationChoices(self.CurrentLevel);
             self.AdvanceSoloSaveCompletions();
             while (self.Controls.Count > 0)
@@ -103,10 +110,26 @@ namespace ET
                     ? self.BeginSoloSave(level, control) : self.ApplyLevelControl(level, control.Intent);
                 var status = error == null ? control.Intent.Action == LevelControlAction.SaveAndContinue && self.SoloSavePending()
                     ? GridResultStatus.Accepted : GridResultStatus.Executed : GridResultStatus.Rejected;
-                peer?.RecordProductResult(control.Context.CommandId, status, error);
+                Level installed = self.CurrentLevel;
+                if (status == GridResultStatus.Executed && installed != level && !installed.GetComponent<LevelBuff>().Prepared)
+                {
+                    installed.PreparationControl = control;
+                    status = GridResultStatus.Accepted;
+                }
+                peer?.RecordProductResult(control.Context, ProductCommandKind.Level, status, error,
+                    status == GridResultStatus.Executed && control.Intent.Action is LevelControlAction.Continue or LevelControlAction.SaveAndContinue);
                 kitchen.Dirty = true;
             }
             Level current = self.CurrentLevel;
+            if (current.PreparationControl is LevelControlEnvelope preparation && current.GetComponent<LevelBuff>().Prepared)
+            {
+                current.PreparationControl = null;
+                HostPeer peer = preparation.Peer;
+                if (peer != null && kitchen.HasBinding(peer.MemberId, preparation.Context.BindingGeneration))
+                    peer.RecordProductResult(preparation.Context, ProductCommandKind.Level, GridResultStatus.Executed, null, true);
+                kitchen.Dirty = true;
+            }
+            self.AdvanceLevelTransitions(current);
             kitchen.AdvanceBuffChoices(current);
             kitchen.AdvanceStationLayouts();
             kitchen.AdvanceSupplyCommands(current);
@@ -116,18 +139,15 @@ namespace ET
                 self.AdvanceFront(current);
                 if (current.Phase == LevelPhase.Operating)
                 {
-                    ++current.ElapsedOperatingTicks;
-                    if (current.ElapsedOperatingTicks >= current.OperatingTicks)
-                    { current.Phase = LevelPhase.Draining; current.DrainingStartedTick = kitchen.Tick; }
+                    current.ElapsedOperatingTicks = Math.Min(current.OperatingTicks, current.ElapsedOperatingTicks + 1);
+                    if (current.ElapsedOperatingTicks >= current.OperatingTicks && !current.TransitionQueued)
+                        self.RequestLevelTransition(current, LevelTransitionAction.Drain);
                     kitchen.Dirty = true;
                 }
                 else if (current.Phase == LevelPhase.Draining && kitchen.Tick > current.DrainingStartedTick &&
-                    !current.Children.Values.OfType<ILevelFrontActivity>().Any(activity => activity.BlocksLevelCompletion))
+                    !current.TransitionQueued && !current.Children.Values.OfType<ILevelFrontActivity>().Any(activity => activity.BlocksLevelCompletion))
                 {
-                    kitchen.CancelLevelIntents("LevelCompleted");
-                    kitchen.PauseLevelWorkers();
-                    current.Stars = current.StarThresholds.Count(threshold => current.Score >= threshold);
-                    current.Phase = LevelPhase.Completed; self.PrepareRenovationChoices(current); kitchen.Dirty = true;
+                    self.RequestLevelTransition(current, LevelTransitionAction.Complete);
                 }
             }
             kitchen.CommitGridState();
@@ -143,14 +163,14 @@ namespace ET
                     if (level.Paused) return "Paused";
                     string gate = self.CheckStartGate(level);
                     if (gate != null) return gate;
-                    level.Phase = LevelPhase.Operating; return null;
+                    level.Phase = LevelPhase.Operating; ++level.TransitionSerial; self.PublishLevelPhase(level); return null;
                 case LevelControlAction.Pause:
                     if (level.Phase == LevelPhase.Completed) return "LevelCompleted";
                     if (level.Paused) return "AlreadyPaused";
-                    kitchen.CancelLevelIntents("Paused"); self.PauseFront(level); level.Paused = true; return null;
+                    kitchen.CancelLevelIntents("Paused"); self.PauseFront(level); level.Paused = true; self.PublishLevelPhase(level); return null;
                 case LevelControlAction.Resume:
                     if (!level.Paused) return "NotPaused";
-                    level.Paused = false; return null;
+                    level.Paused = false; self.PublishLevelPhase(level); return null;
                 case LevelControlAction.Continue:
                     if (level.Phase != LevelPhase.Completed) return "WrongPhase";
                     string saveGate = self.CheckSoloSaveGate(level);
@@ -199,6 +219,9 @@ namespace ET
             self.StarThresholds = definition.StarThresholds.ToArray(); self.SpawnCell = new GridCell(definition.SpawnX, definition.SpawnY);
             self.AllowedDishIds = definition.AllowedDishIds.ToArray();
             self.AllowedRenovationIds = definition.AllowedRenovationIds.ToArray();
+            self.CompletionSerial = 1;
+            self.TransitionSerial = 1; self.TransitionQueued = false;
+            self.PreparationControl = null;
         }
     }
 }

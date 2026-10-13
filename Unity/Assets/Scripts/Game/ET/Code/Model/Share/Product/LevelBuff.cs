@@ -27,7 +27,12 @@ namespace ET
         public int SelectedId;
         public bool RequireChoice;
         public int[] Candidates;
+        public int[] AllowedIds;
+        public int CandidateCount;
+        public long PreparationSerial;
+        public bool Prepared, PreparationQueued, NotifyPrepared;
         public readonly Queue<BuffChoiceEnvelope> Choices=new();
+        public readonly Queue<ProductTransitionIdentity> Preparations = new();
     }
 }
 #endif

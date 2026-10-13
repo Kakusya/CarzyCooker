@@ -54,6 +54,7 @@ namespace ET
             int nextConfig = next.NextLevelConfigId;
             using (var accepted = LevelReply(local, next)) Assert.That(accepted.Error, Is.Zero);
             AdvanceTicks(1); PumpMessages(8); long installed = CurrentLevel.Id;
+            FrontWait(() => Buff.Prepared, 8);
             var replay = ProductMessages.Create<LevelCommandRequest>(value =>
             {
                 value.ProtocolVersion = ProductSessionRules.ProtocolVersion; value.MatchId = context.MatchId; value.WorldId = context.WorldId; value.WorldGeneration = context.WorldGeneration;

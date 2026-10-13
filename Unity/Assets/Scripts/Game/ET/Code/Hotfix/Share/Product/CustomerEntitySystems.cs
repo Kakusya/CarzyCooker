@@ -11,6 +11,8 @@ namespace ET
             self.FlowDefinitionId = definition.Id; self.NextArrivalOperatingTick = definition.FirstArrivalTicks;
             self.NextCustomerSequence = 0; self.SkippedArrivals = 0; self.Waiting.Clear();
             self.Serves.Clear();
+            self.Transitions.Clear(); self.FinishedTransitions.Clear();
+            self.ArrivalSerial = 1; self.ArrivalQueued = false;
         }
     }
 
@@ -36,6 +38,7 @@ namespace ET
             self.Cell = self.NextCell = new GridCell(definition.EntranceX, definition.EntranceY); self.Motion = GridMotion.Standing;
             self.StepStartTick = 0; self.Path.Clear(); self.PathIndex = 0; self.RemainingEatTicks = 0;
             self.PhaseEnteredTick = 0;
+            self.TransitionSerial = 1; self.TransitionQueued = self.SuccessorPending = self.SuccessorQueued = false;
         }
     }
 
@@ -50,6 +53,7 @@ namespace ET
             self.DefinitionId = definition.Id; self.DishId = definition.DishId; self.Score = definition.Score;
             self.CustomerId = customer.Id; self.TableStationId = customer.TableStationId; self.LevelGeneration = customer.LevelGeneration;
             self.DeadlineTick = deadline; self.ServedTick = 0; self.ServedItemId = 0; self.State = OrderState.Waiting;
+            self.TransitionSerial = 1; self.TransitionQueued = false;
         }
     }
 

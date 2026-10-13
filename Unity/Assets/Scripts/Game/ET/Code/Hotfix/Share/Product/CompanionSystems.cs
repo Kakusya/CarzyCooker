@@ -102,6 +102,7 @@ namespace ET
             self.WorkerId = 0; self.WorkerInstanceId = 0; self.WorkerGeneration = 0; self.ClaimSerial = 0;
             self.FrozenTicks = 0; self.OperationCell = default; self.StartedTick = 0;
             self.WorkerCommandId = 0;
+            self.TransitionSerial = 1; self.TransitionQueued = self.StartReceived = self.CompletionReceived = self.SuccessorPending = self.SuccessorQueued = false;
         }
     }
 
@@ -110,7 +111,11 @@ namespace ET
     public static partial class FrontWorkCommandsSystem
     {
         [EntitySystem]
-        private static void Awake(this FrontWorkCommands self) => self.Pending.Clear();
+        private static void Awake(this FrontWorkCommands self)
+        {
+            self.Pending.Clear(); self.Transitions.Clear(); self.FinishedTransitions.Clear();
+            self.Creations.Clear(); self.Outcomes.Clear();
+        }
     }
 }
 #endif

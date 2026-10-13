@@ -37,7 +37,7 @@ namespace ET
 
         private long DishBake(ClientSessionComponent client,string sourceName="面包台")
         {
-            var process=DishBegin(client,sourceName);AdvanceTicks(process.RequiredTicks);PumpMessages(5);
+            var process=DishBegin(client,sourceName);AdvanceTicks(process.RequiredTicks + 1);PumpMessages(5);
             Assert.That(process.State,Is.EqualTo(GridBakeState.Completed));return process.OutputItemId;
         }
 
@@ -111,7 +111,7 @@ namespace ET
             GridStation food=PrepStation("食材台");long egg=food.ItemId;PrepDo(client,GridAction.TakeCounter,food.Id,egg);
             PrepDo(client,GridAction.AddToContainer,oven.Id,egg,input,rejection:"WorkBusy");
             Assert.That(Grid.Actor(client.MemberId).HandItemId,Is.EqualTo(egg));Assert.That(oven.ItemId,Is.EqualTo(input));
-            AdvanceTicks(process.RequiredTicks);PumpMessages(5);
+            AdvanceTicks(process.RequiredTicks + 1);PumpMessages(5);
             Assert.That(process.State,Is.EqualTo(GridBakeState.Completed));Assert.That(Grid.Item(input),Is.Null);
             Assert.That(process.OutputItemId,Is.Not.EqualTo(input));Assert.That(oven.ItemId,Is.EqualTo(process.OutputItemId));Assert.That(oven.BakeProcessId,Is.Zero);
             Assert.That(Grid.Item(process.OutputItemId).DefinitionId,Is.EqualTo(GridKitchenRules.Toast));
@@ -138,7 +138,7 @@ namespace ET
             LayoutDo(oven,new GridCell(5,12),1);
             Assert.That(process.Id,Is.EqualTo(processId));Assert.That(process.ProgressTicks,Is.EqualTo(progress+1));Assert.That(process.RequiredTicks,Is.EqualTo(80));
             Assert.That(process.StationId,Is.EqualTo(oven.Id));Assert.That(oven.ItemId,Is.EqualTo(input));Assert.That(Grid.Item(input).Cell,Is.EqualTo(oven.Cell));
-            AdvanceTicks(process.RequiredTicks);Assert.That(process.State,Is.EqualTo(GridBakeState.Completed));Assert.That(Grid.Item(process.OutputItemId).Cell,Is.EqualTo(oven.Cell));
+            AdvanceTicks(process.RequiredTicks + 1);Assert.That(process.State,Is.EqualTo(GridBakeState.Completed));Assert.That(Grid.Item(process.OutputItemId).Cell,Is.EqualTo(oven.Cell));
         }
 
         [Test]
@@ -151,7 +151,7 @@ namespace ET
             int progress=process.ProgressTicks;var items=Grid.Items.Keys.ToArray();AdvanceTicks(20);Assert.That(process.ProgressTicks,Is.EqualTo(progress));
             LevelDo(LevelControlAction.Continue);Assert.That(CurrentLevel.AllowedDishIds,Is.EqualTo(new[]{1,2}));
             Assert.That(Grid.Items.Keys,Is.EquivalentTo(items));Assert.That(process.ProgressTicks,Is.EqualTo(progress));
-            AdvanceTicks(process.RequiredTicks);Assert.That(process.State,Is.EqualTo(GridBakeState.Completed));
+            AdvanceTicks(process.RequiredTicks + 1);Assert.That(process.State,Is.EqualTo(GridBakeState.Completed));
             Assert.That(Grid.Items.Values.Count(value=>((GridItem)value).DefinitionId==GridKitchenRules.Toast),Is.EqualTo(1));
             Assert.That(Grid.Items.Values.Count(value=>((GridItem)value).DefinitionId==GridKitchenRules.Bread),Is.Zero);
         }

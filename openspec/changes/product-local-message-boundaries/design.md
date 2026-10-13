@@ -160,3 +160,25 @@ ET Event 仅作已提交状态的本地表现观察；Bind 只写表现。Invoke
 - [产品源码](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product)、[Model](../../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product)、[UI 接入](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product)。
 - [原本地消息验收](../archive/2026-10-13-solo-local-message-contracts/execution-notes.md)、[存档设计](../solo-success-checkpoint/design.md)。
 - [发送器](../../../Unity/Assets/Scripts/Library/ET/Core/Runtime/Fiber/Module/Actor/ProcessInnerSenderSystem.cs)、[队列](../../../Unity/Assets/Scripts/Library/ET/Core/Runtime/World/Module/Actor/MessageQueue.cs)、[有序邮箱](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Module/Actor/MailBoxType_OrderedMessageHandler.cs)。
+
+## 本轮已实施的厨房、供应和前厅消息名称
+
+厨房到点使用 KitchenWorkTransition，提交后使用 KitchenWorkOutcome 的 Started／Paused／Resumed／Finished。供应到点的最终名称为 ShipmentTransition（取代规划表中的 SupplyTransition），采购／Ready／Received 使用 ShipmentOutcome；Receive／TakePortion复用原Grid寻路并保存OriginKind=Supply，终态仍是ProductCommandOutcome。
+
+顾客阶段使用 CustomerFlowTransition 的 Arrive／ReachedQueue／AdmitSeat／ReachedSeat／OrderExpired／FinishedEating／ReachedExit。源为原FrontLevelState、Customer或Order，关内身份含当前Level和原Source InstanceId／TransitionSerial。到座与离场提交后发送CustomerFlowFinished；原owner接收完成值后发送FrontWorkCreateRequest(Ask/Clear)，原FrontWorkCommands接入并在后续业务步创建唯一工作。询问完成与订单创建是该询问功能的一次原子效果，不另建订单状态权威。
+
+前厅认领及停手仍走已有 FrontWorkRequest／CompanionWorkRequest 两端，原Approaching到位只发FrontWorkTransition(Start)，进度到点只发同族Complete。停止或旧worker退役提高原工作serial；收到旧ClaimSerial／serial不完成新认领。完整目标效果和伙伴成长仍在同一完成提交内，第三次成长先于该业务步后续认领冻结洗碗时长。提交后另发FrontWorkOutcome的Claimed／Started／Released／Finished／Cancelled，同时保留CompanionWorkResult到原角色邮箱。
+
+清桌只提交原餐具从桌面到DirtyPool，不同步创建Wash；完成后FrontWorkFinished到稳定HostSession，原队列接收完成值后发送FrontWorkCreateRequest(Wash)，后续业务步创建唯一Wash。Customer从WaitingAsk及Gone分别持有本阶段SuccessorPending；Clear完成后持有SuccessorPending，直到合法后继请求创建成功再清除。ILevelFrontActivity把该pending计入未收尾活动，因此每个投递间隙仍不能自然Completed。新阶段重置SuccessorQueued，serial负责旧阶段隔离，领域实体负责pending所有权；没有新增通用调度表、事件业务入口或消息时钟。
+
+本节仅记录已接入的消息路径，全部任务验收以tasks与execution-notes为准。当前各具名类型均已有发送和接收路径；尚未完成的功能与真实验收仍以tasks为准。
+
+Buff准备使用原LevelBuff的Frozen allowedIds／count／seed和阶段serial；Awake只校验，DrawVersion0表示未准备。当前稳定HostSession建立后，由原Restaurant准备态服务步发BuffPrepare，原owner收到值后下一个允许步抽候选一次；DrawVersion1与候选同版安装后接收BuffPrepared独立值。Start门槛先检查Prepared，再检查原RequireChoice／SelectedId；暂停不抽取，旧Level/Instance/serial拒绝，选择锁定与布局原子规则保留。没有新增UI结构；准备期显示“本关加成准备中”，旧按钮仍冻结原关和draw身份。
+
+装修结算后继新增LevelFinished（只在内部HostSession接收），Source为原Completed Level，CompletionSerial独立于控制命令。原Restaurant.FinishedTransitions消费后发送RenovationPrepare，原RestaurantRenovation.Preparations在下一未暂停的Completed服务步创建候选一次；生成ResultLevel身份、ChoiceVersion并标Prepared，再经同版快照／RenovationPrepared报告。通知或请求尚待投递时不能Continue或捕获存档，空候选也需实际准备完毕。新关准备未完成时UI显示准备信息并暂不提供下一关；Host/Client保留原不参与Solo装修的控制范围。原选择、完整预检、Continue内部一次安装以及持久AppliedStations不另建新状态权威；HUD关闭不停止准备，旧Level／Instance／serial拒绝，准备重放不刷新ChoiceVersion。
+
+关卡到点使用LevelTransition(Drain/Complete)：Level保存TransitionSerial与单项Queued，Elapsed到点夹止；原稳定HostSession接收值，Restaurant在原控制步之后复验世界／Level实例／serial，暂停不消费转换。Drain提交后仍走原前厅活动；Complete复验所有ILevelFrontActivity的真实活动与后继pending，一次取消未执行动作、冻结手工、计星并发送LevelFinished。收到转换才切阶段，不为保持旧同Tick重入消息泵。过营业截止等待Drain时不新增顾客，既有前厅和世界作业保持原规则。
+
+Start／Pause／Resume及实际Preparing／Draining／Completed由原Restaurant收集LevelPhaseOutcomeValue，GridBroadcast先同版快照再逐收件人独立LevelPhaseChanged；ClientSession仅复制阶段观察值并防重。控制命令继续ProductCommandOutcome，Continue成功保留OriginLevel并适用于新Level；旧关转换和结果不能更新新轮。Completed的Pause仍按原契约拒绝LevelCompleted，拒绝仍有明确终态，不新增产品暂停规则。所有新增结果类型只加入Client通知白名单，内部转换／完成／创建请求仍不开放Host wire或Peer直达。
+
+最终Continue就绪结果：新Level.PreparationControl保存原LevelControlEnvelope（原Context与Peer EntityRef），建树后状态仍Accepted；原BuffPrepare提交Prepared后，Restaurant控制步发唯一ChangedLevel Executed，先同版快照再终态。准备期间精确重放回Accepted不重建Level，保存完成后的原Continue也共用此路径；原Peer失效不作用新绑定，Stop不等待后续投递。

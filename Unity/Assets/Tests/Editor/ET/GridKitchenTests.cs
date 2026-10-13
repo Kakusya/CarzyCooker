@@ -16,7 +16,31 @@ namespace ET
 
         private void GridSubmit(ClientSessionComponent client, long command, GridAction action, GridCell cell = default, long target = 0, long expected = 0)
         {
-            Assert.That(Grid.SubmitGridIntent(client.MemberId, client.BindingGeneration, new GridIntent(command, action, cell, target, expected)), Is.Null);
+            using var receipt = (GridCommandResponse)FinishMessages(client.CallProduct(GridRequest(client, command, action, cell, target, expected)), "grid two-mailbox receipt");
+            Assert.That(receipt.Error, Is.Zero, receipt.Message);
+        }
+
+        private GridSubmitRequest GridRetiredBindingRequest(ClientSessionComponent client, GridAction action, GridCell cell,
+            long target, long input = 0, long expectedTarget = 0, long process = 0)
+        {
+            var view = client.GetComponent<GridClientComponent>();
+            HostSessionComponent authority = host.Authority;
+            HostPeer peer = authority.Children.Values.OfType<HostPeer>().Single(value => value.MemberId == client.MemberId && value.Generation == client.BindingGeneration);
+            return ProductMessages.Create<GridSubmitRequest>(value =>
+            {
+                value.ProtocolVersion = ProductSessionRules.ProtocolVersion; value.MatchId = view.MatchId; value.WorldId = view.WorldId; value.WorldGeneration = view.WorldGeneration;
+                value.LevelId = view.LevelId; value.LevelGeneration = view.LevelGeneration;
+                value.PeerId = peer.Id; value.PeerInstanceId = peer.InstanceId; value.PeerGeneration = peer.Generation; value.BindingGeneration = peer.Generation;
+                value.CommandId = 999; value.Action = (int)action; value.X = cell.X; value.Y = cell.Y;
+                value.TargetId = target; value.ExpectedItemId = input; value.ExpectedTargetItemId = expectedTarget; value.ExpectedProcessId = process;
+            });
+        }
+
+        private void GridRejectRetiredBinding(GridSubmitRequest request)
+        {
+            HostSessionComponent authority = host.Authority; ProcessInnerSender sender = host.Sender;
+            using var response = (GridSubmitResponse)FinishMessages(sender.Call(authority.GetActorId(), request, false), "retired binding through authority mailbox");
+            Assert.That(response.Error, Is.Not.Zero); Assert.That(response.Message, Is.EqualTo("EntryClosed"));
         }
 
         private ClientSessionComponent GridJoin()
@@ -54,6 +78,8 @@ namespace ET
             Assert.That(projection.LastStatus, Is.EqualTo(GridResultStatus.Executed));
             Assert.That(Grid.Results.Count(value => value.CommandId == 2 && value.Status == GridResultStatus.Executed), Is.EqualTo(1));
             Assert.That(Grid.Results.Any(value => value.CommandId == 1 && value.Status == GridResultStatus.Executed), Is.False);
+            Assert.That(ProductOutcomeTestObserver.Received.Count(value => value.Value.Context.BindingGeneration == client.BindingGeneration && value.Value.Context.CommandId == 1 && value.Value.Status == GridResultStatus.Cancelled), Is.EqualTo(1));
+            Assert.That(ProductOutcomeTestObserver.Received.Count(value => value.Value.Context.BindingGeneration == client.BindingGeneration && value.Value.Context.CommandId == 2 && value.Value.Status == GridResultStatus.Executed), Is.EqualTo(1));
         }
 
         [Test]

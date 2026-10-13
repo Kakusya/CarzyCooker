@@ -139,7 +139,9 @@ namespace ET
                 bowlId=PrepEggBowl(client);
                 if(operation=="pour")
                 {
-                    PrepDo(client,GridAction.StartHeldWork,bowlId,Grid.Item(bowlId).Contents.Single(),bowlId);AdvanceTicks(60);
+                    PrepDo(client,GridAction.StartHeldWork,bowlId,Grid.Item(bowlId).Contents.Single(),bowlId);
+                    GridManualProcess process = Grid.InputProcess(Grid.Item(bowlId).Contents.Single());
+                    AdvanceTicks(process.RequiredTicks + 1); Assert.That(process.State, Is.EqualTo(GridWorkState.Completed));
                 }
                 long content=Grid.Item(bowlId).Contents.Single();Grid.Item(bowlId).Hygiene=ItemHygiene.Dirty;
                 if(operation=="beat")PrepDo(client,GridAction.StartHeldWork,bowlId,content,bowlId,rejection:"DirtyUtensil");
@@ -192,9 +194,11 @@ namespace ET
             AdvanceTicks(59);Assert.That(customer.Phase,Is.EqualTo(CustomerPhase.Eating));Assert.That(table.GetComponent<FrontTable>().State,Is.EqualTo(FrontTableState.Occupied));
             Assert.That(table.ItemId,Is.EqualTo(bowl));FrontWait(()=>customer.Phase==CustomerPhase.Gone);
             Assert.That(Grid.Item(bowl).Hygiene,Is.EqualTo(ItemHygiene.Dirty));Assert.That(table.GetComponent<FrontTable>().State,Is.EqualTo(FrontTableState.Dirty));
+            FrontWait(()=>CurrentLevel.Children.Values.OfType<FrontWork>().Any(value=>value.Kind==FrontWorkKind.Clear && value.ItemId==bowl));
             FrontWork clear=CurrentLevel.Children.Values.OfType<FrontWork>().Single(value=>value.Kind==FrontWorkKind.Clear && value.ItemId==bowl);
             FrontPlayerDo(FrontWorkAction.Claim,clear);FrontWait(()=>clear.State==FrontWorkState.Completed);
             Assert.That(table.ItemId,Is.Zero);Assert.That(table.GetComponent<FrontTable>().State,Is.EqualTo(FrontTableState.Free));
+            FrontWait(()=>CurrentLevel.Children.Values.OfType<FrontWork>().Any(value=>value.Kind==FrontWorkKind.Wash && value.ItemId==bowl));
             FrontWork wash=CurrentLevel.Children.Values.OfType<FrontWork>().Single(value=>value.Kind==FrontWorkKind.Wash && value.ItemId==bowl);
             Assert.That(Grid.Item(bowl).Location,Is.EqualTo(GridItemLocation.DirtyPool));FrontWait(()=>wash.State==FrontWorkState.Completed);
             GridStation clean=Grid.Station(Grid.Item(bowl).HolderId);Assert.That(clean.Kind,Is.EqualTo(GridStationKind.CleanPool));
@@ -216,6 +220,7 @@ namespace ET
             Assert.That(CurrentLevel.Phase,Is.EqualTo(LevelPhase.Draining));
             FrontWork clear=CurrentLevel.Children.Values.OfType<FrontWork>().Single(value=>value.Kind==FrontWorkKind.Clear && value.ItemId==bowl);
             FrontPlayerDo(FrontWorkAction.Claim,clear);FrontWait(()=>clear.State==FrontWorkState.Completed);
+            FrontWait(()=>CurrentLevel.Children.Values.OfType<FrontWork>().Any(value=>value.Kind==FrontWorkKind.Wash && value.ItemId==bowl));
             FrontWork wash=CurrentLevel.Children.Values.OfType<FrontWork>().Single(value=>value.Kind==FrontWorkKind.Wash && value.ItemId==bowl);
             FrontWait(()=>wash.State==FrontWorkState.Working);AdvanceTicks(7);double progress=wash.Progress;
             Assert.That(CurrentLevel.Phase,Is.EqualTo(LevelPhase.Draining));LevelDo(LevelControlAction.Pause);AdvanceTicks(100);

@@ -34,6 +34,9 @@ namespace ET
         // 已获得奖励的唯一应用记录；实体/布局仍由持续 Kitchen 持有。
         public readonly Dictionary<int, IReadOnlyList<long>> AppliedStations = new();
         public readonly Queue<RenovationChoiceEnvelope> Choices = new();
+        public readonly Queue<ProductTransitionIdentity> Preparations = new();
+        public long RequestedLevelId, RequestedLevelGeneration, PreparationSerial;
+        public bool Prepared, PreparationQueued, NotifyPrepared;
     }
 }
 #endif

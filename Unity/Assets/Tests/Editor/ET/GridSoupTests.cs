@@ -16,7 +16,7 @@ namespace ET
             PrepDo(client, GridAction.PlaceCounter, chopping.Id, tomato);
             PrepDo(client, GridAction.StartStationWork, chopping.Id, tomato, tomato);
             GridManualProcess work = Grid.InputProcess(tomato);
-            AdvanceTicks(work.RequiredTicks); PumpMessages(5);
+            AdvanceTicks(work.RequiredTicks + 1); PumpMessages(5);
             Assert.That(work.State, Is.EqualTo(GridWorkState.Completed));
             return work.OutputItemId;
         }
@@ -26,7 +26,7 @@ namespace ET
             long bowl = PrepEggBowl(client), egg = Grid.Item(bowl).Contents.Single();
             PrepDo(client, GridAction.StartHeldWork, bowl, egg, bowl);
             GridManualProcess work = Grid.InputProcess(egg);
-            AdvanceTicks(work.RequiredTicks); PumpMessages(5);
+            AdvanceTicks(work.RequiredTicks + 1); PumpMessages(5);
             Assert.That(work.State, Is.EqualTo(GridWorkState.Completed));
             Assert.That(Grid.Item(bowl).Contents, Is.EqualTo(new[] { work.OutputItemId }));
             return bowl;
@@ -146,7 +146,7 @@ namespace ET
             PrepDo(client, GridAction.TakeCounter, bowl.Id, bowl.ItemId);
             Assert.That(process.State, Is.EqualTo(GridAutoState.Cooking));
             PrepDo(client, GridAction.PortionSoup, handoff.Id, Grid.Actor(client.MemberId).HandItemId, pot, batch, rejection: "NotReady");
-            AdvanceTicks(process.RequiredTicks); PumpMessages(5);
+            AdvanceTicks(process.RequiredTicks + 1); PumpMessages(5);
             Assert.That(process.State, Is.EqualTo(GridAutoState.Ready));
             Assert.That(process.RemainingPortions, Is.EqualTo(2));
             Assert.That(stove.AutoProcessId, Is.Zero);
@@ -161,7 +161,7 @@ namespace ET
             long pot = SoupFillPot(client);
             GridAutoProcess process = SoupBegin(client, pot);
             long batch = process.Id; long[] inputs = process.InputItemIds.ToArray();
-            AdvanceTicks(process.RequiredTicks); PumpMessages(5);
+            AdvanceTicks(process.RequiredTicks + 1); PumpMessages(5);
             GridStation stove = PrepStation("灶台"), first = PrepStation("碗台"), second = PrepStation("第二碗台");
             long firstBowl = first.ItemId, secondBowl = second.ItemId;
             PrepDo(client, GridAction.TakeCounter, first.Id, firstBowl);
@@ -198,7 +198,7 @@ namespace ET
             Assert.That(SoupFillPot(client), Is.EqualTo(pot));
             GridAutoProcess next = SoupBegin(client, pot);
             Assert.That(next.Id, Is.Not.EqualTo(batch));
-            AdvanceTicks(next.RequiredTicks); PumpMessages(5);
+            AdvanceTicks(next.RequiredTicks + 1); PumpMessages(5);
             PrepDo(client, GridAction.TakeCounter, first.Id, nextBowl);
             PrepDo(client, GridAction.PortionSoup, stove.Id, nextBowl, pot, batch, rejection: "ProcessChanged");
             Assert.That(next.RemainingPortions, Is.EqualTo(2));
@@ -263,7 +263,7 @@ namespace ET
                 projection.ApplyGridSnapshot(stale);
                 Assert.That(projection.AutoProcesses.ContainsKey(batch), Is.True);
             }
-            AdvanceTicks(process.RequiredTicks); PumpMessages(5);
+            AdvanceTicks(process.RequiredTicks + 1); PumpMessages(5);
             long bowl = bowlStation.ItemId;
             PrepDo(client, GridAction.TakeCounter, bowlStation.Id, bowl);
             PrepDo(client, GridAction.Move, cell: new GridCell(1, 9));
@@ -316,7 +316,7 @@ namespace ET
             PrepDo(client, GridAction.PlaceCounter, bowlStation.Id, bowl);
             GridStation second = PrepStation("第二碗台"); long empty = second.ItemId;
             PrepDo(client, GridAction.TakeCounter, second.Id, empty);
-            AdvanceTicks(process.RequiredTicks); PumpMessages(5);
+            AdvanceTicks(process.RequiredTicks + 1); PumpMessages(5);
             PrepDo(client, GridAction.PortionSoup, stove.Id, empty, pot + 1, process.Id, rejection: "TargetChanged");
             Assert.That(process.RemainingPortions, Is.EqualTo(2));
             Assert.That(Grid.Item(empty).Contents, Is.Empty);
@@ -352,7 +352,7 @@ namespace ET
             Assert.That(Grid.Item(pot).Contents, Is.Empty);
             PrepDo(client, GridAction.StartHeldWork, bowl, egg, bowl);
             GridManualProcess work = Grid.InputProcess(egg);
-            AdvanceTicks(work.RequiredTicks); PumpMessages(5);
+            AdvanceTicks(work.RequiredTicks + 1); PumpMessages(5);
             long liquid = Grid.Item(bowl).Contents.Single();
             PrepDo(client, GridAction.PourContents, stove.Id, bowl, pot + 1, rejection: "TargetChanged");
             Assert.That(Grid.Item(bowl).Contents, Is.EqualTo(new[] { liquid }));
@@ -375,7 +375,7 @@ namespace ET
             long pot = SoupFillPot(firstClient);
             GridAutoProcess process = SoupBegin(firstClient, pot);
             long batch = process.Id;
-            AdvanceTicks(process.RequiredTicks); PumpMessages(5);
+            AdvanceTicks(process.RequiredTicks + 1); PumpMessages(5);
             GridStation stove = PrepStation("灶台"), bowl = PrepStation("碗台"), secondBowl = PrepStation("第二碗台");
             long servedBowl = bowl.ItemId;
             PrepDo(firstClient, GridAction.TakeCounter, bowl.Id, servedBowl);

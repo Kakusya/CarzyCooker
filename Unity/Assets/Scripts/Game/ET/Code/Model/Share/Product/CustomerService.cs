@@ -31,8 +31,12 @@ namespace ET
         public int NextArrivalOperatingTick;
         public int NextCustomerSequence;
         public int SkippedArrivals;
+        public long ArrivalSerial;
+        public bool ArrivalQueued;
         public readonly Queue<long> Waiting = new();
         public readonly Queue<ServeOrderEnvelope> Serves = new();
+        public readonly Queue<CustomerFlowTransitionValue> Transitions = new();
+        public readonly Queue<CustomerFlowFinishedValue> FinishedTransitions = new();
     }
 
     [ComponentOf(typeof(GridStation))]
@@ -63,7 +67,9 @@ namespace ET
         public int PathIndex;
         public int RemainingEatTicks;
         public long PhaseEnteredTick;
-        public bool BlocksLevelCompletion => Phase != CustomerPhase.Gone;
+        public long TransitionSerial;
+        public bool TransitionQueued, SuccessorPending, SuccessorQueued;
+        public bool BlocksLevelCompletion => Phase != CustomerPhase.Gone || SuccessorPending;
     }
 
     [ChildOf(typeof(Level))]
@@ -79,6 +85,8 @@ namespace ET
         public long ServedTick;
         public long ServedItemId;
         public OrderState State;
+        public long TransitionSerial;
+        public bool TransitionQueued;
     }
 }
 #endif

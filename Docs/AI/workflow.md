@@ -18,6 +18,12 @@ Node 要求 20.19.0 或更高，迁移时为 24.21.0。初始化前检查已有 
 
 `openspec config` 的 profile/workflows 是全局设置，会影响后续其他项目初始化/更新；本次仅在当前仓库执行 `openspec update`。delivery 保留原值 both，但当前 Codex 通过 skills 调用，不生成独立命令文件或其他代理接入。今后用 `openspec config profile` 查看/选择工作流，刷新用 `openspec update`；官方技能由 CLI 生成，项目规则放在入口、`openspec/config.yaml` 和自定义技能，不补丁官方技能。
 
+## 任务上下文的读取
+
+稳定纪律与阶段技能查[AGENTS](../../AGENTS.md)，源码和约定查[模块索引](module-index.md)，当前能力与验证边界查[根进度](../../CarzyCooker当前进度.md)。先用 openspec list --json 找当前 change，再读该案 tasks、design 和 execution-notes；CLI 的规划齐全不表示实施完成。
+
+运行证据只在原 change 的 execution-notes 引用原输出；保留历史失败和 NotRun，并追加最新结果的适用范围。不把正文摘要、任务勾选或历史阶段限制当成新授权。
+
 ## 意图到归档
 
 需求/玩法/设计讨论按根入口硬规则，在分析前实际加载 `openspec-explore`；复杂/高风险需求在现状与候选方向梳理后使用 `carzycooker-requirements` 收敛。拷问输出决策账本，不自动创建提案；确认提案授权后才进入 propose，已有明确授权无需重复询问。阶段适用时主动读取技能，不只口头提及。

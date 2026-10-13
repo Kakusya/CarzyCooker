@@ -1,6 +1,7 @@
 #if UNITY_ET_VIEW && UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ET.Client;
@@ -23,6 +24,7 @@ namespace ET
     {
         private GameObject ownedRoot;
         private Init ownedInit;
+        private readonly List<string> ownedSaveUiDirectories = new();
         private ProductRuntimeComponent Runtime=>ProductBootstrapBridge.Root as ProductRuntimeComponent;
         private ClientSessionComponent Client=>Runtime==null?null:(ClientSessionComponent)Runtime.Client;
         private GridClientComponent Grid=>Client?.GetComponent<GridClientComponent>();
@@ -85,10 +87,8 @@ namespace ET
         public IEnumerator SoloSaveUiOneClickCloseAndReopenKeepsResultOwnedCommit()
         {
             yield return StartLauncher();
-            string directory = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "../Temp/solo-save-ui-tests", Guid.NewGuid().ToString("N")));
-            string profile = Guid.NewGuid().ToString("N"); ProductRuntimeComponent runtime = Runtime;
-            runtime.Root().RemoveComponent<SoloSaveRepository>();
-            var repository = runtime.Root().AddComponent<SoloSaveRepository, string, string>(directory, profile);
+            ProductRuntimeComponent runtime = Runtime;
+            var repository = CreateSaveUiRepository(runtime, out string directory, out string profile);
             try
             {
                 Match match = ((HostSessionComponent)runtime.Authority).Match; match.BindSoloSave(profile, null, null);
@@ -97,6 +97,7 @@ namespace ET
                 string buff = Hud.GetComponentsInChildren<Button>(false).First(value => value.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
                 yield return Command(buff); yield return Command("开始营业");
                 yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Actual natural save result", 75);
+                yield return Wait(() => Grid.RenovationLevelId == Grid.LevelId && Grid.RenovationChoiceVersion > 0, "Actual save renovation preparation ready");
                 yield return Command("装修 新增台面");
                 string actualPath = repository.DirectoryPath, blocker = System.IO.Path.Combine(actualPath, "blocked");
                 System.IO.File.WriteAllText(blocker, "owned UI failure fixture"); repository.DirectoryPath = blocker;
@@ -127,21 +128,48 @@ namespace ET
         {
             string parent = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "../Temp/solo-save-ui-tests"));
             Assert.That(System.IO.Path.GetDirectoryName(directory), Is.EqualTo(parent));
+            if (!System.IO.Directory.Exists(directory))
+            {
+                return;
+            }
             foreach (string file in System.IO.Directory.EnumerateFiles(directory, "*", System.IO.SearchOption.AllDirectories)) System.IO.File.Delete(file);
             foreach (string child in System.IO.Directory.EnumerateDirectories(directory, "*", System.IO.SearchOption.AllDirectories).OrderByDescending(s => s.Length)) System.IO.Directory.Delete(child);
             System.IO.Directory.Delete(directory);
         }
 
+        private SoloSaveRepository CreateSaveUiRepository(ProductRuntimeComponent runtime, out string directory, out string profile)
+        {
+            Assert.That(runtime, Is.SameAs(Runtime), "Only replace this Launcher's owned repository");
+            directory = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "../Temp/solo-save-ui-tests", Guid.NewGuid().ToString("N")));
+            profile = Guid.NewGuid().ToString("N");
+            // 先记录测试专属目录，初始化失败时也由本夹具收尾，不触碰产品存档。
+            ownedSaveUiDirectories.Add(directory);
+            runtime.Root().GetComponent<SoloSavePresentation>()?.CloseSoloSelection();
+            runtime.Root().RemoveComponent<SoloSaveRepository>();
+            return runtime.Root().AddComponent<SoloSaveRepository, string, string>(directory, profile);
+        }
+
         [UnityTearDown]
         public IEnumerator CleanupOwnedLauncher()
         {
-            if(ownedRoot!=null)
+            try
             {
-                if(ownedInit!=null && Init.Instance==ownedInit)ownedInit.Shutdown();
-                if(UnityGameFramework.Runtime.GameEntry.IsInitialized)UnityGameFramework.Runtime.GameEntry.Shutdown(UnityGameFramework.Runtime.ShutdownType.None);
-                if(ownedRoot!=null)UnityEngine.Object.Destroy(ownedRoot);
-                yield return null;
-                RuntimeInstanceContext.Reset();ownedRoot=null;ownedInit=null;
+                if(ownedRoot!=null)
+                {
+                    if(ownedInit!=null && Init.Instance==ownedInit)ownedInit.Shutdown();
+                    if(UnityGameFramework.Runtime.GameEntry.IsInitialized)UnityGameFramework.Runtime.GameEntry.Shutdown(UnityGameFramework.Runtime.ShutdownType.None);
+                    if(ownedRoot!=null)UnityEngine.Object.Destroy(ownedRoot);
+                    yield return null;
+                    RuntimeInstanceContext.Reset();ownedRoot=null;ownedInit=null;
+                }
+            }
+            finally
+            {
+                foreach (string directory in ownedSaveUiDirectories)
+                {
+                    RemoveOwnSaveUiFiles(directory);
+                }
+                ownedSaveUiDirectories.Clear();
             }
         }
 
@@ -167,6 +195,7 @@ namespace ET
             string buff = Hud.GetComponentsInChildren<Button>(false).First(value => value.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
             yield return Command(buff); yield return Command("开始营业");
             yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Actual zero-star renovation result", 75);
+            yield return Wait(() => Grid.RenovationLevelId == Grid.LevelId && Grid.RenovationChoiceVersion > 0, "Actual renovation preparation delivered");
             Assert.That(Grid.LevelStars, Is.Zero); Assert.That(Grid.RenovationCandidates, Is.EqualTo(new[] { 1, 2 }));
             long version = Grid.RenovationChoiceVersion; int[] candidates = Grid.RenovationCandidates.ToArray();
             UnityAction retired = CaptureButtonCallback(Button("装修 新增台面")); int mono = Hud.GetInstanceID();
@@ -209,6 +238,7 @@ namespace ET
             string buff = Hud.GetComponentsInChildren<Button>(false).First(value => value.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
             yield return Command(buff); yield return Command("开始营业");
             yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Actual empty renovation result", 75);
+            yield return Wait(() => Grid.RenovationLevelId == Grid.LevelId && Grid.RenovationChoiceVersion > 0, "Actual empty candidates prepared");
             Assert.That(Grid.RenovationCandidates, Is.Empty); Assert.That(Hud.SettlementText.text, Does.Contain("当前没有可选装修"));
             Assert.That(Hud.GetComponentsInChildren<Button>(false).Any(value => value.GetComponentInChildren<Text>().text.StartsWith("装修 ")), Is.False);
             long[] items = Grid.Items.Keys.OrderBy(value => value).ToArray(); yield return Command("下一关");
@@ -371,6 +401,7 @@ namespace ET
             Assert.That(Grid.LastReason,Is.EqualTo("WrongDish"));Assert.That(Hud.StatusText.text,Does.Contain("手中菜品与订单不符"));
             Assert.That(Grid.Actors[Client.MemberId].HandItemId,Is.EqualTo(bowl));Assert.That(Grid.LevelScore,Is.Zero);Assert.That(Grid.Orders[order.Id].State,Is.EqualTo(OrderState.Waiting));
             yield return Wait(()=>Grid.LevelPhase==LevelPhase.Completed,"Actual zero-star natural front drain",45);
+            yield return Wait(()=>Grid.RenovationLevelId==Grid.LevelId && Grid.RenovationChoiceVersion>0,"Actual next-level control ready");
             Assert.That(Hud.SettlementPanelRectTransform.gameObject.activeSelf,Is.True);Assert.That(Hud.SettlementText.text,Does.Contain("0 分 · 0 星"));
             long oldLevel=Grid.LevelId;yield return Command("下一关");long nextCommand=Client.NextCommandId;
             Assert.That(Grid.LevelId,Is.Not.EqualTo(oldLevel));Assert.That(Hud.PhaseText.text,Is.EqualTo("准备"));Assert.That(Grid.SelectedBuffId,Is.Zero);
@@ -387,12 +418,14 @@ namespace ET
             Assert.That(Client.NextCommandId,Is.EqualTo(command));Assert.That(Grid.LastStatus,Is.EqualTo(GridResultStatus.Accepted));
             Assert.That(Grid.BakeProcesses,Is.Empty,"Receipt has not created a completed bake");
             yield return Wait(()=>Grid.BakeProcesses.Values.Any(value=>value.State==GridBakeState.Baking),"Actual bake started");
+            yield return Wait(()=>Hud.WorkText.text.Contains("烤制已开始"),"Explicit work-start message displayed");
             long process=Grid.BakeProcesses.Values.Single().Id;Assert.That(Hud.HintText.text,Does.Contain("烘烤"));
             Assert.That(Grid.BakeProcesses[process].ProgressTicks,Is.LessThan(Grid.BakeProcesses[process].RequiredTicks));
             Assert.That(Grid.Items.Values.Any(value=>value.DefinitionId==GridKitchenRules.Toast),Is.False);
             yield return Command("暂停");int progress=Grid.BakeProcesses[process].ProgressTicks;string hint=Hud.HintText.text;
             yield return new WaitForSecondsRealtime(.25f);Assert.That(Grid.BakeProcesses[process].ProgressTicks,Is.EqualTo(progress));Assert.That(Hud.HintText.text,Is.EqualTo(hint));
             yield return Command("恢复");yield return Wait(()=>Grid.BakeProcesses[process].State==GridBakeState.Completed,"Actual bake completes");
+            yield return Wait(()=>Hud.WorkText.text.Contains("烤制已完成"),"Explicit work-finish message displayed");
             Assert.That(Hud.HintText.text,Does.Contain("完成"));Assert.That(Grid.Items.Values.Count(value=>value.DefinitionId==GridKitchenRules.Toast),Is.EqualTo(1));
             Assert.That(Grid.LevelScore,Is.Zero,"Processing completion is not order scoring");
         }

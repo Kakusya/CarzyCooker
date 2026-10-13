@@ -51,6 +51,12 @@ ET 等待使用原 Fiber 的 `context.DelayAsync(timer, milliseconds)` 和请求
 
 产品本地 Call 的 Peer 在途责任由 `CallLocalValueAsync(..., physicalFinished)` 的内部观察者持有；外层 owner 取消立即结束显示等待，但 EndEntry 要等原答复、原超时或整个 sender.Stop。该回调捕获原 Peer EntityRef，不将新实例当旧实例收尾。未交接的停用 owner／sender 输入由发起边界释放，已交接输入由 handler 释放。此处没有另一份等待表，运行证据见 [本地产品调用](../openspec/changes/archive/2026-10-13-solo-local-message-contracts/execution-notes.md)。
 
+### 本地输入交接与丢弃
+
+`ProcessInnerSender.Call` 被实际调用后接管请求：参数／停止拒绝和目标队列不存在均由该发送边界释放一次；合法入队后由接收 handler 负责。所属适配器在还没有调用原 Call 时拒绝，仍释放自己持有的输入。`Send/Reply` 在队列不存在时释放输入；参数或停止的同步异常仍由发起者处理，不把未投递通知当作业务完成。
+
+MessageQueue 的入队与撤队列交接互斥；撤队列只移除捕获的原队列并释放其中尚未取出的输入。已取出但邮箱不存在时由 sender 分发边界释放，请求返回目标失效。有序邮箱捕获原 sender 引用，等锁后目标实例失效不访问已销毁的 Root，也不调用替换实例；未交给 handler 的输入由 invoker finally 释放。已交给 handler 的输入保持其所有权，即使 sender 先停止也不提前释放，晚到答复只收尾自身对象。实际测试与范围见[消息边界执行记录](../openspec/changes/product-local-message-boundaries/execution-notes.md)。
+
 已迁移的运行加载：CodeLoader（保留 World 检查）、ConfigReader、Recast、UGFHelper、Tables、HybridCLR。后两者只迁移加载与回收，不修 AOT 返回码，也不改表或生成代码。UI/Entity 显示等待器、Scene 事务、AssetSet 的独立对象池、其他旧业务和外部包 async 保持各自契约；底座 ResourceComponent.LoadAssetAsync 保留为明确所有权的原始入口，取消直接结束等待，晚到引用归还原 manager。
 
 ## 正常整体退出和原生尾部

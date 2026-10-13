@@ -36,6 +36,10 @@ namespace ET
     public sealed class FrontWorkCommands : Entity, IAwake
     {
         public readonly Queue<FrontWorkEnvelope> Pending = new();
+        public readonly Queue<FrontWorkTransitionValue> Transitions = new();
+        public readonly Queue<FrontWorkFinishedValue> FinishedTransitions = new();
+        public readonly Queue<FrontWorkCreateValue> Creations = new();
+        public readonly List<FrontWorkOutcomeValue> Outcomes = new();
     }
 
     [ChildOf(typeof(RestaurantRuntime))]
@@ -109,7 +113,9 @@ namespace ET
         public GridCell OperationCell;
         public long StartedTick;
         public long WorkerCommandId;
-        public bool BlocksLevelCompletion => State != FrontWorkState.Completed && State != FrontWorkState.Cancelled;
+        public long TransitionSerial;
+        public bool TransitionQueued, StartReceived, CompletionReceived, SuccessorPending, SuccessorQueued;
+        public bool BlocksLevelCompletion => State != FrontWorkState.Completed && State != FrontWorkState.Cancelled || SuccessorPending;
     }
 }
 #endif

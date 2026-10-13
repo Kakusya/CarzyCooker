@@ -3,6 +3,7 @@
 namespace ET
 {
     [Invoke((long)MailBoxType.OrderedMessage)]
+    [FriendOf(typeof(ProcessInnerSender))]
     public class MailBoxType_OrderedMessageHandler: AInvokeHandler<MailBoxInvoker>
     {
         public override void Handle(MailBoxInvoker args)
@@ -17,24 +18,45 @@ namespace ET
             MessageObject messageObject = args.MessageObject;
 
             Fiber fiber = mailBoxComponent.Fiber();
-            if (fiber.IsDisposed)
+            bool handedOff = false;
+            try
             {
-                return;
-            }
-
-            long instanceId = mailBoxComponent.InstanceId;
-            using (await fiber.Root.GetComponent<CoroutineLockComponent>().Wait(CoroutineLockType.Mailbox, mailBoxComponent.ParentInstanceId))
-            {
-                if (mailBoxComponent.InstanceId != instanceId)
+                if (fiber.IsDisposed)
                 {
-                    if (messageObject is IRequest request)
-                    {
-                        IResponse resp = MessageHelper.CreateResponse(request.GetType(), request.RpcId, ErrorCore.ERR_NotFoundActor);
-                        mailBoxComponent.Root().GetComponent<ProcessInnerSender>().Reply(args.FromAddress, resp);
-                    }
                     return;
                 }
-                await MessageDispatcher.Instance.Handle(mailBoxComponent.Parent, args.FromAddress, messageObject);
+                EntityRef<ProcessInnerSender> senderRef = fiber.Root.GetComponent<ProcessInnerSender>();
+
+                long instanceId = mailBoxComponent.InstanceId;
+                using (await fiber.Root.GetComponent<CoroutineLockComponent>().Wait(CoroutineLockType.Mailbox, mailBoxComponent.ParentInstanceId))
+                {
+                    if (mailBoxComponent.InstanceId != instanceId)
+                    {
+                        if (messageObject is IRequest request)
+                        {
+                            IResponse resp = MessageHelper.CreateResponse(request.GetType(), request.RpcId, ErrorCore.ERR_NotFoundActor);
+                            ProcessInnerSender sender = senderRef;
+                            if (sender == null || sender.IsStopped)
+                            {
+                                ((MessageObject)resp).Dispose();
+                            }
+                            else
+                            {
+                                sender.Reply(args.FromAddress, resp);
+                            }
+                        }
+                        return;
+                    }
+                    handedOff = true;
+                    await MessageDispatcher.Instance.Handle(mailBoxComponent.Parent, args.FromAddress, messageObject);
+                }
+            }
+            finally
+            {
+                if (!handedOff)
+                {
+                    messageObject.Dispose();
+                }
             }
         }
     }
