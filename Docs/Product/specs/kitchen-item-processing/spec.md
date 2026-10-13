@@ -1,6 +1,6 @@
 # kitchen-item-processing Target Specification
 
-> 状态：目标规格文档已定稿；备料手工子集见[备料记录](../../../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)，Solo自动汤批次与逐份盛碗见[煮汤记录](../../../../openspec/changes/grid-kitchen-soup-batch-cooking/execution-notes.md)。九案单机订单交付、原餐具洗净回收及实物换关已验收，见[关卡记录](../../../../openspec/changes/solo-restaurant-level-flow/execution-notes.md)；Solo 水池接水／排液和垃圾桶固体倾倒已验收，见[设施记录](../../../../openspec/changes/solo-kitchen-clear-and-discard/execution-notes.md)。普通双Editor两种角色排列合作制作与清理供应已验收，见[集成记录](../../../../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。Player/AOT及跨设备LAN未验收。已确认、授权补足与未决范围见[规格索引](../README.md)。
+> 状态：目标规格文档已定稿；备料手工子集见[备料记录](../../../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)，Solo自动汤批次与逐份盛碗见[煮汤记录](../../../../openspec/changes/archive/2026-10-13-grid-kitchen-soup-batch-cooking/execution-notes.md)。九案单机订单交付、原餐具洗净回收及实物换关已验收，见[关卡记录](../../../../openspec/changes/archive/2026-10-13-solo-restaurant-level-flow/execution-notes.md)；Solo 水池接水／排液和垃圾桶固体倾倒已验收，见[设施记录](../../../../openspec/changes/solo-kitchen-clear-and-discard/execution-notes.md)。普通双Editor两种角色排列合作制作与清理供应已验收，见[集成记录](../../../../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。Player/AOT及跨设备LAN未验收。已确认、授权补足与未决范围见[规格索引](../README.md)。
 
 ## Purpose
 

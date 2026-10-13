@@ -116,3 +116,4 @@ Editor 导表入口 MUST 消费工具的真实执行结果。工具启动异常�
 - [Entity 接入](../../../Book/Entity开发.md)
 - [GitBranchToolBar.cs](../../../Unity/Assets/Scripts/Game/Editor/ToolBar/GitBranchToolBar.cs)
 - [自定义 Toolbar](../../../Book/自定义Toolbar.md)
+- [editor-worktree-label 执行与验收记录](../../changes/archive/2026-10-13-editor-worktree-label/execution-notes.md)。

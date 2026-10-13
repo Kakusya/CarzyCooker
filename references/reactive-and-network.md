@@ -4,7 +4,7 @@
 
 ## 状态与 UI
 
-单机餐厅当前协议14，已在协议12关卡／前厅／buff基线上接入设施清理和有限供应。玩家操作等待归当次UIGridKitchen.AsyncOwner，HUD加载等待归GridPresentation.AsyncOwner；关闭HUD取消显示等待、解绑所属按钮，原物理请求及Peer在途仍由原观察者收尾。按钮捕获原UI／GridClient EntityRef和World／Level／绑定代次；当前上下文校验先于旧关最新重放，仅已Executed且完整相同的Continue可回报自己换关事实。实际树和请求路径见[关卡设计](../openspec/changes/solo-restaurant-level-flow/design.md)，旧关四参数与当前关重放证据见[执行记录](../openspec/changes/solo-restaurant-level-flow/execution-notes.md)。后文协议3至12保留阶段边界，当前设施和供应结果见[清理记录](../openspec/changes/solo-kitchen-clear-and-discard/execution-notes.md)及[供应记录](../openspec/changes/solo-supply-delivery/execution-notes.md)。
+单机餐厅当前协议14，已在协议12关卡／前厅／buff基线上接入设施清理和有限供应。玩家操作等待归当次UIGridKitchen.AsyncOwner，HUD加载等待归GridPresentation.AsyncOwner；关闭HUD取消显示等待、解绑所属按钮，原物理请求及Peer在途仍由原观察者收尾。按钮捕获原UI／GridClient EntityRef和World／Level／绑定代次；当前上下文校验先于旧关最新重放，仅已Executed且完整相同的Continue可回报自己换关事实。实际树和请求路径见[关卡设计](../openspec/changes/archive/2026-10-13-solo-restaurant-level-flow/design.md)，旧关四参数与当前关重放证据见[执行记录](../openspec/changes/archive/2026-10-13-solo-restaurant-level-flow/execution-notes.md)。后文协议3至12保留阶段边界，当前设施和供应结果见[清理记录](../openspec/changes/solo-kitchen-clear-and-discard/execution-notes.md)及[供应记录](../openspec/changes/solo-supply-delivery/execution-notes.md)。
 
 设施请求沿原 Grid Peer／Submit／固定业务步，不新建入口；完整预期内容列表、剩余份数和布局版本从独立投影冻结，原请求回收前后均不共享可变列表。实际到位再重验和提交，结果及水／固液形态／设施字段属于同一 Version；wire 继续只接受原动作白名单，协议13不自动开放联机清理。
 
@@ -101,7 +101,7 @@ Host／Solo当前都持有持续Restaurant／厨房和当前Level；共享控制
 
 本地值适配沿原 sender.Call → ActorId → MessageQueue → Ordered MailBox → SceneType/Handler → 原答复路径。单 owner Stop 只结束其业务等待，内部唯一观察者继续等原答复／40 秒超时并释放响应；不 Stop 共用 sender，也不宣称已清空物理等待。`CallLocalValueAsync` 的可选 `physicalFinished` 只在原调用观察者 finally 执行，产品 Peer 在该处 EndEntry，不能在被取消的外层等待 finally 提前减计数。入队前 owner 已停止或 sender 已停止的同步失败由适配边界释放未交接输入和责任；入队后输入仍由 handler 收尾。整个运行退出保留原 sender.Stop，取消不会回滚已提交动作。
 
-产品业务编号由 ClientSession 的 `CreateProductCommandContext` 统一分配；上下文固定 Match／World／可选 Level／绑定与编号。HostPeer 只保留最新命令的类型、完整动作及结果元数据；GridActor 的编号仅作原投影兼容值。相同最新载荷重放返回接收或已提交事实，不再排队；同编号冲突为 CommandConflict，更早编号为 ExpiredCommand。旧 Host/Client 样机无 Level，正式 Solo 校验当前关身份及代次；不建立字符串 CommandBus 或历史结果库。基线实证见 [本地消息 change](../openspec/changes/solo-local-message-contracts/execution-notes.md)，迁移回归见 [关卡流程](../openspec/changes/solo-restaurant-level-flow/execution-notes.md)。
+产品业务编号由 ClientSession 的 `CreateProductCommandContext` 统一分配；上下文固定 Match／World／可选 Level／绑定与编号。HostPeer 只保留最新命令的类型、完整动作及结果元数据；GridActor 的编号仅作原投影兼容值。相同最新载荷重放返回接收或已提交事实，不再排队；同编号冲突为 CommandConflict，更早编号为 ExpiredCommand。旧 Host/Client 样机无 Level，正式 Solo 校验当前关身份及代次；不建立字符串 CommandBus 或历史结果库。基线实证见 [本地消息 change](../openspec/changes/archive/2026-10-13-solo-local-message-contracts/execution-notes.md)，迁移回归见 [关卡流程](../openspec/changes/archive/2026-10-13-solo-restaurant-level-flow/execution-notes.md)。
 
 普通 ET 延时走 `context.DelayAsync(timer, time)`，维持原 Fiber 执行上下文；本轮 Ping 消费者已迁移，其他产品 Join/Probe/Heartbeat、wire 和未迁移旧业务保持原契约。原 AutoResetUniTaskCompletionSourcePlus 在同步续体读取结果时，延后池回收直到原完成通知/取消动作全部返回，避免丢取消注册或误触下一任务。实际四项 ET 适配测试与必要计时回归见 [执行说明](../openspec/changes/archive/2026-10-11-manage-owned-async-lifecycle/execution-notes.md)。
 
@@ -109,23 +109,23 @@ Host／Solo当前都持有持续Restaurant／厨房和当前Level；共享控制
 
 UI／Board 共用 `CounterIntent`，冻结碗、锅和批次身份后经原 ClientSession→LocalMessage.Peer ActorId→根 ProcessInnerSender→Peer Ordered MailBox／GridPeerHandler→HostSession Ordered MailBox／GridSubmitHandler。入口回执后由 Grid Tick 再验并提交；开始成功不等待煮完。`GridAutoProcess` 归厨房，锅和原灶台只保存引用，搬锅或单成员离开不结束作业。
 
-提交后 `GridBroadcast` 为每个 Peer 独立建立内容图、`GridAutoProcessState` 与本人结果，经 LocalDelivery→ClientSession MailBox→GridSnapshotHandler／GridResultHandler；Client 复制输入列表、进度及份数后回收 DTO，再发布本端投影事件。BatchId 使用 ProcessId，最后一份同时生成汤、消费原输入并复位同一锅；旧批次不能跨到新批次扣份。新增三个动作只走本地，wire 明确 `SoloCommandOnly` 拒绝。最新本地运行证据见 [煮汤执行说明](../openspec/changes/grid-kitchen-soup-batch-cooking/execution-notes.md)。
+提交后 `GridBroadcast` 为每个 Peer 独立建立内容图、`GridAutoProcessState` 与本人结果，经 LocalDelivery→ClientSession MailBox→GridSnapshotHandler／GridResultHandler；Client 复制输入列表、进度及份数后回收 DTO，再发布本端投影事件。BatchId 使用 ProcessId，最后一份同时生成汤、消费原输入并复位同一锅；旧批次不能跨到新批次扣份。新增三个动作只走本地，wire 明确 `SoloCommandOnly` 拒绝。最新本地运行证据见 [煮汤执行说明](../openspec/changes/archive/2026-10-13-grid-kitchen-soup-batch-cooking/execution-notes.md)。
 
 ### 正式 Solo 关卡（交付基线协议 6）
 
-厨房由 Match 的 RestaurantRuntime Child 以 Component 持有，角色归餐厅当前 Level Child，Match 的成员枚举按 Participant 类型过滤。LevelCommandRequest 经 Peer Ordered MailBox／LevelPeerHandler，可信 LevelSubmitRequest 再到 HostSession Ordered MailBox／LevelSubmitHandler；服务步独占阶段写入，暂停时仍处理控制／成员清理，业务钟冻结。关卡与厨房字段、Peer 最新命令事实通过原独立 GridWorldSnapshot 同版安装，DTO 回收后仅保留值；旧关高版本快照及结果仍拒绝。实际树、生命周期与运行范围见 [关卡执行说明](../openspec/changes/solo-restaurant-level-flow/execution-notes.md)。
+厨房由 Match 的 RestaurantRuntime Child 以 Component 持有，角色归餐厅当前 Level Child，Match 的成员枚举按 Participant 类型过滤。LevelCommandRequest 经 Peer Ordered MailBox／LevelPeerHandler，可信 LevelSubmitRequest 再到 HostSession Ordered MailBox／LevelSubmitHandler；服务步独占阶段写入，暂停时仍处理控制／成员清理，业务钟冻结。关卡与厨房字段、Peer 最新命令事实通过原独立 GridWorldSnapshot 同版安装，DTO 回收后仅保留值；旧关高版本快照及结果仍拒绝。实际树、生命周期与运行范围见 [关卡执行说明](../openspec/changes/archive/2026-10-13-solo-restaurant-level-flow/execution-notes.md)。
 
 ### 准备态布局（交付基线协议 7）
 
 StationLayoutRequest 经原 ClientSession 所属值等待、LocalMessage 的 HostPeer ActorId、Root ProcessInnerSender.Call，进入 Peer Ordered MailBox／LayoutPeerHandler；带可信实例的 StationLayoutSubmitRequest 进入 HostSession ActorId／Ordered MailBox／LayoutSubmitHandler，再由餐厅服务步调用厨房布局队列提交。当前关代次、绑定、共享业务编号和布局版本均核对，最新完整请求重放只返回既有事实。恢复入口不依赖停止的 BusinessTick。
 
-布局、设备占地／操作格及最终结果仍由原 GridWorldSnapshot 以同版独立值安装，DTO 与等待沿原 handler／所属观察者收尾；新增四个类型只追加协议末尾（10078～10081），不进入 wire 白名单。UI 选择只保留工位 ID；真实位置、内容和进度由投影读取。运行及未验证的前厅路径见 [工位执行说明](../openspec/changes/solo-workstation-layout/execution-notes.md)。
+布局、设备占地／操作格及最终结果仍由原 GridWorldSnapshot 以同版独立值安装，DTO 与等待沿原 handler／所属观察者收尾；新增四个类型只追加协议末尾（10078～10081），不进入 wire 白名单。UI 选择只保留工位 ID；真实位置、内容和进度由投影读取。运行及未验证的前厅路径见 [工位执行说明](../openspec/changes/archive/2026-10-13-solo-workstation-layout/execution-notes.md)。
 
 ### 两菜制作与菜单（协议 8）
 
 Grid 的 StartBake 经原 Peer／HostSession 两段 Ordered MailBox handler 接收，在唯一厨房 Tick 启动作业；GridBakeProcess 为持续厨房 Child，原 Station／输入 Item 只存身份关系，RequiredTicks 冻结，完成一次消费输入并创建新身份。汤仍是批次，烤面包是整物，盘装沿原 AddToContainer。菜品按实际内容和指定容器识别，不因完成加工或普通台面暂存开单／加分。
 
-同版独立 GridWorldSnapshot 增菜单与 BakeProcess 值，原 client handler 复制值后回收 DTO；世界停止由原 owner 清理，Completed 停钟而下一关 Preparing 接续同一加工。新增状态类型在 ZZToastBake.proto 排序末尾（10082），原编号不改；协议 8 仍保持新动作本地边界。实际 19 项 UTF、受影响的45项回归、普通两菜入口和 NotRun 见 [菜品执行说明](../openspec/changes/solo-dish-recipe-chain/execution-notes.md)。
+同版独立 GridWorldSnapshot 增菜单与 BakeProcess 值，原 client handler 复制值后回收 DTO；世界停止由原 owner 清理，Completed 停钟而下一关 Preparing 接续同一加工。新增状态类型在 ZZToastBake.proto 排序末尾（10082），原编号不改；协议 8 仍保持新动作本地边界。实际 19 项 UTF、受影响的45项回归、普通两菜入口和 NotRun 见 [菜品执行说明](../openspec/changes/archive/2026-10-13-solo-dish-recipe-chain/execution-notes.md)。
 
 
 ### 前厅工作请求与 Tick（协议 9）
@@ -136,19 +136,19 @@ CompanionRole 通过自身 AsyncOwnerComponent 的 RequestCompanionWork 发送�
 
 业务步先处理停手，再推进到位的已有工作和完成目标效果，最后处理新认领；完成第三项先计成长，后续同 Tick 领取洗碗可冻结 ceil 加速。CompanionWorkResult 经 root sender.Send(Role ActorId) 到同一 ProductHost SceneType 的 Role Ordered MailBox／CompanionWorkResultHandler，核对角色实例、关代次和请求；通知只写观察元数据，不再次推进工作或成长。旧通知同样 finally Dispose。
 
-本阶段追加 10083–10089，保留旧 Opcode；没有 wire 白名单扩展或网络监听。玩家最终命令事实沿既有独立 GridWorldSnapshot 返回，Role／FrontWork 的客户端值投影与 Board 将在伙伴调度任务接入；不能由后台 UTF 代替实际自动服务与自然收尾。当前证据见 [伙伴执行说明](../openspec/changes/solo-fixed-companion-work/execution-notes.md)。
+本阶段追加 10083–10089，保留旧 Opcode；没有 wire 白名单扩展或网络监听。玩家最终命令事实沿既有独立 GridWorldSnapshot 返回，Role／FrontWork 的客户端值投影与 Board 将在伙伴调度任务接入；不能由后台 UTF 代替实际自动服务与自然收尾。当前证据见 [伙伴执行说明](../openspec/changes/archive/2026-10-13-solo-fixed-companion-work/execution-notes.md)。
 
 
 ### 自动前厅与同版投影（协议 10）
 
 餐厅同一服务步推动顾客、工作和空闲伙伴调度，所有路线使用 Kitchen 的同一 Blocked／FindGridPath。自动伙伴仍经自身 owner、原 root sender、HostSession 有序 mailbox 到同一工作引擎；不直接提交完成效果。默认首客 20 Tick、间隔 60，满队列跳过，独立 Order 只在询问完成后开出。
 
-原 GridWorldSnapshot 扩展前厅值，新增 DTO 仅追加 10090–10094。GridFrontBroadcast 每 Peer 独立创建角色／工作／顾客／订单／桌／队列及 Hygiene／池列表；GridClientSystem 在发布 GridProjectionApplied 前完整复制安装，Board 标签、路径和基础前厅按钮读同一版本。Scope、mailbox、输入／答复和 DTO 收尾不变；未增加 wire 白名单或监听。运行边界与相机渲染见 [前厅记录](../openspec/changes/solo-customer-order-service/execution-notes.md)。
+原 GridWorldSnapshot 扩展前厅值，新增 DTO 仅追加 10090–10094。GridFrontBroadcast 每 Peer 独立创建角色／工作／顾客／订单／桌／队列及 Hygiene／池列表；GridClientSystem 在发布 GridProjectionApplied 前完整复制安装，Board 标签、路径和基础前厅按钮读同一版本。Scope、mailbox、输入／答复和 DTO 收尾不变；未增加 wire 白名单或监听。运行边界与相机渲染见 [前厅记录](../openspec/changes/archive/2026-10-13-solo-customer-order-service/execution-notes.md)。
 
 ### 真实出餐与原餐具（协议 11）
 
-ZZZZServe.proto 追加 10095–10098，经正常 Proto2CS 生成。ServeOrderRequest 从 ClientSession 所属等待到 Peer Ordered MailBox／ServePeerHandler，再由可信 ServeOrderSubmitRequest 到 authority ActorId／HostSession MailBox／ServeSubmitHandler；内部消息不能直接作用 Peer。快答 Accepted 只保存当前 Level 的普通值队列，统一 Tick 完整核对身份、位置、卫生和菜品后一次消费内容／计分，原容器留桌。暂停取消尚未执行 Serve，恢复不重放。两段输入和响应仍由原 handler／物理观察者收尾；最终事实沿原同版 Snapshot，Event 只观察。CleanPool 取回固定原 ItemId，不创建新餐具；没有新增网络入口或白名单。行为和真实入口证据见 [服务记录](../openspec/changes/solo-customer-order-service/execution-notes.md)。
+ZZZZServe.proto 追加 10095–10098，经正常 Proto2CS 生成。ServeOrderRequest 从 ClientSession 所属等待到 Peer Ordered MailBox／ServePeerHandler，再由可信 ServeOrderSubmitRequest 到 authority ActorId／HostSession MailBox／ServeSubmitHandler；内部消息不能直接作用 Peer。快答 Accepted 只保存当前 Level 的普通值队列，统一 Tick 完整核对身份、位置、卫生和菜品后一次消费内容／计分，原容器留桌。暂停取消尚未执行 Serve，恢复不重放。两段输入和响应仍由原 handler／物理观察者收尾；最终事实沿原同版 Snapshot，Event 只观察。CleanPool 取回固定原 ItemId，不创建新餐具；没有新增网络入口或白名单。行为和真实入口证据见 [服务记录](../openspec/changes/archive/2026-10-13-solo-customer-order-service/execution-notes.md)。
 
 ### 本关一次加成选择（协议12）
 
-ChooseBuffRequest／Response／SubmitRequest／SubmitResponse 追加10099–10102，经原 Peer／authority 有序 MailBox 和所属 Call 接受，统一 Restaurant 步提交。先校验当前世界／关／绑定，再返回最新重放事实，另一 Peer 换关后旧成功命令也明确拒绝。Snapshot42–46复制本关Seed／DrawVersion／候选／已选／门槛；每Peer独立列表，回收 DTO 不改已安装值。LevelBuff 是本关 Component，换关重建，厨房旧作业保持冻结耗时；暂停取消尚未执行选择，没有新监听／白名单。实际入口与有限验证见 [加成记录](../openspec/changes/solo-random-level-buffs/execution-notes.md)。
+ChooseBuffRequest／Response／SubmitRequest／SubmitResponse 追加10099–10102，经原 Peer／authority 有序 MailBox 和所属 Call 接受，统一 Restaurant 步提交。先校验当前世界／关／绑定，再返回最新重放事实，另一 Peer 换关后旧成功命令也明确拒绝。Snapshot42–46复制本关Seed／DrawVersion／候选／已选／门槛；每Peer独立列表，回收 DTO 不改已安装值。LevelBuff 是本关 Component，换关重建，厨房旧作业保持冻结耗时；暂停取消尚未执行选择，没有新监听／白名单。实际入口与有限验证见 [加成记录](../openspec/changes/archive/2026-10-13-solo-random-level-buffs/execution-notes.md)。

@@ -10,7 +10,7 @@
 - `CompanionWorkResult` 已走角色邮箱；`SoloSaveRepositoryMessages` 已使用 ProductRoot 的本地 RPC。保留和补齐这些入口，避免重新包装一套系统。
 - `ProcessInnerSenderSystem.HandleMessage` 找不到 MailBox、`MessageQueue.RemoveQueue` 移除待投递队列、Ordered MailBox 等锁后实例失效等路径尚缺显式输入回收。新通知依赖这些路径，需最小修正。
 
-源码协议当前为 16，工作树有其他任务的未提交改动；本案不修改它们，也不将存在的存档源码称为已验收。Model 与 Hotfix 位于现有 `Game.ET.Code.Model/Hotfix`，均按 asmdef 保持 `noEngineReferences`；Unity 表现仍在 ModelView/HotfixView。
+2026-10-13 后续规划核对时源码协议为 17，工作树有其他任务的未提交改动；实施取届时最新基线。存档与合作核心已有各自原案验收，具体范围以原 execution-notes 为准，不作为本案迁移后通过的证据。Model 与 Hotfix 位于现有 `Game.ET.Code.Model/Hotfix`，均按 asmdef 保持 `noEngineReferences`；Unity 表现仍在 ModelView/HotfixView。
 
 ## Goals / Non-Goals
 
@@ -54,7 +54,7 @@ Product Fiber (existing; root SceneType.ProductRoot)
   Child Scene: ProductHost (SceneType.ProductHost; same Fiber)
     Child: Match
       Children: Participant
-      Component: GridKitchenComponent [legacy Host only; no Restaurant in that branch]
+      Component: GridKitchenComponent [仅历史夹具兼容/防双驱动检查，不是当前 Host 主路径]
       Components/Children: SoloSaveBinding / SelectedSaveBaseline / SaveResult [checkpoint]
       Child: RestaurantRuntime
         Children: Companion (persistent identity)
@@ -75,7 +75,7 @@ Product Fiber (existing; root SceneType.ProductRoot)
     Components: LocalMessage / GridPresentation / UIComponent / GFEntityComponent
 ```
 
-Solo 使用 Restaurant；当前 Host 的旧厨房分支保留到 `cooperative-restaurant-core` 自己迁移，不用本案冒充该案完成。上图树关系以对应 Model attribute／创建语句为准；不把引用画成 owner。
+Solo 与当前 Host 均使用 Restaurant；`cooperative-restaurant-core` 已迁移 Host，原 Match.GridKitchen 残余只按实际夹具/兼容检查处理，不恢复为产品主路径。上图树关系以对应 Model attribute／创建语句为准；不把引用画成 owner。
 
 根 sender、目标实体和 MailBox 先同步建好，再发首个 Join／业务初始化请求；FiberInit 不等待依赖尚未安装 Runner 的队列答复。恢复载入先校验，再建新树；运行身份仍重新生成。
 
@@ -126,11 +126,11 @@ ET Event 仅作已提交状态的本地表现观察；Bind 只写表现。Invoke
 
 ### 7. 源生成、兼容与现有 change
 
-协议只改 `Design/Proto/ET-Client` 源，按当前排序在末尾追加新类型，经既有 Proto2CS 生成 Client／ClientServer；旧 Opcode 不重排。内部类型即使有 Opcode 也不自动成为网络允许消息。协议版本按实施时真实基线升级；不将当前 16 写死为永久起点。
+协议只改 `Design/Proto/ET-Client` 源，按当前排序在末尾追加新类型，经既有 Proto2CS 生成 Client／ClientServer；旧 Opcode 不重排。内部类型即使有 Opcode 也不自动成为网络允许消息。协议版本按实施时真实基线升级；不将本次观察到的 17 写死为永久起点。
 
 本案不需要 Excel 新字段、CodeBind 或 Prefab 结构变化。HotfixView 只对接原受管入口和已安装投影；若实施发现确需结构或配置行为改变，应单列原因与范围，不混进本案。
 
-`solo-success-checkpoint` 完成其功能与验收后，本案再迁移存档边界；其他不冲突功能可先做。不得为满足本案勾选把存档缺失功能补写在本案。合作餐厅四案继续持有其远端功能授权；实施前核对双方触及文件，使用最新实际入口，不恢复旧直调。本文不修改它们的 tasks 或冒领验收。
+`solo-success-checkpoint` 原案功能与验收已交付，本案可在核对实际最终入口后迁移其消息边界；其他不冲突功能也可分组实施。不得借本案补做未授权存档能力。合作餐厅四案继续持有其远端功能与验收归属；实施前核对双方触及文件，使用最新实际入口，不恢复旧直调。本文不修改它们的 tasks 或冒领验收。
 
 ### 8. 验收安排
 

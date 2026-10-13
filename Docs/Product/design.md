@@ -2,7 +2,7 @@
 
 依据 [原始设计资料](../../Book/业务逻辑.txt.txt) A–D、F1–F5、G1–G3。尽量保留适用原文；原文「明确确认」对应已确认，「授权补足」保留历史身份，候选与冲突不晋级。正文为目标设计，当前实现须按具体 change 区分。目录在 [候选目录](catalog.md)，来源冲突见 [待裁决](backlog.md)。
 
-当前Solo已实施真实备料、汤／吐司、工位布局、关卡统一时钟、顾客询问／订单交付／用餐／有限餐具回收、伙伴接续／成长、每关候选加成和完整受管UI。普通Launcher默认两关完整服务及零星自然收尾、实物换关和退出新轮已验收，见[关卡记录](../../openspec/changes/solo-restaurant-level-flow/execution-notes.md)与[UI记录](../../openspec/changes/solo-restaurant-ui/execution-notes.md)。Solo有限供应、装修和PC本机成功检查点已实现并验收；完整合作餐厅已通过普通双Editor两种角色排列验收，见[当前进度](../../CarzyCooker当前进度.md)及[集成记录](../../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。Player/AOT与跨设备LAN未验收；下文仍为长期目标，具体已落地子集按change区分。历史备料Solo／KCP范围见[备料记录](../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。
+当前Solo已实施真实备料、汤／吐司、工位布局、关卡统一时钟、顾客询问／订单交付／用餐／有限餐具回收、伙伴接续／成长、每关候选加成和完整受管UI。普通Launcher默认两关完整服务及零星自然收尾、实物换关和退出新轮已验收，见[关卡记录](../../openspec/changes/archive/2026-10-13-solo-restaurant-level-flow/execution-notes.md)与[UI记录](../../openspec/changes/archive/2026-10-13-solo-restaurant-ui/execution-notes.md)。Solo有限供应、装修和PC本机成功检查点已实现并验收；完整合作餐厅已通过普通双Editor两种角色排列验收，见[当前进度](../../CarzyCooker当前进度.md)及[集成记录](../../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。Player/AOT与跨设备LAN未验收；下文仍为长期目标，具体已落地子集按change区分。历史备料Solo／KCP范围见[备料记录](../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。
 
 已对照用户提供的 [设计交接](../handoff/Cooking-设计交接-2026-10-09.md) 和 [禁止项交接](../handoff/Cooking-禁止项交接-2026-10-09.md) 定稿 [八个领域目标规格](specs/README.md)，ET 归属与消息见 [产品架构](architecture.md)。本文提供背景和例子；明确契约及正反场景以目标规格为维护正文。文档定稿不表示业务已经实现。
 
