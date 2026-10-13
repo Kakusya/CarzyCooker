@@ -4,7 +4,8 @@
 
 - 2026-10-13：用户要求查看项目并构建 change；对“产品业务入口、结束及功能间衔接统一消息，内部计算／每 Tick 进度仍直接调用”的推荐回答“是，按你想的来”。已授权规划，尚未实施。
 - 已加载 openspec-explore、carzycooker-requirements 和 openspec-propose；按实际源码／主规格构建提案。无剩余阻塞性产品决定。有限消息调度延后、框架建树／强制退出例外及存档交接见 design。
-- 静态基线：源码协议 16；供应、清理和装修已有实现，solo-success-checkpoint 仍在实施。部分入口文档的旧协议摘要滞后，本案以源码和原 change 最终交接为准。工作树存在大量其他任务修改，本轮仅新增本 change 规划文件。
+- 初次提案的历史静态基线：源码协议 16；当时供应、清理和装修已有实现，solo-success-checkpoint 仍在实施。以下后续核对替代其“当前状态”，原消息迁移任务和运行结果未改变。
+- 2026-10-13 后续路线规划核对：源码协议 17；solo-success-checkpoint 与 cooperative-restaurant-core 原案已有验收，Host/Solo 共用 Restaurant。同步 proposal/design 的基线、owner 树和 tasks 4.4 的前置说明；不改原任务勾选。当前前厅等后续能力仍查原 change，消息迁移本案继续 0/17、NotRun。
 - 产品功能、UTF、普通 Launcher、构建与生成：**NotRun**。文末记录本轮规划检查，不能用它代表功能通过。
 
 ## 严谨程度与取舍
@@ -32,13 +33,15 @@
 | 4.1 关卡控制与收尾 | SoloLevel：开店、暂停恢复、自然零星完成、Continue、旧关拒绝及新关就绪 | NotRun |
 | 4.2 布局与 Buff | SoloStationLayout／SoloBuff：成功／拒绝、准备与候选、重复选择、旧上下文 | NotRun |
 | 4.3 装修 | SoloRenovation：候选空／合法、选择一次、下一关安装一次、失败零安装 | NotRun |
-| 4.4 已有存档 | 原案完成后 SoloSaveSelection／Commit／Restore：选档、取消、写盘失败、重试、恢复与迟到完成 | NotRun，依赖原案交接 |
+| 4.4 已有存档 | 对照原案已交付入口，SoloSaveSelection／Commit／Restore：选档、取消、写盘失败、重试、恢复与迟到完成 | NotRun，原案证据不代替消息迁移后运行 |
 | 5.1 会话与公共生命周期 | ProductSession 本地／现有 RealKcpSharesAuthorityKeepsAliveAndLeaveReturnsCommitted、WireInternalMessageCannotJoinOrTakeLocalIdentity 及必要 SoloMessage／LocalMessageShutdown | NotRun |
 | 5.2–5.3 UI 与连续玩法 | SoloRestaurantUi＋普通 Launcher；新轮→两菜／前厅／供应清理→暂停恢复→自然结算→装修／保存→下一关，关闭重开和旧按钮 | NotRun |
 
 运行顺序按 tasks 的依赖，先本地功能后必要 KCP 和真实界面。已有相关小集当次完整对应某项时直接复用，不再以集成为名重复。测试发现、过滤、原始输出和失败信息遵循 [自动测试 SOP](../../../Book/自动化测试SOP.md)，不复制证据包或修改原结果。
 
 ## 规划检查
+
+2026-10-13 后续路线核对：同步协议/owner/已交付前置后，`openspec validate product-local-message-boundaries --strict --no-interactive` 退出码 0。与新案一起检查的 80 份 Markdown 未发现失效引用、编码、空白或原场景遗漏；未运行本案功能，不改变 0/17 与 NotRun。
 
 2026-10-13 本轮规划检查：
 
