@@ -10,6 +10,7 @@ namespace ET
         {
             response.CommandId=request.CommandId;
             if(!peer.EntryOpen){response.Error=ProductError.PeerClosed;response.Status=(int)GridResultStatus.Rejected;return;}
+            if(!peer.CanControlRestaurant()){response.Error=ProductError.InvalidRequest;response.Message="HostControlOnly";response.Status=(int)GridResultStatus.Rejected;return;}
             var inner=ProductMessages.Create<ChooseBuffSubmitRequest>(value=>
             {
                 value.PeerId=peer.Id;value.PeerInstanceId=peer.InstanceId;value.PeerGeneration=peer.Generation;value.ProtocolVersion=request.ProtocolVersion;

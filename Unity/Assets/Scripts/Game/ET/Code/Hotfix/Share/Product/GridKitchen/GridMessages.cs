@@ -21,6 +21,8 @@ namespace ET
                 message.TargetId = request.TargetId; message.ExpectedItemId = request.ExpectedItemId;
                 message.ExpectedTargetItemId = request.ExpectedTargetItemId; message.ExpectedProcessId = request.ExpectedProcessId;
                 message.LevelId = request.LevelId; message.LevelGeneration = request.LevelGeneration;
+                message.ExpectedContentIds.AddRange(request.ExpectedContentIds);
+                message.ExpectedRemainingPortions = request.ExpectedRemainingPortions; message.ExpectedLayoutVersion = request.ExpectedLayoutVersion;
             });
             HostSessionComponent authority = peer.Authority;
             using var result = (GridSubmitResponse)await peer.Root().GetComponent<ProcessInnerSender>().Call(authority.GetActorId(), inner, false);
@@ -49,7 +51,8 @@ namespace ET
                     request.LevelGeneration, request.BindingGeneration, request.CommandId)
                     .Validate(match.MatchId, grid.WorldId, grid.WorldGeneration, level?.Id ?? 0, level?.Generation ?? 0, peer.Generation)
                     ?? grid.SubmitGridIntent(peer.MemberId, peer.Generation, new GridIntent(request.CommandId, (GridAction)request.Action,
-                        new GridCell(request.X, request.Y), request.TargetId, request.ExpectedItemId, request.ExpectedTargetItemId, request.ExpectedProcessId));
+                        new GridCell(request.X, request.Y), request.TargetId, request.ExpectedItemId, request.ExpectedTargetItemId, request.ExpectedProcessId,
+                        request.ExpectedContentIds, request.ExpectedRemainingPortions, request.ExpectedLayoutVersion));
             response.CommandId = request.CommandId;
             response.Error = reason == null ? 0 : ProductError.InvalidRequest;
             response.Message = reason ?? peer.LastCommandReason;
@@ -68,6 +71,11 @@ namespace ET
     [FriendOf(typeof(Match))]
     [FriendOf(typeof(HostPeer))]
     [FriendOf(typeof(Level))]
+    [FriendOf(typeof(KitchenSupply))]
+    [FriendOf(typeof(SupplyShipment))]
+    [FriendOf(typeof(RestaurantRenovation))]
+    [FriendOf(typeof(SoloSaveBinding))]
+    [FriendOf(typeof(SoloSaveResult))]
     public static partial class GridBroadcast
     {
         public static GridWorldSnapshot CreateSnapshot(GridKitchenComponent world, HostPeer peer)
@@ -112,6 +120,8 @@ namespace ET
                     value.DefinitionId = station.DefinitionId; value.Orientation = station.Orientation;
                     value.Capabilities = (int)station.Capabilities; value.ItemSlotCapacity = station.ItemSlotCapacity;
                     value.BakeProcessId = station.BakeProcessId;
+                    var definition = Tables.Instance.DTStationConfig.Get(station.DefinitionId);
+                    value.WaterDefinitionId = definition.WaterDefinitionId; value.WaterUnits = definition.WaterUnits;
                 });
                 foreach (GridCell cell in station.StationFootprint()) state.Footprint.Add(ProductMessages.Create<GridPathCell>(value => { value.X = cell.X; value.Y = cell.Y; }));
                 foreach (GridCell cell in station.StationApproaches()) state.Approaches.Add(ProductMessages.Create<GridPathCell>(value => { value.X = cell.X; value.Y = cell.Y; }));
@@ -121,6 +131,8 @@ namespace ET
             {
                 var state = ProductMessages.Create<GridItemState>(value => { value.ItemId = item.Id; value.Name = item.Name; value.DefinitionId = item.DefinitionId; value.Location = (int)item.Location; value.HolderId = item.HolderId; value.X = item.Cell.X; value.Y = item.Cell.Y; value.AutoProcessId = item.AutoProcessId; value.BakeProcessId = item.BakeProcessId; });
                 state.Contents.AddRange(item.Contents); snapshot.Items.Add(state);
+                var definition = Tables.Instance.DTGridItemConfig.Get(item.DefinitionId);
+                state.Form = definition.Form; state.Discardable = definition.Discardable;
             }
             foreach (GridManualProcess p in world.Processes.Values.Select(value => (GridManualProcess)value))
                 snapshot.Processes.Add(ProductMessages.Create<GridManualProcessState>(value =>
@@ -148,6 +160,42 @@ namespace ET
                     value.OutputItemId=process.OutputItemId;value.State=(int)process.State;value.StartedTick=process.StartedTick;
                 }));
             CopyFrontState(world, snapshot);
+            KitchenSupply supply = world.GetComponent<KitchenSupply>();
+            foreach (var source in supply.RemainingPackages)
+                snapshot.SupplySources.Add(ProductMessages.Create<GridSupplySourceState>(value =>
+                {
+                    value.SourceId = source.Key; value.RemainingPackages = source.Value;
+                    int layoutId = Tables.Instance.DTSupplyConfig.Get(source.Key).ReceivingLayoutId;
+                    value.ReceivingStationId = world.Stations.Values.Select(station => (GridStation)station)
+                        .Single(station => station.InitialLayoutId == layoutId).Id;
+                }));
+            foreach (SupplyShipment shipment in supply.Children.Values.OfType<SupplyShipment>())
+                snapshot.SupplyShipments.Add(ProductMessages.Create<GridSupplyShipmentState>(value =>
+                {
+                    value.ShipmentId = shipment.Id; value.SourceId = shipment.SourceId; value.ReceivingStationId = shipment.ReceivingStationId;
+                    value.PackageItemId = shipment.PackageItemId; value.RequiredTicks = shipment.RequiredTicks;
+                    value.ProgressTicks = shipment.ProgressTicks; value.Stage = (int)shipment.Stage;
+                }));
+            RestaurantRenovation renovation = ((RestaurantRuntime)world.Restaurant)?.GetComponent<RestaurantRenovation>();
+            if (renovation != null)
+            {
+                snapshot.RenovationCandidates.AddRange(renovation.Candidates); snapshot.SelectedRenovationId = renovation.SelectedDefinitionId;
+                snapshot.RenovationChoiceVersion = renovation.ChoiceVersion; snapshot.RenovationLevelId = renovation.ResultLevelId;
+                snapshot.RenovationLevelGeneration = renovation.ResultLevelGeneration;
+                foreach (var applied in renovation.AppliedStations)
+                {
+                    var state = ProductMessages.Create<GridRenovationAppliedState>(value => value.DefinitionId = applied.Key);
+                    state.StationIds.AddRange(applied.Value); snapshot.RenovationApplied.Add(state);
+                }
+            }
+            var saveBinding = ((Match)world.Match).GetComponent<SoloSaveBinding>();
+            snapshot.SaveEnabled = saveBinding != null; snapshot.LastSavedSlotId = saveBinding?.SourceSlotId ?? "";
+            SoloSaveResult saveResult = saveBinding?.CurrentResult ?? default;
+            if (saveResult != null && saveResult.LevelId == snapshot.LevelId && saveResult.LevelGeneration == snapshot.LevelGeneration)
+            {
+                snapshot.SaveResultId = saveResult.ResultId; snapshot.SaveState = (int)saveResult.State; snapshot.SaveFailure = saveResult.Failure;
+            }
+            snapshot.CanControlRestaurant = peer.CanControlRestaurant();
             return snapshot;
         }
 

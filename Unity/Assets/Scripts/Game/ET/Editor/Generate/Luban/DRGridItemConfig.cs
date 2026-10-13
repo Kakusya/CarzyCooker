@@ -64,6 +64,22 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["Form"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  Form = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["Discardable"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsBoolean) { throw new SerializationException(); }  Discardable = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -86,6 +102,12 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
 
             if (AcceptedDefinitionIds == null) { throw new System.ArgumentNullException(); }
             { var __cjson0 = new JSONArray(); _json["AcceptedDefinitionIds"] = __cjson0; foreach(var _e0 in AcceptedDefinitionIds) { JSONNode __v0; __v0 = new JSONNumber(_e0); __cjson0.Add(__v0); } }
+        }
+        {
+            _json["Form"] = new JSONNumber(Form);
+        }
+        {
+            _json["Discardable"] = new JSONBool(Discardable);
         }
     }
 
@@ -125,6 +147,16 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
     /// AcceptedDefinitionIds
     /// </summary>
     public System.Collections.Generic.List<int> AcceptedDefinitionIds;
+
+    /// <summary>
+    /// Form
+    /// </summary>
+    public int Form;
+
+    /// <summary>
+    /// Discardable
+    /// </summary>
+    public bool Discardable;
 
 }
 }

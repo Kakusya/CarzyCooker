@@ -25,6 +25,7 @@ namespace ET
         {
             Level level=kitchen.ProductLevel();Match match=kitchen.Match;
             if(level==null || kitchen.Stopped || peer==null || !kitchen.HasBinding(peer.MemberId,peer.Generation))return "EntryClosed";
+            if(!peer.CanControlRestaurant())return "HostControlOnly";
             string error=context.Validate(match.MatchId,kitchen.WorldId,kitchen.WorldGeneration,level.Id,level.Generation,peer.Generation);
             if(error!=null)return error;
             error=peer.CheckProductCommand(context,ProductCommandKind.Buff,intent.Equals(peer.LastBuffCommand),out bool replay);
@@ -42,6 +43,7 @@ namespace ET
                 BuffChoiceEnvelope command=buff.Choices.Dequeue();HostPeer peer=command.Peer;
                 string error=peer==null || !peer.EntryOpen || !kitchen.HasBinding(peer.MemberId,command.Context.BindingGeneration)?"EntryClosed"
                     :command.Context.Validate(((Match)kitchen.Match).MatchId,kitchen.WorldId,kitchen.WorldGeneration,level.Id,level.Generation,peer.Generation);
+                if(error==null && !peer.CanControlRestaurant())error="HostControlOnly";
                 if(error==null)error=level.Paused?"Paused":level.Phase!=LevelPhase.Preparing?"WrongPhase"
                     :command.Intent.DrawVersion!=buff.DrawVersion?"DrawChanged":buff.SelectedId!=0?"BuffLocked"
                     :!buff.Candidates.Contains(command.Intent.ChoiceId)?"InvalidBuffChoice":null;

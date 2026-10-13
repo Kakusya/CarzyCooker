@@ -20,6 +20,8 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
         Kind = _buf.ReadInt();
         ContainerCapacity = _buf.ReadInt();
         {int n0 = _buf.ReadSize(); AcceptedDefinitionIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); AcceptedDefinitionIds.Add(_e0);}}
+        Form = _buf.ReadInt();
+        Discardable = _buf.ReadBool();
         PostInit();
     }
 
@@ -48,6 +50,14 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
     /// AcceptedDefinitionIds
     /// </summary>
     public readonly System.Collections.Generic.List<int> AcceptedDefinitionIds;
+    /// <summary>
+    /// Form
+    /// </summary>
+    public readonly int Form;
+    /// <summary>
+    /// Discardable
+    /// </summary>
+    public readonly bool Discardable;
     public const int __ID__ = -1316266935;
     public override int GetTypeId() => __ID__;
 
@@ -64,6 +74,8 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
         + "Kind:" + Kind + ","
         + "ContainerCapacity:" + ContainerCapacity + ","
         + "AcceptedDefinitionIds:" + Luban.StringUtil.CollectionToString(AcceptedDefinitionIds) + ","
+        + "Form:" + Form + ","
+        + "Discardable:" + Discardable + ","
         + "}";
     }
 

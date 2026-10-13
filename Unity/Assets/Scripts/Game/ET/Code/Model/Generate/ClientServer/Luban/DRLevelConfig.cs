@@ -25,6 +25,7 @@ public sealed partial class DRLevelConfig : Luban.BeanBase
         {int n0 = _buf.ReadSize(); AllowedBuffIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); AllowedBuffIds.Add(_e0);}}
         CandidateCount = _buf.ReadInt();
         RequireBuffChoice = _buf.ReadBool();
+        {int n0 = _buf.ReadSize(); AllowedRenovationIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); AllowedRenovationIds.Add(_e0);}}
         PostInit();
     }
 
@@ -73,6 +74,10 @@ public sealed partial class DRLevelConfig : Luban.BeanBase
     /// RequireBuffChoice
     /// </summary>
     public readonly bool RequireBuffChoice;
+    /// <summary>
+    /// AllowedRenovationIds
+    /// </summary>
+    public readonly System.Collections.Generic.List<int> AllowedRenovationIds;
     public const int __ID__ = -2084916616;
     public override int GetTypeId() => __ID__;
 
@@ -94,6 +99,7 @@ public sealed partial class DRLevelConfig : Luban.BeanBase
         + "AllowedBuffIds:" + Luban.StringUtil.CollectionToString(AllowedBuffIds) + ","
         + "CandidateCount:" + CandidateCount + ","
         + "RequireBuffChoice:" + RequireBuffChoice + ","
+        + "AllowedRenovationIds:" + Luban.StringUtil.CollectionToString(AllowedRenovationIds) + ","
         + "}";
     }
 

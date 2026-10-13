@@ -10,6 +10,7 @@ namespace ET
     {
         public static void CancelLevelIntents(this GridKitchenComponent self, string reason)
         {
+            self.CancelSupplyCommands(reason);
             foreach (GridActor actor in self.OrderedActors())
             {
                 if (self.Incoming.TryGetValue(actor.MemberId, out var incoming)) self.Result(actor, incoming.CommandId, GridResultStatus.Cancelled, reason);

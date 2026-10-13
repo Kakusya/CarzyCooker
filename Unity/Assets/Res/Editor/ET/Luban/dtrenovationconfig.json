@@ -1,0 +1,20 @@
+[
+  {
+    "Id": 1,
+    "Name": "新增台面",
+    "StationDefinitionId": 1,
+    "Quantity": 1,
+    "InstallX": 2,
+    "InstallY": 13,
+    "Orientation": 0
+  },
+  {
+    "Id": 2,
+    "Name": "新增切配台",
+    "StationDefinitionId": 2,
+    "Quantity": 1,
+    "InstallX": 4,
+    "InstallY": 12,
+    "Orientation": 0
+  }
+]

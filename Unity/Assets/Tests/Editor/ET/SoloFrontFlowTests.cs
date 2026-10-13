@@ -6,13 +6,13 @@ namespace ET
 {
     public sealed partial class ProductSessionTests
     {
-        private void ConfigureFrontFlow(int interval = 60, int wait = 200)
+        private void ConfigureFrontFlow(int interval = 60, int wait = 200, int? firstArrival = null)
         {
             var rows = (System.Collections.Generic.List<DRCustomerFlowConfig>)Tables.Instance.DTCustomerFlowConfig.DataList;
             var map = (System.Collections.Generic.Dictionary<int, DRCustomerFlowConfig>)Tables.Instance.DTCustomerFlowConfig.DataMap;
             DRCustomerFlowConfig original = rows.Single(value => value.LevelConfigId == 1);
             var buffer = new Luban.ByteBuf();
-            foreach (int value in new[] { original.Id, original.LevelConfigId, original.FirstArrivalTicks, interval, original.QueueCapacity, wait,
+            foreach (int value in new[] { original.Id, original.LevelConfigId, firstArrival ?? original.FirstArrivalTicks, interval, original.QueueCapacity, wait,
                 original.EatTicks, original.EntranceX, original.EntranceY, original.QueueX, original.QueueY }) buffer.WriteInt(value);
             buffer.WriteSize(original.OrderConfigIds.Count); foreach (int id in original.OrderConfigIds) buffer.WriteInt(id);
             var replacement = new DRCustomerFlowConfig(buffer); rows[rows.IndexOf(original)] = replacement; map[replacement.Id] = replacement;

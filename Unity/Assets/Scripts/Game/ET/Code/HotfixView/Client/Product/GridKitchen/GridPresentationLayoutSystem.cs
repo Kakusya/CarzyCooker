@@ -9,7 +9,7 @@ namespace ET.Client
         {
             if(!self.Ready)return;
             GridClientComponent grid=((Scene)self.IScene).GetComponent<ClientSessionComponent>().GetComponent<GridClientComponent>();
-            if(grid.LevelId!=level || grid.LevelGeneration!=generation || grid.LevelPhase!=LevelPhase.Preparing || grid.LevelPaused || !grid.Stations.ContainsKey(station))return;
+            if(!grid.CanControlRestaurant || grid.LevelId!=level || grid.LevelGeneration!=generation || grid.LevelPhase!=LevelPhase.Preparing || grid.LevelPaused || !grid.Stations.ContainsKey(station))return;
             self.LayoutStationId=station;self.LayoutLevelId=level;self.LayoutLevelGeneration=generation;self.RefreshGridHud();
         }
 
@@ -22,7 +22,7 @@ namespace ET.Client
             {
                 ClientSessionComponent client=((Scene)self.IScene).GetComponent<ClientSessionComponent>();
                 GridClientComponent grid=client.GetComponent<GridClientComponent>();EntityRef<GridClientComponent> gridRef=grid;
-                if(grid.LevelId!=level || grid.LevelGeneration!=generation)return;
+                if(!grid.CanControlRestaurant || grid.LevelId!=level || grid.LevelGeneration!=generation)return;
                 StationLayoutRequest request=grid.CreateStationLayout(station,cell,orientation,layoutVersion);
                 request.LevelId=level;request.LevelGeneration=generation;
                 long command=request.CommandId,world=grid.WorldGeneration,binding=grid.BindingGeneration;

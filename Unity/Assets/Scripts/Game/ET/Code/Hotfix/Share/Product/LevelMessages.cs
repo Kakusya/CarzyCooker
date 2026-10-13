@@ -11,6 +11,7 @@ namespace ET
         {
             response.CommandId = request.CommandId;
             if (!peer.EntryOpen) { response.Error = ProductError.PeerClosed; response.Status = (int)GridResultStatus.Rejected; return; }
+            if (!peer.CanControlRestaurant()) { response.Error = ProductError.InvalidRequest; response.Message = "HostControlOnly"; response.Status = (int)GridResultStatus.Rejected; return; }
             var inner = ProductMessages.Create<LevelSubmitRequest>(value =>
             {
                 value.PeerId = peer.Id; value.PeerInstanceId = peer.InstanceId; value.PeerGeneration = peer.Generation;
@@ -63,7 +64,7 @@ namespace ET
                 value.ProtocolVersion = ProductSessionRules.ProtocolVersion; value.MatchId = context.MatchId; value.WorldId = context.WorldId;
                 value.WorldGeneration = context.WorldGeneration; value.BindingGeneration = context.BindingGeneration; value.CommandId = context.CommandId;
                 value.LevelId = context.LevelId; value.LevelGeneration = context.LevelGeneration; value.Action = (int)action;
-                value.NextLevelConfigId = action == LevelControlAction.Continue ? self.NextLevelConfigId : 0;
+                value.NextLevelConfigId = action is LevelControlAction.Continue or LevelControlAction.SaveAndContinue ? self.NextLevelConfigId : 0;
             });
         }
     }

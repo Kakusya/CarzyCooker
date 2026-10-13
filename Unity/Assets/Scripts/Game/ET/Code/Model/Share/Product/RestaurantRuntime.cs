@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace ET
 {
     public enum LevelPhase { Preparing = 1, Operating = 2, Draining = 3, Completed = 4 }
-    public enum LevelControlAction { Start = 1, Pause = 2, Resume = 3, Continue = 4 }
+    public enum LevelControlAction { Start = 1, Pause = 2, Resume = 3, Continue = 4, SaveAndContinue = 5 }
 
     public readonly struct LevelControlIntent : IEquatable<LevelControlIntent>
     {
@@ -56,6 +56,7 @@ namespace ET
         public int Stars;
         public int[] StarThresholds;
         public int[] AllowedDishIds;
+        public int[] AllowedRenovationIds;
         public GridCell SpawnCell;
         public long DrainingStartedTick;
     }

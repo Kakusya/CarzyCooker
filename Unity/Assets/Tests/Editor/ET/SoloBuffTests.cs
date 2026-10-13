@@ -15,7 +15,9 @@ namespace ET
             buffer.WriteSize(source.StarThresholds.Count);foreach(int star in source.StarThresholds)buffer.WriteInt(star);
             buffer.WriteInt(source.SpawnX);buffer.WriteInt(source.SpawnY);buffer.WriteSize(source.AllowedDishIds.Count);foreach(int dish in source.AllowedDishIds)buffer.WriteInt(dish);
             int[] ids=pool??source.AllowedBuffIds.ToArray();buffer.WriteSize(ids.Length);foreach(int id in ids)buffer.WriteInt(id);
-            buffer.WriteInt(count??source.CandidateCount);buffer.WriteBool(required??source.RequireBuffChoice);return new DRLevelConfig(buffer);
+            buffer.WriteInt(count??source.CandidateCount);buffer.WriteBool(required??source.RequireBuffChoice);
+            buffer.WriteSize(source.AllowedRenovationIds.Count);foreach(int id in source.AllowedRenovationIds)buffer.WriteInt(id);
+            return new DRLevelConfig(buffer);
         }
         private void InstallBuffLevel(DRLevelConfig definition)
         {

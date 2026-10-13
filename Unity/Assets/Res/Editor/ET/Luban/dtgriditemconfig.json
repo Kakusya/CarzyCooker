@@ -4,28 +4,36 @@
     "Name": "番茄",
     "Kind": 1,
     "ContainerCapacity": 0,
-    "AcceptedDefinitionIds": []
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true
   },
   {
     "Id": 2,
     "Name": "番茄块",
     "Kind": 1,
     "ContainerCapacity": 0,
-    "AcceptedDefinitionIds": []
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true
   },
   {
     "Id": 3,
     "Name": "鸡蛋",
     "Kind": 1,
     "ContainerCapacity": 0,
-    "AcceptedDefinitionIds": []
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true
   },
   {
     "Id": 4,
     "Name": "蛋液",
     "Kind": 1,
     "ContainerCapacity": 0,
-    "AcceptedDefinitionIds": []
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true
   },
   {
     "Id": 5,
@@ -35,8 +43,11 @@
     "AcceptedDefinitionIds": [
       3,
       4,
-      7
-    ]
+      7,
+      11
+    ],
+    "Form": 3,
+    "Discardable": false
   },
   {
     "Id": 6,
@@ -46,28 +57,36 @@
     "AcceptedDefinitionIds": [
       2,
       4
-    ]
+    ],
+    "Form": 3,
+    "Discardable": false
   },
   {
     "Id": 7,
     "Name": "番茄蛋花汤",
     "Kind": 1,
     "ContainerCapacity": 0,
-    "AcceptedDefinitionIds": []
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true
   },
   {
     "Id": 8,
     "Name": "面包片",
     "Kind": 1,
     "ContainerCapacity": 0,
-    "AcceptedDefinitionIds": []
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true
   },
   {
     "Id": 9,
     "Name": "烤面包",
     "Kind": 1,
     "ContainerCapacity": 0,
-    "AcceptedDefinitionIds": []
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true
   },
   {
     "Id": 10,
@@ -76,6 +95,50 @@
     "ContainerCapacity": 1,
     "AcceptedDefinitionIds": [
       9
-    ]
+    ],
+    "Form": 3,
+    "Discardable": false
+  },
+  {
+    "Id": 11,
+    "Name": "水",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true
+  },
+  {
+    "Id": 12,
+    "Name": "番茄补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      1
+    ],
+    "Form": 3,
+    "Discardable": true
+  },
+  {
+    "Id": 13,
+    "Name": "鸡蛋补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      3
+    ],
+    "Form": 3,
+    "Discardable": true
+  },
+  {
+    "Id": 14,
+    "Name": "面包补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      8
+    ],
+    "Form": 3,
+    "Discardable": true
   }
 ]

@@ -234,7 +234,7 @@ namespace ET
             second.JoinProduct().Forget();
             Pump(8);
             Match match = ((HostSessionComponent)host.Authority).Match;
-            Assert.That(match.ChildrenCount(), Is.EqualTo(2));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(2));
             Assert.That(first.RosterVersion, Is.EqualTo(second.RosterVersion));
             using var duplicate = (ProductJoinResponse)Finish(second.CallProduct(ProductJoinRequest.Create()));
             Assert.That(duplicate.Error, Is.EqualTo(ProductError.IncompatibleProtocol));
@@ -242,7 +242,7 @@ namespace ET
             repeat.ProtocolVersion = ProductSessionRules.ProtocolVersion;
             using var joined = (ProductJoinResponse)Finish(second.CallProduct(repeat));
             Assert.That(joined.MemberId, Is.EqualTo(second.MemberId));
-            Assert.That(match.ChildrenCount(), Is.EqualTo(2));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(2));
             using ProductProbeResponse probe = Finish(second.ProbeProduct("second"));
             Assert.That(probe.MemberId, Is.EqualTo(2));
             var wrong = ProductProbeRequest.Create();
@@ -254,7 +254,7 @@ namespace ET
             Assert.That(Finish(first.LeaveProduct()), Is.True);
             Assert.That(Finish(first.LeaveProduct()), Is.False);
             Pump(4);
-            Assert.That(match.ChildrenCount(), Is.EqualTo(1));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(1));
             Assert.That(((ProcessInnerSender)host.Sender).IsStopped, Is.False);
             using ProductProbeResponse remaining = Finish(second.ProbeProduct("after-local-leave"));
             Assert.That(remaining.Error, Is.Zero);
@@ -279,7 +279,7 @@ namespace ET
             Pump(8);
             Assert.That((HostPeer)peerRef, Is.Null);
             Match match = ((HostSessionComponent)host.Authority).Match;
-            Assert.That(match.ChildrenCount(), Is.EqualTo(1));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(1));
             Assert.That(match.RosterVersion, Is.EqualTo(1));
         }
 
@@ -301,7 +301,7 @@ namespace ET
             Match match = ((HostSessionComponent)host.Authority).Match;
             Participant member = match.GetChild<Participant>(response.MemberId);
             Assert.That(member.Online, Is.False);
-            Assert.That(match.ChildrenCount(), Is.EqualTo(2));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(2));
             Assert.That(match.RosterVersion, Is.EqualTo(3));
             ClientSessionComponent replacement = AddLocalClient();
             replacement.JoinProduct().Forget();
@@ -439,7 +439,7 @@ namespace ET
             Assert.That(Finish(remote.LeaveProduct(), 300), Is.True);
             Pump(30);
             Match match = ((HostSessionComponent)host.Authority).Match;
-            Assert.That(match.ChildrenCount(), Is.EqualTo(1));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(1));
             using ProductProbeResponse remaining = Finish(local.ProbeProduct("after-remote-leave"));
             Assert.That(remaining.Error, Is.Zero);
         }
@@ -455,7 +455,7 @@ namespace ET
             Assert.That(response.Error, Is.EqualTo(ProductError.IncompatibleProtocol));
             Pump(30);
             Match match = ((HostSessionComponent)host.Authority).Match;
-            Assert.That(match.ChildrenCount(), Is.EqualTo(1));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(1));
             Assert.That(match.RosterVersion, Is.EqualTo(1));
             using ProductProbeResponse remaining = Finish(((ClientSessionComponent)host.Client).ProbeProduct("after-reject"));
             Assert.That(remaining.Error, Is.Zero);
@@ -479,7 +479,7 @@ namespace ET
             Assert.That(host.Stage, Is.EqualTo(ProductStage.HostListening));
             Assert.That(((ProcessInnerSender)host.Sender).IsStopped, Is.False);
             Match match = ((HostSessionComponent)host.Authority).Match;
-            Assert.That(match.ChildrenCount(), Is.Zero);
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.Zero);
         }
 
         [Test]
@@ -500,7 +500,7 @@ namespace ET
             request.Dispose();
             Pump(80);
             Match match = ((HostSessionComponent)host.Authority).Match;
-            Assert.That(match.ChildrenCount(), Is.EqualTo(2));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(2));
             Assert.That(match.GetChild<Participant>(2).Online, Is.False);
             using ProductProbeResponse response = Finish(((ClientSessionComponent)host.Client).ProbeProduct("after-invalid-wire"));
             Assert.That(response.MemberId, Is.EqualTo(1));
@@ -635,7 +635,7 @@ namespace ET
             Pump(8);
             Match match = ((HostSessionComponent)host.Authority).Match;
             Assert.That(match.GetChild<Participant>(second.MemberId).Online, Is.False);
-            Assert.That(match.ChildrenCount(), Is.EqualTo(3));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(3));
             Assert.That(match.RosterVersion, Is.EqualTo(4));
             using ProductProbeResponse survivor = Finish(third.ProbeProduct("after-uncommitted-leave"));
             Assert.That(survivor.Error, Is.Zero);
@@ -688,7 +688,7 @@ namespace ET
             session.AService.Send(session.Id, buffer); // 真实 KCP，外层仅有未知 Opcode。
             Pump(80);
             Match match = ((HostSessionComponent)host.Authority).Match;
-            Assert.That(match.ChildrenCount(), Is.EqualTo(2));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(2));
             Assert.That(match.GetChild<Participant>(2).Online, Is.False);
             using ProductProbeResponse response = Finish(((ClientSessionComponent)host.Client).ProbeProduct("after-decode-reject"));
             Assert.That(response.Error, Is.Zero);
@@ -717,7 +717,7 @@ namespace ET
             Pump(400); // 真接入计时跨过既有5秒阈值；尚未Join，不解除验证超时。
             Assert.That(hostScene.GetComponent<NetComponent>().ChildrenCount(), Is.Zero);
             Match match = ((HostSessionComponent)host.Authority).Match;
-            Assert.That(match.ChildrenCount(), Is.EqualTo(1));
+            Assert.That(match.Children.Values.OfType<Participant>().Count(), Is.EqualTo(1));
             using ProductProbeResponse survivor = Finish(((ClientSessionComponent)host.Client).ProbeProduct("after-acceptance-timeout"));
             Assert.That(survivor.Error, Is.Zero);
         }
