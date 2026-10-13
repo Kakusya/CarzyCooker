@@ -85,16 +85,17 @@ namespace ET
             var layouts=(List<DRInitialLayoutConfig>)Tables.Instance.DTInitialLayoutConfig.DataList;var beforeLayout=layouts.ToArray();
             var items=(List<DRGridItemConfig>)Tables.Instance.DTGridItemConfig.DataList;var beforeItems=items.ToArray();
             var stages=(List<DRDishStageConfig>)Tables.Instance.DTDishStageConfig.DataList;var beforeStages=stages.ToArray();
+            var sources=(List<DRSupplyConfig>)Tables.Instance.DTSupplyConfig.DataList;var beforeSources=sources.ToArray();
             try
             {
-                if(invalid=="raw")layouts.RemoveAll(row=>row.InitialItemDefinitionId==GridKitchenRules.Bread);
+                if(invalid=="raw") { layouts.RemoveAll(row=>row.InitialItemDefinitionId==GridKitchenRules.Bread); sources.RemoveAll(row=>row.MaterialDefinitionId==GridKitchenRules.Bread); }
                 if(invalid=="oven")layouts.RemoveAll(row=>row.StationDefinitionId==4);
                 if(invalid=="container")items.RemoveAll(row=>row.Id==GridKitchenRules.Plate);
                 if(invalid=="cycle")stages[8]=DishStage(stages[8],null,10);
                 Assert.Throws<InvalidOperationException>(()=>StartSolo());
                 Assert.That((Scene)host.HostScene,Is.Null);Assert.That((HostSessionComponent)host.Authority,Is.Null);Assert.That(host.Stage,Is.EqualTo(ProductStage.Stopped));
             }
-            finally { layouts.Clear();layouts.AddRange(beforeLayout);items.Clear();items.AddRange(beforeItems);stages.Clear();stages.AddRange(beforeStages); }
+            finally { layouts.Clear();layouts.AddRange(beforeLayout);items.Clear();items.AddRange(beforeItems);stages.Clear();stages.AddRange(beforeStages);sources.Clear();sources.AddRange(beforeSources); }
         }
 
         [Test]

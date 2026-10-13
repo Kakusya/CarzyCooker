@@ -75,6 +75,8 @@ namespace ET
             self.LastFrontWorkCommand = default;
             self.LastServeCommand = default;
             self.LastBuffCommand = default;
+            self.LastSupplyCommand = default;
+            self.LastRenovationCommand = default;
             self.LastCommandStatus = default;
             self.LastCommandReason = null;
         }

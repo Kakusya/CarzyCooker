@@ -22,6 +22,8 @@ public sealed partial class DRStationConfig : Luban.BeanBase
         {int n0 = _buf.ReadSize(); ApproachOffsets = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); ApproachOffsets.Add(_e0);}}
         ItemSlotCapacity = _buf.ReadInt();
         Capabilities = _buf.ReadInt();
+        WaterDefinitionId = _buf.ReadInt();
+        WaterUnits = _buf.ReadInt();
         PostInit();
     }
 
@@ -58,6 +60,14 @@ public sealed partial class DRStationConfig : Luban.BeanBase
     /// Capabilities
     /// </summary>
     public readonly int Capabilities;
+    /// <summary>
+    /// WaterDefinitionId
+    /// </summary>
+    public readonly int WaterDefinitionId;
+    /// <summary>
+    /// WaterUnits
+    /// </summary>
+    public readonly int WaterUnits;
     public const int __ID__ = 847361960;
     public override int GetTypeId() => __ID__;
 
@@ -76,6 +86,8 @@ public sealed partial class DRStationConfig : Luban.BeanBase
         + "ApproachOffsets:" + Luban.StringUtil.CollectionToString(ApproachOffsets) + ","
         + "ItemSlotCapacity:" + ItemSlotCapacity + ","
         + "Capabilities:" + Capabilities + ","
+        + "WaterDefinitionId:" + WaterDefinitionId + ","
+        + "WaterUnits:" + WaterUnits + ","
         + "}";
     }
 

@@ -113,7 +113,7 @@
     "X": 3,
     "Y": 5,
     "Orientation": 0,
-    "Name": "洗碗台",
+    "Name": "水池／洗碗台",
     "InitialItemDefinitionId": 0
   },
   {
@@ -132,6 +132,15 @@
     "Y": 5,
     "Orientation": 0,
     "Name": "干净餐具池",
+    "InitialItemDefinitionId": 0
+  },
+  {
+    "Id": 16,
+    "StationDefinitionId": 9,
+    "X": 5,
+    "Y": 10,
+    "Orientation": 0,
+    "Name": "垃圾桶",
     "InitialItemDefinitionId": 0
   }
 ]

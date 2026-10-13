@@ -14,6 +14,7 @@ namespace ET
             Level level = self.ProductLevel(); Match match = self.Match;
             if (level == null) return "SoloRestaurantOnly";
             if (self.Stopped || peer == null || !self.HasBinding(peer.MemberId, peer.Generation)) return "EntryClosed";
+            if (!peer.CanControlRestaurant()) return "HostControlOnly";
             string identity = context.Validate(match.MatchId, self.WorldId, self.WorldGeneration, level.Id, level.Generation, peer.Generation);
             if (identity != null) return identity;
             string prior = peer.CheckProductCommand(context, ProductCommandKind.Layout, intent.Equals(peer.LastLayoutCommand), out bool replay);
@@ -32,6 +33,7 @@ namespace ET
                 Level level = self.ProductLevel(); Match match = self.Match;
                 string error = peer == null || !self.HasBinding(peer.MemberId, command.Context.BindingGeneration) ? "EntryClosed"
                     : command.Context.Validate(match.MatchId, self.WorldId, self.WorldGeneration, level.Id, level.Generation, peer.Generation);
+                if (error == null && !peer.CanControlRestaurant()) error = "HostControlOnly";
                 if (error == null) error = self.ApplyStationLayout(level, command.Intent);
                 peer?.RecordProductResult(command.Context.CommandId, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error);
                 self.Dirty = true;

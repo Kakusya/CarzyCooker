@@ -29,6 +29,8 @@ public partial class Tables
     public DTTableConfig DTTableConfig { private set; get; }
     public DTCustomerFlowConfig DTCustomerFlowConfig { private set; get; }
     public DTBuffConfig DTBuffConfig { private set; get; }
+    public DTSupplyConfig DTSupplyConfig { private set; get; }
+    public DTRenovationConfig DTRenovationConfig { private set; get; }
     private System.Collections.Generic.Dictionary<string, IDataTable> _tables;
     public System.Collections.Generic.IEnumerable<IDataTable> DataTables => _tables.Values;
     public IDataTable GetDataTable(string tableName) => _tables.TryGetValue(tableName, out var v) ? v : null;
@@ -88,6 +90,12 @@ public partial class Tables
         DTBuffConfig = new DTBuffConfig(() => loader("dtbuffconfig"));
         loadTasks.Add(DTBuffConfig.LoadAsync());
         _tables.Add("DTBuffConfig", DTBuffConfig);
+        DTSupplyConfig = new DTSupplyConfig(() => loader("dtsupplyconfig"));
+        loadTasks.Add(DTSupplyConfig.LoadAsync());
+        _tables.Add("DTSupplyConfig", DTSupplyConfig);
+        DTRenovationConfig = new DTRenovationConfig(() => loader("dtrenovationconfig"));
+        loadTasks.Add(DTRenovationConfig.LoadAsync());
+        _tables.Add("DTRenovationConfig", DTRenovationConfig);
 
         await Cysharp.Threading.Tasks.UniTask.WhenAll(loadTasks);
 
@@ -114,6 +122,8 @@ public partial class Tables
         DTTableConfig.ResolveRef(this);
         DTCustomerFlowConfig.ResolveRef(this);
         DTBuffConfig.ResolveRef(this);
+        DTSupplyConfig.ResolveRef(this);
+        DTRenovationConfig.ResolveRef(this);
         PostResolveRef();
     }
 

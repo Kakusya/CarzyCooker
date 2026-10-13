@@ -19,7 +19,7 @@ using GameEntry=Game.GameEntry;
 
 namespace ET
 {
-    public sealed class SoloRestaurantUiTests
+    public sealed partial class SoloRestaurantUiTests
     {
         private GameObject ownedRoot;
         private Init ownedInit;
@@ -35,11 +35,12 @@ namespace ET
             float started=Time.realtimeSinceStartup;
             while(!condition())
             {
-                Assert.That(Time.realtimeSinceStartup-started,Is.LessThan(seconds),reason+"; "+Presentation?.Failure);
+                Assert.That(Time.realtimeSinceStartup-started,Is.LessThan(seconds),reason+"; "+Presentation?.Failure+
+                    $"; phase={Grid?.LevelPhase}, tick={Grid?.Tick}, operating={Grid?.LevelElapsedTicks}, customers={Grid?.Customers.Count}, works={Grid?.FrontWorks.Count}");
                 yield return null;
             }
         }
-        private IEnumerator StartLauncher(bool waitReady=true)
+        private IEnumerator StartLauncher(bool waitReady=true, bool chooseGame=true)
         {
             Assert.That(Init.Instance,Is.Null,"Do not replace another active ET entry");
             Assert.That(FiberManager.Instance,Is.Null,"Do not replace another active World");
@@ -48,6 +49,12 @@ namespace ET
             yield return Wait(()=>GameEntry.RuntimeOwner is Component,"Owned GameEntry starts");
             ownedRoot=((Component)GameEntry.RuntimeOwner).transform.root.gameObject;
             yield return Wait(()=>Init.Instance!=null,"ET entry starts");ownedInit=Init.Instance;
+            yield return Wait(() => Runtime?.Root().GetComponent<SoloSavePresentation>() is SoloSavePresentation selection &&
+                ((UIGridKitchen)selection.Hud)?.Available == true, "Real managed save selector ready");
+            if (!chooseGame) yield break;
+            var selector = Runtime.Root().GetComponent<SoloSavePresentation>();
+            var menu = ((UIGridKitchen)selector.Hud).View;
+            Pointer(menu.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "内存试玩"));
             if(waitReady)yield return Wait(()=>Presentation?.Ready==true,"Real managed HUD ready");
         }
         private Button Button(string caption,bool prefix=false)=>Hud.GetComponentsInChildren<Button>(false)
@@ -72,6 +79,57 @@ namespace ET
             long command=Client.NextCommandId+1;Pointer(Button(caption,prefix));
             Assert.That(Client.NextCommandId,Is.EqualTo(command),"One pointer click sends one command");
             yield return Wait(()=>Grid.LastCommandId==command && Grid.LastStatus==GridResultStatus.Executed,"Actual command executed");
+        }
+
+        [UnityTest]
+        public IEnumerator SoloSaveUiOneClickCloseAndReopenKeepsResultOwnedCommit()
+        {
+            yield return StartLauncher();
+            string directory = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "../Temp/solo-save-ui-tests", Guid.NewGuid().ToString("N")));
+            string profile = Guid.NewGuid().ToString("N"); ProductRuntimeComponent runtime = Runtime;
+            runtime.Root().RemoveComponent<SoloSaveRepository>();
+            var repository = runtime.Root().AddComponent<SoloSaveRepository, string, string>(directory, profile);
+            try
+            {
+                Match match = ((HostSessionComponent)runtime.Authority).Match; match.BindSoloSave(profile, null, null);
+                GridKitchenComponent kitchen = match.ProductKitchen(); kitchen.Dirty = true;
+                yield return Wait(() => Grid.SaveEnabled, "Save mode arrives through independent snapshot");
+                string buff = Hud.GetComponentsInChildren<Button>(false).First(value => value.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
+                yield return Command(buff); yield return Command("开始营业");
+                yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Actual natural save result", 75);
+                yield return Command("装修 新增台面");
+                string actualPath = repository.DirectoryPath, blocker = System.IO.Path.Combine(actualPath, "blocked");
+                System.IO.File.WriteAllText(blocker, "owned UI failure fixture"); repository.DirectoryPath = blocker;
+                long failedLevel = Grid.LevelId; Pointer(Button("保存并继续"));
+                yield return Wait(() => Grid.SaveState == SoloSaveState.Failed, "Actual save failure stays settled");
+                Assert.That(Grid.LevelId, Is.EqualTo(failedLevel)); Assert.That(Grid.LevelPhase, Is.EqualTo(LevelPhase.Completed));
+                Assert.That(Hud.SettlementText.text, Does.Contain("保存失败")); string resultId = Grid.SaveResultId;
+                repository.DirectoryPath = actualPath; Assert.That(repository.Browse(), Is.Empty);
+                Presentation.CloseGridHud(); yield return null; Presentation.OpenGridHud(); yield return Wait(() => Presentation.Ready, "Failed save HUD reopen");
+                Assert.That(Grid.SaveResultId, Is.EqualTo(resultId)); Assert.That(Hud.SettlementText.text, Does.Contain("保存失败"));
+                long command = Client.NextCommandId, oldLevel = Grid.LevelId; int mono = Hud.GetInstanceID();
+                Button save = Button("保存并继续"); Pointer(save); Pointer(save);
+                Assert.That(Client.NextCommandId, Is.EqualTo(command + 1), "Repeated same-frame pointers issue one physical save command");
+                Presentation.CloseGridHud();
+                yield return Wait(() => Grid.LevelId != oldLevel && Grid.LevelPhase == LevelPhase.Preparing, "Closing display owner keeps Match-owned save and Continue", 12);
+                Assert.That(repository.Browse().Length, Is.EqualTo(1)); Assert.That(Grid.Items.Count, Is.EqualTo(7)); Assert.That(Grid.Stations.Count, Is.EqualTo(17));
+                Presentation.OpenGridHud(); yield return Wait(() => Presentation.Ready, "Managed saved HUD reopen");
+                Assert.That(Hud.GetInstanceID(), Is.EqualTo(mono)); Assert.That(Grid.LastSavedSlotId, Is.EqualTo(repository.Browse().Single().SlotId));
+                Assert.That(Hud.HintText.text, Does.Contain("检查点"));
+            }
+            finally
+            {
+                runtime.StopProduct(); repository.Dispose(); RemoveOwnSaveUiFiles(directory);
+            }
+        }
+
+        private static void RemoveOwnSaveUiFiles(string directory)
+        {
+            string parent = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "../Temp/solo-save-ui-tests"));
+            Assert.That(System.IO.Path.GetDirectoryName(directory), Is.EqualTo(parent));
+            foreach (string file in System.IO.Directory.EnumerateFiles(directory, "*", System.IO.SearchOption.AllDirectories)) System.IO.File.Delete(file);
+            foreach (string child in System.IO.Directory.EnumerateDirectories(directory, "*", System.IO.SearchOption.AllDirectories).OrderByDescending(s => s.Length)) System.IO.Directory.Delete(child);
+            System.IO.Directory.Delete(directory);
         }
 
         [UnityTearDown]
@@ -100,6 +158,152 @@ namespace ET
             Assert.That(asset.GetComponent<GraphicRaycaster>(),Is.Not.Null);Assert.That(view.TargetTemplateButton.gameObject.activeSelf,Is.False);
             Assert.That(view.CameraDragAreaRectTransform.GetComponent<Image>().raycastTarget,Is.False);
             Assert.That(view.TargetsRectTransform.GetComponentInParent<ScrollRect>(true).content,Is.SameAs(view.TargetsRectTransform));
+        }
+
+        [UnityTest]
+        public IEnumerator SoloRenovationUiRealZeroStarChoicesReopenOnceInstallAndOldCallbacks()
+        {
+            yield return StartLauncher();
+            string buff = Hud.GetComponentsInChildren<Button>(false).First(value => value.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
+            yield return Command(buff); yield return Command("开始营业");
+            yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Actual zero-star renovation result", 75);
+            Assert.That(Grid.LevelStars, Is.Zero); Assert.That(Grid.RenovationCandidates, Is.EqualTo(new[] { 1, 2 }));
+            long version = Grid.RenovationChoiceVersion; int[] candidates = Grid.RenovationCandidates.ToArray();
+            UnityAction retired = CaptureButtonCallback(Button("装修 新增台面")); int mono = Hud.GetInstanceID();
+            long before = Client.NextCommandId; Presentation.CloseGridHud(); yield return null; Presentation.OpenGridHud();
+            yield return Wait(() => Presentation.Ready, "Managed renovation HUD reopen");
+            Assert.That(Hud.GetInstanceID(), Is.EqualTo(mono)); retired(); Assert.That(Client.NextCommandId, Is.EqualTo(before));
+            Assert.That(Grid.RenovationChoiceVersion, Is.EqualTo(version)); Assert.That(Grid.RenovationCandidates, Is.EqualTo(candidates));
+            UnityAction otherChoice = CaptureButtonCallback(Button("装修 新增切配台"));
+            yield return Command("装修 新增台面");
+            Assert.That(Grid.SelectedRenovationId, Is.EqualTo(1)); Assert.That(Grid.Stations.Count, Is.EqualTo(16));
+            Assert.That(Hud.SettlementText.text, Does.Contain("已选装修：新增台面"));
+            before = Client.NextCommandId; otherChoice(); Assert.That(Client.NextCommandId, Is.EqualTo(before), "Retired choice cannot submit another direction");
+            long oldLevel = Grid.LevelId; long[] items = Grid.Items.Keys.OrderBy(value => value).ToArray();
+            yield return Command("下一关"); Assert.That(Grid.LevelId, Is.Not.EqualTo(oldLevel));
+            long station = Grid.RenovationApplied[1].Single(); Assert.That(Grid.Stations[station].Name, Is.EqualTo("新增台面"));
+            Assert.That(Grid.Stations[station].ItemId, Is.Zero); Assert.That(Grid.Stations.Count, Is.EqualTo(17));
+            Assert.That(Grid.Items.Keys.OrderBy(value => value), Is.EqualTo(items));
+            before = Client.NextCommandId; otherChoice(); retired(); yield return null;
+            Assert.That(Client.NextCommandId, Is.EqualTo(before)); Assert.That(Hud.HintText.text, Does.Contain("已装修：新增台面"));
+        }
+
+        private IEnumerator RenovationUiMoveStation(string name, GridCell cell)
+        {
+            long before = Client.NextCommandId; Pointer(Button("调整 " + name));
+            Assert.That(Client.NextCommandId, Is.EqualTo(before), "Selecting a station sends no business command");
+            Vector2 point = Board.BoardCamera.WorldToScreenPoint(Board.CellToWorld(cell));
+            Assert.That(Board.InputScreenRect.Contains(point), Is.True);
+            Presentation.ProcessGridPointer(point, true, true, false); Presentation.ProcessGridPointer(point, false, false, true);
+            long command = before + 1; Assert.That(Client.NextCommandId, Is.EqualTo(command));
+            yield return Wait(() => Grid.LastCommandId == command && Grid.LastStatus == GridResultStatus.Executed, "Actual map layout movement");
+            Pointer(Button("结束调整"));
+        }
+
+        [UnityTest]
+        public IEnumerator SoloRenovationUiActualBlockedCandidatesShowsEmptyFeedbackAndCanContinue()
+        {
+            yield return StartLauncher();
+            yield return RenovationUiMoveStation("切配台", new GridCell(2, 13));
+            yield return RenovationUiMoveStation("交接台", new GridCell(4, 12));
+            string buff = Hud.GetComponentsInChildren<Button>(false).First(value => value.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
+            yield return Command(buff); yield return Command("开始营业");
+            yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Actual empty renovation result", 75);
+            Assert.That(Grid.RenovationCandidates, Is.Empty); Assert.That(Hud.SettlementText.text, Does.Contain("当前没有可选装修"));
+            Assert.That(Hud.GetComponentsInChildren<Button>(false).Any(value => value.GetComponentInChildren<Text>().text.StartsWith("装修 ")), Is.False);
+            long[] items = Grid.Items.Keys.OrderBy(value => value).ToArray(); yield return Command("下一关");
+            Assert.That(Grid.Stations.Count, Is.EqualTo(16)); Assert.That(Grid.RenovationApplied, Is.Empty);
+            Assert.That(Grid.Items.Keys.OrderBy(value => value), Is.EqualTo(items));
+        }
+
+        [UnityTest]
+        public IEnumerator SoloSupplyUiActualPurchaseReceiptPortionsAndEmptyShellWithManagedReopen()
+        {
+            yield return StartLauncher(); int source = Tables.Instance.DTSupplyConfig.DataList.Single(value => value.MaterialDefinitionId == GridKitchenRules.Tomato).Id;
+            UnityAction oldPurchase = CaptureButtonCallback(Button("采购 番茄", true));
+            yield return Command("采购 番茄", true);
+            Assert.That(Grid.SupplySources[source].RemainingPackages, Is.EqualTo(4)); Assert.That(Grid.SupplyShipments.Count, Is.EqualTo(1));
+            long shipment = Grid.SupplyShipments.Values.Single().Id;
+            Assert.That(Grid.SupplyShipments[shipment].Stage, Is.EqualTo(ShipmentStage.InTransit));
+            Assert.That(Hud.HintText.text, Does.Contain("运输"));
+            int mono = Hud.GetInstanceID(); long before = Client.NextCommandId;
+            Presentation.CloseGridHud(); yield return null; Presentation.OpenGridHud();
+            yield return Wait(() => Presentation.Ready, "Managed supply HUD reopen");
+            oldPurchase(); Assert.That(Client.NextCommandId, Is.EqualTo(before)); Assert.That(Grid.SupplyShipments.Count, Is.EqualTo(1));
+            Assert.That(Hud.GetInstanceID(), Is.EqualTo(mono));
+            yield return Wait(() => Grid.SupplyShipments[shipment].Stage == ShipmentStage.Ready, "Actual shipment arrives on business ticks");
+            Assert.That(Hud.HintText.text, Does.Contain("待收货"));
+            yield return Command("接收 番茄", true); long package = Grid.SupplyShipments[shipment].PackageItemId;
+            long[] contents = Grid.Items[package].Contents.ToArray(); Assert.That(contents.Length, Is.EqualTo(2));
+            yield return Command("拆一份 番茄", true);
+            Assert.That(Grid.Actors[Client.MemberId].HandItemId, Is.EqualTo(contents[0])); Assert.That(Grid.Items[package].Contents, Is.EqualTo(new[] { contents[1] }));
+            yield return Command("放 烤箱 ·", true); yield return Command("拆一份 番茄", true);
+            Assert.That(Grid.Actors[Client.MemberId].HandItemId, Is.EqualTo(contents[1])); yield return Command("放 切配台 ·", true);
+            yield return Command("拿 交接台 ·", true); Assert.That(Grid.Actors[Client.MemberId].HandItemId, Is.EqualTo(package));
+            Assert.That(Grid.Items[package].Contents, Is.Empty); yield return Command("投垃圾 → 垃圾桶");
+            Assert.That(Grid.Items.ContainsKey(package), Is.False);
+            Assert.That(Grid.Items.ContainsKey(contents[0]) && Grid.Items.ContainsKey(contents[1]), Is.True);
+            Assert.That(Grid.SupplySources[source].RemainingPackages, Is.EqualTo(4)); Assert.That(Grid.SupplyShipments.Count, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator SoloSupplyUiOldLevelPurchaseCallbackCannotWriteNextKitchen()
+        {
+            yield return StartLauncher(); UnityAction oldPurchase = CaptureButtonCallback(Button("采购 鸡蛋", true));
+            string candidate = Hud.GetComponentsInChildren<Button>(false).First(value => value.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
+            yield return Command(candidate); yield return Command("开始营业");
+            yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Actual natural completion before supply callback check", 75);
+            long oldLevel = Grid.LevelId; yield return Command("下一关"); long command = Client.NextCommandId;
+            Assert.That(Grid.LevelId, Is.Not.EqualTo(oldLevel)); oldPurchase(); yield return null;
+            Assert.That(Client.NextCommandId, Is.EqualTo(command)); Assert.That(Grid.SupplyShipments, Is.Empty);
+            Assert.That(Grid.SupplySources.Values.All(value => value.RemainingPackages == 5), Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator SoloCleanupUiActualSinkButtonsApproachWrongTrashAndManagedReopen()
+        {
+            yield return StartLauncher(); yield return Command("拿 碗台 ·", true);
+            long bowl = Grid.Actors[Client.MemberId].HandItemId;
+            var sink = Grid.Stations.Values.Single(value => value.Kind == GridStationKind.Wash);
+            var trash = Grid.Stations.Values.Single(value => value.Kind == GridStationKind.Trash);
+            GridCell far = new(1, 16); Vector2 point = Board.BoardCamera.WorldToScreenPoint(Board.CellToWorld(far));
+            Assert.That(Board.InputScreenRect.Contains(point), Is.True);
+            long command = Client.NextCommandId + 1;
+            Presentation.ProcessGridPointer(point, true, true, false); Presentation.ProcessGridPointer(point, false, false, true);
+            Assert.That(Client.NextCommandId, Is.EqualTo(command));
+            yield return Wait(() => Grid.LastCommandId == command && Grid.LastStatus == GridResultStatus.Executed, "Real map movement to far cell");
+            Button fill = Button("接水 → " + sink.Name); UnityAction oldFill = CaptureButtonCallback(fill);
+            command = Client.NextCommandId + 1; Pointer(fill);
+            Assert.That(Client.NextCommandId, Is.EqualTo(command)); Assert.That(Grid.LastStatus, Is.EqualTo(GridResultStatus.Accepted));
+            Assert.That(Grid.Items[bowl].Contents, Is.Empty, "Receipt cannot pretend the water is already filled");
+            yield return null; Assert.That(Grid.Items[bowl].Contents, Is.Empty, "The distant character must actually approach");
+            yield return Wait(() => Grid.LastCommandId == command && Grid.LastStatus == GridResultStatus.Executed, "Real sink arrival and water fill");
+            long water = Grid.Items[bowl].Contents.Single();
+            Assert.That(sink.Approaches.Contains(Grid.Actors[Client.MemberId].Cell), Is.True);
+            Assert.That(Hud.HandText.text, Does.Contain("水"));
+            point = Board.BoardCamera.WorldToScreenPoint(Board.CellToWorld(trash.Cell));
+            Assert.That(Board.InputScreenRect.Contains(point), Is.True);
+            command = Client.NextCommandId + 1;
+            Presentation.ProcessGridPointer(point, true, true, false); Presentation.ProcessGridPointer(point, false, false, true);
+            Assert.That(Client.NextCommandId, Is.EqualTo(command));
+            yield return Wait(() => Grid.LastCommandId == command && Grid.LastStatus == GridResultStatus.Rejected, "Real wrong-facility rejection");
+            Assert.That(Grid.LastReason, Is.EqualTo("RequiresSolid")); Assert.That(Hud.StatusText.text, Does.Contain("垃圾桶只能接收固体"));
+            Assert.That(Grid.Items[bowl].Contents, Is.EqualTo(new[] { water }));
+            yield return Command("倒液 → " + sink.Name);
+            Assert.That(Grid.Items.ContainsKey(water), Is.False); Assert.That(Grid.Items[bowl].Contents, Is.Empty);
+            int pooledView = Hud.GetInstanceID(); long before = Client.NextCommandId;
+            Presentation.CloseGridHud(); yield return null; Presentation.OpenGridHud();
+            yield return Wait(() => Presentation.Ready, "Actual managed HUD reopen");
+            oldFill(); Assert.That(Client.NextCommandId, Is.EqualTo(before), "Retired owner callback cannot refill the same pooled HUD");
+            Assert.That(Hud.GetInstanceID(), Is.EqualTo(pooledView));
+            yield return Command("接水 → " + sink.Name);
+            Assert.That(Grid.Items[bowl].Contents.Single(), Is.Not.EqualTo(water));
+            Assert.That(Grid.Actors[Client.MemberId].HandItemId, Is.EqualTo(bowl));
+            var header = Hud.PhaseText.rectTransform.parent as RectTransform; var canvas = Hud.GetComponent<Canvas>().rootCanvas;
+            point = RectTransformUtility.WorldToScreenPoint(canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera, header.TransformPoint(header.rect.center));
+            before = Client.NextCommandId;
+            Presentation.ProcessGridPointer(point, true, true, false); Presentation.ProcessGridPointer(point, false, false, true);
+            Assert.That(Client.NextCommandId, Is.EqualTo(before), "HUD pointer cannot leak into a map command");
         }
 
         [UnityTest]

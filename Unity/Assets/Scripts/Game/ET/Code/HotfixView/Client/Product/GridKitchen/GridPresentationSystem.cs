@@ -146,13 +146,16 @@ namespace ET.Client
             if(!self.Ready)return;
             GridClientComponent grid=((Scene)self.IScene).GetComponent<ClientSessionComponent>().GetComponent<GridClientComponent>();
             if(!grid.Stations.TryGetValue(target,out GridStationProjection station) || !grid.Actors.TryGetValue(grid.MemberId,out GridActorProjection own))return;
+            if(own.HandItemId==0 && station.Kind is GridStationKind.Wash or GridStationKind.Trash)return;
             self.SendGridIntent(grid.CounterIntent(target));
         }
 
         public static void SendGridIntent(this GridPresentationComponent self, GridIntent intent) =>
-            self.SendGridAction(intent.Action, intent.Cell, intent.TargetId, intent.ExpectedItemId, intent.ExpectedTargetItemId, intent.ExpectedProcessId);
+            self.SendGridAction(intent.Action, intent.Cell, intent.TargetId, intent.ExpectedItemId, intent.ExpectedTargetItemId, intent.ExpectedProcessId,
+                intent.ExpectedContentIds, intent.ExpectedRemainingPortions, intent.ExpectedLayoutVersion);
 
-        public static void SendGridAction(this GridPresentationComponent self, GridAction action, GridCell cell=default, long target=0, long expected=0, long expectedTarget=0, long process=0)
+        public static void SendGridAction(this GridPresentationComponent self, GridAction action, GridCell cell=default, long target=0, long expected=0, long expectedTarget=0, long process=0,
+            IEnumerable<long> expectedContents=null, int expectedRemainingPortions=0, long expectedLayoutVersion=0)
         {
             var owner=self.GridCommandOwner();if(owner==null)return;
             EntityRef<GridPresentationComponent> selfRef=self;
@@ -161,7 +164,7 @@ namespace ET.Client
                 ClientSessionComponent client=((Scene)self.IScene).GetComponent<ClientSessionComponent>();
                 GridClientComponent grid=client.GetComponent<GridClientComponent>();
                 EntityRef<GridClientComponent> gridRef=grid;
-                GridCommandRequest request=grid.CreateGridCommand(action,cell,target,expected,expectedTarget,process);
+                GridCommandRequest request=grid.CreateGridCommand(action,cell,target,expected,expectedTarget,process,expectedContents,expectedRemainingPortions,expectedLayoutVersion);
                 long command=request.CommandId, generation=grid.WorldGeneration;
                 self.Highlight=cell;self.HighlightCommand=command;
                 try
@@ -185,7 +188,9 @@ namespace ET.Client
             {
                 ClientSessionComponent client = ((Scene)self.IScene).GetComponent<ClientSessionComponent>();
                 GridClientComponent grid = client.GetComponent<GridClientComponent>(); EntityRef<GridClientComponent> gridRef = grid;
-                if(grid.LevelId!=expectedLevel || grid.LevelGeneration!=expectedGeneration)return;
+                if(!grid.CanControlRestaurant || grid.LevelId!=expectedLevel || grid.LevelGeneration!=expectedGeneration)return;
+                if (action == LevelControlAction.SaveAndContinue && (grid.SaveState == SoloSaveState.Writing ||
+                    grid.LastCommandKind == ProductCommandKind.Level && grid.LastStatus == GridResultStatus.Accepted)) return;
                 LevelCommandRequest request = grid.CreateLevelCommand(action);
                 request.LevelId = expectedLevel; request.LevelGeneration = expectedGeneration;
                 long command = request.CommandId, generation = grid.WorldGeneration, currentLevel = grid.LevelId;
@@ -204,7 +209,8 @@ namespace ET.Client
         public static void RefreshGridHud(this GridPresentationComponent self)
         {
             UIGridKitchen hud=self.Hud;if(hud?.View==null)return;
-            GridClientComponent grid=((Scene)self.IScene).GetComponent<ClientSessionComponent>().GetComponent<GridClientComponent>();
+            ClientSessionComponent client=((Scene)self.IScene).GetComponent<ClientSessionComponent>();
+            GridClientComponent grid=client.GetComponent<GridClientComponent>();
             MonoUIGridKitchen view=hud.View;
             self.RefreshRestaurantPanels(view,grid);
             string state=grid.LastStatus switch {GridResultStatus.Accepted=>"已发送",GridResultStatus.PendingApproach=>"正在接近",GridResultStatus.Executed=>"动作已执行",GridResultStatus.Cancelled=>"已取消",GridResultStatus.Rejected=>"无法操作",_=>"就绪"};
@@ -215,6 +221,18 @@ namespace ET.Client
             reason=grid.LastReason switch{"RequiresTablePosition"=>"请先走到餐桌旁","WrongDish"=>"手中菜品与订单不符","DirtyUtensil"=>"餐具需要先洗净",
                 "OrderChanged" or "OrderEnded"=>"订单已结束或顾客已更换","ItemChanged"=>"手持物已变化","TableBusy"=>"餐桌暂时不能交付","RequiresFrontAction"=>"请使用前厅工作或交付按钮",_=>reason};
             reason=grid.LastReason switch {"BuffChoiceRequired"=>"请先选择本关加成","BuffLocked"=>"本关加成已锁定","InvalidBuffChoice"=>"此加成不在本关候选中","DrawChanged"=>"候选已变化",_=>reason};
+            reason=grid.LastReason switch {"SupplyExhausted"=>"供应配额不足","ReceivingFull"=>"收货台已满，腾空后再接收",
+                "ShipmentNotReady"=>"货物仍在运输","AlreadyReceived"=>"这份货物已经接收","ShipmentChanged"=>"货物或收货台已变化",
+                "RequiresSupplyPackage"=>"需要合法原料包装","InvalidQuantity"=>"采购数量必须为正数",_=>reason};
+            reason=grid.LastReason switch {"RenovationChanged"=>"结算候选已变化","RenovationLocked"=>"本次装修已锁定",
+                "InvalidRenovationChoice"=>"此装修不在本次候选中","RenovationOccupied"=>"安装位置仍有角色或落物",
+                "RenovationBlocked"=>"安装会重叠或堵住通路","RenovationRelationshipsChanged"=>"厨房物品或加工关系已变化",_=>reason};
+            reason=grid.LastReason switch {"RequiresSink"=>"液体必须带到水池处理","RequiresTrash"=>"固体必须带到垃圾桶处理",
+                "RequiresLiquid"=>"水池只能排放液体","RequiresSolid"=>"垃圾桶只能接收固体","RequiresContainer"=>"需要手持兼容空容器",
+                "IncompatibleContainer"=>"这个容器不能接水","ProtectedContainer"=>"保留锅碗盘，请先装入需要处理的内容",
+                "ProtectedItem"=>"这个物品不能丢弃","MixedContents"=>"原始固液混合内容暂时不能整体倾倒",
+                "ContentsChanged"=>"容器内容已变化，请重新选择设施","BatchChanged"=>"汤的剩余批次已变化，请重新选择",
+                "StationBusy"=>"工位正被占用，请稍后再试","ProcessLocked"=>"加工中的物品不能处理",_=>reason};
             string phase = grid.LevelPhase switch { LevelPhase.Preparing => "准备", LevelPhase.Operating => "营业", LevelPhase.Draining => "收尾", LevelPhase.Completed => $"结算 {grid.LevelScore}分 {grid.LevelStars}星", _ => "" };
             view.StatusText.text=(grid.LevelId==0?"":phase+(grid.LevelPaused?"（暂停）":"")+" · ")+$"玩家 {grid.MemberId} · {state} {reason}";
             if(!grid.Actors.TryGetValue(grid.MemberId,out GridActorProjection own))return;
@@ -222,10 +240,15 @@ namespace ET.Client
             view.HandText.text=$"手持：{hand}";
             view.HintText.text=string.Join(" · ",grid.Processes.Values.Select(GridClientSystem.WorkDescription).Concat(grid.AutoProcesses.Values.Select(GridClientSystem.AutoWorkDescription)).Concat(grid.BakeProcesses.Values.Select(GridClientSystem.BakeWorkDescription)));
             if(view.HintText.text.Length==0)view.HintText.text="点击目标拿放／切配 · 拖动查看餐厅";
-            if (grid.LevelId != 0) view.HintText.text += " · 试玩进度仅保留本次运行";
+            if (grid.LevelId != 0) view.HintText.text += grid.SaveEnabled ? " · 成功结算后可新建检查点" : " · 试玩进度仅保留本次运行";
             if(grid.SelectedBuffId!=0)view.HintText.text+=" · 本关加成："+Tables.Instance.DTBuffConfig.Get(grid.SelectedBuffId).Name;
+            string supplyStatus=string.Join(" · ",grid.SupplyShipments.Values.Where(value=>value.Stage!=ShipmentStage.Received).OrderBy(value=>value.Id).Select(value=>
+                Tables.Instance.DTSupplyConfig.Get(value.SourceId).Name+(value.Stage==ShipmentStage.InTransit?$" 运输 {value.ProgressTicks}/{value.RequiredTicks}":" 待收货")));
+            if(supplyStatus.Length>0)view.HintText.text+=" · "+supplyStatus;
             if(self.LayoutStationId!=0 && (grid.LevelId!=self.LayoutLevelId || grid.LevelGeneration!=self.LayoutLevelGeneration || grid.LevelPhase!=LevelPhase.Preparing || grid.LevelPaused)) self.LayoutStationId=0;
             if(self.LayoutStationId!=0 && grid.Stations.TryGetValue(self.LayoutStationId,out GridStationProjection selected)) view.HintText.text=$"调整 {selected.Name}：点击目标格移动，或点旋转";
+            self.RefreshRenovationStatus(view,grid);
+            self.RefreshSaveStatus(view,grid);
             GridItemProjection[] drops=grid.Items.Values.Where(value=>value.Location==GridItemLocation.Ground && value.Cell==own.Cell).OrderBy(value=>value.Id).ToArray();
             string targetsKey=$"{own.HandItemId}:{own.WorkId}:"+string.Join(",",drops.Select(value=>value.Id))+"|"+
                 string.Join(";",grid.Stations.Values.OrderBy(v=>v.Id).Select(v=>$"{v.Id}:{v.ItemId}"))+"|"+
@@ -239,6 +262,12 @@ namespace ET.Client
             targetsKey += "|"+string.Join(";",grid.FrontWorks.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{value.State}:{value.ClaimSerial}:{value.WorkerId}"));
             targetsKey += "|"+string.Join(";",grid.Orders.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{value.State}"));
             targetsKey += "|"+string.Join(";",grid.Stations.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{string.Join(",",value.PoolItemIds)}"));
+            targetsKey += "|"+string.Join(";",grid.SupplySources.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{value.RemainingPackages}"));
+            targetsKey += "|"+string.Join(";",grid.SupplyShipments.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{value.Stage}:{value.PackageItemId}"));
+            targetsKey += $"|{grid.RenovationChoiceVersion}:{grid.SelectedRenovationId}:"+string.Join(",",grid.RenovationCandidates);
+            targetsKey += "|"+string.Join(",",grid.RenovationApplied.Keys.OrderBy(value=>value));
+            targetsKey += $"|{grid.SaveEnabled}:{grid.SaveState}:{grid.SaveResultId}";
+            targetsKey += $"|{grid.CanControlRestaurant}";
             if(self.HudTargetsKey==targetsKey)return;
             self.HudTargetsKey=targetsKey;view.ClearTargets();
             EntityRef<GridClientComponent> currentProjection=grid;EntityRef<UIGridKitchen> currentHud=hud;
@@ -256,11 +285,16 @@ namespace ET.Client
                 view.AddTarget("旋转 "+adjusting.Name,()=>{GridPresentationComponent current=selfRef;current?.SendStationLayout(adjusting.Id,adjusting.Cell,(adjusting.Orientation+1)%4,layout,level,generation);});
                 view.AddTarget("结束调整",()=>{GridPresentationComponent current=selfRef;if(current!=null){current.LayoutStationId=0;current.RefreshGridHud();}});
             }
-            if (grid.LevelId != 0)
+            if (grid.LevelId != 0 && grid.CanControlRestaurant)
             {
                 long level = grid.LevelId, levelGeneration = grid.LevelGeneration;
                 if (grid.LevelPhase == LevelPhase.Completed)
-                    view.AddControl("下一关", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.Continue, level, levelGeneration); });
+                {
+                    if (!grid.SaveEnabled)
+                        view.AddControl("下一关", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.Continue, level, levelGeneration); });
+                    else if (grid.SaveState != SoloSaveState.Writing && (grid.RenovationCandidates.Count == 0 || grid.SelectedRenovationId != 0))
+                        view.AddControl(grid.SaveState == SoloSaveState.Committed ? "继续下一关" : "保存并继续", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.SaveAndContinue, level, levelGeneration); });
+                }
                 else
                 {
                     if (grid.LevelPhase == LevelPhase.Preparing && !grid.LevelPaused && (!grid.RequireBuffChoice || grid.SelectedBuffId!=0))
@@ -273,7 +307,7 @@ namespace ET.Client
             {
                 bool shown=self.BuffCandidatesVisible;
                 view.AddControl(shown?"隐藏候选加成":"查看候选加成",()=>{GridPresentationComponent current=selfRef;if(current!=null){current.BuffCandidatesVisible=!shown;current.RefreshGridHud();}});
-                if(shown && !grid.LevelPaused && grid.SelectedBuffId==0)
+                if(shown && grid.CanControlRestaurant && !grid.LevelPaused && grid.SelectedBuffId==0)
                     foreach(int candidate in grid.BuffCandidates)
                     {
                         DRBuffConfig definition=Tables.Instance.DTBuffConfig.Get(candidate);long level=grid.LevelId,generation=grid.LevelGeneration,draw=grid.BuffDrawVersion;
@@ -307,10 +341,12 @@ namespace ET.Client
                         view.AddOrderAction("交付 "+dish+" → "+table.Name,()=>{GridPresentationComponent current=selfRef;current?.SendServeOrder(order.Id,order.CustomerId,order.TableStationId,item,level,generation);});
                     }
                 }
-            foreach(GridStationProjection station in grid.Stations.Values.OrderBy(value=>value.Id))
+            self.AddSupplyTargets(view,grid);
+            self.AddRenovationTargets(view,grid);
+            foreach(GridStationProjection station in grid.Stations.Values.OrderBy(value=>value.Kind is GridStationKind.Wash or GridStationKind.Trash?0:1).ThenBy(value=>value.Id))
             {
                 long id=station.Id; GridIntent intent=grid.CounterIntent(id);
-                if(grid.LevelPhase==LevelPhase.Preparing && !grid.LevelPaused)
+                if(grid.CanControlRestaurant && grid.LevelPhase==LevelPhase.Preparing && !grid.LevelPaused)
                 {
                     long level=grid.LevelId,generation=grid.LevelGeneration;
                     view.AddTarget("调整 "+station.Name,()=>{GridPresentationComponent current=selfRef;current?.ChooseLayoutStation(id,level,generation);});
@@ -318,6 +354,31 @@ namespace ET.Client
                 if(station.Kind==GridStationKind.CleanPool && own.HandItemId==0)
                     foreach(long item in station.PoolItemIds)
                         view.AddTarget("取回 "+grid.ItemDescription(item),()=>{GridPresentationComponent current=selfRef;current?.SendGridAction(GridAction.TakeCounter,station.Cell,id,item);});
+                if(station.Kind is GridStationKind.Wash or GridStationKind.Trash)
+                {
+                    if(!grid.LevelPaused && grid.LevelPhase!=LevelPhase.Completed && grid.Items.TryGetValue(own.HandItemId,out GridItemProjection carried))
+                    {
+                        if(station.Kind==GridStationKind.Wash && carried.Form==GridMaterialForm.Container && carried.Contents.Count==0 && carried.AutoProcessId==0 &&
+                            Tables.Instance.DTGridItemConfig.Get(carried.DefinitionId).AcceptedDefinitionIds.Contains(station.WaterDefinitionId))
+                        {
+                            var fill=grid.CleanupIntent(id,GridAction.FillWater);
+                            view.AddTarget("接水 → "+station.Name,()=>{GridPresentationComponent current=selfRef;current?.SendGridIntent(fill);});
+                        }
+                        else if(station.Kind==GridStationKind.Wash && (carried.Form==GridMaterialForm.Liquid || carried.AutoProcessId!=0 ||
+                            carried.Contents.Count>0 && carried.Contents.All(item=>grid.Items.TryGetValue(item,out var content) && content.Form==GridMaterialForm.Liquid)))
+                        {
+                            var drain=grid.CleanupIntent(id,GridAction.DrainLiquid);
+                            view.AddTarget("倒液 → "+station.Name,()=>{GridPresentationComponent current=selfRef;current?.SendGridIntent(drain);});
+                        }
+                        else if(station.Kind==GridStationKind.Trash && (carried.Form==GridMaterialForm.Solid || carried.Discardable && carried.Form==GridMaterialForm.Container && carried.Contents.Count==0 ||
+                            carried.Contents.Count>0 && carried.Contents.All(item=>grid.Items.TryGetValue(item,out var content) && content.Form==GridMaterialForm.Solid)))
+                        {
+                            var discard=grid.CleanupIntent(id,GridAction.DiscardSolid);
+                            view.AddTarget("投垃圾 → "+station.Name,()=>{GridPresentationComponent current=selfRef;current?.SendGridIntent(discard);});
+                        }
+                    }
+                    continue;
+                }
                 if(station.Kind is GridStationKind.Table or GridStationKind.Wash or GridStationKind.DirtyPool or GridStationKind.CleanPool) continue;
                 string action=intent.Action switch {GridAction.PlaceCounter=>"放",GridAction.AddToContainer=>"添加",GridAction.StartStationWork=>intent.ExpectedProcessId==0?"切配":"继续切配",GridAction.StopWork=>"停止",GridAction.PourContents=>"倒蛋液",GridAction.StartAutoWork=>"煮汤",GridAction.PortionSoup=>"盛一份",GridAction.StartBake=>"烘烤",_=>"拿"};
                 view.AddTarget($"{action} {station.Name} · {grid.ItemDescription(station.ItemId)}",()=>{GridPresentationComponent current=selfRef;current?.SendGridIntent(intent);});
@@ -372,7 +433,7 @@ namespace ET.Client
         [UGFUIFormSystem] private static void UGFUIFormOnClose(this UIGridKitchen self,bool isShutdown)
         {
             self.GetComponent<AsyncOwnerComponent>()?.AsyncScope?.Stop();self.View?.ReleaseHud();
-            ((Scene)self.IScene).GetComponent<GridPresentationComponent>()?.GridHudClosed(self);
+            ((Scene)self.IScene)?.GetComponent<GridPresentationComponent>()?.GridHudClosed(self);
         }
     }
     [Event(SceneType.ProductClient)]

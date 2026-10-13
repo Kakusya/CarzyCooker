@@ -20,6 +20,7 @@ namespace ET
         {
             self.Match = self.GetParent<Match>(); self.Stopped = false; self.Controls.Clear();
             self.NextLevelGeneration = 0; self.LastFrameTime = TimeInfo.Instance.FrameTime; self.Accumulator = 0;
+            self.AddComponent<RestaurantRenovation>();
             self.Kitchen = self.AddComponent<GridKitchenComponent>();
             self.InstallLevel(first);
         }
@@ -49,6 +50,8 @@ namespace ET
         {
             if (self.Stopped) return;
             self.Stopped = true; self.Controls.Clear();
+            self.CancelRenovationChoices("EntryClosed");
+            self.StopSoloSave();
             Level level = self.CurrentLevel;
             if (level != null)
             {
@@ -64,18 +67,19 @@ namespace ET
         {
             GridKitchenComponent kitchen = self.Kitchen; Level level = self.CurrentLevel; Match match = self.Match;
             if (self.Stopped || peer == null || !kitchen.HasBinding(peer.MemberId, peer.Generation)) return "EntryClosed";
+            if (!peer.CanControlRestaurant()) return "HostControlOnly";
             string prior = peer.CheckProductCommand(context, ProductCommandKind.Level, intent.Equals(peer.LastLevelCommand), out bool replay);
             string identity = context.Validate(match.MatchId, kitchen.WorldId, kitchen.WorldGeneration, level.Id, level.Generation, peer.Generation);
             if (identity != null)
             {
                 // The exact successful Continue may report its fact after it replaced its own Level.
-                if (identity == "WrongLevel" && prior == null && replay && intent.Action == LevelControlAction.Continue &&
+                if (identity == "WrongLevel" && prior == null && replay && intent.Action is LevelControlAction.Continue or LevelControlAction.SaveAndContinue &&
                     peer.LastCommandStatus == GridResultStatus.Executed) return null;
                 return identity;
             }
             if (prior != null || replay) return prior;
-            if (intent.Action < LevelControlAction.Start || intent.Action > LevelControlAction.Continue) return "InvalidCommand";
-            if (intent.Action == LevelControlAction.Continue && intent.NextLevelConfigId != level.NextLevelConfigId) return "NextLevelChanged";
+            if (intent.Action < LevelControlAction.Start || intent.Action > LevelControlAction.SaveAndContinue) return "InvalidCommand";
+            if (intent.Action is LevelControlAction.Continue or LevelControlAction.SaveAndContinue && intent.NextLevelConfigId != level.NextLevelConfigId) return "NextLevelChanged";
             peer.RecordProductCommand(context, ProductCommandKind.Level); peer.LastLevelCommand = intent;
             self.Controls.Enqueue(new LevelControlEnvelope(context, intent, peer));
             return null;
@@ -87,18 +91,25 @@ namespace ET
             GridKitchenComponent kitchen = self.Kitchen;
             long startingLevelId = ((Level)self.CurrentLevel).Id;
             kitchen.ApplyGridMembers();
+            self.AdvanceRenovationChoices(self.CurrentLevel);
+            self.AdvanceSoloSaveCompletions();
             while (self.Controls.Count > 0)
             {
                 LevelControlEnvelope control = self.Controls.Dequeue(); HostPeer peer = control.Peer; Level level = self.CurrentLevel; Match match = self.Match;
                 string error = peer == null || !kitchen.HasBinding(peer.MemberId, control.Context.BindingGeneration) ? "EntryClosed"
                     : control.Context.Validate(match.MatchId, kitchen.WorldId, kitchen.WorldGeneration, level.Id, level.Generation, peer.Generation);
-                if (error == null) error = self.ApplyLevelControl(level, control.Intent);
-                peer?.RecordProductResult(control.Context.CommandId, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error);
+                if (error == null && !peer.CanControlRestaurant()) error = "HostControlOnly";
+                if (error == null) error = control.Intent.Action == LevelControlAction.SaveAndContinue
+                    ? self.BeginSoloSave(level, control) : self.ApplyLevelControl(level, control.Intent);
+                var status = error == null ? control.Intent.Action == LevelControlAction.SaveAndContinue && self.SoloSavePending()
+                    ? GridResultStatus.Accepted : GridResultStatus.Executed : GridResultStatus.Rejected;
+                peer?.RecordProductResult(control.Context.CommandId, status, error);
                 kitchen.Dirty = true;
             }
             Level current = self.CurrentLevel;
             kitchen.AdvanceBuffChoices(current);
             kitchen.AdvanceStationLayouts();
+            kitchen.AdvanceSupplyCommands(current);
             if (!current.Paused && current.Phase != LevelPhase.Completed && current.Id == startingLevelId)
             {
                 kitchen.AdvanceGridTick();
@@ -116,7 +127,7 @@ namespace ET
                     kitchen.CancelLevelIntents("LevelCompleted");
                     kitchen.PauseLevelWorkers();
                     current.Stars = current.StarThresholds.Count(threshold => current.Score >= threshold);
-                    current.Phase = LevelPhase.Completed; kitchen.Dirty = true;
+                    current.Phase = LevelPhase.Completed; self.PrepareRenovationChoices(current); kitchen.Dirty = true;
                 }
             }
             kitchen.CommitGridState();
@@ -142,18 +153,24 @@ namespace ET
                     level.Paused = false; return null;
                 case LevelControlAction.Continue:
                     if (level.Phase != LevelPhase.Completed) return "WrongPhase";
+                    string saveGate = self.CheckSoloSaveGate(level);
+                    if (saveGate != null) return saveGate;
                     if (intent.NextLevelConfigId != level.NextLevelConfigId) return "NextLevelChanged";
                     DRLevelConfig next = Tables.Instance.DTLevelConfig.GetOrDefault(level.NextLevelConfigId);
                     if (next == null) return "MissingNextLevel";
                     if (!kitchen.IsWalkable(new GridCell(next.SpawnX, next.SpawnY))) return "InvalidSpawn";
                     string nextError = self.CheckNextLevel(next);
                     if (nextError != null) return nextError;
+                    string renovationError = self.CheckPendingRenovation();
+                    if (renovationError != null) return renovationError;
                     kitchen.RetireLevelActors();
                     level.Dispose(); self.InstallLevel(next);
+                    self.ApplyPendingRenovation();
                     Match match = self.Match;
                     foreach (Participant member in match.Children.Values.OfType<Participant>().Where(member => member.Online))
                         kitchen.QueueGridMember(member.MemberId, member.BindingGeneration, true);
                     kitchen.ApplyGridMembers();
+                    self.AdvanceSoloSaveSource();
                     return null;
                 default: return "InvalidCommand";
             }
@@ -181,6 +198,7 @@ namespace ET
             self.ElapsedOperatingTicks = 0; self.Score = 0; self.Stars = 0; self.DrainingStartedTick = 0;
             self.StarThresholds = definition.StarThresholds.ToArray(); self.SpawnCell = new GridCell(definition.SpawnX, definition.SpawnY);
             self.AllowedDishIds = definition.AllowedDishIds.ToArray();
+            self.AllowedRenovationIds = definition.AllowedRenovationIds.ToArray();
         }
     }
 }

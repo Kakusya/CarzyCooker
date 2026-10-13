@@ -106,5 +106,24 @@ namespace ET
          public const ushort ChooseBuffResponse = 10100;
          public const ushort ChooseBuffSubmitRequest = 10101;
          public const ushort ChooseBuffSubmitResponse = 10102;
+         public const ushort SupplyCommandRequest = 10103;
+         public const ushort SupplyCommandResponse = 10104;
+         public const ushort SupplySubmitRequest = 10105;
+         public const ushort SupplySubmitResponse = 10106;
+         public const ushort GridSupplySourceState = 10107;
+         public const ushort GridSupplyShipmentState = 10108;
+         public const ushort ChooseRenovationRequest = 10109;
+         public const ushort ChooseRenovationResponse = 10110;
+         public const ushort ChooseRenovationSubmitRequest = 10111;
+         public const ushort ChooseRenovationSubmitResponse = 10112;
+         public const ushort GridRenovationAppliedState = 10113;
+         public const ushort SoloSaveBrowseRequest = 10114;
+         public const ushort SoloSaveBrowseResponse = 10115;
+         public const ushort SoloSaveSelectRequest = 10116;
+         public const ushort SoloSaveSelectResponse = 10117;
+         public const ushort SoloSaveWriteRequest = 10118;
+         public const ushort SoloSaveWriteResponse = 10119;
+         public const ushort SoloSaveCompletedRequest = 10120;
+         public const ushort SoloSaveCompletedResponse = 10121;
     }
 }

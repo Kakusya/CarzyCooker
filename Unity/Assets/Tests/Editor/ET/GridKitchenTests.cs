@@ -81,7 +81,7 @@ namespace ET
             Assert.That(actor.Cell, Is.EqualTo(new GridCell(1, 9)));
             Assert.That(actor.HandItemId, Is.Zero);
             Assert.That(Grid.Results.Any(value => value.CommandId == 1 && value.Status == GridResultStatus.Cancelled), Is.True);
-            Assert.That(Grid.GetParent<Match>().ChildrenCount(), Is.EqualTo(1), "Grid data must not enter the Participant child list");
+            Assert.That(((Match)Grid.Match).Children.Values.OfType<Participant>().Count(), Is.EqualTo(1), "Grid data must not enter the Participant child list");
         }
 
         [Test]
@@ -279,8 +279,8 @@ namespace ET
             Session session = remote.Session;
             using (var forged = GridSubmitRequest.Create()) session.Send(forged);
             Pump(900);
-            Assert.That(((Participant)Grid.GetParent<Match>().GetChild<Participant>(local.MemberId)).Online, Is.True);
-            Assert.That(((Participant)Grid.GetParent<Match>().GetChild<Participant>(remote.MemberId)).Online, Is.False);
+            Assert.That(((Participant)((Match)Grid.Match).GetChild<Participant>(local.MemberId)).Online, Is.True);
+            Assert.That(((Participant)((Match)Grid.Match).GetChild<Participant>(remote.MemberId)).Online, Is.False);
         }
     }
 }

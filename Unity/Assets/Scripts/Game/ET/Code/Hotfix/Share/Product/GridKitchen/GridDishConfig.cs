@@ -13,13 +13,14 @@ namespace ET
             foreach (var level in tables.DTLevelConfig.DataList)
                 ValidateMenu(level.AllowedDishIds, tables.DTDishConfig.DataList, tables.DTDishStageConfig.DataList,
                     tables.DTGridItemConfig.DataList, tables.DTGridManualRecipeConfig.DataList, tables.DTGridAutoRecipeConfig.DataList,
-                    tables.DTGridBakeRecipeConfig.DataList, tables.DTStationConfig.DataList, tables.DTInitialLayoutConfig.DataList);
+                    tables.DTGridBakeRecipeConfig.DataList, tables.DTStationConfig.DataList, tables.DTInitialLayoutConfig.DataList, tables.DTSupplyConfig.DataList);
         }
 
         public static void ValidateMenu(IEnumerable<int> menuIds, IEnumerable<DRDishConfig> dishRows,
             IEnumerable<DRDishStageConfig> stageRows, IEnumerable<DRGridItemConfig> itemRows,
             IEnumerable<DRGridManualRecipeConfig> manualRows, IEnumerable<DRGridAutoRecipeConfig> batchRows,
-            IEnumerable<DRGridBakeRecipeConfig> bakeRows, IEnumerable<DRStationConfig> stationRows, IEnumerable<DRInitialLayoutConfig> layoutRows)
+            IEnumerable<DRGridBakeRecipeConfig> bakeRows, IEnumerable<DRStationConfig> stationRows, IEnumerable<DRInitialLayoutConfig> layoutRows,
+            IEnumerable<DRSupplyConfig> supplyRows = null)
         {
             var menu = menuIds.ToArray(); var dishes = dishRows.ToDictionary(row => row.Id); var stages = stageRows.ToDictionary(row => row.Id);
             var items = itemRows.ToDictionary(row => row.Id); var manuals = manualRows.ToDictionary(row => row.Id);
@@ -27,6 +28,9 @@ namespace ET
             var stations = stationRows.ToDictionary(row => row.Id); var layouts = layoutRows.ToArray();
             var supplies = layouts.Where(row => row.InitialItemDefinitionId != 0).GroupBy(row => row.InitialItemDefinitionId).ToDictionary(group => group.Key, group => group.Count());
             var produced = manuals.Values.Select(row => row.OutputDefinitionId).Concat(batches.Values.Select(row => row.OutputDefinitionId)).Concat(bakes.Values.Select(row => row.OutputDefinitionId)).ToHashSet();
+            if (supplyRows != null)
+                foreach (var source in SupplyConfig.Validate(supplyRows, items.Values, stations.Values, layouts, produced).Values)
+                    supplies[source.MaterialDefinitionId] = checked(supplies.GetValueOrDefault(source.MaterialDefinitionId) + source.PackageUnits * source.AvailablePackages);
             int capabilities = 0;
             foreach (var layout in layouts)
             {

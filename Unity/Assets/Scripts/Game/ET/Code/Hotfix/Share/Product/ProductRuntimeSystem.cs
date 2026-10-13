@@ -132,7 +132,12 @@ namespace ET
             ProductRuntimeComponent runtime = root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(RuntimeInstanceContext.Config);
             try
             {
-                runtime.InitializeProduct();
+                if (RuntimeInstanceContext.Config.Role == RuntimeInstanceRole.Solo)
+                {
+                    runtime.RegisterProductEntry();
+                    EventSystem.Instance.Publish(root, new SoloSaveSelectionRequested());
+                }
+                else runtime.InitializeProduct();
             }
             catch (Exception e)
             {

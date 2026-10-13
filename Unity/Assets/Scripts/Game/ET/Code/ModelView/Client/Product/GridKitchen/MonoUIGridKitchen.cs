@@ -15,6 +15,7 @@ namespace ET.Client
         public void SetInputGuard(Func<bool> guard)=>inputGuard=guard;
         public void ConfigureHud()
         {
+            CameraDragAreaRectTransform.gameObject.SetActive(true);
             if(font==null)font = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "Noto Sans CJK SC", "Arial" }, 34);
             foreach(Text text in new[]{StatusText,HandText,HintText,PhaseText,ClockText,ScoreText,WorkText,OrdersText,BuffText,SettlementText})text.font=font;
             HintText.text = "点击地面行走 · 拖动查看餐厅 · 点击台面拿放";

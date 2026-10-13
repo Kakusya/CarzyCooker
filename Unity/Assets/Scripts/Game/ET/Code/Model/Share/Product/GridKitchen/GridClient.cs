@@ -26,17 +26,20 @@ namespace ET
         public readonly GridStationKind Kind;
         public readonly long AutoProcessId, BakeProcessId;
         public readonly int DefinitionId, Orientation, ItemSlotCapacity;
+        public readonly int WaterDefinitionId, WaterUnits;
         public readonly GridStationCapability Capabilities;
         public readonly IReadOnlyList<GridCell> Footprint, Approaches;
         public readonly IReadOnlyList<long> PoolItemIds;
         public GridStationProjection(long id, GridCell cell, string name, long item, GridStationKind kind = GridStationKind.Counter,
             long autoProcess = 0, int definition = 0, int orientation = 0, int capacity = 1, GridStationCapability capabilities = default,
-            IReadOnlyList<GridCell> footprint = null, IReadOnlyList<GridCell> approaches = null, long bakeProcess = 0, IReadOnlyList<long> pool = null)
+            IReadOnlyList<GridCell> footprint = null, IReadOnlyList<GridCell> approaches = null, long bakeProcess = 0, IReadOnlyList<long> pool = null,
+            int waterDefinition = 0, int waterUnits = 0)
         {
             Id = id; Cell = cell; Name = name; ItemId = item; Kind = kind; AutoProcessId = autoProcess;
             BakeProcessId = bakeProcess;
             PoolItemIds = pool ?? System.Array.Empty<long>();
             DefinitionId = definition; Orientation = orientation; ItemSlotCapacity = capacity; Capabilities = capabilities;
+            WaterDefinitionId = waterDefinition; WaterUnits = waterUnits;
             Footprint = footprint ?? new[] { cell };
             Approaches = approaches ?? new[] { new GridCell(cell.X, cell.Y + 1), new GridCell(cell.X + 1, cell.Y), new GridCell(cell.X, cell.Y - 1), new GridCell(cell.X - 1, cell.Y) };
         }
@@ -51,8 +54,11 @@ namespace ET
         public readonly long AutoProcessId, BakeProcessId;
         public readonly IReadOnlyList<long> Contents;
         public readonly ItemHygiene Hygiene;
-        public GridItemProjection(long id, string name, GridItemLocation location, long holder, GridCell cell, IReadOnlyList<long> contents, int definition = 0, long autoProcess = 0, long bakeProcess = 0, ItemHygiene hygiene = default)
-        { Id = id; Name = name; Location = location; HolderId = holder; Cell = cell; Contents = contents; DefinitionId = definition; AutoProcessId = autoProcess; BakeProcessId = bakeProcess; Hygiene=hygiene; }
+        public readonly GridMaterialForm Form;
+        public readonly bool Discardable;
+        public GridItemProjection(long id, string name, GridItemLocation location, long holder, GridCell cell, IReadOnlyList<long> contents, int definition = 0, long autoProcess = 0, long bakeProcess = 0, ItemHygiene hygiene = default,
+            GridMaterialForm form = default, bool discardable = false)
+        { Id = id; Name = name; Location = location; HolderId = holder; Cell = cell; Contents = contents; DefinitionId = definition; AutoProcessId = autoProcess; BakeProcessId = bakeProcess; Hygiene=hygiene; Form=form; Discardable=discardable; }
     }
 
     public readonly struct GridProcessProjection
@@ -121,6 +127,16 @@ namespace ET
         public long BuffDrawVersion;
         public bool RequireBuffChoice;
         public IReadOnlyList<int> BuffCandidates;
+        public readonly Dictionary<int, SupplySourceProjection> SupplySources = new();
+        public readonly Dictionary<long, SupplyShipmentProjection> SupplyShipments = new();
+        public IReadOnlyList<int> RenovationCandidates;
+        public int SelectedRenovationId;
+        public long RenovationChoiceVersion, RenovationLevelId, RenovationLevelGeneration;
+        public readonly Dictionary<int, IReadOnlyList<long>> RenovationApplied = new();
+        public bool SaveEnabled;
+        public bool CanControlRestaurant;
+        public string SaveResultId, SaveFailure, LastSavedSlotId;
+        public SoloSaveState SaveState;
     }
 }
 #endif

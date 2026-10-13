@@ -37,7 +37,7 @@ namespace ET
 
     public static class ProductSessionRules
     {
-        public const int ProtocolVersion = 12;
+        public const int ProtocolVersion = 17;
         public const int MaxPayloadBytes = 1024;
         public const int RequestTimeout = 4000;
         public const int HeartbeatInterval = 2000;
@@ -130,6 +130,8 @@ namespace ET
         public FrontWorkIntent LastFrontWorkCommand;
         public ServeOrderIntent LastServeCommand;
         public BuffChoiceIntent LastBuffCommand;
+        public SupplyIntent LastSupplyCommand;
+        public RenovationChoiceIntent LastRenovationCommand;
         public GridResultStatus LastCommandStatus;
         public string LastCommandReason;
     }

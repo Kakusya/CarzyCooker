@@ -56,7 +56,7 @@ namespace ET
             long carried=PrepEggBowl(client), egg=Grid.Item(carried).Contents.Single();
             Assert.That(carried,Is.EqualTo(bowlId)); Assert.That(Grid.Item(egg).Location,Is.EqualTo(GridItemLocation.Container));
             Assert.That(Grid.Item(egg).HolderId,Is.EqualTo(bowlId)); Assert.That(Grid.Item(egg).Parent,Is.SameAs(Grid));
-            Assert.That(Grid.GetParent<Match>().ChildrenCount(),Is.EqualTo(2));
+            Assert.That(((Match)Grid.Match).Children.Values.OfType<Participant>().Count(),Is.EqualTo(2));
             Assert.That(Grid.Items.Values.Count(v=>((GridItem)v).Id==egg),Is.EqualTo(1));
             PrepDo(client,GridAction.PlaceCounter,handoff.Id,bowlId);
             PrepDo(other,GridAction.TakeCounter,handoff.Id,bowlId);

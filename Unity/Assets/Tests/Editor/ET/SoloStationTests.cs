@@ -15,6 +15,7 @@ namespace ET
             buffer.WriteSize(parts.Length); foreach (var value in parts) buffer.WriteInt(value);
             buffer.WriteSize(points.Length); foreach (var value in points) buffer.WriteInt(value);
             buffer.WriteInt(capacity ?? source.ItemSlotCapacity); buffer.WriteInt(source.Capabilities);
+            buffer.WriteInt(source.WaterDefinitionId); buffer.WriteInt(source.WaterUnits);
             return new DRStationConfig(buffer);
         }
 
@@ -30,12 +31,12 @@ namespace ET
         {
             var definitions = GridStationConfig.ValidateDefinitions(Tables.Instance.DTStationConfig.DataList);
             Assert.That(definitions.Values.Where(row => row.Kind < (int)GridStationKind.DirtyPool).All(row => row.ItemSlotCapacity == 1), Is.True);
-            Assert.That(definitions.Values.Where(row => row.Kind >= (int)GridStationKind.DirtyPool).Select(row => row.ItemSlotCapacity), Is.EqualTo(new[] { 4, 4 }));
+            Assert.That(definitions.Values.Where(row => row.Kind is (int)GridStationKind.DirtyPool or (int)GridStationKind.CleanPool).Select(row => row.ItemSlotCapacity), Is.EqualTo(new[] { 4, 4 }));
             var oven = definitions.Values.Single(row => row.Kind == (int)GridStationKind.Oven);
             Assert.That(oven.Capabilities, Is.EqualTo((int)GridStationCapability.Bake));
             Assert.That(oven.FootprintOffsets.Count, Is.EqualTo(4));
             var terrain = GridKitchenSystem.ValidateStationConfiguration();
-            Assert.That(terrain.Count, Is.EqualTo(16));
+            Assert.That(terrain.Count, Is.EqualTo(17));
             Assert.That(terrain.Contains(new GridCell(5, 14)) && terrain.Contains(new GridCell(5, 15)), Is.True);
             Assert.That(terrain.Contains(new GridCell(1, 10)) || terrain.Contains(GridStationConfig.Entrance()), Is.False);
         }

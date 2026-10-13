@@ -1,6 +1,7 @@
 #if !DOTNET
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ET
 {
@@ -17,12 +18,13 @@ namespace ET
         public override string ToString() => $"({X},{Y})";
     }
 
-    public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4, AddToContainer = 5, StartStationWork = 6, StartHeldWork = 7, StopWork = 8, PourContents = 9, StartAutoWork = 10, PortionSoup = 11, StartBake = 12 }
+    public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4, AddToContainer = 5, StartStationWork = 6, StartHeldWork = 7, StopWork = 8, PourContents = 9, StartAutoWork = 10, PortionSoup = 11, StartBake = 12, FillWater = 13, DrainLiquid = 14, DiscardSolid = 15, ReceiveSupply = 16, TakeSupplyPortion = 17 }
     public enum GridMotion { Standing, Transit, Waiting }
     public enum GridItemLocation { Counter = 1, Hand = 2, Ground = 3, Container = 4, Table = 5, DirtyPool = 6, CleanPool = 7 }
-    public enum GridStationKind { Counter, Chopping, Stove, Oven, Table, Wash, DirtyPool, CleanPool }
+    public enum GridStationKind { Counter, Chopping, Stove, Oven, Table, Wash, DirtyPool, CleanPool, Trash }
     [Flags]
-    public enum GridStationCapability { None = 0, Chop = 1, Cook = 2, Bake = 4, Serve = 8, Wash = 16, DirtyPool = 32, CleanPool = 64 }
+    public enum GridStationCapability { None = 0, Chop = 1, Cook = 2, Bake = 4, Serve = 8, Wash = 16, DirtyPool = 32, CleanPool = 64, FillWater = 128, DrainLiquid = 256, Trash = 512 }
+    public enum GridMaterialForm { Solid = 1, Liquid = 2, Container = 3 }
     public enum GridAutoState { Cooking, Ready }
     public enum GridWorkState { Paused, Working, Completed }
     public enum GridResultStatus { Accepted = 1, PendingApproach = 2, Executed = 3, Rejected = 4, Cancelled = 5 }
@@ -38,7 +40,7 @@ namespace ET
         public const int StandingCapacity = 2;
         public const int Tomato = 1, TomatoChunks = 2, Egg = 3, EggLiquid = 4, Bowl = 5;
         public const int Pot = 6, Soup = 7;
-        public const int Bread = 8, Toast = 9, Plate = 10;
+        public const int Bread = 8, Toast = 9, Plate = 10, Water = 11;
     }
 
     public readonly struct GridIntent : IEquatable<GridIntent>
@@ -50,9 +52,21 @@ namespace ET
         public long ExpectedItemId { get; }
         public long ExpectedTargetItemId { get; }
         public long ExpectedProcessId { get; }
-        public GridIntent(long commandId, GridAction action, GridCell cell, long targetId = 0, long expectedItemId = 0, long expectedTargetItemId = 0, long expectedProcessId = 0)
-        { CommandId = commandId; Action = action; Cell = cell; TargetId = targetId; ExpectedItemId = expectedItemId; ExpectedTargetItemId = expectedTargetItemId; ExpectedProcessId = expectedProcessId; }
-        public bool Equals(GridIntent other) => CommandId == other.CommandId && Action == other.Action && Cell == other.Cell && TargetId == other.TargetId && ExpectedItemId == other.ExpectedItemId && ExpectedTargetItemId == other.ExpectedTargetItemId && ExpectedProcessId == other.ExpectedProcessId;
+        // 清理意图冻结完整内容顺序及设施布局；不引用待回收请求的列表。
+        private readonly IReadOnlyList<long> expectedContentIds;
+        public IReadOnlyList<long> ExpectedContentIds => expectedContentIds ?? Array.Empty<long>();
+        public int ExpectedRemainingPortions { get; }
+        public long ExpectedLayoutVersion { get; }
+        public GridIntent(long commandId, GridAction action, GridCell cell, long targetId = 0, long expectedItemId = 0, long expectedTargetItemId = 0, long expectedProcessId = 0,
+            IEnumerable<long> expectedContents = null, int expectedRemainingPortions = 0, long expectedLayoutVersion = 0)
+        {
+            CommandId = commandId; Action = action; Cell = cell; TargetId = targetId; ExpectedItemId = expectedItemId;
+            ExpectedTargetItemId = expectedTargetItemId; ExpectedProcessId = expectedProcessId;
+            expectedContentIds = expectedContents == null ? null : Array.AsReadOnly(expectedContents.ToArray());
+            ExpectedRemainingPortions = expectedRemainingPortions; ExpectedLayoutVersion = expectedLayoutVersion;
+        }
+        public bool Equals(GridIntent other) => CommandId == other.CommandId && Action == other.Action && Cell == other.Cell && TargetId == other.TargetId && ExpectedItemId == other.ExpectedItemId && ExpectedTargetItemId == other.ExpectedTargetItemId && ExpectedProcessId == other.ExpectedProcessId
+            && ExpectedRemainingPortions == other.ExpectedRemainingPortions && ExpectedLayoutVersion == other.ExpectedLayoutVersion && ExpectedContentIds.SequenceEqual(other.ExpectedContentIds);
     }
 
     public readonly struct GridMemberChange

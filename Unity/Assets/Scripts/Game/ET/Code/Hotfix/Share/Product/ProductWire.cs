@@ -15,7 +15,7 @@ namespace ET
         public override void Handle(NetComponentOnRead args)
         {
             Session session = args.Session;
-            if (args.Message is not ProductJoinRequest && args.Message is not ProductProbeRequest && args.Message is not ProductLeaveRequest && args.Message is not ProductHeartbeatRequest && args.Message is not GridCommandRequest)
+            if (args.Message is not (ProductJoinRequest or ProductProbeRequest or ProductLeaveRequest or ProductHeartbeatRequest or GridCommandRequest or LevelCommandRequest or StationLayoutRequest or ChooseBuffRequest or ServeOrderRequest or FrontWorkRequest or SupplyCommandRequest))
             {
                 (args.Message as MessageObject)?.Dispose();
                 session.Error = ProductError.InvalidRequest;
@@ -59,11 +59,11 @@ namespace ET
                 {
                     responseObject = (MessageObject)MessageHelper.CreateResponse(wire.GetType(), wireRpcId, ProductError.InvalidRequest);
                 }
-                else if (wire is GridCommandRequest soloCommand && soloCommand.Action > (int)GridAction.StopWork)
+                else if (wire is GridCommandRequest soloCommand && !IsKitchenGridAction(soloCommand.Action))
                 {
                     responseObject = ProductMessages.Create<GridCommandResponse>(message =>
                     {
-                        message.Error = ProductError.InvalidRequest; message.Message = "SoloCommandOnly";
+                        message.Error = ProductError.InvalidRequest; message.Message = "UnsupportedGridAction";
                         message.CommandId = soloCommand.CommandId; message.Status = (int)GridResultStatus.Rejected;
                     });
                 }
@@ -92,6 +92,53 @@ namespace ET
                             message.TargetId = grid.TargetId; message.ExpectedItemId = grid.ExpectedItemId;
                             message.ExpectedTargetItemId = grid.ExpectedTargetItemId; message.ExpectedProcessId = grid.ExpectedProcessId;
                             message.LevelId = grid.LevelId; message.LevelGeneration = grid.LevelGeneration;
+                            message.ExpectedContentIds.AddRange(grid.ExpectedContentIds);
+                            message.ExpectedRemainingPortions = grid.ExpectedRemainingPortions; message.ExpectedLayoutVersion = grid.ExpectedLayoutVersion;
+                        }),
+                        LevelCommandRequest level => ProductMessages.Create<LevelCommandRequest>(message =>
+                        {
+                            message.ProtocolVersion = level.ProtocolVersion; message.MatchId = level.MatchId; message.WorldId = level.WorldId;
+                            message.WorldGeneration = level.WorldGeneration; message.BindingGeneration = level.BindingGeneration;
+                            message.LevelId = level.LevelId; message.LevelGeneration = level.LevelGeneration; message.CommandId = level.CommandId;
+                            message.Action = level.Action; message.NextLevelConfigId = level.NextLevelConfigId;
+                        }),
+                        StationLayoutRequest layout => ProductMessages.Create<StationLayoutRequest>(message =>
+                        {
+                            message.ProtocolVersion = layout.ProtocolVersion; message.MatchId = layout.MatchId; message.WorldId = layout.WorldId;
+                            message.WorldGeneration = layout.WorldGeneration; message.BindingGeneration = layout.BindingGeneration;
+                            message.LevelId = layout.LevelId; message.LevelGeneration = layout.LevelGeneration; message.CommandId = layout.CommandId;
+                            message.StationId = layout.StationId; message.ExpectedLayoutVersion = layout.ExpectedLayoutVersion;
+                            message.X = layout.X; message.Y = layout.Y; message.Orientation = layout.Orientation;
+                        }),
+                        ChooseBuffRequest buff => ProductMessages.Create<ChooseBuffRequest>(message =>
+                        {
+                            message.ProtocolVersion = buff.ProtocolVersion; message.MatchId = buff.MatchId; message.WorldId = buff.WorldId;
+                            message.WorldGeneration = buff.WorldGeneration; message.BindingGeneration = buff.BindingGeneration;
+                            message.LevelId = buff.LevelId; message.LevelGeneration = buff.LevelGeneration; message.CommandId = buff.CommandId;
+                            message.DrawVersion = buff.DrawVersion; message.ChoiceDefId = buff.ChoiceDefId;
+                        }),
+                        ServeOrderRequest serve => ProductMessages.Create<ServeOrderRequest>(message =>
+                        {
+                            message.ProtocolVersion = serve.ProtocolVersion; message.MatchId = serve.MatchId; message.WorldId = serve.WorldId;
+                            message.WorldGeneration = serve.WorldGeneration; message.BindingGeneration = serve.BindingGeneration;
+                            message.LevelId = serve.LevelId; message.LevelGeneration = serve.LevelGeneration; message.CommandId = serve.CommandId;
+                            message.OrderId = serve.OrderId; message.CustomerId = serve.CustomerId; message.TableStationId = serve.TableStationId; message.ItemId = serve.ItemId;
+                        }),
+                        FrontWorkRequest front => ProductMessages.Create<FrontWorkRequest>(message =>
+                        {
+                            message.ProtocolVersion = front.ProtocolVersion; message.MatchId = front.MatchId; message.WorldId = front.WorldId;
+                            message.WorldGeneration = front.WorldGeneration; message.BindingGeneration = front.BindingGeneration;
+                            message.LevelId = front.LevelId; message.LevelGeneration = front.LevelGeneration; message.CommandId = front.CommandId;
+                            message.Action = front.Action; message.WorkId = front.WorkId; message.ClaimSerial = front.ClaimSerial;
+                        }),
+                        SupplyCommandRequest supply => ProductMessages.Create<SupplyCommandRequest>(message =>
+                        {
+                            message.ProtocolVersion = supply.ProtocolVersion; message.MatchId = supply.MatchId; message.WorldId = supply.WorldId;
+                            message.WorldGeneration = supply.WorldGeneration; message.BindingGeneration = supply.BindingGeneration;
+                            message.LevelId = supply.LevelId; message.LevelGeneration = supply.LevelGeneration; message.CommandId = supply.CommandId;
+                            message.Action = supply.Action; message.SourceId = supply.SourceId; message.Quantity = supply.Quantity;
+                            message.StationId = supply.StationId; message.ShipmentId = supply.ShipmentId; message.PackageId = supply.PackageId;
+                            message.ContentItemId = supply.ContentItemId; message.LayoutVersion = supply.LayoutVersion;
                         }),
                         _ => throw new InvalidOperationException("Product wire whitelist mismatch")
                     };
@@ -146,6 +193,12 @@ namespace ET
             }
         }
 
+        private static bool IsKitchenGridAction(int action) => action is (int)GridAction.Move or (int)GridAction.TakeCounter or
+            (int)GridAction.PlaceCounter or (int)GridAction.PickupDrop or (int)GridAction.AddToContainer or
+            (int)GridAction.StartStationWork or (int)GridAction.StartHeldWork or (int)GridAction.StopWork or
+            (int)GridAction.PourContents or (int)GridAction.StartAutoWork or (int)GridAction.PortionSoup or (int)GridAction.StartBake or
+            (int)GridAction.FillWater or (int)GridAction.DrainLiquid or (int)GridAction.DiscardSolid or (int)GridAction.ReceiveSupply or (int)GridAction.TakeSupplyPortion;
+
         private static MessageObject CopyResponse(MessageObject result)
         {
             switch (result)
@@ -163,6 +216,18 @@ namespace ET
                     return ProductMessages.Create<ProductLeaveResponse>(message => { message.Error = leave.Error; message.Message = leave.Message; message.Committed = leave.Committed; });
                 case GridCommandResponse grid:
                     return ProductMessages.Create<GridCommandResponse>(message => { message.Error = grid.Error; message.Message = grid.Message; message.CommandId = grid.CommandId; message.Status = grid.Status; });
+                case LevelCommandResponse level:
+                    return ProductMessages.Create<LevelCommandResponse>(message => { message.Error = level.Error; message.Message = level.Message; message.CommandId = level.CommandId; message.Status = level.Status; });
+                case StationLayoutResponse layout:
+                    return ProductMessages.Create<StationLayoutResponse>(message => { message.Error = layout.Error; message.Message = layout.Message; message.CommandId = layout.CommandId; message.Status = layout.Status; });
+                case ChooseBuffResponse buff:
+                    return ProductMessages.Create<ChooseBuffResponse>(message => { message.Error = buff.Error; message.Message = buff.Message; message.CommandId = buff.CommandId; message.Status = buff.Status; });
+                case ServeOrderResponse serve:
+                    return ProductMessages.Create<ServeOrderResponse>(message => { message.Error = serve.Error; message.Message = serve.Message; message.CommandId = serve.CommandId; message.Status = serve.Status; });
+                case FrontWorkResponse front:
+                    return ProductMessages.Create<FrontWorkResponse>(message => { message.Error = front.Error; message.Message = front.Message; message.CommandId = front.CommandId; message.Status = front.Status; });
+                case SupplyCommandResponse supply:
+                    return ProductMessages.Create<SupplyCommandResponse>(message => { message.Error = supply.Error; message.Message = supply.Message; message.CommandId = supply.CommandId; message.Status = supply.Status; });
                 default:
                     throw new InvalidOperationException("Unexpected product actor response");
             }
@@ -184,7 +249,7 @@ namespace ET
                 message?.Dispose();
                 return;
             }
-            if (message is ProductJoinResponse or ProductProbeResponse or ProductLeaveResponse or ProductHeartbeatResponse or GridCommandResponse)
+            if (message is ProductJoinResponse or ProductProbeResponse or ProductLeaveResponse or ProductHeartbeatResponse or GridCommandResponse or LevelCommandResponse or StationLayoutResponse or ChooseBuffResponse or ServeOrderResponse or FrontWorkResponse or SupplyCommandResponse)
             {
                 IResponse response = (IResponse)message;
                 if (!session.requestCallbacks.TryGetValue(response.RpcId, out RpcInfo pending))

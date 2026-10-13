@@ -20,6 +20,9 @@ message GridCommandRequest // IRequest
     int64 ExpectedProcessId = 14;
     int64 LevelId = 15;
     int64 LevelGeneration = 16;
+    repeated int64 ExpectedContentIds = 17;
+    int32 ExpectedRemainingPortions = 18;
+    int64 ExpectedLayoutVersion = 19;
 }
 
 message GridCommandResponse // IResponse
@@ -54,6 +57,9 @@ message GridSubmitRequest // IRequest
     int64 ExpectedProcessId = 17;
     int64 LevelId = 18;
     int64 LevelGeneration = 19;
+    repeated int64 ExpectedContentIds = 20;
+    int32 ExpectedRemainingPortions = 21;
+    int64 ExpectedLayoutVersion = 22;
 }
 
 message GridSubmitResponse // IResponse
@@ -111,6 +117,8 @@ message GridStationState
     repeated GridPathCell Approaches = 13;
     int64 BakeProcessId = 14;
     repeated int64 PoolItemIds = 15;
+    int32 WaterDefinitionId = 16;
+    int32 WaterUnits = 17;
 }
 
 message GridItemState
@@ -126,6 +134,8 @@ message GridItemState
     int64 AutoProcessId = 9;
     int64 BakeProcessId = 10;
     int32 Hygiene = 11;
+    int32 Form = 12;
+    bool Discardable = 13;
 }
 
 message GridWorldSnapshot // IMessage
@@ -176,6 +186,20 @@ message GridWorldSnapshot // IMessage
     repeated int32 BuffCandidates = 44;
     int32 SelectedBuffId = 45;
     bool RequireBuffChoice = 46;
+    repeated GridSupplySourceState SupplySources = 47;
+    repeated GridSupplyShipmentState SupplyShipments = 48;
+    repeated int32 RenovationCandidates = 49;
+    int32 SelectedRenovationId = 50;
+    int64 RenovationChoiceVersion = 51;
+    int64 RenovationLevelId = 52;
+    int64 RenovationLevelGeneration = 53;
+    repeated GridRenovationAppliedState RenovationApplied = 54;
+    bool SaveEnabled = 55;
+    string SaveResultId = 56;
+    int32 SaveState = 57;
+    string SaveFailure = 58;
+    string LastSavedSlotId = 59;
+    bool CanControlRestaurant = 60;
 }
 
 message GridCommandResult // IMessage

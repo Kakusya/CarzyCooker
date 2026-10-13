@@ -71,7 +71,7 @@ namespace ET
             Assert.That(CurrentLevel.GetComponent<FrontLevelState>().Waiting, Is.Empty);
             Assert.That(CurrentLevel.Children.Values.OfType<Customer>(), Is.Empty);
             var stations = Grid.Stations.Values.Select(value => (GridStation)value).ToArray();
-            Assert.That(stations.Length, Is.EqualTo(15)); Assert.That(Grid.Blocked.Count, Is.EqualTo(16));
+            Assert.That(stations.Length, Is.EqualTo(16)); Assert.That(Grid.Blocked.Count, Is.EqualTo(17));
             Assert.That(stations.Count(value => value.Kind == GridStationKind.Table), Is.EqualTo(2));
             foreach (var station in stations.Where(value => value.Kind == GridStationKind.Table))
             {

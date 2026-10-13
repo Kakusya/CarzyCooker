@@ -1,0 +1,32 @@
+[
+  {
+    "Id": 1,
+    "Name": "番茄补货",
+    "MaterialDefinitionId": 1,
+    "PackageDefinitionId": 12,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4
+  },
+  {
+    "Id": 2,
+    "Name": "鸡蛋补货",
+    "MaterialDefinitionId": 3,
+    "PackageDefinitionId": 13,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4
+  },
+  {
+    "Id": 3,
+    "Name": "面包补货",
+    "MaterialDefinitionId": 8,
+    "PackageDefinitionId": 14,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4
+  }
+]

@@ -11,14 +11,32 @@ namespace ET
     [FriendOf(typeof(Match))]
     public static class ProductRuntimeBootstrap
     {
-        public static void InitializeProduct(this ProductRuntimeComponent self, bool joinLocal = true)
+        public static void InitializeProduct(this ProductRuntimeComponent self, bool joinLocal = true) => self.InitializeProductCore(joinLocal, null, null, null);
+
+        public static void InitializeSavedProduct(this ProductRuntimeComponent self, string profile, SoloSaveHeader header = null, SoloSavePayload payload = null, bool joinLocal = true)
         {
+            if (self.Config.Role != RuntimeInstanceRole.Solo || !SoloSaveValidation.IsIdentifier(profile)) throw new InvalidOperationException("SoloSaveOnly");
+            if (header != null) SoloSaveValidation.Payload(header, payload, profile);
+            else if (payload != null) throw new InvalidOperationException("MissingSaveHeader");
+            self.InitializeProductCore(joinLocal, profile, header, payload);
+        }
+
+        public static void RegisterProductEntry(this ProductRuntimeComponent self)
+        {
+            if (ProductBootstrapBridge.Root == self) return;
             EntityRef<ProductRuntimeComponent> selfRef = self;
             ProductBootstrapBridge.Register(self.Config, self, () =>
             {
                 ProductRuntimeComponent current = selfRef;
                 current?.StopProduct();
             });
+        }
+
+        private static void InitializeProductCore(this ProductRuntimeComponent self, bool joinLocal, string profile, SoloSaveHeader header, SoloSavePayload payload)
+        {
+            if ((Scene)self.HostScene != null || (Scene)self.ClientScene != null || self.Stage is ProductStage.Stopping or ProductStage.Stopped)
+                throw new InvalidOperationException("ProductAlreadyStarted");
+            self.RegisterProductEntry();
             Scene root = self.Root();
             try
             {
@@ -26,21 +44,22 @@ namespace ET
                 {
                     GridKitchenSystem.ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTGridManualRecipeConfig.DataList);
                     GridKitchenSystem.ValidateGridSoupDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTGridAutoRecipeConfig.DataList);
+                    GridKitchenSystem.ValidateCleanupDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTStationConfig.DataList);
                     GridKitchenSystem.ValidateStationConfiguration();
                     GridDishConfig.ValidateAllMenus();
-                    if (self.Config.Role == RuntimeInstanceRole.Solo)
+                    if (self.Config.Role is RuntimeInstanceRole.Solo or RuntimeInstanceRole.Host)
                     {
                         RestaurantConfig.ValidateLevelDefinitions(Tables.Instance.DTLevelConfig.DataList, GridKitchenSystem.IsInitialGridWalkable);
                         CompanionConfig.Validate(Tables.Instance.DTCompanionConfig.DataList, GridKitchenSystem.IsInitialGridWalkable);
                         FrontConfig.Validate(Tables.Instance.DTCustomerFlowConfig.DataList, Tables.Instance.DTOrderConfig.DataList, Tables.Instance.DTTableConfig.DataList);
                         BuffConfig.ValidateAll();
+                        RenovationConfig.ValidateAll();
                     }
                     Scene host = EntitySceneFactory.CreateScene(root, IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(), SceneType.ProductHost, "ProductHost");
                     self.HostScene = host;
                     Match match = host.AddChild<Match>();
-                    if (self.Config.Role == RuntimeInstanceRole.Solo)
-                        match.Restaurant = match.AddChild<RestaurantRuntime, DRLevelConfig>(Tables.Instance.DTLevelConfig.Get(1));
-                    else match.AddComponent<GridKitchenComponent>();
+                    if (profile != null) match.BindSoloSave(profile, header, payload);
+                    match.Restaurant = match.AddChild<RestaurantRuntime, DRLevelConfig>(Tables.Instance.DTLevelConfig.Get(header?.NextLevelId ?? 1));
                     HostSessionComponent authority = host.AddComponent<HostSessionComponent, Match, ProductRuntimeComponent>(match, self);
                     authority.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
                     self.Authority = authority;

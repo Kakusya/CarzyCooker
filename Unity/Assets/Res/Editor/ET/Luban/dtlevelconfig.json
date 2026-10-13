@@ -20,7 +20,11 @@
       3
     ],
     "CandidateCount": 2,
-    "RequireBuffChoice": true
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2
+    ]
   },
   {
     "Id": 2,
@@ -43,6 +47,10 @@
       3
     ],
     "CandidateCount": 2,
-    "RequireBuffChoice": true
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2
+    ]
   }
 ]

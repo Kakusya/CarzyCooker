@@ -81,6 +81,22 @@ public sealed class DRStationConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["WaterDefinitionId"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  WaterDefinitionId = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["WaterUnits"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  WaterUnits = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -111,6 +127,12 @@ public sealed class DRStationConfig :  Luban.EditorBeanBase
         }
         {
             _json["Capabilities"] = new JSONNumber(Capabilities);
+        }
+        {
+            _json["WaterDefinitionId"] = new JSONNumber(WaterDefinitionId);
+        }
+        {
+            _json["WaterUnits"] = new JSONNumber(WaterUnits);
         }
     }
 
@@ -160,6 +182,16 @@ public sealed class DRStationConfig :  Luban.EditorBeanBase
     /// Capabilities
     /// </summary>
     public int Capabilities;
+
+    /// <summary>
+    /// WaterDefinitionId
+    /// </summary>
+    public int WaterDefinitionId;
+
+    /// <summary>
+    /// WaterUnits
+    /// </summary>
+    public int WaterUnits;
 
 }
 }

@@ -35,13 +35,18 @@ namespace ET
             self.Dirty = true;
             ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTGridManualRecipeConfig.DataList);
             ValidateGridSoupDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTGridAutoRecipeConfig.DataList);
+            ValidateCleanupDefinitions(Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTStationConfig.DataList);
             GridDishConfig.ValidateAllMenus();
             self.Blocked.Clear(); self.Actors.Clear(); self.Stations.Clear(); self.Items.Clear(); self.Processes.Clear(); self.AutoProcesses.Clear();
             self.BakeProcesses.Clear();
             self.MemberChanges.Clear(); self.Incoming.Clear(); self.Results.Clear(); self.PendingResults.Clear();
             self.LayoutCommands.Clear();
-            self.Blocked.UnionWith(ValidateStationConfiguration());
-            foreach (var initial in Tables.Instance.DTInitialLayoutConfig.DataList) self.AddConfiguredStation(initial);
+            if (!self.RestoreKitchenBaseline())
+            {
+                self.Blocked.UnionWith(ValidateStationConfiguration());
+                foreach (var initial in Tables.Instance.DTInitialLayoutConfig.DataList) self.AddConfiguredStation(initial);
+                self.AddComponent<KitchenSupply>();
+            }
         }
 
         public static HashSet<GridCell> ValidateStationConfiguration() => GridStationConfig.ValidateInitialLayout(
@@ -88,6 +93,7 @@ namespace ET
         {
             if (self.Stopped) return;
             self.Stopped = true;
+            self.CancelSupplyCommands("WorldStopped");
             foreach (GridActor actor in self.OrderedActors())
             {
                 self.PauseWork(actor);
@@ -163,7 +169,7 @@ namespace ET
         {
             GridActor actor = self.Actor(memberId);
             if (self.Stopped || !self.HasBinding(memberId, generation) || actor == null || actor.Generation != generation) return "EntryClosed";
-            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.StartBake) return "InvalidCommand";
+            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.TakeSupplyPortion) return "InvalidCommand";
             Match match = self.Match;
             Participant member = match.GetChild<Participant>(memberId);
             HostPeer peer = member.BoundPeer;
@@ -174,7 +180,7 @@ namespace ET
             if (level != null && level.Paused) return "Paused";
             if (level != null && level.Phase == LevelPhase.Completed) return "LevelCompleted";
             if (intent.Action == GridAction.Move && !self.IsWalkable(intent.Cell)) return "BlockedCell";
-            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake && self.Station(intent.TargetId) == null) return "UnknownCounter";
+            if ((intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake || IsCleanupAction(intent.Action) || IsSupplyInteraction(intent.Action)) && self.Station(intent.TargetId) == null) return "UnknownCounter";
             if (intent.Action == GridAction.PickupDrop && self.Item(intent.TargetId) == null) return "UnknownItem";
             // 接收元数据不移动角色/物品；世界修改留给固定 Tick。
             actor.LastReceivedCommandId = intent.CommandId; actor.LastReceivedIntent = intent;
@@ -229,6 +235,7 @@ namespace ET
             self.AdvanceWork();
             self.AdvanceAutoWork();
             self.AdvanceBakeWork();
+            self.AdvanceSupplyShipments();
             if ((RestaurantRuntime)self.Restaurant == null) self.CommitGridState();
         }
 
@@ -245,11 +252,17 @@ namespace ET
 
         private static void InstallIntent(this GridKitchenComponent self, GridActor actor, GridIntent intent)
         {
+            if (IsCleanupAction(intent.Action))
+            {
+                // 不让自动接近先暂停正在参与的输入，再把它当成合法垃圾。
+                string error = self.CheckCleanup(actor, self.Station(intent.TargetId), intent, false, out _, out _, out _);
+                if (error != null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, error); return; }
+            }
             // 冲突开始在改路线前拒绝，避免先移动再因依赖失效暂停原工作。
             if (intent.Action is GridAction.StartStationWork or GridAction.StartHeldWork && actor.WorkId != 0)
             { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "WorkBusy"); return; }
             GridCell goal = intent.Cell;
-            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake)
+            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake || IsCleanupAction(intent.Action) || IsSupplyInteraction(intent.Action))
             {
                 GridStation station = self.Station(intent.TargetId);
                 if (station == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "UnknownCounter"); return; }
@@ -354,8 +367,10 @@ namespace ET
             {
                 GridStation station = self.Station(intent.TargetId);
                 if (station == null || !self.AtStation(actor, station)) error = "CounterNotAdjacent";
+                else if (IsCleanupAction(intent.Action)) error = self.CleanupAtFacility(actor, station, intent);
+                else if (IsSupplyInteraction(intent.Action)) error = self.SupplyAtStation(actor, station, intent);
                 else if (station.Kind == GridStationKind.CleanPool && intent.Action == GridAction.TakeCounter) error = self.TakeCleanUtensil(actor,station,intent);
-                else if (station.Kind is GridStationKind.Table or GridStationKind.Wash or GridStationKind.DirtyPool or GridStationKind.CleanPool) error = "RequiresFrontAction";
+                else if (station.Kind is GridStationKind.Table or GridStationKind.Wash or GridStationKind.DirtyPool or GridStationKind.CleanPool or GridStationKind.Trash) error = "RequiresFrontAction";
                 else
                 {
                     actor.Facing = Direction(actor.Cell, station.Cell);

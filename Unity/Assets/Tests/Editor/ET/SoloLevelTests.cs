@@ -112,6 +112,7 @@ namespace ET
             buffer.WriteSize(3); buffer.WriteInt(10); buffer.WriteInt(20); buffer.WriteInt(30); buffer.WriteInt(x); buffer.WriteInt(y);
             buffer.WriteSize(2); buffer.WriteInt(1); buffer.WriteInt(2);
             buffer.WriteSize(0);buffer.WriteInt(0);buffer.WriteBool(false);
+            buffer.WriteSize(0);
             return new DRLevelConfig(buffer);
         }
 
@@ -125,7 +126,9 @@ namespace ET
                 buffer.WriteSize(row.StarThresholds.Count);foreach(int star in row.StarThresholds)buffer.WriteInt(star);
                 buffer.WriteInt(row.SpawnX);buffer.WriteInt(row.SpawnY);buffer.WriteSize(row.AllowedDishIds.Count);foreach(int dish in row.AllowedDishIds)buffer.WriteInt(dish);
                 buffer.WriteSize(row.AllowedBuffIds.Count);foreach(int buff in row.AllowedBuffIds)buffer.WriteInt(buff);
-                buffer.WriteInt(row.CandidateCount);buffer.WriteBool(false);rows[i]=new DRLevelConfig(buffer);map[row.Id]=rows[i];
+                buffer.WriteInt(row.CandidateCount);buffer.WriteBool(false);
+                buffer.WriteSize(row.AllowedRenovationIds.Count);foreach(int id in row.AllowedRenovationIds)buffer.WriteInt(id);
+                rows[i]=new DRLevelConfig(buffer);map[row.Id]=rows[i];
             }
         }
 

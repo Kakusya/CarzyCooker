@@ -13,7 +13,7 @@ namespace ET.Client
             owner.Run(async context=>
             {
                 ClientSessionComponent client=((Scene)self.IScene).GetComponent<ClientSessionComponent>();GridClientComponent grid=client.GetComponent<GridClientComponent>();
-                if(!grid.Confirmed || grid.LevelId!=level || grid.LevelGeneration!=levelGeneration)return;
+                if(!grid.Confirmed || !grid.CanControlRestaurant || grid.LevelId!=level || grid.LevelGeneration!=levelGeneration)return;
                 EntityRef<GridClientComponent> projectionRef=grid;var request=grid.CreateBuffChoice(choice,draw);
                 long command=request.CommandId,binding=grid.BindingGeneration,generation=grid.WorldGeneration;string world=grid.WorldId;
                 try
