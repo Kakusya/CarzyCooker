@@ -62,9 +62,9 @@ Host/Solo 先建立权威及餐厅，再建立接入、客户端和视图；远�
 
 ## Sources
 
-- [Unity/Assets/Tests/Editor/ET/ProductSessionTests.cs](../../../Unity/Assets/Tests/Editor/ET/ProductSessionTests.cs)
-- [Unity/Assets/Tests/Editor/ET/SoloSupplyTests.cs](../../../Unity/Assets/Tests/Editor/ET/SoloSupplyTests.cs)
-- [Unity/Assets/Tests/Editor/ET/SoloSaveSelectionUiTests.cs](../../../Unity/Assets/Tests/Editor/ET/SoloSaveSelectionUiTests.cs)
-- [Unity/Assets/Tests/Editor/ET/CoopCoreControlTests.cs](../../../Unity/Assets/Tests/Editor/ET/CoopCoreControlTests.cs)
-- [Tools/AutoTesting/README.md](../../../Tools/AutoTesting/README.md)
-- [openspec/specs/automated-testing/spec.md](../../../openspec/specs/automated-testing/spec.md)
+- [Unity/Assets/Tests/Editor/ET/ProductSessionTests.cs](../../../../Unity/Assets/Tests/Editor/ET/ProductSessionTests.cs)
+- [Unity/Assets/Tests/Editor/ET/SoloSupplyTests.cs](../../../../Unity/Assets/Tests/Editor/ET/SoloSupplyTests.cs)
+- [Unity/Assets/Tests/Editor/ET/SoloSaveSelectionUiTests.cs](../../../../Unity/Assets/Tests/Editor/ET/SoloSaveSelectionUiTests.cs)
+- [Unity/Assets/Tests/Editor/ET/CoopCoreControlTests.cs](../../../../Unity/Assets/Tests/Editor/ET/CoopCoreControlTests.cs)
+- [Tools/AutoTesting/README.md](../../../../Tools/AutoTesting/README.md)
+- [openspec/specs/automated-testing/spec.md](../../../specs/automated-testing/spec.md)

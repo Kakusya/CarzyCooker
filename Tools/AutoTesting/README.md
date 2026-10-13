@@ -26,4 +26,4 @@ python -m unittest discover -s Tools/AutoTesting/tests -v
 
 产品用例仍在 `Unity/Assets/Tests/Editor/ET` 的既有 PlayMode UTF 程序集中，辅助方法不属于 AutoTesting 编排协议。`ProductSessionTests.PumpUntil` 默认只泵真实消息，`FinishMessages` 等待接收答复，均不推进测试时钟；业务提交用原 `AdvanceTicks` 明确推进。真实 KCP 等待显式选择 `advanceTime: true`，并同时检查 Join 和匹配当前世界／关卡的独立投影。截止未满足就失败并输出阶段，不扩大超时或重跑到绿。
 
-供应来源按真实表定义查唯一项，缺失／重复明确失败。选档与保存 UI 共用 `CreateSaveUiRepository`，只替换本夹具拥有的 Launcher repository，并登记随机测试专属目录；原任务失败、提前退出与正常结束均保留所属收尾，不触碰产品存档或别的运行。实际迁移与逐用例结果见[夹具 change](../../openspec/changes/stabilize-product-test-fixtures/execution-notes.md)。
+供应来源按真实表定义查唯一项，缺失／重复明确失败。选档与保存 UI 共用 `CreateSaveUiRepository`，只替换本夹具拥有的 Launcher repository，并登记随机测试专属目录；原任务失败、提前退出与正常结束均保留所属收尾，不触碰产品存档或别的运行。实际迁移与逐用例结果见[夹具 change](../../openspec/changes/archive/2026-10-13-stabilize-product-test-fixtures/execution-notes.md)。

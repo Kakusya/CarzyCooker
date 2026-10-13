@@ -47,3 +47,8 @@ UTF 执行阶段使用现有 Tools/AutoTesting，先发现模式与方法再记�
 - 已有合作交付建议一组核对归档：cooperative-restaurant-core、cooperative-front-service、cooperative-cleanup-supply、cooperative-restaurant-loopback。保留原先前置拆分账本及普通双 Editor 结果，不把 loopback 提升为 Player/LAN。
 - 当前 baseline 的既有实现与验收已在本地 main 提交保存；原记录中早期“未提交／仅规划／NotRun”按各自阶段解释。新增资料仍未提交，未执行 push、PR、归档或第二工作区同步。
 - 排除 Unity/Temp、Library、原始测试输出、截图、用户现场资源、额外状态副本和未改的技能；不以本案授权处理历史用户文件。
+
+
+## 2026-10-13 归档记录
+
+用户明确授权归档、commit、push。任务与既有运行证据复核完整，归档到当前日期目录；先同步消息案的network/product-session两份主规格，再由CLI归档，资料/夹具两案按skip_specs不增加规格。已同步要求逐块比较一致，旧场景和其他要求保留；迁移相对引用与入链，不修改业务代码或原始运行输出。已有行为未变，UTF与普通Launcher按原映射复用，本次仅做格式/引用/规格检查；Player/AOT、手机与LAN等未验范围仍保留。此前“未提交/未归档”描述均按原阶段解释，最终版本状态查Git。

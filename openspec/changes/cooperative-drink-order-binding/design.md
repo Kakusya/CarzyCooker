@@ -8,7 +8,7 @@
 
 目标模式：Host/Client 内存餐厅。不增加饮品配方、联机持久化、自动恢复或新传输；重连能力单列依赖时才验收其组合。
 
-依赖：[first-drink-order-binding](../first-drink-order-binding/proposal.md)、[cooperative-cleanup-supply](../cooperative-cleanup-supply/proposal.md)、[cooperative-restaurant-loopback](../cooperative-restaurant-loopback/proposal.md)、[product-local-message-boundaries](../product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[first-drink-order-binding](../first-drink-order-binding/proposal.md)、[cooperative-cleanup-supply](../cooperative-cleanup-supply/proposal.md)、[cooperative-restaurant-loopback](../cooperative-restaurant-loopback/proposal.md)、[product-local-message-boundaries](../archive/2026-10-13-product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 

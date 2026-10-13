@@ -126,4 +126,4 @@
 
 ## Sources
 
-以上为本案新增／加强合同，当前实现并非已全部满足。当前依据为 [现有主规格](../../../../specs/product-session/spec.md)、[消息与提交源码](../../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product)、[设计与功能清单](../../design.md)。
+以上为本案新增／加强合同，当前实现并非已全部满足。当前依据为 [现有主规格](../../../../../specs/product-session/spec.md)、[消息与提交源码](../../../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product)、[设计与功能清单](../../design.md)。

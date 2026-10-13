@@ -56,3 +56,8 @@ Tools/AutoTesting 分别执行 PlayMode testName 过滤：ProductFixture 3/3、E
 新用例和迁移用例没有失败；代表性缺条件以 Assert.Throws 验证明确失败合同，不将真实失败吞成通过。旧案原失败与 NotRun 保留。
 
 文档收尾检查：本案四份 Markdown 和 AutoTesting README 共 5 份、19 个本地引用均存在、UTF-8 有效；git diff --check 退出 0；openspec validate stabilize-product-test-fixtures --strict --no-interactive 返回 valid、退出 0。最后 editor_status ready／compiling=false／playMode=stopped。三项任务实施及验收完成，没有提交、归档、push 或第二工作区操作。
+
+
+## 2026-10-13 归档记录
+
+用户明确授权归档、commit、push。任务与既有运行证据复核完整，归档到当前日期目录；先同步消息案的network/product-session两份主规格，再由CLI归档，资料/夹具两案按skip_specs不增加规格。已同步要求逐块比较一致，旧场景和其他要求保留；迁移相对引用与入链，不修改业务代码或原始运行输出。已有行为未变，UTF与普通Launcher按原映射复用，本次仅做格式/引用/规格检查；Player/AOT、手机与LAN等未验范围仍保留。此前“未提交/未归档”描述均按原阶段解释，最终版本状态查Git。

@@ -8,7 +8,7 @@
 
 当前协议与交付范围统一查[根进度](../CarzyCooker当前进度.md)；下文旧协议数字保留历史范围，不作为当前版本。本轮消息边界协议已升为 18。Grid 保留 GridCommandResult 单一出口；Level／Layout／FrontWork／Serve／Buff／Supply／Renovation 在原 HostPeer 接收记账后，保留各自 Context 到 PendingOutcomes，原 GridBroadcast 在同版快照之后发送 ProductCommandOutcome，不能只靠最近快照字段猜结果。
 
-终态流序号属于原 Peer，客户端仅保存最新消费位置和独立值，不保留无限命令历史。较早命令完成／取消仍发布自己的 ProductCommandOutcomeApplied，只有不早于当前命令的结果才更新最新反馈；重复流序号、错误运行／关／绑定或尚未安装的版本不消费。Continue 的终态另保留 OriginLevel 身份，合法成功携新关的适用状态，不用旧关结果覆盖新关。KitchenWorkOutcome 同样在快照后复制值并发布观察事件；事件只读表现。内部转换仍禁止 Host wire 和 Peer 直达，Client 仅接新增结果通知。具体真实队列和 KCP 验证见[消息执行记录](../openspec/changes/product-local-message-boundaries/execution-notes.md)。
+终态流序号属于原 Peer，客户端仅保存最新消费位置和独立值，不保留无限命令历史。较早命令完成／取消仍发布自己的 ProductCommandOutcomeApplied，只有不早于当前命令的结果才更新最新反馈；重复流序号、错误运行／关／绑定或尚未安装的版本不消费。Continue 的终态另保留 OriginLevel 身份，合法成功携新关的适用状态，不用旧关结果覆盖新关。KitchenWorkOutcome 同样在快照后复制值并发布观察事件；事件只读表现。内部转换仍禁止 Host wire 和 Peer 直达，Client 仅接新增结果通知。具体真实队列和 KCP 验证见[消息执行记录](../openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
 
 单机餐厅当前协议14，已在协议12关卡／前厅／buff基线上接入设施清理和有限供应。玩家操作等待归当次UIGridKitchen.AsyncOwner，HUD加载等待归GridPresentation.AsyncOwner；关闭HUD取消显示等待、解绑所属按钮，原物理请求及Peer在途仍由原观察者收尾。按钮捕获原UI／GridClient EntityRef和World／Level／绑定代次；当前上下文校验先于旧关最新重放，仅已Executed且完整相同的Continue可回报自己换关事实。实际树和请求路径见[关卡设计](../openspec/changes/archive/2026-10-13-solo-restaurant-level-flow/design.md)，旧关四参数与当前关重放证据见[执行记录](../openspec/changes/archive/2026-10-13-solo-restaurant-level-flow/execution-notes.md)。后文协议3至12保留阶段边界，当前设施和供应结果见[清理记录](../openspec/changes/solo-kitchen-clear-and-discard/execution-notes.md)及[供应记录](../openspec/changes/solo-supply-delivery/execution-notes.md)。
 
@@ -115,13 +115,13 @@ Host／Solo当前都持有持续Restaurant／厨房和当前Level；共享控制
 
 Purchase 仍沿 SupplyCommandRequest→Peer→SupplySubmitRequest→HostSession→KitchenSupply.Commands，在业务步一次预留并创建原 SupplyShipment。运输到点夹止进度，只发 ShipmentTransition 到相同稳定 HostSession；handler 复制值，下一允许业务步复验世界／源实例／序号后提交 Ready。暂停及 Completed 期间不推进或提交到货，换关保持原货物，恢复作业的技术 pending 不写文件。采购、Ready、Received 各由 GridBroadcast 在快照后发送 ShipmentOutcome，客户端复制独立值、防重并发布只读观察事件。
 
-Receive／TakePortion 仍沿原 Grid 到位互动，内部 GridIntent 记 OriginKind=Supply；接近、替换、取消、拒绝及成功都保留原供应编号，终态只发 ProductCommandOutcome。材料仍归原包裹 Contents，接收一次创建实物，拆份只移原材料。FillWater／DrainLiquid／DiscardSolid 继续使用原 GridCommandResult 单一出口。本轮边界42/42、供应18/18、水池3/3、清理23/23及实际文件供应恢复单例 Passed，具体 FullName 与范围见[执行记录](../openspec/changes/product-local-message-boundaries/execution-notes.md)。
+Receive／TakePortion 仍沿原 Grid 到位互动，内部 GridIntent 记 OriginKind=Supply；接近、替换、取消、拒绝及成功都保留原供应编号，终态只发 ProductCommandOutcome。材料仍归原包裹 Contents，接收一次创建实物，拆份只移原材料。FillWater／DrainLiquid／DiscardSolid 继续使用原 GridCommandResult 单一出口。本轮边界42/42、供应18/18、水池3/3、清理23/23及实际文件供应恢复单例 Passed，具体 FullName 与范围见[执行记录](../openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
 
 ### 本轮厨房作业转换（协议 18）
 
 手工切配／手持加工和汤／烤制保留原 GridManualProcess／GridAutoProcess／GridBakeProcess owner。开始／停手请求仍经原 Grid 两段邮箱；开始命令的 Executed 只证明开始成功。到点检测夹止进度并投递一次 KitchenWorkTransition 到稳定 HostSession ActorId，ProductHost handler 复制源身份和阶段序号到厨房队列，下一允许业务步才消费输入并生成输出／可分汤份数。旧实例、旧序号及重复完成不写状态。
 
-手工停手／接续保持进度，序号隔离晚到完成；自动作业按 World 和原作业 InstanceId 跨关有效。暂停冻结业务步，已收到完成也等待恢复。GridBroadcast 先同版快照，再发送 KitchenWorkOutcome（Started／Paused／Resumed／Finished），客户端复制值并发布 KitchenWorkOutcomeApplied。恢复的自动作业从有效序号开始，技术 pending 不写存档。实际消息断言与受影响回归见[本轮记录](../openspec/changes/product-local-message-boundaries/execution-notes.md)。
+手工停手／接续保持进度，序号隔离晚到完成；自动作业按 World 和原作业 InstanceId 跨关有效。暂停冻结业务步，已收到完成也等待恢复。GridBroadcast 先同版快照，再发送 KitchenWorkOutcome（Started／Paused／Resumed／Finished），客户端复制值并发布 KitchenWorkOutcomeApplied。恢复的自动作业从有效序号开始，技术 pending 不写存档。实际消息断言与受影响回归见[本轮记录](../openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
 
 ### 单机汤批次（协议 5）
 
@@ -177,31 +177,31 @@ ChooseBuffRequest／Response／SubmitRequest／SubmitResponse 追加10099–1010
 
 原玩家／伙伴认领、Stop入口保留两段mailbox和CompanionWork角色路径；到位与工作到点分别发FrontWorkTransition(Start/Complete)。原FrontWork的ClaimSerial、源InstanceId和阶段serial排除旧认领／旧转换；暂停保留已开始工作进度。目标效果和第三次伙伴成长同一提交，后续同一步认领才冻结加速洗碗时长。提交后快照先安装，再消费FrontWorkOutcome（Claimed／Started／Released／Finished／Cancelled），原CompanionWorkResult继续向角色报告。
 
-离场到清桌、清桌到洗碗各经过完成通知及独立FrontWorkCreateRequest。Clear先把原餐具移到DirtyPool，完成实体持SuccessorPending直到Wash合法创建；Customer同样持本阶段pending到Ask／Clear创建。等待投递期间ILevelFrontActivity仍阻止自然Completed；新阶段重置SuccessorQueued，旧阶段靠serial隔离。原厨具身份、卫生、得分和材料只在原领域原子效果修改，不由Event或结果handler写回。实际暂缓投递、旧认领和真实出餐／回收记录见[本轮记录](../openspec/changes/product-local-message-boundaries/execution-notes.md)。
+离场到清桌、清桌到洗碗各经过完成通知及独立FrontWorkCreateRequest。Clear先把原餐具移到DirtyPool，完成实体持SuccessorPending直到Wash合法创建；Customer同样持本阶段pending到Ask／Clear创建。等待投递期间ILevelFrontActivity仍阻止自然Completed；新阶段重置SuccessorQueued，旧阶段靠serial隔离。原厨具身份、卫生、得分和材料只在原领域原子效果修改，不由Event或结果handler写回。实际暂缓投递、旧认领和真实出餐／回收记录见[本轮记录](../openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
 
 ### 本轮Buff准备门槛（协议18）
 
-LevelBuff建树只校验并冻结seed／allowedIds／count，DrawVersion0表示尚未准备。原Restaurant准备态服务步向HostSession发送BuffPrepare，ProductHost对应handler复制当前Level／源实例／serial到原LevelBuff.Preparations，下一允许准备步抽一次、DrawVersion1；暂停不抽。Start先检查Prepared再检查RequireChoice，提前开店为BuffNotReady；ChooseBuff与Layout继续原规则和独立ProductCommandOutcome，非法选择／布局各有终点。提交后同版快照先于BuffPrepared，客户端复制独立值，重复流序号、错误世界／Level／draw和未来版本拒绝。HUD准备期显示“本关加成准备中”，结构及owner保持。门槛／防重／明确成功拒绝、SoloBuff21项和SoloStation23项的有效运行见[本轮记录](../openspec/changes/product-local-message-boundaries/execution-notes.md)。
+LevelBuff建树只校验并冻结seed／allowedIds／count，DrawVersion0表示尚未准备。原Restaurant准备态服务步向HostSession发送BuffPrepare，ProductHost对应handler复制当前Level／源实例／serial到原LevelBuff.Preparations，下一允许准备步抽一次、DrawVersion1；暂停不抽。Start先检查Prepared再检查RequireChoice，提前开店为BuffNotReady；ChooseBuff与Layout继续原规则和独立ProductCommandOutcome，非法选择／布局各有终点。提交后同版快照先于BuffPrepared，客户端复制独立值，重复流序号、错误世界／Level／draw和未来版本拒绝。HUD准备期显示“本关加成准备中”，结构及owner保持。门槛／防重／明确成功拒绝、SoloBuff21项和SoloStation23项的有效运行见[本轮记录](../openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
 
 ### 本轮装修准备后继（协议18）
 
 原Level自然Completed后发送LevelFinished→HostSession／LevelFinishedHandler→原Restaurant完成值队列；下一服务步只发RenovationPrepare，再经RenovationPrepareHandler→原RestaurantRenovation.Preparations→下一未暂停的Completed步准备候选一次。准备前Continue／存档捕获为RenovationNotReady，空池也须合法准备。ResultLevel身份及ChoiceVersion与候选同版安装后消费RenovationPrepared独立值；重复完成／准备不刷新版本，新关／原实例／serial隔离迟到输入。选择后原完整预检与Continue内一次安装保持，原AppliedStations继续持有实物，不另建库存或免费物资。
 
-Solo HUD先显示“正在准备装修候选”，准备后才提供下一关／保存；Host／Client不参与Solo装修，原控制范围保留。新的阶段查询只读取投影和运行角色，结果handler／观察Event不写权威状态；准备门槛、空池、安装一次／失败零安装、受管UI重开和旧回调的16项最新有效结果与52项边界记录见[执行记录](../openspec/changes/product-local-message-boundaries/execution-notes.md)。
+Solo HUD先显示“正在准备装修候选”，准备后才提供下一关／保存；Host／Client不参与Solo装修，原控制范围保留。新的阶段查询只读取投影和运行角色，结果handler／观察Event不写权威状态；准备门槛、空池、安装一次／失败零安装、受管UI重开和旧回调的16项最新有效结果与52项边界记录见[执行记录](../openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
 
 ### 本轮营业与自然完成转换（协议18）
 
 原Level到点只夹止ElapsedOperatingTicks并发LevelTransition(Drain)，无真实前厅活动时只发Complete；HostSession接入后在原Restaurant控制步之后复验世界／Level／原实例／serial。Pause优先提交且保持收到的自动转换等待；恢复后下一允许步提交。截止等待Drain不新增顾客，既有世界作业继续原业务步；Complete一次取消未执行动作、冻结手工、计原星数，再发LevelFinished接装修后继。控制在暂停／Completed仍经原邮箱处理，Completed的Pause按原规则明确拒绝。
 
-Start／Pause／Resume与实际Preparing／Draining／Completed通过同版快照后的LevelPhaseChanged报告独立值，不修改客户端权威字段；控制终态仍ProductCommandOutcome。Continue有OriginLevel／新Level适用结果，旧关转换和回调不能写新轮。新增2项门槛／暂停待消息、SoloLevel14项与直接受影响跨关小集的实际结果见[执行记录](../openspec/changes/product-local-message-boundaries/execution-notes.md)。
+Start／Pause／Resume与实际Preparing／Draining／Completed通过同版快照后的LevelPhaseChanged报告独立值，不修改客户端权威字段；控制终态仍ProductCommandOutcome。Continue有OriginLevel／新Level适用结果，旧关转换和回调不能写新轮。新增2项门槛／暂停待消息、SoloLevel14项与直接受影响跨关小集的实际结果见[执行记录](../openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
 
 ### 完整Grid动作提交入口
 
-跨产品功能发GridCommandRequest，经原Peer／HostSession两段邮箱，GridSubmitHandler才调用internal SubmitGridIntent；HotfixView不直接提交厨房。拿／放／同格拾取、AddToContainer、PourContents、PortionSoup保留原完整原子效果与ExpectedItem/Target/Batch身份，计算／寻路及内容转移仍在同一功能内。每条最终成功、拒绝或替换取消由原GridCommandResult出口复制值并发布独立观察事件，旧取消不覆盖新反馈，重放不再次转物或扣份。实物ID／内容／份数守恒及完整真实消息覆盖见[执行记录](../openspec/changes/product-local-message-boundaries/execution-notes.md)。
+跨产品功能发GridCommandRequest，经原Peer／HostSession两段邮箱，GridSubmitHandler才调用internal SubmitGridIntent；HotfixView不直接提交厨房。拿／放／同格拾取、AddToContainer、PourContents、PortionSoup保留原完整原子效果与ExpectedItem/Target/Batch身份，计算／寻路及内容转移仍在同一功能内。每条最终成功、拒绝或替换取消由原GridCommandResult出口复制值并发布独立观察事件，旧取消不覆盖新反馈，重放不再次转物或扣份。实物ID／内容／份数守恒及完整真实消息覆盖见[执行记录](../openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
 
 ### 本轮保存结果出口
 
-既有SoloSaveBrowse/Select/Write继续ProductRoot repository请求/响应；单次查询响应本身就是终点。SaveResult AsyncOwner持物理写入及独立不可变Record，文件完成只发SoloSaveCompletedRequest到原HostSession，原binding完成队列由Restaurant服务步提交Failed/Committed，再通过原Continue允许换关。失败／重试成功各ProductCommandOutcome一次，消费者复制原OriginLevel并识别适用新Level为ChangedLevel；旧/重复完成和响应丢失不重新保存或安装，HUD关闭不取消结果owner。原目录保护、冲突与文件发布规则保持。29项最新实际保存/选档/关闭重开/恢复结果见[执行记录](../openspec/changes/product-local-message-boundaries/execution-notes.md)。
+既有SoloSaveBrowse/Select/Write继续ProductRoot repository请求/响应；单次查询响应本身就是终点。SaveResult AsyncOwner持物理写入及独立不可变Record，文件完成只发SoloSaveCompletedRequest到原HostSession，原binding完成队列由Restaurant服务步提交Failed/Committed，再通过原Continue允许换关。失败／重试成功各ProductCommandOutcome一次，消费者复制原OriginLevel并识别适用新Level为ChangedLevel；旧/重复完成和响应丢失不重新保存或安装，HUD关闭不取消结果owner。原目录保护、冲突与文件发布规则保持。29项最新实际保存/选档/关闭重开/恢复结果见[执行记录](../openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
 
 ### Continue 终态与受管 UI 观察（协议18）
 

@@ -37,7 +37,7 @@
 | 5.1 会话与公共生命周期 | ProductSession 本地／现有 RealKcpSharesAuthorityKeepsAliveAndLeaveReturnsCommitted、WireInternalMessageCannotJoinOrTakeLocalIdentity 及必要 SoloMessage／LocalMessageShutdown | NotRun |
 | 5.2–5.3 UI 与连续玩法 | SoloRestaurantUi＋普通 Launcher；新轮→两菜／前厅／供应清理→暂停恢复→自然结算→装修／保存→下一关，关闭重开和旧按钮 | NotRun |
 
-运行顺序按 tasks 的依赖，先本地功能后必要 KCP 和真实界面。已有相关小集当次完整对应某项时直接复用，不再以集成为名重复。测试发现、过滤、原始输出和失败信息遵循 [自动测试 SOP](../../../Book/自动化测试SOP.md)，不复制证据包或修改原结果。
+运行顺序按 tasks 的依赖，先本地功能后必要 KCP 和真实界面。已有相关小集当次完整对应某项时直接复用，不再以集成为名重复。测试发现、过滤、原始输出和失败信息遵循 [自动测试 SOP](../../../../Book/自动化测试SOP.md)，不复制证据包或修改原结果。
 
 ## 规划检查
 
@@ -313,3 +313,10 @@ Continue修正后再次普通Launcher Play：选档只读显示既有11:41记录
 
 核对未发现本案范围内未覆盖的必需验收或未实现规格；Continue与设计的时序差异已修复并补实际验收。未改变的原配置、夹具及本案已覆盖的功能证据按对应运行复用，没有阶段性全仓重跑。已知Console压缩脚本误标已写KnownIssues，未扩展技能修复。Player/AOT、Android、物理LAN/公网、双Editor、新远端功能明确范围外NotRun，不能由本案升为通过。未提交、未归档、未push、未操作第二工作区；后续单机/联机案仍未开工。
 最终状态复查：openspec list显示本案17/17 complete、另外两案各3/3 complete；apply为all_done/remaining0。Client与ClientServer均对HEAD逐常量核对旧121 Opcode全部不变、新增18；23份Markdown/423本地引用缺失0、UTF8有效，git diff --check退出0。Editor最终Play stopped、compiling=false、Assets/Launcher.unity active且dirty=false。全部23项任务交付证据齐全，不执行提交/归档。
+
+
+## 2026-10-13 归档记录
+
+用户明确授权归档、commit、push。任务与既有运行证据复核完整，归档到当前日期目录；先同步消息案的network/product-session两份主规格，再由CLI归档，资料/夹具两案按skip_specs不增加规格。已同步要求逐块比较一致，旧场景和其他要求保留；迁移相对引用与入链，不修改业务代码或原始运行输出。已有行为未变，UTF与普通Launcher按原映射复用，本次仅做格式/引用/规格检查；Player/AOT、手机与LAN等未验范围仍保留。此前“未提交/未归档”描述均按原阶段解释，最终版本状态查Git。
+
+归档收尾检查：本次27份Markdown、295个本地引用均存在且UTF8有效；72处迁移相对引用已按原目标重定位。network主规格11→13项，product-session21→27项，10个delta要求块与主规格逐块一致，其他要求与原场景保留。openspec validate --specs --strict为30/30，--archived任务lint为27/27，5个只调整依赖链接的活动案严格格式均valid；CLI活动清单已无本次三个案。本次无业务修改或功能重跑，已有运行证据按原范围复用。

@@ -92,7 +92,7 @@
 
 下表保留原交付证据和各次运行范围；整体玩法现状以以上两条进度线为入口。历史“当前协议”按该次交付解释，不用于推断现在的网络功能范围。
 
-本轮三个基础设施 change 已完成：资料整理与夹具稳定各 3/3，夹具相关 85 个唯一 PlayMode UTF Passed；消息边界 17/17，原输入收尾、独立终态、厨房／供应／前厅后继、关卡／布局／Buff／装修、已有存档和受管HUD均有逐功能验收。最新54项边界UTF全部Passed，相关功能及生命周期小集的最新有效结果也均Passed，失败及修正保留在原记录。普通Launcher实际两菜20分2星、原碗／盘洗净、采购拆份清理、暂停恢复、装修写盘及半锅承接下一关通过；Continue只有新关准备完成才报Executed，另经新轮0分0星普通换关增量验证。当前源码协议18，不提升Player/AOT、Android、物理LAN/公网、双Editor或新远端玩法范围。具体映射见[资料记录](openspec/changes/streamline-agent-project-context/execution-notes.md)、[夹具记录](openspec/changes/stabilize-product-test-fixtures/execution-notes.md)、[消息记录](openspec/changes/product-local-message-boundaries/execution-notes.md)。三个 change 尚未归档；提交与远端状态以 Git 为准。
+本轮三个基础设施 change 已完成：资料整理与夹具稳定各 3/3，夹具相关 85 个唯一 PlayMode UTF Passed；消息边界 17/17，原输入收尾、独立终态、厨房／供应／前厅后继、关卡／布局／Buff／装修、已有存档和受管HUD均有逐功能验收。最新54项边界UTF全部Passed，相关功能及生命周期小集的最新有效结果也均Passed，失败及修正保留在原记录。普通Launcher实际两菜20分2星、原碗／盘洗净、采购拆份清理、暂停恢复、装修写盘及半锅承接下一关通过；Continue只有新关准备完成才报Executed，另经新轮0分0星普通换关增量验证。当前源码协议18，不提升Player/AOT、Android、物理LAN/公网、双Editor或新远端玩法范围。具体映射见[资料记录](openspec/changes/archive/2026-10-13-streamline-agent-project-context/execution-notes.md)、[夹具记录](openspec/changes/archive/2026-10-13-stabilize-product-test-fixtures/execution-notes.md)、[消息记录](openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。三个 change 已于2026-10-13归档，network与product-session主规格已同步；提交与远端状态以 Git 为准。
 
 | 范围 | 交付记录（按原验证范围） | 入口 |
 | --- | --- | --- |
