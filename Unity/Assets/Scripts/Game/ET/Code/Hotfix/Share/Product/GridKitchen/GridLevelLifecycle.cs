@@ -13,8 +13,8 @@ namespace ET
             self.CancelSupplyCommands(reason);
             foreach (GridActor actor in self.OrderedActors())
             {
-                if (self.Incoming.TryGetValue(actor.MemberId, out var incoming)) self.Result(actor, incoming.CommandId, GridResultStatus.Cancelled, reason);
-                if (actor.HasIntent) self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, reason);
+                if (self.Incoming.TryGetValue(actor.MemberId, out var incoming)) self.Result(actor, incoming.CommandId, GridResultStatus.Cancelled, reason, incoming.OriginKind);
+                if (actor.HasIntent) self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, reason, actor.ActiveIntent.OriginKind);
                 actor.HasIntent = false; actor.ActiveIntent = default; actor.Path.Clear(); actor.PathIndex = 0;
                 GridCell stop = actor.Motion == GridMotion.Transit ? actor.NextCell : actor.Cell;
                 actor.Goal = stop; actor.StopCell = stop; actor.HasStopReservation = true;

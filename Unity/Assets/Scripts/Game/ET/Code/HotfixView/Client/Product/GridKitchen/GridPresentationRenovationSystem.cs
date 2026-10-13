@@ -4,13 +4,26 @@ using Game;
 
 namespace ET.Client
 {
+    [FriendOf(typeof(ProductRuntimeComponent))]
     public static partial class GridPresentationSystem
     {
+        private static bool RenovationReadyForContinue(GridClientComponent grid)
+        {
+            ProductRuntimeComponent runtime = grid.Root().GetComponent<ProductRuntimeComponent>();
+            return runtime?.Config.Role != RuntimeInstanceRole.Solo ||
+                grid.RenovationLevelId == grid.LevelId && grid.RenovationLevelGeneration == grid.LevelGeneration && grid.RenovationChoiceVersion > 0;
+        }
         private static void RefreshRenovationStatus(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
             if (grid.RenovationApplied.Count > 0)
                 view.HintText.text += " · 已装修：" + string.Join("、",grid.RenovationApplied.Keys.OrderBy(value=>value).Select(id=>Tables.Instance.DTRenovationConfig.Get(id).Name));
-            if (grid.LevelPhase != LevelPhase.Completed || grid.RenovationLevelId != grid.LevelId || grid.RenovationLevelGeneration != grid.LevelGeneration) return;
+            if (grid.LevelPhase != LevelPhase.Completed) return;
+            if (!RenovationReadyForContinue(grid))
+            {
+                view.SettlementText.text = $"本关完成\n{grid.LevelScore} 分 · {grid.LevelStars} 星\n正在准备装修候选";
+                return;
+            }
+            if (grid.RenovationLevelId != grid.LevelId || grid.RenovationLevelGeneration != grid.LevelGeneration) return;
             if (grid.SelectedRenovationId != 0)
             {
                 view.SettlementText.text += "\n已选装修：" + Tables.Instance.DTRenovationConfig.Get(grid.SelectedRenovationId).Name + "，下一关安装";

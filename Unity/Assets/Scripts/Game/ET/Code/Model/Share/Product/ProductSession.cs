@@ -37,7 +37,7 @@ namespace ET
 
     public static class ProductSessionRules
     {
-        public const int ProtocolVersion = 17;
+        public const int ProtocolVersion = 18;
         public const int MaxPayloadBytes = 1024;
         public const int RequestTimeout = 4000;
         public const int HeartbeatInterval = 2000;
@@ -121,6 +121,8 @@ namespace ET
         public bool CloseFinished;
         // 入口在 Call 前增加，整个原调用/回送结束后减少；不是第二份请求等待表。
         public int InFlight;
+        public long NextOutcomeSerial;
+        public readonly List<ProductCommandOutcomeValue> PendingOutcomes = new();
         // 仅最近命令的入口记账，最终世界事实仍由领域 owner 保管。
         public ProductCommandContext LastCommandContext;
         public ProductCommandKind LastCommandKind;

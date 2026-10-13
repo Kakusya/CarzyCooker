@@ -11,14 +11,13 @@ namespace ET
         private KitchenSupply Supply => Grid.GetComponent<KitchenSupply>();
         private HostPeer SupplyPeer => ((LocalMessageComponent)((ClientSessionComponent)host.Client).Local).Peer;
         private GridClientComponent SupplyView => ((ClientSessionComponent)host.Client).GetComponent<GridClientComponent>();
-        private DRSupplyConfig TomatoSupply => Tables.Instance.DTSupplyConfig.DataList.Single(row => row.MaterialDefinitionId == GridKitchenRules.Tomato);
+        private DRSupplyConfig TomatoSupply => FixtureSingle(Tables.Instance.DTSupplyConfig.DataList,
+            row => row.MaterialDefinitionId == GridKitchenRules.Tomato, "tomato supply source");
 
         private SupplyCommandResponse SupplyReply(SupplyCommandRequest request)
         {
             ClientSessionComponent client = host.Client;
-            var task = client.CallProduct(request); PumpMessages(8);
-            Assert.That(task.Status, Is.Not.EqualTo(UniTaskStatus.Pending), "Supply request must use the real two-mailbox path");
-            return (SupplyCommandResponse)task.GetAwaiter().GetResult();
+            return (SupplyCommandResponse)FinishMessages(client.CallProduct(request), "supply two-mailbox receipt");
         }
 
         private long SupplyDo(SupplyIntent intent, string rejection = null)
@@ -41,7 +40,7 @@ namespace ET
         {
             SupplyDo(new SupplyIntent(SupplyAction.Purchase, source: sourceId));
             var shipment = Supply.Children.Values.OfType<SupplyShipment>().OrderBy(value => value.Id).Last();
-            AdvanceTicks(shipment.RequiredTicks); PumpMessages(8);
+            AdvanceTicks(shipment.RequiredTicks + 1); PumpMessages(8);
             Assert.That(shipment.Stage, Is.EqualTo(ShipmentStage.Ready)); return shipment;
         }
 
@@ -84,11 +83,11 @@ namespace ET
             AdvanceTicks(30); Assert.That(shipment.ProgressTicks, Is.EqualTo(progress)); Assert.That(Grid.Tick, Is.EqualTo(tick));
             SupplyDo(new SupplyIntent(SupplyAction.Purchase, source: TomatoSupply.Id), "Paused");
             LevelDo(LevelControlAction.Resume); Assert.That(shipment.ProgressTicks, Is.EqualTo(progress + 1));
-            AdvanceTicks(CurrentLevel.OperatingTicks - CurrentLevel.ElapsedOperatingTicks);
+            AdvanceTicks(CurrentLevel.OperatingTicks - CurrentLevel.ElapsedOperatingTicks + 1);
             Assert.That(CurrentLevel.Phase, Is.EqualTo(LevelPhase.Draining));
             progress = shipment.ProgressTicks;
             SupplyDo(new SupplyIntent(SupplyAction.Purchase, source: TomatoSupply.Id), "WrongPhase");
-            AdvanceTicks(1); Assert.That(shipment.ProgressTicks, Is.EqualTo(progress + 1));
+            AdvanceTicks(1); Assert.That(shipment.ProgressTicks, Is.EqualTo(progress), "Complete transition commits before further kitchen transport");
             Assert.That(CurrentLevel.Phase, Is.EqualTo(LevelPhase.Completed));
             progress = shipment.ProgressTicks; AdvanceTicks(20); Assert.That(shipment.ProgressTicks, Is.EqualTo(progress));
             LevelDo(LevelControlAction.Continue);

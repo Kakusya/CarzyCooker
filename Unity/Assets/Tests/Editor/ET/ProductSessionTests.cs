@@ -93,6 +93,9 @@ namespace ET
             RuntimeInstanceContext.Reset();
             ProductJoinedAllObserver.Count = 0;
             ProductJoinedHostObserver.Count = 0;
+            ProductOutcomeTestObserver.Received.Clear();
+            KitchenOutcomeTestObserver.Received.Clear();
+            ShipmentOutcomeTestObserver.Received.Clear();
         }
 
         [TearDown]
@@ -200,6 +203,88 @@ namespace ET
                 clock.Milliseconds += 15;
                 PumpMessages();
             }
+        }
+
+        // 默认只投递消息；真实网络等待显式选择推进传输计时，领域步仍由调用者控制。
+        private void PumpUntil(Func<bool> condition, string stage, int maxFrames = 8, bool advanceTime = false)
+        {
+            for (int i = 0; i < maxFrames && !condition(); ++i)
+            {
+                if (advanceTime)
+                {
+                    Pump();
+                }
+                else
+                {
+                    PumpMessages();
+                }
+            }
+            ClientSessionComponent client = host == null ? null : host.Client;
+            GridClientComponent projection = client?.GetComponent<GridClientComponent>();
+            Assert.That(condition(), Is.True, $"Fixture wait: {stage}; budget={maxFrames}; clock={clock?.Milliseconds}; " +
+                $"runtime={host?.Stage}; client={client?.Stage}; confirmed={projection?.Confirmed}; " +
+                $"level={projection?.LevelId}; tick={projection?.Tick}");
+        }
+
+        private T FinishMessages<T>(UniTask<T> task, string stage, int maxFrames = 8)
+        {
+            PumpUntil(() => task.Status != UniTaskStatus.Pending, stage, maxFrames);
+            return task.GetAwaiter().GetResult();
+        }
+
+        private static T FixtureSingle<T>(IEnumerable<T> values, Func<T, bool> predicate, string stage)
+        {
+            T[] matches = values.Where(predicate).ToArray();
+            Assert.That(matches.Length, Is.EqualTo(1), $"Fixture config: {stage}; matches={matches.Length}");
+            return matches[0];
+        }
+
+        [Test]
+        public void ProductFixtureMessageReceiptDoesNotAdvanceTimeOrCommitSupply()
+        {
+            StartSolo();
+            ClientSessionComponent client = host.Client;
+            int source = TomatoSupply.Id, remaining = Supply.RemainingPackages[source];
+            long time = clock.Milliseconds, tick = Grid.Tick;
+            using var response = SupplyReply(SupplyView.CreateSupplyCommand(new SupplyIntent(SupplyAction.Purchase, source: source)));
+            Assert.That(response.Status, Is.EqualTo((int)GridResultStatus.Accepted));
+            Assert.That(clock.Milliseconds, Is.EqualTo(time));
+            Assert.That(Grid.Tick, Is.EqualTo(tick));
+            Assert.That(Supply.RemainingPackages[source], Is.EqualTo(remaining));
+            Assert.That(Supply.ChildrenCount(), Is.Zero);
+            AdvanceTicks(1);
+            PumpMessages(8);
+            Assert.That(Supply.RemainingPackages[source], Is.EqualTo(remaining - 1));
+            Assert.That(Supply.ChildrenCount(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ProductFixtureMissingConditionFailsWithStageWithoutAdvancingTime()
+        {
+            StartSolo();
+            long time = clock.Milliseconds, tick = Grid.Tick;
+            var failure = Assert.Throws<AssertionException>(() => PumpUntil(() => false, "missing projection", 2));
+            Assert.That(failure.Message, Does.Contain("missing projection"));
+            Assert.That(failure.Message, Does.Contain("confirmed="));
+            Assert.That(clock.Milliseconds, Is.EqualTo(time));
+            Assert.That(Grid.Tick, Is.EqualTo(tick));
+            Assert.Throws<AssertionException>(() => FixtureSingle(Tables.Instance.DTSupplyConfig.DataList,
+                row => row.MaterialDefinitionId == int.MaxValue, "missing material"));
+        }
+
+        [Test]
+        public void ProductFixturePartialInitializationCleanupReleasesOwnedWorldAndFiber()
+        {
+            Fiber fiber = CreateFiber();
+            EntityRef<Scene> root = fiber.Root;
+            Assert.That((Scene)root, Is.Not.Null);
+            Cleanup();
+            Assert.That((Scene)root, Is.Null);
+            Assert.That(MessageQueue.Instance, Is.Null);
+            Assert.That(CodeTypes.Instance, Is.Null);
+            Assert.That(fibers, Is.Empty);
+            Assert.That(CurrentFiber.GetValue(null), Is.Null);
+            Cleanup();
         }
 
         private T Finish<T>(UniTask<T> task, int maxFrames = 100)

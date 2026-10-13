@@ -26,6 +26,8 @@ namespace ET
             LevelDo(LevelControlAction.Start); AdvanceTicks(18);
             Assert.That(CurrentLevel.ElapsedOperatingTicks, Is.EqualTo(19)); Assert.That(CurrentLevel.Children.Values.OfType<Customer>(), Is.Empty);
             AdvanceTicks(1); PumpMessages(4);
+            Assert.That(CurrentLevel.Children.Values.OfType<Customer>(), Is.Empty, "Arrival at deadline is not yet delivered into the next business step");
+            AdvanceTicks(1); PumpMessages(4);
             Customer first = CurrentLevel.Children.Values.OfType<Customer>().Single();
             Assert.That(first.Phase, Is.EqualTo(CustomerPhase.Entering)); Assert.That(first.Cell, Is.EqualTo(GridStationConfig.Entrance()));
             Assert.That(first.Motion, Is.EqualTo(GridMotion.Transit)); Assert.That(first.OrderId, Is.Zero);
@@ -33,6 +35,7 @@ namespace ET
             GridStation table = Grid.Station(first.TableStationId);
             Assert.That(first.Cell, Is.EqualTo(table.FrontSeat())); Assert.That(first.Motion, Is.EqualTo(GridMotion.Standing));
             Assert.That(first.OrderId, Is.Zero); Assert.That(CurrentLevel.Score, Is.Zero);
+            FrontWait(() => first.AskWorkId != 0);
             FrontWork ask = CurrentLevel.GetChild<FrontWork>(first.AskWorkId);
             Assert.That(ask.Progress, Is.Zero);
             FrontWait(() => ask.State == FrontWorkState.Working);
@@ -51,7 +54,7 @@ namespace ET
             FrontWait(() => CurrentLevel.Children.Values.OfType<Customer>().Any(value => value.Phase == CustomerPhase.WaitingAsk));
             Customer first = CurrentLevel.Children.Values.OfType<Customer>().OrderBy(value => value.Id).First();
             AdvanceTicks(100);
-            Assert.That(first.Phase, Is.EqualTo(CustomerPhase.WaitingAsk)); Assert.That(first.OrderId, Is.Zero);
+            Assert.That(first.Phase, Is.EqualTo(CustomerPhase.WaitingAsk), $"customer={first.Id};" + string.Join(";", CurrentLevel.Children.Values.OfType<Customer>().Select(value => $"{value.ArrivalSequence}:{value.Phase}/{value.TableStationId}"))); Assert.That(first.OrderId, Is.Zero);
             Assert.That(CurrentLevel.Score, Is.Zero); Assert.That(CurrentLevel.Children.Values.OfType<Order>(), Is.Empty);
             FrontWork ask = CurrentLevel.GetChild<FrontWork>(first.AskWorkId);
             FrontPlayerDo(FrontWorkAction.Claim, ask); FrontWait(() => ask.State == FrontWorkState.Completed);
@@ -62,7 +65,7 @@ namespace ET
         public void SoloCustomerFlowFullQueueSkipsWithoutHiddenCustomerAndSeatsFifo()
         {
             ConfigureFrontFlow(interval: 10, wait: 20);
-            StartSolo(liveFront: true); FrontRole.NextScheduleTick = 100000; LevelDo(LevelControlAction.Start); AdvanceTicks(89);
+            StartSolo(liveFront: true); FrontRole.NextScheduleTick = 100000; LevelDo(LevelControlAction.Start); AdvanceTicks(90);
             FrontLevelState state = CurrentLevel.GetComponent<FrontLevelState>();
             Customer[] customers = CurrentLevel.Children.Values.OfType<Customer>().OrderBy(value => value.ArrivalSequence).ToArray();
             Assert.That(customers.Length, Is.EqualTo(4)); Assert.That(state.Waiting.Count, Is.EqualTo(2));
@@ -70,6 +73,7 @@ namespace ET
             Assert.That(CurrentLevel.Score, Is.Zero);
             FrontWork ask = CurrentLevel.GetChild<FrontWork>(customers[0].AskWorkId);
             FrontPlayerDo(FrontWorkAction.Claim, ask); FrontWait(() => customers[0].Phase == CustomerPhase.Gone);
+            FrontWait(() => customers[2].TableStationId != 0);
             Assert.That(customers[2].TableStationId, Is.EqualTo(customers[0].TableStationId));
             Assert.That(customers[2].Phase, Is.EqualTo(CustomerPhase.WalkingToSeat));
             Assert.That(state.Waiting.Peek(), Is.EqualTo(customers[3].Id));
@@ -85,6 +89,8 @@ namespace ET
             AdvanceTicks((int)(order.DeadlineTick - Grid.Tick - 1));
             Assert.That(first.Phase, Is.EqualTo(CustomerPhase.Ordered)); Assert.That(order.State, Is.EqualTo(OrderState.Waiting));
             AdvanceTicks(1);
+            Assert.That(order.State, Is.EqualTo(OrderState.Waiting)); Assert.That(order.TransitionQueued, Is.True);
+            AdvanceTicks(1);
             Assert.That(order.State, Is.EqualTo(OrderState.Expired)); Assert.That(first.Phase, Is.EqualTo(CustomerPhase.Leaving));
             Assert.That(first.Cell, Is.Not.EqualTo(GridStationConfig.Entrance()));
             FrontWait(() => first.Phase == CustomerPhase.Gone);
@@ -96,7 +102,7 @@ namespace ET
         [Test]
         public void SoloCustomerFlowPauseFreezesArrivalMovementAndOrderDeadlineClock()
         {
-            StartSolo(liveFront: true); LevelDo(LevelControlAction.Start); AdvanceTicks(19);
+            StartSolo(liveFront: true); LevelDo(LevelControlAction.Start); AdvanceTicks(20);
             Customer first = CurrentLevel.Children.Values.OfType<Customer>().Single(); GridCell cell = first.Cell, next = first.NextCell;
             LevelDo(LevelControlAction.Pause); long tick = Grid.Tick; int count = CurrentLevel.Children.Values.OfType<Customer>().Count();
             AdvanceTicks(100);
@@ -113,7 +119,7 @@ namespace ET
         public void SoloCustomerFlowDrainingStopsNewArrivalsAndNaturallyFinishesRealOrders()
         {
             StartSolo(liveFront: true); LevelDo(LevelControlAction.Start);
-            AdvanceTicks(CurrentLevel.OperatingTicks - CurrentLevel.ElapsedOperatingTicks);
+            AdvanceTicks(CurrentLevel.OperatingTicks - CurrentLevel.ElapsedOperatingTicks + 1);
             Assert.That(CurrentLevel.Phase, Is.EqualTo(LevelPhase.Draining));
             int created = CurrentLevel.GetComponent<FrontLevelState>().NextCustomerSequence;
             Assert.That(created, Is.GreaterThan(0)); Assert.That(CurrentLevel.Children.Values.OfType<Customer>().Any(value => value.BlocksLevelCompletion), Is.True);

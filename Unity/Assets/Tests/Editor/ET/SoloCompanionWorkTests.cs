@@ -46,7 +46,9 @@ namespace ET
         private void FrontWait(Func<bool> condition, int limit = 250)
         {
             for (int tick = 0; tick < limit && !condition(); ++tick) { AdvanceTicks(1); PumpMessages(3); }
-            Assert.That(condition(), Is.True, "Real front business steps did not reach the expected state");
+            Assert.That(condition(), Is.True, "Real front business steps did not reach the expected state: " +
+                string.Join("; ", CurrentLevel.Children.Values.OfType<Customer>().Select(value => $"customer {value.Id} {value.Phase} cell={value.Cell} ask={value.AskWorkId} order={value.OrderId} serial={value.TransitionSerial} queued={value.TransitionQueued} pending={value.SuccessorPending}")) + " / " +
+                string.Join("; ", CurrentLevel.Children.Values.OfType<FrontWork>().Select(value => $"work {value.Id} {value.Kind}/{value.State} progress={value.Progress} serial={value.TransitionSerial} queued={value.TransitionQueued} pending={value.SuccessorPending}")));
         }
 
         private FrontWork InitialWashTarget()
@@ -141,6 +143,7 @@ namespace ET
             StartSolo(); LevelDo(LevelControlAction.Start); FrontWork clear = InitialDirtyTable();
             FrontPlayerDo(FrontWorkAction.Claim, clear); FrontWait(() => clear.State == FrontWorkState.Completed);
             Assert.That(CurrentLevel.GetComponent<CompanionGrowth>().CompletedByCompanion, Is.Empty, "Player Clear cannot grow the companion");
+            FrontWait(() => CurrentLevel.Children.Values.OfType<FrontWork>().Any(value => value.Kind == FrontWorkKind.Wash));
             FrontWork wash = CurrentLevel.Children.Values.OfType<FrontWork>().Single(value => value.Kind == FrontWorkKind.Wash);
             FrontPlayerDo(FrontWorkAction.Claim, wash); FrontWait(() => wash.State == FrontWorkState.Working); AdvanceTicks(17);
             double progress = wash.Progress; long oldSerial = wash.ClaimSerial;
@@ -215,13 +218,14 @@ namespace ET
             Customer third = InitialSeatedCustomer(); FrontWork ask = CurrentLevel.GetChild<FrontWork>(third.AskWorkId);
             FrontWork wash = InitialWashTarget();
             FrontNpcReply(role, new FrontWorkIntent(FrontWorkAction.Claim, ask.Id)); AdvanceTicks(1); FrontWait(() => ask.State == FrontWorkState.Working);
-            AdvanceTicks(ask.BaseTicks - 1);
+            AdvanceTicks(ask.BaseTicks);
             Assert.That(ask.State, Is.EqualTo(FrontWorkState.Working)); Assert.That(CurrentLevel.GetComponent<CompanionGrowth>().CompletedByCompanion[identity.Id], Is.EqualTo(2));
             FrontNpcReply(role, new FrontWorkIntent(FrontWorkAction.Claim, wash.Id)); AdvanceTicks(1); PumpMessages(8);
             Assert.That(ask.State, Is.EqualTo(FrontWorkState.Completed)); Assert.That(wash.FrozenTicks, Is.EqualTo(31));
             Assert.That(CurrentLevel.GetComponent<CompanionGrowth>().CompletedByCompanion[identity.Id], Is.EqualTo(3));
             FrontWait(() => wash.State == FrontWorkState.Working); int frozen = wash.FrozenTicks;
             AdvanceTicks(30); Assert.That(wash.State, Is.EqualTo(FrontWorkState.Working)); Assert.That(wash.FrozenTicks, Is.EqualTo(frozen));
+            AdvanceTicks(1); Assert.That(wash.State, Is.EqualTo(FrontWorkState.Working)); Assert.That(wash.TransitionQueued, Is.True);
             AdvanceTicks(1); Assert.That(wash.State, Is.EqualTo(FrontWorkState.Completed));
             Assert.That(CurrentLevel.GetComponent<CompanionGrowth>().CompletedByCompanion[identity.Id], Is.EqualTo(4));
             AdvanceTicks(2); Assert.That(CurrentLevel.GetComponent<CompanionGrowth>().CompletedByCompanion[identity.Id], Is.EqualTo(4));

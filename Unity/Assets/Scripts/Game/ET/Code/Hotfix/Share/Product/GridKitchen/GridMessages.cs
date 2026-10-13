@@ -76,6 +76,9 @@ namespace ET
     [FriendOf(typeof(RestaurantRenovation))]
     [FriendOf(typeof(SoloSaveBinding))]
     [FriendOf(typeof(SoloSaveResult))]
+    [FriendOf(typeof(FrontWorkCommands))]
+    [FriendOf(typeof(LevelBuff))]
+    [FriendOf(typeof(RestaurantRuntime))]
     public static partial class GridBroadcast
     {
         public static GridWorldSnapshot CreateSnapshot(GridKitchenComponent world, HostPeer peer)
@@ -204,7 +207,11 @@ namespace ET
             HostSessionComponent authority = ((Scene)world.IScene).GetComponent<HostSessionComponent>();
             foreach (HostPeer peer in authority.Children.Values.Cast<HostPeer>().ToArray())
             {
-                if (!peer.EntryOpen || peer.Closing || peer.MemberId == 0) continue;
+                if (!peer.EntryOpen || peer.Closing || peer.MemberId == 0)
+                {
+                    peer.PendingOutcomes.Clear();
+                    continue;
+                }
                 ProductDelivery.Send(peer, CreateSnapshot(world, peer));
                 foreach (GridResultValue result in world.PendingResults.Where(value => value.MemberId == peer.MemberId && value.Generation == peer.Generation))
                     ProductDelivery.Send(peer, ProductMessages.Create<GridCommandResult>(value =>
@@ -214,8 +221,111 @@ namespace ET
                         value.Reason = result.Reason; value.Version = world.Version;
                         value.LevelId = result.LevelId; value.LevelGeneration = result.LevelGeneration;
                     }));
+                Level level = world.ProductLevel();
+                foreach (ProductCommandOutcomeValue result in peer.PendingOutcomes)
+                {
+                    long serial = checked(++peer.NextOutcomeSerial);
+                    ProductDelivery.Send(peer, ProductMessages.Create<ProductCommandOutcome>(value =>
+                    {
+                        value.MatchId = result.Context.MatchId; value.WorldId = result.Context.WorldId;
+                        value.WorldGeneration = result.Context.WorldGeneration; value.MemberId = peer.MemberId;
+                        value.BindingGeneration = result.Context.BindingGeneration; value.Version = world.Version; value.Tick = world.Tick;
+                        value.LevelId = result.ChangedLevel ? level.Id : result.Context.LevelId;
+                        value.LevelGeneration = result.ChangedLevel ? level.Generation : result.Context.LevelGeneration;
+                        value.OriginLevelId = result.Context.LevelId; value.OriginLevelGeneration = result.Context.LevelGeneration;
+                        value.Kind = (int)result.Kind; value.CommandId = result.Context.CommandId; value.Status = (int)result.Status;
+                        value.Reason = result.Reason; value.OutcomeSerial = serial;
+                    }));
+                }
+                peer.PendingOutcomes.Clear();
+                foreach (KitchenWorkOutcomeValue result in world.WorkOutcomes)
+                {
+                    long serial = checked(++peer.NextOutcomeSerial);
+                    ProductDelivery.Send(peer, ProductMessages.Create<KitchenWorkOutcome>(value =>
+                    {
+                        value.MatchId = ((Match)world.Match).MatchId; value.WorldId = world.WorldId; value.WorldGeneration = world.WorldGeneration;
+                        value.LevelId = level?.Id ?? 0; value.LevelGeneration = level?.Generation ?? 0;
+                        value.MemberId = peer.MemberId; value.BindingGeneration = peer.Generation; value.Version = world.Version; value.Tick = world.Tick;
+                        value.ProcessKind = (int)result.Kind; value.Stage = (int)result.Stage;
+                        value.WorkId = result.WorkId; value.WorkInstanceId = result.WorkInstanceId; value.TransitionSerial = result.Serial;
+                        value.OutputItemId = result.OutputItemId; value.OutcomeSerial = serial;
+                    }));
+                }
+                foreach (ShipmentOutcomeValue result in world.GetComponent<KitchenSupply>().Outcomes)
+                {
+                    long serial = checked(++peer.NextOutcomeSerial);
+                    ProductDelivery.Send(peer, ProductMessages.Create<ShipmentOutcome>(value =>
+                    {
+                        value.MatchId = ((Match)world.Match).MatchId; value.WorldId = world.WorldId; value.WorldGeneration = world.WorldGeneration;
+                        value.LevelId = level?.Id ?? 0; value.LevelGeneration = level?.Generation ?? 0;
+                        value.MemberId = peer.MemberId; value.BindingGeneration = peer.Generation; value.Version = world.Version; value.Tick = world.Tick;
+                        value.ShipmentId = result.ShipmentId; value.ShipmentInstanceId = result.ShipmentInstanceId;
+                        value.TransitionSerial = result.Serial; value.Stage = (int)result.Stage; value.OutcomeSerial = serial;
+                    }));
+                }
+                if (level != null)
+                {
+                    LevelBuff buff = level.GetComponent<LevelBuff>();
+                    if (buff.NotifyPrepared)
+                    {
+                        long serial = checked(++peer.NextOutcomeSerial);
+                        ProductDelivery.Send(peer, ProductMessages.Create<BuffPrepared>(value =>
+                        {
+                            value.MatchId = ((Match)world.Match).MatchId; value.WorldId = world.WorldId; value.WorldGeneration = world.WorldGeneration;
+                            value.LevelId = level.Id; value.LevelGeneration = level.Generation;
+                            value.MemberId = peer.MemberId; value.BindingGeneration = peer.Generation; value.Version = world.Version; value.Tick = world.Tick;
+                            value.DrawVersion = buff.DrawVersion; value.OutcomeSerial = serial;
+                        }));
+                    }
+                    RestaurantRenovation renovation = ((RestaurantRuntime)world.Restaurant).GetComponent<RestaurantRenovation>();
+                    if (renovation.NotifyPrepared)
+                    {
+                        long serial = checked(++peer.NextOutcomeSerial);
+                        ProductDelivery.Send(peer, ProductMessages.Create<RenovationPrepared>(value =>
+                        {
+                            value.MatchId = ((Match)world.Match).MatchId; value.WorldId = world.WorldId; value.WorldGeneration = world.WorldGeneration;
+                            value.LevelId = renovation.ResultLevelId; value.LevelGeneration = renovation.ResultLevelGeneration;
+                            value.MemberId = peer.MemberId; value.BindingGeneration = peer.Generation; value.Version = world.Version; value.Tick = world.Tick;
+                            value.ChoiceVersion = renovation.ChoiceVersion; value.OutcomeSerial = serial;
+                        }));
+                    }
+                }
+                if (level != null)
+                foreach (FrontWorkOutcomeValue result in level.GetComponent<FrontWorkCommands>().Outcomes)
+                {
+                    long serial = checked(++peer.NextOutcomeSerial);
+                    ProductDelivery.Send(peer, ProductMessages.Create<FrontWorkOutcome>(value =>
+                    {
+                        value.MatchId = ((Match)world.Match).MatchId; value.WorldId = world.WorldId; value.WorldGeneration = world.WorldGeneration;
+                        value.LevelId = level.Id; value.LevelGeneration = level.Generation;
+                        value.MemberId = peer.MemberId; value.BindingGeneration = peer.Generation; value.Version = world.Version; value.Tick = world.Tick;
+                        value.WorkId = result.WorkId; value.WorkInstanceId = result.WorkInstanceId; value.ClaimSerial = result.ClaimSerial;
+                        value.Kind = (int)result.Kind; value.Stage = (int)result.Stage; value.OutcomeSerial = serial;
+                    }));
+                }
+                RestaurantRuntime restaurant = world.Restaurant;
+                if (restaurant != null)
+                foreach (LevelPhaseOutcomeValue result in restaurant.PhaseOutcomes)
+                {
+                    long serial = checked(++peer.NextOutcomeSerial);
+                    ProductDelivery.Send(peer, ProductMessages.Create<LevelPhaseChanged>(value =>
+                    {
+                        value.MatchId = ((Match)world.Match).MatchId; value.WorldId = world.WorldId; value.WorldGeneration = world.WorldGeneration;
+                        value.LevelId = result.LevelId; value.LevelGeneration = result.LevelGeneration;
+                        value.MemberId = peer.MemberId; value.BindingGeneration = peer.Generation; value.Version = world.Version; value.Tick = world.Tick;
+                        value.Phase = (int)result.Phase; value.Paused = result.Paused; value.OutcomeSerial = serial;
+                    }));
+                }
             }
             world.PendingResults.Clear();
+            world.WorkOutcomes.Clear();
+            world.GetComponent<KitchenSupply>().Outcomes.Clear();
+            world.ProductLevel()?.GetComponent<FrontWorkCommands>().Outcomes.Clear();
+            Level committedLevel = world.ProductLevel();
+            if (committedLevel != null) committedLevel.GetComponent<LevelBuff>().NotifyPrepared = false;
+            RestaurantRuntime committedRestaurant = world.Restaurant;
+            if (committedRestaurant != null) committedRestaurant.GetComponent<RestaurantRenovation>().NotifyPrepared = false;
+            if (committedRestaurant != null) committedRestaurant.PhaseOutcomes.Clear();
         }
     }
 }

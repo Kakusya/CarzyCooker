@@ -124,7 +124,7 @@ namespace ET
                 if (peer == null || !kitchen.HasBinding(peer.MemberId, result.Command.BindingGeneration)) continue;
                 if (completion.Committed)
                     self.Controls.Enqueue(new LevelControlEnvelope(result.Command, new LevelControlIntent(LevelControlAction.Continue, level.NextLevelConfigId), peer));
-                else peer.RecordProductResult(result.Command.CommandId, GridResultStatus.Rejected, "SaveFailed");
+                else peer.RecordProductResult(result.Command, ProductCommandKind.Level, GridResultStatus.Rejected, "SaveFailed");
             }
         }
 

@@ -59,8 +59,7 @@ namespace ET
             GridManualProcess process = self.Process(actor.WorkId);
             actor.WorkId = 0;
             if (process == null || process.State != GridWorkState.Working || process.WorkerMemberId != actor.MemberId || process.WorkerGeneration != actor.Generation) return;
-            process.State = GridWorkState.Paused; process.WorkerMemberId = 0; process.WorkerGeneration = 0;
-            self.Dirty = true;
+            self.PauseManualProcess(process);
         }
 
         private static string AddToContainer(this GridKitchenComponent self, GridActor actor, GridStation station, GridIntent intent)
@@ -110,6 +109,7 @@ namespace ET
             if (recipe == null) return "NoRecipe";
             if (mode == 2 && !Tables.Instance.DTGridItemConfig.Get(target.DefinitionId).AcceptedDefinitionIds.Contains(recipe.OutputDefinitionId)) return "IncompatibleMaterial";
             GridManualProcess process = self.InputProcess(input.Id);
+            bool continuing = process != null;
             if ((process?.Id ?? 0) != intent.ExpectedProcessId) return "ProcessChanged";
             if (actor.WorkId != 0 || process?.State == GridWorkState.Working || (mode == 1 && self.ItemWorking(target.Id))) return "WorkBusy";
             if (process == null)
@@ -123,6 +123,8 @@ namespace ET
             process.StationId = mode == 1 ? station.Id : 0;
             process.WorkerMemberId = actor.MemberId; process.WorkerGeneration = actor.Generation;
             process.State = GridWorkState.Working; process.StartedTick = self.Tick; actor.WorkId = process.Id;
+            process.CompletionQueued = false; process.CompletionReceived = false;
+            self.PublishKitchenStage(process, KitchenProcessKind.Manual, continuing ? KitchenWorkStage.Resumed : KitchenWorkStage.Started, ++process.TransitionSerial);
             return null;
         }
 
@@ -151,12 +153,23 @@ namespace ET
                     target?.Contents.Count == 1 && target.Contents[0] == process.InputItemId && input?.Location == GridItemLocation.Container && input?.HolderId == target.Id;
                 if (!valid)
                 {
-                    if (actor != null) self.PauseWork(actor);
-                    process.State = GridWorkState.Paused; process.WorkerMemberId = 0; process.WorkerGeneration = 0; self.Dirty = true; continue;
+                    if (actor != null && actor.WorkId == process.Id) actor.WorkId = 0;
+                    self.PauseManualProcess(process);
+                    continue;
                 }
                 if (process.StartedTick == self.Tick) continue;
-                ++process.ProgressTicks; self.Dirty = true;
+                if (process.ProgressTicks < process.RequiredTicks) ++process.ProgressTicks;
+                self.Dirty = true;
                 if (process.ProgressTicks < process.RequiredTicks) continue;
+                if (!process.CompletionReceived)
+                {
+                    if (!process.CompletionQueued)
+                    {
+                        self.RequestKitchenCompletion(process, KitchenProcessKind.Manual, process.TransitionSerial);
+                        process.CompletionQueued = true;
+                    }
+                    continue;
+                }
                 DRGridManualRecipeConfig recipe = Tables.Instance.DTGridManualRecipeConfig.Get(process.RecipeId);
                 GridItem output = self.CreateGridItem(recipe.OutputDefinitionId, input.Location, input.HolderId, input.Cell);
                 if (station != null) station.ItemId = output.Id;
@@ -164,14 +177,20 @@ namespace ET
                 self.Items.Remove(input.Id); input.Dispose();
                 process.OutputItemId = output.Id; process.State = GridWorkState.Completed;
                 process.WorkerMemberId = 0; process.WorkerGeneration = 0; actor.WorkId = 0;
+                process.CompletionQueued = false; process.CompletionReceived = false;
+                self.PublishKitchenStage(process, KitchenProcessKind.Manual, KitchenWorkStage.Finished, ++process.TransitionSerial, output.Id);
             }
         }
     }
 
     [EntitySystemOf(typeof(GridManualProcess))]
+    [FriendOf(typeof(GridManualProcess))]
     public static partial class GridManualProcessSystem
     {
-        [EntitySystem] private static void Awake(this GridManualProcess self) { }
+        [EntitySystem] private static void Awake(this GridManualProcess self)
+        {
+            self.TransitionSerial = 0; self.CompletionQueued = false; self.CompletionReceived = false;
+        }
     }
 }
 #endif

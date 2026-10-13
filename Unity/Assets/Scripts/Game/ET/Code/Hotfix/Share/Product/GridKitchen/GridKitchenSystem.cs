@@ -41,6 +41,7 @@ namespace ET
             self.BakeProcesses.Clear();
             self.MemberChanges.Clear(); self.Incoming.Clear(); self.Results.Clear(); self.PendingResults.Clear();
             self.LayoutCommands.Clear();
+            self.WorkTransitions.Clear(); self.WorkOutcomes.Clear();
             if (!self.RestoreKitchenBaseline())
             {
                 self.Blocked.UnionWith(ValidateStationConfiguration());
@@ -97,7 +98,7 @@ namespace ET
             foreach (GridActor actor in self.OrderedActors())
             {
                 self.PauseWork(actor);
-                if (actor.HasIntent) self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "WorldStopped");
+                if (actor.HasIntent) self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "WorldStopped", actor.ActiveIntent.OriginKind);
             }
             self.Incoming.Clear(); self.MemberChanges.Clear();
             self.LayoutCommands.Clear();
@@ -134,7 +135,7 @@ namespace ET
                     if (actor == null || actor.Generation != change.Generation) continue;
                     self.PauseWork(actor);
                     self.ReleaseActorFrontWork(actor);
-                    if (actor.HasIntent) self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "MemberLeft");
+                    if (actor.HasIntent) self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "MemberLeft", actor.ActiveIntent.OriginKind);
                     GridItem held = self.Item(actor.HandItemId);
                     if (held != null)
                     {
@@ -165,7 +166,7 @@ namespace ET
             }
         }
 
-        public static string SubmitGridIntent(this GridKitchenComponent self, int memberId, long generation, GridIntent intent)
+        internal static string SubmitGridIntent(this GridKitchenComponent self, int memberId, long generation, GridIntent intent)
         {
             GridActor actor = self.Actor(memberId);
             if (self.Stopped || !self.HasBinding(memberId, generation) || actor == null || actor.Generation != generation) return "EntryClosed";
@@ -185,7 +186,7 @@ namespace ET
             // 接收元数据不移动角色/物品；世界修改留给固定 Tick。
             actor.LastReceivedCommandId = intent.CommandId; actor.LastReceivedIntent = intent;
             if (self.Incoming.TryGetValue(memberId, out GridIntent replaced))
-                self.Result(actor, replaced.CommandId, GridResultStatus.Cancelled, "Replaced");
+                self.Result(actor, replaced.CommandId, GridResultStatus.Cancelled, "Replaced", replaced.OriginKind);
             peer.RecordProductCommand(context, ProductCommandKind.Grid);
             peer.LastGridCommand = intent;
             self.Incoming[memberId] = intent;
@@ -227,11 +228,12 @@ namespace ET
                     continue;
                 }
                 if (actor.ActiveIntent.Action == GridAction.Move)
-                    self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Executed, null);
+                    self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Executed, null, actor.ActiveIntent.OriginKind);
                 else self.ExecuteInteraction(actor);
                 actor.HasIntent = false; actor.Motion = GridMotion.Standing;
                 self.Dirty = true;
             }
+            self.AdvanceKitchenTransitions();
             self.AdvanceWork();
             self.AdvanceAutoWork();
             self.AdvanceBakeWork();
@@ -256,32 +258,32 @@ namespace ET
             {
                 // 不让自动接近先暂停正在参与的输入，再把它当成合法垃圾。
                 string error = self.CheckCleanup(actor, self.Station(intent.TargetId), intent, false, out _, out _, out _);
-                if (error != null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, error); return; }
+                if (error != null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, error, intent.OriginKind); return; }
             }
             // 冲突开始在改路线前拒绝，避免先移动再因依赖失效暂停原工作。
             if (intent.Action is GridAction.StartStationWork or GridAction.StartHeldWork && actor.WorkId != 0)
-            { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "WorkBusy"); return; }
+            { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "WorkBusy", intent.OriginKind); return; }
             GridCell goal = intent.Cell;
             if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake || IsCleanupAction(intent.Action) || IsSupplyInteraction(intent.Action))
             {
                 GridStation station = self.Station(intent.TargetId);
-                if (station == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "UnknownCounter"); return; }
+                if (station == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "UnknownCounter", intent.OriginKind); return; }
                 List<GridCell> shortest = null;
                 foreach (GridCell adjacent in station.StationApproaches())
                 {
                     List<GridCell> path = self.FindGridPath(actor.Cell, adjacent);
                     if (path != null && (shortest == null || path.Count < shortest.Count)) { shortest = path; goal = adjacent; }
                 }
-                if (shortest == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable"); return; }
+                if (shortest == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable", intent.OriginKind); return; }
             }
             if (intent.Action is GridAction.PickupDrop or GridAction.StartHeldWork or GridAction.StopWork) goal = actor.Cell;
-            if (!self.PlanRoute(actor, goal)) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable"); return; }
+            if (!self.PlanRoute(actor, goal)) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable", intent.OriginKind); return; }
             self.ReleaseActorFrontWork(actor, false);
             if (intent.Action == GridAction.Move) self.PauseWork(actor);
             if (actor.HasIntent)
-                self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "Replaced");
+                self.Result(actor, actor.ActiveIntent.CommandId, GridResultStatus.Cancelled, "Replaced", actor.ActiveIntent.OriginKind);
             actor.ActiveIntent = intent; actor.HasIntent = true;
-            self.Result(actor, intent.CommandId, GridResultStatus.PendingApproach, null);
+            self.Result(actor, intent.CommandId, GridResultStatus.PendingApproach, null, intent.OriginKind);
         }
 
         private static bool PlanRoute(this GridKitchenComponent self, GridActor actor, GridCell goal)
@@ -395,11 +397,11 @@ namespace ET
                     }
                 }
             }
-            self.Result(actor, intent.CommandId, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error);
+            self.Result(actor, intent.CommandId, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error, intent.OriginKind);
             self.Dirty = true;
         }
 
-        private static void Result(this GridKitchenComponent self, GridActor actor, long commandId, GridResultStatus status, string reason)
+        private static void Result(this GridKitchenComponent self, GridActor actor, long commandId, GridResultStatus status, string reason, ProductCommandKind kind = ProductCommandKind.Grid)
         {
             if (commandId <= 0) return;
             if (commandId >= actor.LastResultCommandId)
@@ -407,10 +409,15 @@ namespace ET
             Level level = self.ProductLevel();
             var value = new GridResultValue(actor.MemberId, actor.Generation, commandId, status, reason, level?.Id ?? 0, level?.Generation ?? 0);
             self.Results.Add(value);
-            self.PendingResults.Add(value);
+            if (kind == ProductCommandKind.Grid) self.PendingResults.Add(value);
             Participant member = ((Match)self.Match).GetChild<Participant>(actor.MemberId);
             HostPeer peer = member?.BoundPeer ?? default;
-            if (peer != null && peer.Generation == actor.Generation) peer.RecordProductResult(commandId, status, reason);
+            if (peer != null && peer.Generation == actor.Generation)
+            {
+                var context = new ProductCommandContext(((Match)self.Match).MatchId, self.WorldId, self.WorldGeneration,
+                    level?.Id ?? 0, level?.Generation ?? 0, actor.Generation, commandId);
+                peer.RecordProductResult(context, kind, status, reason);
+            }
             if (self.Results.Count > 64) self.Results.RemoveAt(0);
             self.Dirty = true;
         }

@@ -81,8 +81,6 @@ namespace ET
                     GridStation washing = self.Stations.Values.Select(value => (GridStation)value).OrderBy(value => value.Id).FirstOrDefault(value => value.Kind == GridStationKind.Wash);
                     if (washing == null) return "MissingWashStation";
                     GridItem used = self.Item(work.ItemId);
-                    var washTarget = new FrontWorkDefinition(FrontWorkKind.Wash, 0, washing.Id, used.Id, Tables.Instance.DTCompanionConfig.DataList.Single().WashTicks);
-                    level.AddChild<FrontWork, FrontWorkDefinition, long>(washTarget, level.Generation);
                     used.Location = GridItemLocation.DirtyPool; used.HolderId = destination.Id; used.Cell = destination.Cell;
                     destination.PoolItemIds.Add(used.Id); station.ItemId = 0;
                     FrontTable table = station.GetComponent<FrontTable>(); table.CustomerId = 0; table.State = FrontTableState.Free;

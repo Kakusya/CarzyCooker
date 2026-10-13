@@ -35,7 +35,7 @@ namespace ET
                     : command.Context.Validate(match.MatchId, self.WorldId, self.WorldGeneration, level.Id, level.Generation, peer.Generation);
                 if (error == null && !peer.CanControlRestaurant()) error = "HostControlOnly";
                 if (error == null) error = self.ApplyStationLayout(level, command.Intent);
-                peer?.RecordProductResult(command.Context.CommandId, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error);
+                peer?.RecordProductResult(command.Context, ProductCommandKind.Layout, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error);
                 self.Dirty = true;
             }
         }

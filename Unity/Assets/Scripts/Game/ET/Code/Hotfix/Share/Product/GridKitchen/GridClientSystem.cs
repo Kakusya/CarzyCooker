@@ -21,6 +21,13 @@ namespace ET
             self.Confirmed = false; self.MatchId = null; self.WorldId = null; self.WorldGeneration = 0;
             self.BindingGeneration = 0; self.Version = 0; self.Tick = 0; self.MemberId = 0;
             self.NextCommandId = 0; self.LastCommandId = 0; self.LastStatus = default; self.LastReason = null;
+            self.LastProductOutcomeSerial = 0; self.LastKitchenOutcomeSerial = 0;
+            self.LastProductOutcome = default; self.LastKitchenOutcome = default;
+            self.LastShipmentOutcomeSerial = 0; self.LastShipmentOutcome = default;
+            self.LastFrontWorkOutcomeSerial = 0; self.LastFrontWorkOutcome = default;
+            self.LastBuffPreparedSerial = 0; self.LastBuffPrepared = default;
+            self.LastRenovationPreparedSerial = 0; self.LastRenovationPrepared = default;
+            self.LastLevelPhaseSerial = 0; self.LastLevelPhase = default;
             self.LevelId = 0; self.LevelGeneration = 0;
             self.LayoutVersion = 0;
             self.AllowedDishIds = Array.Empty<int>();
@@ -133,8 +140,20 @@ namespace ET
         {
             if (!self.Confirmed || result.MatchId != self.MatchId || result.WorldId != self.WorldId || result.WorldGeneration != self.WorldGeneration ||
                 result.BindingGeneration != self.BindingGeneration || result.LevelId != self.LevelId || result.LevelGeneration != self.LevelGeneration ||
-                result.Version < self.Version || result.CommandId < self.LastCommandId) return;
-            self.LastCommandId = result.CommandId; self.LastStatus = (GridResultStatus)result.Status; self.LastReason = result.Reason;
+                result.Version > self.Version) return;
+            if (result.CommandId >= self.LastCommandId)
+            {
+                self.LastCommandId = result.CommandId; self.LastStatus = (GridResultStatus)result.Status; self.LastReason = result.Reason;
+            }
+            if ((GridResultStatus)result.Status is GridResultStatus.Executed or GridResultStatus.Rejected or GridResultStatus.Cancelled)
+            {
+                var context = new ProductCommandContext(result.MatchId, result.WorldId, result.WorldGeneration,
+                    result.LevelId, result.LevelGeneration, result.BindingGeneration, result.CommandId);
+                EventSystem.Instance.Publish((Scene)self.IScene, new ProductCommandOutcomeApplied
+                {
+                    Value = new ProductCommandOutcomeValue(context, ProductCommandKind.Grid, (GridResultStatus)result.Status, result.Reason)
+                });
+            }
             EventSystem.Instance.Publish((Scene)self.IScene, new GridProjectionApplied { Version = self.Version });
         }
 

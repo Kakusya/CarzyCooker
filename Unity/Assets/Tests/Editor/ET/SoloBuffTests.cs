@@ -152,7 +152,8 @@ namespace ET
             using(var reply=BuffReply(request))Assert.That(reply.Error,Is.Zero);AdvanceTicks(1);PumpMessages(8);
             var second=other.GetComponent<GridClientComponent>();
             using(var reply=LevelReply(other,second.CreateLevelCommand(LevelControlAction.Start)))Assert.That(reply.Error,Is.Zero);
-            AdvanceTicks(CurrentLevel.OperatingTicks+1);PumpMessages(8);Assert.That(CurrentLevel.Phase,Is.EqualTo(LevelPhase.Completed));
+            AdvanceTicks(CurrentLevel.OperatingTicks+2);PumpMessages(8);Assert.That(CurrentLevel.Phase,Is.EqualTo(LevelPhase.Completed));
+            FrontWait(() => Renovation.Prepared, 8);
             using(var reply=LevelReply(other,second.CreateLevelCommand(LevelControlAction.Continue)))Assert.That(reply.Error,Is.Zero);
             AdvanceTicks(1);PumpMessages(8);int[] candidates=Buff.Candidates.ToArray();
             var replay=ProductMessages.Create<ChooseBuffRequest>(value=>
@@ -190,12 +191,13 @@ namespace ET
             BuffDo(Buff.Candidates[0]);var projection=((ClientSessionComponent)host.Client).GetComponent<GridClientComponent>();
             long pot=SoupFillPot(host.Client);GridAutoProcess batch=SoupBegin(host.Client,pot);int required=batch.RequiredTicks;
             long level=CurrentLevel.Id,generation=CurrentLevel.Generation;int oldChoice=Buff.SelectedId;
-            LevelDo(LevelControlAction.Start);AdvanceTicks(21);Assert.That(CurrentLevel.Phase,Is.EqualTo(LevelPhase.Completed));Assert.That(batch.State,Is.EqualTo(GridAutoState.Cooking));
+            LevelDo(LevelControlAction.Start);AdvanceTicks(22);Assert.That(CurrentLevel.Phase,Is.EqualTo(LevelPhase.Completed));Assert.That(batch.State,Is.EqualTo(GridAutoState.Cooking));
             LevelBuff retired=Buff;LevelDo(LevelControlAction.Continue);
             Assert.That(retired.IsDisposed,Is.True);Assert.That(Buff.SelectedId,Is.Zero);Assert.That(batch.RequiredTicks,Is.EqualTo(required));Assert.That(Grid.Item(pot).AutoProcessId,Is.EqualTo(batch.Id));
             var stale=projection.CreateBuffChoice(oldChoice,1);stale.LevelId=level;stale.LevelGeneration=generation;
             using(var reply=BuffReply(stale))Assert.That(reply.Message,Is.EqualTo("WrongLevel"));
-            Assert.That(Buff.SelectedId,Is.Zero);BuffDo(Buff.Candidates[0]);Assert.That(batch.RequiredTicks,Is.EqualTo(required));
+            Assert.That(Buff.SelectedId,Is.Zero); FrontWait(() => Buff.Prepared, 8);
+            BuffDo(Buff.Candidates[0]);Assert.That(batch.RequiredTicks,Is.EqualTo(required));
         }
     }
 }

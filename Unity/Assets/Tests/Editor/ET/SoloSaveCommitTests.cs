@@ -43,6 +43,8 @@ namespace ET
                 AdvanceTicks(1); PumpMessages(8);
                 Assert.That(SaveResult.State, Is.EqualTo(SoloSaveState.Committed)); Assert.That(CurrentLevel.Id, Is.Not.EqualTo(oldLevel));
                 Assert.That(CurrentLevel.Phase, Is.EqualTo(LevelPhase.Preparing)); long nextLevel = CurrentLevel.Id;
+                Assert.That(FrontPeer.LastCommandStatus, Is.EqualTo(GridResultStatus.Accepted), "Installed level still awaits its preparation result");
+                FrontWait(() => Buff.Prepared, 8);
                 using (var reply = LevelReply(host.Client, postInstallReplay)) Assert.That(reply.Status, Is.EqualTo((int)GridResultStatus.Executed));
                 AdvanceTicks(2); Assert.That(CurrentLevel.Id, Is.EqualTo(nextLevel)); Assert.That(repository.Browse().Length, Is.EqualTo(1));
                 Assert.That(Grid.Stations.Count, Is.EqualTo(17)); Assert.That(SaveBinding.SourceSlotId, Is.EqualTo(repository.Browse().Single().SlotId));
@@ -58,17 +60,25 @@ namespace ET
             try
             {
                 CompleteForSave(); long level = CurrentLevel.Id; int items = Grid.Items.Count;
+                long generation = CurrentLevel.Generation;
                 string blocker = Path.Combine(actualPath, "blocked"); File.WriteAllText(blocker, "owned test blocker"); repository.DirectoryPath = blocker;
-                BeginSaveAndContinue(); var result = SaveResult; byte[] immutable = (byte[])result.Record.Clone(); string identity = result.ResultId;
+                long failedCommand = BeginSaveAndContinue(); var result = SaveResult; byte[] immutable = (byte[])result.Record.Clone(); string identity = result.ResultId;
                 AdvanceTicks(1); PumpMessages(8);
                 Assert.That(result.State, Is.EqualTo(SoloSaveState.Failed)); Assert.That(CurrentLevel.Id, Is.EqualTo(level));
                 Assert.That(CurrentLevel.Phase, Is.EqualTo(LevelPhase.Completed)); Assert.That(Grid.Items.Count, Is.EqualTo(items));
                 Assert.That(Grid.Stations.Count, Is.EqualTo(16)); Assert.That(result.Record, Is.EqualTo(immutable));
+                var failed = ProductOutcomeTestObserver.Received.Single(value => value.Value.Context.CommandId == failedCommand).Value;
+                Assert.That(failed.Status, Is.EqualTo(GridResultStatus.Rejected)); Assert.That(failed.Reason, Is.EqualTo("SaveFailed")); Assert.That(failed.ChangedLevel, Is.False);
                 repository.DirectoryPath = actualPath; Assert.That(repository.Browse(), Is.Empty);
-                BeginSaveAndContinue(); AdvanceTicks(1); PumpMessages(8);
+                long retryCommand = BeginSaveAndContinue(); AdvanceTicks(1); PumpMessages(8);
                 Assert.That(SaveResult.ResultId, Is.EqualTo(identity)); Assert.That(SaveResult.Record, Is.EqualTo(immutable));
                 Assert.That(SaveResult.State, Is.EqualTo(SoloSaveState.Committed)); Assert.That(repository.Browse().Length, Is.EqualTo(1));
                 Assert.That(CurrentLevel.Phase, Is.EqualTo(LevelPhase.Preparing)); Assert.That(Grid.Stations.Count, Is.EqualTo(17));
+                FrontWait(() => Buff.Prepared, 8);
+                var committed = ProductOutcomeTestObserver.Received.Single(value => value.Value.Context.CommandId == retryCommand).Value;
+                Assert.That(committed.Status, Is.EqualTo(GridResultStatus.Executed)); Assert.That(committed.ChangedLevel, Is.True);
+                Assert.That(committed.Context.LevelId, Is.EqualTo(level)); Assert.That(committed.Context.LevelGeneration, Is.EqualTo(generation));
+                Assert.That(CurrentLevel.Id, Is.Not.EqualTo(level)); Assert.That(((ClientSessionComponent)host.Client).GetComponent<GridClientComponent>().LastProductOutcome.Context.CommandId, Is.EqualTo(retryCommand));
             }
             finally { repository.DirectoryPath = actualPath; repository.Dispose(); RemoveOwnSaveTestDirectory(directory); }
         }

@@ -23,6 +23,20 @@ namespace ET.Client
                 return role.Name+"："+job+$" · 完成 {role.CompletedCount} 项";
             }));
             view.WorkText.text=partner;
+            KitchenWorkOutcomeValue kitchen = grid.LastKitchenOutcome;
+            if (kitchen.WorkId != 0 && (grid.Processes.ContainsKey(kitchen.WorkId) || grid.AutoProcesses.ContainsKey(kitchen.WorkId) || grid.BakeProcesses.ContainsKey(kitchen.WorkId)))
+            {
+                string title = kitchen.Kind == KitchenProcessKind.Soup ? "煮汤" : kitchen.Kind == KitchenProcessKind.Bake ? "烤制" : "手工加工";
+                string stage = kitchen.Stage switch { KitchenWorkStage.Started => "已开始", KitchenWorkStage.Resumed => "已接续", KitchenWorkStage.Paused => "已停手", KitchenWorkStage.Finished => "已完成", _ => "已取消" };
+                view.WorkText.text += " · " + title + stage;
+            }
+            FrontWorkOutcomeValue front = grid.LastFrontWorkOutcome;
+            if (front.WorkId != 0 && grid.FrontWorks.ContainsKey(front.WorkId))
+            {
+                string title = front.Kind == FrontWorkKind.Ask ? "询问" : front.Kind == FrontWorkKind.Clear ? "清桌" : "洗碗";
+                string stage = front.Stage switch { FrontWorkStage.Claimed => "已认领", FrontWorkStage.Started => "已开始", FrontWorkStage.Released => "已停手", FrontWorkStage.Finished => "已完成", _ => "已取消" };
+                view.WorkText.text += " · " + title + stage;
+            }
             var active=grid.Orders.Values.Where(order=>order.State==OrderState.Waiting).OrderBy(order=>order.Id).ToArray();
             view.OrdersText.text=active.Length==0?"暂无待交付订单":string.Join("\n",active.Select(order=>
             {
@@ -31,7 +45,7 @@ namespace ET.Client
                 return $"顾客 {customer} · {table} · {Tables.Instance.DTDishConfig.Get(order.DishId).Name} · {Math.Max(0,order.DeadlineTick-grid.Tick)*grid.TickMilliseconds/1000f:0.0} 秒";
             }));
             view.BuffText.text=grid.SelectedBuffId!=0?"本关加成："+Tables.Instance.DTBuffConfig.Get(grid.SelectedBuffId).Name
-                :grid.BuffCandidates.Count==0?"本关没有加成":self.BuffCandidatesVisible?"选择一个本关加成":"候选已隐藏，可再次查看";
+                :grid.BuffDrawVersion==0?"本关加成准备中":grid.BuffCandidates.Count==0?"本关没有加成":self.BuffCandidatesVisible?"选择一个本关加成":"候选已隐藏，可再次查看";
             view.SettlementText.text=$"本关完成\n{grid.LevelScore} 分 · {grid.LevelStars} 星\n点击「下一关」继续";
         }
     }

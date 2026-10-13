@@ -7,6 +7,8 @@ namespace ET
     [ChildOf(typeof(GridKitchenComponent))]
     public sealed class GridBakeProcess : Entity, IAwake
     {
+        public long TransitionSerial;
+        public bool CompletionQueued, CompletionReceived;
         public int RecipeId, RequiredTicks, ProgressTicks, OutputDefinitionId;
         public long StationId, InputItemId, OutputItemId, StartedTick;
         public GridBakeState State;

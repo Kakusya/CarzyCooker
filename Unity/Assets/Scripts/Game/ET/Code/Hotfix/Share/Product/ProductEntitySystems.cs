@@ -67,6 +67,7 @@ namespace ET
             self.Closing = false;
             self.CloseFinished = false;
             self.InFlight = 0;
+            self.NextOutcomeSerial = 0; self.PendingOutcomes.Clear();
             self.LastCommandContext = default;
             self.LastCommandKind = default;
             self.LastGridCommand = default;

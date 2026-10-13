@@ -156,19 +156,19 @@ namespace ET
         {
             StartSolo(); LevelDo(LevelControlAction.Start);
             FrontWork clear = InitialDirtyTable(); GridItem bowl = Grid.Item(clear.ItemId); GridStation table = Grid.Station(clear.StationId);
-            long[] items = Grid.Items.Keys.ToArray(); InitialTargetReady(clear);
-            Assert.That(Grid.CompleteFrontTarget(CurrentLevel, clear), Is.Null);
+            long[] items = Grid.Items.Keys.ToArray(); FrontPlayerDo(FrontWorkAction.Claim, clear); FrontWait(() => clear.State == FrontWorkState.Completed);
             Assert.That(table.ItemId, Is.Zero); Assert.That(table.GetComponent<FrontTable>().State, Is.EqualTo(FrontTableState.Free));
             Assert.That(table.GetComponent<FrontTable>().CustomerId, Is.Zero);
             Assert.That(bowl.Location, Is.EqualTo(GridItemLocation.DirtyPool)); Assert.That(bowl.Hygiene, Is.EqualTo(ItemHygiene.Dirty));
+            FrontWait(() => CurrentLevel.Children.Values.OfType<FrontWork>().Any(value => value.Kind == FrontWorkKind.Wash));
             FrontWork wash = CurrentLevel.Children.Values.OfType<FrontWork>().Single(value => value.Kind == FrontWorkKind.Wash);
             Assert.That(wash.ItemId, Is.EqualTo(bowl.Id)); Assert.That(wash.Parent, Is.SameAs(CurrentLevel));
             Assert.That(wash.Progress, Is.Zero); Assert.That(wash.BaseTicks, Is.EqualTo(61));
-            Assert.That(Grid.CompleteFrontTarget(CurrentLevel, clear), Is.EqualTo("TableChanged"));
-            InitialTargetReady(wash); Assert.That(Grid.CompleteFrontTarget(CurrentLevel, wash), Is.Null);
+            Assert.That(Grid.CompleteFrontTarget(CurrentLevel, clear), Is.EqualTo("WorkEnded"));
+            FrontPlayerDo(FrontWorkAction.Claim, wash); FrontWait(() => wash.State == FrontWorkState.Completed);
             Assert.That(bowl.Location, Is.EqualTo(GridItemLocation.CleanPool)); Assert.That(bowl.Hygiene, Is.EqualTo(ItemHygiene.Clean));
             Assert.That(Grid.Station(bowl.HolderId).PoolItemIds, Is.EqualTo(new[] { bowl.Id }));
-            Assert.That(Grid.CompleteFrontTarget(CurrentLevel, wash), Is.EqualTo("ItemChanged"));
+            Assert.That(Grid.CompleteFrontTarget(CurrentLevel, wash), Is.EqualTo("WorkEnded"));
             Assert.That(CurrentLevel.Children.Values.OfType<FrontWork>().Count(value => value.Kind == FrontWorkKind.Wash), Is.EqualTo(1));
             Assert.That(Grid.Items.Keys, Is.EquivalentTo(items)); Assert.That(CurrentLevel.Score, Is.Zero);
             Assert.That(CurrentLevel.GetComponent<CompanionGrowth>().CompletedByCompanion, Is.Empty);
@@ -182,7 +182,8 @@ namespace ET
             GridItem bowl = Grid.Item(clear.ItemId); FrontWork work = clear;
             if (cleanDestination)
             {
-                InitialTargetReady(clear); Assert.That(Grid.CompleteFrontTarget(CurrentLevel, clear), Is.Null);
+                FrontPlayerDo(FrontWorkAction.Claim, clear); FrontWait(() => clear.State == FrontWorkState.Completed);
+                FrontWait(() => CurrentLevel.Children.Values.OfType<FrontWork>().Any(value => value.Kind == FrontWorkKind.Wash));
                 work = CurrentLevel.Children.Values.OfType<FrontWork>().Single(value => value.Kind == FrontWorkKind.Wash);
             }
             GridStation pool = Grid.Stations.Values.Select(value => (GridStation)value).Single(value => value.Kind ==

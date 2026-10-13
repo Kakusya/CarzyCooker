@@ -59,10 +59,7 @@ namespace ET
             yield return StartLauncher(false, false);
             ProductRuntimeComponent runtime = Runtime;
             Assert.That((Scene)runtime.HostScene, Is.Null); Assert.That((HostSessionComponent)runtime.Authority, Is.Null);
-            string directory = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../Temp/solo-save-ui-tests", Guid.NewGuid().ToString("N")));
-            string profile = Guid.NewGuid().ToString("N");
-            Selection.CloseSoloSelection(); runtime.Root().RemoveComponent<SoloSaveRepository>();
-            var repository = runtime.Root().AddComponent<SoloSaveRepository, string, string>(directory, profile);
+            var repository = CreateSaveUiRepository(runtime, out string directory, out string profile);
             try
             {
                 var payload = SelectionFixture(); var valid = SelectionHeader(profile); repository.Commit(valid, payload);

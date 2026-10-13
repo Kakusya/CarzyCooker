@@ -40,6 +40,9 @@ namespace ET
         public long Accumulator;
         public bool Stopped;
         public readonly Queue<LevelControlEnvelope> Controls = new();
+        public readonly Queue<LevelTransitionValue> Transitions = new();
+        public readonly Queue<ProductTransitionIdentity> FinishedTransitions = new();
+        public readonly List<LevelPhaseOutcomeValue> PhaseOutcomes = new();
     }
 
     [ChildOf(typeof(RestaurantRuntime))]
@@ -59,6 +62,10 @@ namespace ET
         public int[] AllowedRenovationIds;
         public GridCell SpawnCell;
         public long DrainingStartedTick;
+        public long CompletionSerial;
+        public long TransitionSerial;
+        public bool TransitionQueued;
+        public LevelControlEnvelope? PreparationControl;
     }
 }
 #endif

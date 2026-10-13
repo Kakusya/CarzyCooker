@@ -57,16 +57,18 @@ namespace ET
         public IReadOnlyList<long> ExpectedContentIds => expectedContentIds ?? Array.Empty<long>();
         public int ExpectedRemainingPortions { get; }
         public long ExpectedLayoutVersion { get; }
+        public ProductCommandKind OriginKind { get; }
         public GridIntent(long commandId, GridAction action, GridCell cell, long targetId = 0, long expectedItemId = 0, long expectedTargetItemId = 0, long expectedProcessId = 0,
-            IEnumerable<long> expectedContents = null, int expectedRemainingPortions = 0, long expectedLayoutVersion = 0)
+            IEnumerable<long> expectedContents = null, int expectedRemainingPortions = 0, long expectedLayoutVersion = 0, ProductCommandKind originKind = ProductCommandKind.Grid)
         {
             CommandId = commandId; Action = action; Cell = cell; TargetId = targetId; ExpectedItemId = expectedItemId;
             ExpectedTargetItemId = expectedTargetItemId; ExpectedProcessId = expectedProcessId;
             expectedContentIds = expectedContents == null ? null : Array.AsReadOnly(expectedContents.ToArray());
             ExpectedRemainingPortions = expectedRemainingPortions; ExpectedLayoutVersion = expectedLayoutVersion;
+            OriginKind = originKind;
         }
         public bool Equals(GridIntent other) => CommandId == other.CommandId && Action == other.Action && Cell == other.Cell && TargetId == other.TargetId && ExpectedItemId == other.ExpectedItemId && ExpectedTargetItemId == other.ExpectedTargetItemId && ExpectedProcessId == other.ExpectedProcessId
-            && ExpectedRemainingPortions == other.ExpectedRemainingPortions && ExpectedLayoutVersion == other.ExpectedLayoutVersion && ExpectedContentIds.SequenceEqual(other.ExpectedContentIds);
+            && ExpectedRemainingPortions == other.ExpectedRemainingPortions && ExpectedLayoutVersion == other.ExpectedLayoutVersion && OriginKind == other.OriginKind && ExpectedContentIds.SequenceEqual(other.ExpectedContentIds);
     }
 
     public readonly struct GridMemberChange
@@ -118,6 +120,8 @@ namespace ET
         public readonly Dictionary<int, GridIntent> Incoming = new();
         public readonly List<GridResultValue> Results = new();
         public readonly List<GridResultValue> PendingResults = new();
+        public readonly Queue<KitchenWorkTransitionValue> WorkTransitions = new();
+        public readonly List<KitchenWorkOutcomeValue> WorkOutcomes = new();
     }
 
     [ChildOf]
@@ -182,6 +186,8 @@ namespace ET
     [ChildOf(typeof(GridKitchenComponent))]
     public sealed class GridManualProcess : Entity, IAwake
     {
+        public long TransitionSerial;
+        public bool CompletionQueued, CompletionReceived;
         public int RecipeId, RequiredTicks, ProgressTicks, WorkerMemberId;
         public long InputItemId, TargetItemId, StationId, WorkerGeneration, OutputItemId, StartedTick;
         public GridWorkState State;

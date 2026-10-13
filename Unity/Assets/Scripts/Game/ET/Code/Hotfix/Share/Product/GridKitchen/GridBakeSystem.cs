@@ -26,6 +26,7 @@ namespace ET
             process.OutputDefinitionId = recipe.OutputDefinitionId; process.RequiredTicks = recipe.RequiredTicks;
             process.ProgressTicks = 0; process.State = GridBakeState.Baking; process.StartedTick = self.Tick;
             self.BakeProcesses.Add(process.Id, process); station.BakeProcessId = process.Id; input.BakeProcessId = process.Id;
+            self.PublishKitchenStage(process, KitchenProcessKind.Bake, KitchenWorkStage.Started, ++process.TransitionSerial);
             return null;
         }
 
@@ -37,12 +38,24 @@ namespace ET
                 GridStation station = self.Station(process.StationId); GridItem input = self.Item(process.InputItemId);
                 if (station == null || input == null || station.BakeProcessId != process.Id || input.BakeProcessId != process.Id ||
                     station.ItemId != input.Id || input.HolderId != station.Id || input.Location != GridItemLocation.Counter) continue;
-                ++process.ProgressTicks; self.Dirty = true;
+                if (process.ProgressTicks < process.RequiredTicks) ++process.ProgressTicks;
+                self.Dirty = true;
                 if (process.ProgressTicks < process.RequiredTicks) continue;
+                if (!process.CompletionReceived)
+                {
+                    if (!process.CompletionQueued)
+                    {
+                        self.RequestKitchenCompletion(process, KitchenProcessKind.Bake, process.TransitionSerial);
+                        process.CompletionQueued = true;
+                    }
+                    continue;
+                }
                 GridItem output = self.CreateGridItem(process.OutputDefinitionId, GridItemLocation.Counter, station.Id, station.Cell);
                 station.ItemId = output.Id; station.BakeProcessId = 0;
                 self.Items.Remove(input.Id); input.Dispose();
                 process.OutputItemId = output.Id; process.State = GridBakeState.Completed;
+                process.CompletionQueued = false; process.CompletionReceived = false;
+                self.PublishKitchenStage(process, KitchenProcessKind.Bake, KitchenWorkStage.Finished, ++process.TransitionSerial, output.Id);
             }
         }
 
@@ -65,6 +78,7 @@ namespace ET
         private static void Awake(this GridBakeProcess self)
         {
             self.RecipeId = 0; self.RequiredTicks = 0; self.ProgressTicks = 0; self.OutputDefinitionId = 0;
+            self.TransitionSerial = 1; self.CompletionQueued = false; self.CompletionReceived = false;
             self.StationId = 0; self.InputItemId = 0; self.OutputItemId = 0; self.StartedTick = 0; self.State = default;
         }
     }

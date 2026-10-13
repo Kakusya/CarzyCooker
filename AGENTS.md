@@ -230,7 +230,7 @@ Unity/
 ### 当前架构边界
 
 - 玩法「已有什么」优先看：**代码 + 表** + [CarzyCooker当前进度.md](CarzyCooker当前进度.md) + 相关 `references/`；冲突时以代码/表与用户最新意图为准并提议同步文档。
-- 当前源码保留底座与示例；已接入 Unity 本机产品会话、共同裁决、本地消息、UDP-KCP 和独立投影，普通 Launcher 默认 Solo。九个单机 change 已完成66/66项：本地命令、煮汤、关卡流程、工位布局、两菜链、固定伙伴、顾客餐具、随机buff及完整受管UI。当前协议17，Solo 水池接水／排液和垃圾桶固体倾倒已完成7/7并有真实UTF／普通Launcher证据；真实UTF与普通Launcher两关已验证原碗回收、伙伴部分接续／暂停、10分1星及0分0星自然结算、实物换关、HUD池复用／旧回调和退出新轮，见[关卡记录](openspec/changes/archive/2026-10-13-solo-restaurant-level-flow/execution-notes.md)及[UI记录](openspec/changes/archive/2026-10-13-solo-restaurant-ui/execution-notes.md)。540×960真实GameView已检查；有限供应7/7、装修6/6、PC Solo检查点7/7已有相关UTF与普通Launcher证据，检查点保存后Stop/Play选档恢复半锅汤、暂停加工与在途货且不重复物资。手机Player/AOT和LAN／公网仍未验收；联机核心7/7、前厅5/5已按同Editor普通Host＋独立Fiber真实KCP受管入口验收，两菜真实交付20分2星、原餐具回收／取回和次关0分0星自然结算通过；远端清理供应5/5已按同Editor真实KCP／受管入口验收，补货后制作交付两菜20分2星、剩液空包装清理和在途换关通过，默认运输40已恢复并由新Host实际读取；普通双Editor两种角色排列完整合作3/3已验收，两次均20分2星，真实Client失联后Host收货及整轮退出新世界隔离通过，见[集成记录](openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。九案及Editor分支标签已于2026-10-13归档，后续五案中的清理、供应、装修和检查点已完成，三个联机前置与普通双Editor完整集成均已验收。正式设计见[Docs/Product/](Docs/Product/README.md)。
+- 当前能力、协议版本、任务数量与验收环境统一查[当前进度](CarzyCooker当前进度.md)，运行证据查对应 change 的 execution-notes；本文件只保留稳定纪律和架构边界，不复制动态交付摘要。正式目标设计见[产品资料](Docs/Product/README.md)。
 - 未来业务保留“已确认、授权补足、候选、待裁决”的区别；历史授权、候选目录、文件和标签不增加本轮实施授权。
 - 已确认的未来边界：Host 是世界权威但不自动是存档 Owner；本地/远端玩家走同一裁决；运行世界、持久进度、领取凭证分开；PC/Android 生态隔离。这些是设计，不是现有底座保证。
 - 普通手槽/台面一格一物、容器内容随容器移动、分装守恒、加工命令完整验证后提交等详见 [产品设计](Docs/Product/design.md)，不在文档整理中新增实现。
@@ -283,24 +283,7 @@ Unity/
 - 原 `Docs/Development/` 对应页只保留跳转，正文在 `references/` 或 `KnownIssues.md` 唯一维护。
 - 共用约定先读 [业务约定](references/business-code-conventions.md)、[生命周期](references/framework-lifecycle.md)、[生成约定](references/data-generation.md)、[数据与投影](references/reactive-and-network.md)；细定位见 [模块索引](Docs/AI/module-index.md)。
 
-| 模块 | 源码/资料入口 | 用法/约定 | 主规格 | 技能 |
-|---|---|---|---|---|
-| 启动/模式 | [Unity/Assets/Scripts/Game/Procedure](Unity/Assets/Scripts/Game/Procedure) | [快速开始.md](Book/快速开始.md) | [startup](openspec/specs/startup/spec.md) | [openspec-explore](.agents/skills/openspec-explore/SKILL.md) |
-| 公共组件/流程/示例 | [Unity/Assets/Scripts/Game/Base](Unity/Assets/Scripts/Game/Base) | [Project结构.md](Book/Project结构.md) | [runtime-foundation](openspec/specs/runtime-foundation/spec.md) | [openspec-apply-change](.agents/skills/openspec-apply-change/SKILL.md) |
-| ET Model/Hotfix/View/共享 | [Unity/Assets/Scripts/Game/ET/Code](Unity/Assets/Scripts/Game/ET/Code) | [ET动态事件.md](Book/ET动态事件.md) | [runtime-foundation](openspec/specs/runtime-foundation/spec.md) | [openspec-apply-change](.agents/skills/openspec-apply-change/SKILL.md) |
-| GF UI/ETUI/Widget | [Unity/Assets/Scripts/Game/UI](Unity/Assets/Scripts/Game/UI) | [UI开发.md](Book/UI开发.md) | [ui](openspec/specs/ui/spec.md) | [carzycooker-ui](.agents/skills/carzycooker-ui/SKILL.md) |
-| GF Entity/ETEntity/UIEntity | [Unity/Assets/Scripts/Game/Entity](Unity/Assets/Scripts/Game/Entity) | [Entity开发.md](Book/Entity开发.md) | [entity](openspec/specs/entity/spec.md) | [carzycooker-ugfentity](.agents/skills/carzycooker-ugfentity/SKILL.md) |
-| 容器/资源/AssetSet | [Unity/Assets/Scripts/Game/Container](Unity/Assets/Scripts/Game/Container) | [AssetSet.md](Book/AssetSet.md) | [resource-management](openspec/specs/resource-management/spec.md) | [openspec-apply-change](.agents/skills/openspec-apply-change/SKILL.md) |
-| Excel/Luban/生成 ID | [Share/Tool/ExcelExporter](Share/Tool/ExcelExporter) | [Luban配置.md](Book/Luban配置.md) | [data-generation](openspec/specs/data-generation/spec.md) | [carzycooker-luban](.agents/skills/carzycooker-luban/SKILL.md) |
-| Proto/Opcode/消息生成 | [Share/Tool/Proto2CS](Share/Tool/Proto2CS) | [Proto生成工具.md](Book/Proto生成工具.md) | [proto-generation](openspec/specs/proto-generation/spec.md) | [openspec-apply-change](.agents/skills/openspec-apply-change/SKILL.md) |
-| 本地化/UX 文本 | [Unity/Assets/Scripts/Game/Localization](Unity/Assets/Scripts/Game/Localization) | [多语言.md](Book/多语言.md) | [localization](openspec/specs/localization/spec.md) | [carzycooker-luban](.agents/skills/carzycooker-luban/SKILL.md) |
-| ET Session/RPC/HTTP | [ET 消息模块](Unity/Assets/Scripts/Game/ET/Code/Model/Share/Module/Message) | [reactive-and-network.md](references/reactive-and-network.md) | [network](openspec/specs/network/spec.md) | [openspec-explore](.agents/skills/openspec-explore/SKILL.md) |
-| 服务端/DB/Agent/Admin | [DotNet](DotNet) | [管理后台.md](Book/管理后台.md) | [server](openspec/specs/server/spec.md) | [openspec-apply-change](.agents/skills/openspec-apply-change/SKILL.md) |
-| HybridCLR/程序集/打包 | [Unity/Assets/Scripts/Game/HybridCLR](Unity/Assets/Scripts/Game/HybridCLR) | [HybridCLR热更.md](Book/HybridCLR热更.md) | [hot-reload](openspec/specs/hot-reload/spec.md) | [openspec-explore](.agents/skills/openspec-explore/SKILL.md) |
-| Editor/Toolbar/骨架/服务工具 | [Unity/Assets/Scripts/Game/Editor](Unity/Assets/Scripts/Game/Editor) | [ET代码生成工具.md](Book/ET代码生成工具.md) | [editor-tools](openspec/specs/editor-tools/spec.md) | [openspec-explore](.agents/skills/openspec-explore/SKILL.md) |
-| ET reactive/外部 ReactiveBinding | [Share/SourceGenerator](Share/SourceGenerator) | [reactive-and-network.md](references/reactive-and-network.md) | [reactive-ui](openspec/specs/reactive-ui/spec.md) | [carzycooker-ui](.agents/skills/carzycooker-ui/SKILL.md) |
-| Analyzer/第三方/程序集/包 | [Unity/Assets/Scripts/Library](Unity/Assets/Scripts/Library) | [conventions.md](references/business-code-conventions.md) | [dependencies](openspec/specs/dependencies/spec.md) | [openspec-explore](.agents/skills/openspec-explore/SKILL.md) |
-| 未来产品/需求/候选 | [Docs/Product](Docs/Product) | [README.md](Docs/Product/README.md) | [ai-collaboration](openspec/specs/ai-collaboration/spec.md) | [carzycooker-requirements](.agents/skills/carzycooker-requirements/SKILL.md) |
+模块到源码、手册、主规格和技能的对应表唯一维护在[模块索引](Docs/AI/module-index.md)。开始任务先从索引选择相关模块，再读其参考与实际源码；本页上方的技能阶段路由保持有效。
 
 约定：新增模块通用用法总结时，在 `references/<模块>.md` 创建；内容聚焦本项目实际用法；补上统一页眉。缺少配套文件时先说明用途并与用户讨论，不因参考有该文件就声明本项目已有对应工具。
 

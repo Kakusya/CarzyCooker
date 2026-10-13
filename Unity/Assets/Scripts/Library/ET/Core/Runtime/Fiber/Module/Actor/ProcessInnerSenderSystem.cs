@@ -117,6 +117,7 @@ namespace ET
                     IResponse resp = MessageHelper.CreateResponse(request.GetType(), request.RpcId, ErrorCore.ERR_NotFoundActor);
                     self.Reply(actorId.Address, resp);
                 }
+                message.Dispose();
                 return;
             }
             mailBoxComponent.Add(actorId.Address, message);
@@ -155,12 +156,18 @@ namespace ET
         
         public static void Reply(this ProcessInnerSender self, Address fromAddress, IResponse message)
         {
-            self.SendInner(new ActorId(fromAddress, 0), (MessageObject)message);
+            if (!self.SendInner(new ActorId(fromAddress, 0), (MessageObject)message))
+            {
+                ((MessageObject)message).Dispose();
+            }
         }
 
         public static void Send(this ProcessInnerSender self, ActorId actorId, IMessage message)
         {
-            self.SendInner(actorId, (MessageObject)message);
+            if (!self.SendInner(actorId, (MessageObject)message))
+            {
+                ((MessageObject)message).Dispose();
+            }
         }
 
         private static bool SendInner(this ProcessInnerSender self, ActorId actorId, MessageObject message)
@@ -200,27 +207,39 @@ namespace ET
                 bool needException = true
         )
         {
-            self.ThrowIfStopped();
-            int rpcId = self.GetRpcId();
-            request.RpcId = rpcId;
-            
-            if (actorId == default)
-            {
-                throw new Exception($"actor id is 0: {request}");
-            }
-            
-            Fiber fiber = self.Fiber();
-            if (fiber.Process != actorId.Process)
-            {
-                throw new Exception($"actor inner process diff: {actorId.Process} {fiber.Process}");
-            }
-            
+            int rpcId;
+            Fiber fiber;
             Type requestType = request.GetType();
-            Type responseType = OpcodeType.Instance.GetResponseType(requestType);
+            Type responseType;
+            bool sent;
+            try
+            {
+                self.ThrowIfStopped();
+                rpcId = self.GetRpcId();
+                request.RpcId = rpcId;
+                if (actorId == default)
+                {
+                    throw new Exception($"actor id is 0: {request}");
+                }
+                fiber = self.Fiber();
+                if (fiber.Process != actorId.Process)
+                {
+                    throw new Exception($"actor inner process diff: {actorId.Process} {fiber.Process}");
+                }
+                responseType = OpcodeType.Instance.GetResponseType(requestType);
+                sent = self.SendInner(actorId, (MessageObject)request);
+            }
+            catch
+            {
+                // Call 已接管输入；未入队的拒绝不能交给不存在的 handler 收尾。
+                ((MessageObject)request).Dispose();
+                throw;
+            }
             EntityRef<ProcessInnerSender> senderRef = self;
             IResponse response;
-            if (!self.SendInner(actorId, (MessageObject)request))  // 纤程不存在
+            if (!sent)  // 纤程不存在
             {
+                ((MessageObject)request).Dispose();
                 response = MessageHelper.CreateResponse(requestType, rpcId, ErrorCore.ERR_NotFoundActor);
                 return response;
             }

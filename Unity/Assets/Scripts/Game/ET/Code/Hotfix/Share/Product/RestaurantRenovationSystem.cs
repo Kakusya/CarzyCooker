@@ -16,6 +16,9 @@ namespace ET
             self.SelectedDefinitionId = 0; self.SelectedName = null;
             self.Candidates = Array.Empty<int>(); self.PendingPlacements = Array.Empty<GridStationPlacement>();
             self.AppliedStations.Clear(); self.Choices.Clear();
+            self.Preparations.Clear();
+            self.RequestedLevelId = self.RequestedLevelGeneration = 0; self.PreparationSerial = 0;
+            self.Prepared = self.PreparationQueued = self.NotifyPrepared = false;
         }
     }
 
@@ -51,6 +54,53 @@ namespace ET
         {
             if (!self.IsSoloRenovation()) return;
             RestaurantRenovation renovation = self.GetComponent<RestaurantRenovation>(); GridKitchenComponent kitchen = self.Kitchen;
+            if (renovation.RequestedLevelId == level.Id && renovation.RequestedLevelGeneration == level.Generation) return;
+            renovation.RequestedLevelId = level.Id; renovation.RequestedLevelGeneration = level.Generation;
+            renovation.Prepared = renovation.PreparationQueued = renovation.NotifyPrepared = false;
+            renovation.ResultLevelId = renovation.ResultLevelGeneration = 0;
+            renovation.Candidates = Array.Empty<int>(); renovation.SelectedDefinitionId = 0; renovation.SelectedName = null;
+            renovation.PendingPlacements = Array.Empty<GridStationPlacement>();
+            self.Root().GetComponent<ProcessInnerSender>().Send(((Scene)self.IScene).GetComponent<HostSessionComponent>().GetActorId(), ProductMessages.Create<LevelFinished>(value =>
+            {
+                value.ProtocolVersion = ProductSessionRules.ProtocolVersion; value.MatchId = ((Match)self.Match).MatchId;
+                value.WorldId = kitchen.WorldId; value.WorldGeneration = kitchen.WorldGeneration; value.LevelId = level.Id; value.LevelGeneration = level.Generation;
+                value.SourceId = level.Id; value.SourceInstanceId = level.InstanceId; value.TransitionSerial = level.CompletionSerial;
+            }));
+        }
+
+        private static void AdvanceRenovationPreparation(this RestaurantRuntime self, Level level)
+        {
+            if (!self.IsSoloRenovation() || level.Phase != LevelPhase.Completed || level.Paused) return;
+            RestaurantRenovation renovation = self.GetComponent<RestaurantRenovation>(); GridKitchenComponent kitchen = self.Kitchen;
+            while (self.FinishedTransitions.Count > 0)
+            {
+                ProductTransitionIdentity identity = self.FinishedTransitions.Dequeue();
+                if (identity.LevelId != level.Id || identity.LevelGeneration != level.Generation || identity.SourceId != level.Id ||
+                    identity.SourceInstanceId != level.InstanceId || identity.Serial != level.CompletionSerial ||
+                    renovation.RequestedLevelId != level.Id || renovation.RequestedLevelGeneration != level.Generation || renovation.Prepared || renovation.PreparationQueued) continue;
+                renovation.PreparationSerial = identity.Serial; renovation.PreparationQueued = true;
+                self.Root().GetComponent<ProcessInnerSender>().Send(((Scene)self.IScene).GetComponent<HostSessionComponent>().GetActorId(), ProductMessages.Create<RenovationPrepare>(value =>
+                {
+                    value.ProtocolVersion = ProductSessionRules.ProtocolVersion; value.MatchId = ((Match)self.Match).MatchId;
+                    value.WorldId = kitchen.WorldId; value.WorldGeneration = kitchen.WorldGeneration; value.LevelId = level.Id; value.LevelGeneration = level.Generation;
+                    value.SourceId = level.Id; value.SourceInstanceId = level.InstanceId; value.TransitionSerial = renovation.PreparationSerial;
+                }));
+            }
+            while (renovation.Preparations.Count > 0)
+            {
+                ProductTransitionIdentity identity = renovation.Preparations.Dequeue();
+                if (identity.LevelId != level.Id || identity.LevelGeneration != level.Generation || identity.SourceId != level.Id ||
+                    identity.SourceInstanceId != level.InstanceId || identity.Serial != renovation.PreparationSerial ||
+                    renovation.RequestedLevelId != level.Id || !renovation.PreparationQueued || renovation.Prepared) continue;
+                self.CompleteRenovationPreparation(level);
+                renovation.Prepared = renovation.NotifyPrepared = true; renovation.PreparationQueued = false; ++renovation.PreparationSerial;
+                kitchen.Dirty = true;
+            }
+        }
+
+        private static void CompleteRenovationPreparation(this RestaurantRuntime self, Level level)
+        {
+            RestaurantRenovation renovation = self.GetComponent<RestaurantRenovation>(); GridKitchenComponent kitchen = self.Kitchen;
             renovation.ResultLevelId = level.Id; renovation.ResultLevelGeneration = level.Generation;
             renovation.ChoiceVersion = checked(renovation.ChoiceVersion + 1); renovation.SelectedDefinitionId = 0; renovation.SelectedName = null;
             renovation.PendingPlacements = Array.Empty<GridStationPlacement>();
@@ -67,6 +117,7 @@ namespace ET
                 string error = peer == null || !kitchen.HasBinding(peer.MemberId, command.Context.BindingGeneration) ? "EntryClosed"
                     : command.Context.Validate(match.MatchId, kitchen.WorldId, kitchen.WorldGeneration, level.Id, level.Generation, peer.Generation);
                 if (error == null) error = level.Phase != LevelPhase.Completed ? "WrongPhase"
+                    : !renovation.Prepared ? "RenovationNotReady"
                     : renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation ||
                         command.Intent.ChoiceVersion != renovation.ChoiceVersion ? "RenovationChanged"
                     : renovation.SelectedDefinitionId != 0 ? "RenovationLocked"
@@ -82,7 +133,7 @@ namespace ET
                         renovation.PendingPlacements = Array.AsReadOnly(plan);
                     }
                 }
-                peer?.RecordProductResult(command.Context.CommandId, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error);
+                peer?.RecordProductResult(command.Context, ProductCommandKind.Renovation, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error);
                 kitchen.Dirty = true;
             }
         }
@@ -90,6 +141,9 @@ namespace ET
         private static string CheckPendingRenovation(this RestaurantRuntime self)
         {
             RestaurantRenovation renovation = self.GetComponent<RestaurantRenovation>();
+            Level level = self.CurrentLevel;
+            if (self.IsSoloRenovation() && (!renovation.Prepared || renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation))
+                return "RenovationNotReady";
             if (renovation.SelectedDefinitionId == 0 || renovation.AppliedStations.ContainsKey(renovation.SelectedDefinitionId)) return null;
             return ((GridKitchenComponent)self.Kitchen).CheckRenovationInstallation(renovation.PendingPlacements, out _);
         }
@@ -125,7 +179,7 @@ namespace ET
             while (renovation.Choices.Count > 0)
             {
                 RenovationChoiceEnvelope command = renovation.Choices.Dequeue();
-                command.Peer?.RecordProductResult(command.Context.CommandId, GridResultStatus.Cancelled, reason);
+                command.Peer?.RecordProductResult(command.Context, ProductCommandKind.Renovation, GridResultStatus.Cancelled, reason);
             }
         }
     }

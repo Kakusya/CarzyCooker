@@ -55,6 +55,8 @@ namespace ET
             FrontWorkCommands commands = level.GetComponent<FrontWorkCommands>();
             FrontWorkEnvelope[] queued = commands.Pending.ToArray(); commands.Pending.Clear();
             foreach (FrontWorkEnvelope command in queued.Where(value => value.Intent.Action == FrontWorkAction.Stop)) self.ApplyQueuedFront(level, command);
+            self.AdvanceFrontCreations(level, commands);
+            self.AdvanceFrontTransitions(level, commands);
             foreach (CompanionRole role in level.Children.Values.OfType<CompanionRole>().OrderBy(value => value.Id)) self.AdvanceCompanionMovement(level, role);
             foreach (FrontWork work in level.Children.Values.OfType<FrontWork>().OrderBy(value => value.Id).ToArray())
             {
@@ -81,10 +83,19 @@ namespace ET
                     if (work.State == FrontWorkState.Working) self.ReleaseFrontClaim(level, work, FrontWorkState.Available, true);
                     continue;
                 }
-                if (work.State == FrontWorkState.Approaching) { work.State = FrontWorkState.Working; work.StartedTick = self.Tick; self.Dirty = true; continue; }
+                if (work.State == FrontWorkState.Approaching)
+                {
+                    if (!work.TransitionQueued) self.RequestFrontTransition(level, work, FrontWorkTransitionAction.Start);
+                    if (!work.StartReceived) continue;
+                    work.State = FrontWorkState.Working; work.StartedTick = self.Tick;
+                    work.TransitionQueued = work.StartReceived = false; ++work.TransitionSerial;
+                    self.PublishFrontStage(level, work, FrontWorkStage.Started); continue;
+                }
                 if (work.StartedTick == self.Tick) continue;
                 work.Progress = Math.Min(1, work.Progress + 1d / work.FrozenTicks); self.Dirty = true;
                 if (work.Progress < 1 - 1e-9) continue;
+                if (!work.TransitionQueued) self.RequestFrontTransition(level, work, FrontWorkTransitionAction.Complete);
+                if (!work.CompletionReceived) continue;
                 string error = self.CompleteFrontTarget(level, work);
                 if (error != null) continue;
                 CompanionRole finisher = work.WorkerKind == FrontWorkerKind.Companion ? level.GetChild<CompanionRole>(work.WorkerId) : null;
@@ -95,7 +106,9 @@ namespace ET
                     CompanionGrowth growth = level.GetComponent<CompanionGrowth>();
                     growth.CompletedByCompanion.TryGetValue(identity.Id, out int count); growth.CompletedByCompanion[identity.Id] = count + 1;
                 }
+                work.SuccessorPending = work.Kind == FrontWorkKind.Clear;
                 self.ReleaseFrontClaim(level, work, FrontWorkState.Completed, true);
+                self.NotifyFrontFinished(level, work);
                 if (finisher != null) NotifyFrontResult(finisher, request, work.Id, serial, GridResultStatus.Executed, null, 2);
             }
             foreach (FrontWorkEnvelope command in queued.Where(value => value.Intent.Action == FrontWorkAction.Claim)) self.ApplyQueuedFront(level, command);
@@ -110,7 +123,7 @@ namespace ET
                 : role == null || role.Parent != level || role.LevelGeneration != level.Generation ? "RoleChanged" : null;
             if (error == null) error = self.ApplyFrontCommand(level, command);
             GridResultStatus status = error == null ? GridResultStatus.Executed : GridResultStatus.Rejected;
-            if (peer != null) peer.RecordProductResult(command.RequestId, status, error);
+            if (peer != null) peer.RecordProductResult(command.Context, ProductCommandKind.FrontWork, status, error);
             if (role != null)
             {
                 role.LastCommittedRequestId = command.RequestId; role.LastResultStatus = status; role.LastWorkReason = error;
@@ -172,6 +185,8 @@ namespace ET
             {
                 role.WorkId = work.Id; role.ClaimSerial = work.ClaimSerial; role.Path.Clear(); role.Path.AddRange(best.Skip(1)); role.PathIndex = 0;
             }
+            ++work.TransitionSerial; work.TransitionQueued = work.StartReceived = work.CompletionReceived = false;
+            self.PublishFrontStage(level, work, FrontWorkStage.Claimed);
             return null;
         }
 
@@ -213,6 +228,9 @@ namespace ET
             }
             work.State = state; work.WorkerKind = FrontWorkerKind.None; work.WorkerId = 0; work.WorkerInstanceId = 0;
             work.WorkerGeneration = 0; work.WorkerCommandId = 0; self.Dirty = true;
+            ++work.TransitionSerial; work.TransitionQueued = work.StartReceived = work.CompletionReceived = false;
+            self.PublishFrontStage(level, work, state == FrontWorkState.Completed ? FrontWorkStage.Finished
+                : state == FrontWorkState.Cancelled ? FrontWorkStage.Cancelled : FrontWorkStage.Released);
         }
 
         public static void ReleaseActorFrontWork(this GridKitchenComponent self, GridActor actor, bool cancelRoute = true)
@@ -228,7 +246,7 @@ namespace ET
             while (commands.Pending.Count > 0)
             {
                 FrontWorkEnvelope command = commands.Pending.Dequeue(); HostPeer peer = command.Peer; CompanionRole role = command.Role;
-                peer?.RecordProductResult(command.RequestId, GridResultStatus.Cancelled, "Paused");
+                peer?.RecordProductResult(command.Context, ProductCommandKind.FrontWork, GridResultStatus.Cancelled, "Paused");
                 if (role != null)
                 { role.LastCommittedRequestId = command.RequestId; role.LastResultStatus = GridResultStatus.Cancelled; role.LastWorkReason = "Paused"; NotifyFrontResult(role, command.RequestId, command.Intent.WorkId, 0, GridResultStatus.Cancelled, "Paused", 1); }
             }
