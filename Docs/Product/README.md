@@ -1,6 +1,9 @@
 # 做饭产品目标与资料状态
 
-保存产品目标设计，当前能力按[交付进度](../../CarzyCooker当前进度.md)和实施change区分。九案单机制作／工位／关卡／顾客餐具／伙伴／buff／UI已实施，真实默认两关、原餐具回收及退出重开已验收，见[关卡记录](../../openspec/changes/solo-restaurant-level-flow/execution-notes.md)和[UI记录](../../openspec/changes/solo-restaurant-ui/execution-notes.md)。供应、装修、成功检查点及联机餐厅仍是后续目标；单机内存试玩不等于已实现完整长期产品。历史备料合作范围见[备料记录](../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。
+保存产品目标设计，当前能力按[分开的单机／联机进度](../../CarzyCooker当前进度.md)和实施 change 区分。
+
+当前可运行范围统一查[根进度](../../CarzyCooker当前进度.md)和各案原始运行记录。此前入口中“供应实施中、装修与存档仅规划”的表述已过期；相关交付见[供应](../../openspec/changes/solo-supply-delivery/execution-notes.md)、[装修](../../openspec/changes/solo-interlevel-renovation/execution-notes.md)、[成功检查点](../../openspec/changes/solo-success-checkpoint/execution-notes.md)。[合作核心](../../openspec/changes/cooperative-restaurant-core/execution-notes.md)、前厅与清理供应均已验收；普通双 Editor 两种角色排列完整合作3/3通过，见[集成记录](../../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。Player/AOT、跨设备 LAN 与公网仍未验收。
+
 
 | 文件 | 内容 |
 |---|---|

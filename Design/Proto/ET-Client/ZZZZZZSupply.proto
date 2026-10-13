@@ -1,0 +1,86 @@
+syntax = "proto3";
+package ET;
+
+// ResponseType SupplyCommandResponse
+message SupplyCommandRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    string WorldId = 4;
+    int64 WorldGeneration = 5;
+    int64 BindingGeneration = 6;
+    int64 LevelId = 7;
+    int64 LevelGeneration = 8;
+    int64 CommandId = 9;
+    int32 Action = 10;
+    int32 SourceId = 11;
+    int32 Quantity = 12;
+    int64 StationId = 13;
+    int64 ShipmentId = 14;
+    int64 PackageId = 15;
+    int64 ContentItemId = 16;
+    int64 LayoutVersion = 17;
+}
+
+message SupplyCommandResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+// 内部可信转交，只允许 authority 接收，不进入 wire。
+// ResponseType SupplySubmitResponse
+message SupplySubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int64 PeerGeneration = 4;
+    int32 ProtocolVersion = 5;
+    string MatchId = 6;
+    string WorldId = 7;
+    int64 WorldGeneration = 8;
+    int64 BindingGeneration = 9;
+    int64 LevelId = 10;
+    int64 LevelGeneration = 11;
+    int64 CommandId = 12;
+    int32 Action = 13;
+    int32 SourceId = 14;
+    int32 Quantity = 15;
+    int64 StationId = 16;
+    int64 ShipmentId = 17;
+    int64 PackageId = 18;
+    int64 ContentItemId = 19;
+    int64 LayoutVersion = 20;
+}
+
+message SupplySubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+message GridSupplySourceState
+{
+    int32 SourceId = 1;
+    int32 RemainingPackages = 2;
+    int64 ReceivingStationId = 3;
+}
+
+message GridSupplyShipmentState
+{
+    int64 ShipmentId = 1;
+    int32 SourceId = 2;
+    int64 ReceivingStationId = 3;
+    int64 PackageItemId = 4;
+    int32 RequiredTicks = 5;
+    int32 ProgressTicks = 6;
+    int32 Stage = 7;
+}

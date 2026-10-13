@@ -265,7 +265,9 @@ UIWidget 的资源配置使用 `UIEntity.xlsx`，生成常量为 `UGFUIEntityId`
 
 ## 单机关卡基本控制
 
-正式Solo提供“开始营业／暂停／恢复／下一关”，读取同版厨房／关卡快照；暂停及结算时停止显示插值。按钮冻结关卡身份，旧按钮随关卡／阶段变化清除，保存的旧callback也先核对原UI／世界／关身份。回执表示收到请求，最终阶段由餐厅服务步提交；试玩仅保留本次运行，未提供产品存档。订单、伙伴、buff及零星结算已接入完整面板，实际验收见[关卡执行说明](../openspec/changes/solo-restaurant-level-flow/execution-notes.md)。
+Solo 提供“开始营业／暂停／恢复”，读取同版厨房／关卡快照。内存试玩结算显示“下一关”；绑定存档模式在装修确定后显示“保存并继续”，文件失败保留结算并允许重试，持久事实确认后才换关。暂停及结算停止显示插值；按钮冻结 UI／世界／关身份，旧 callback 不写新轮。回执表示收到请求，最终状态由餐厅服务步提交。订单、伙伴、buff及零星结算见[关卡执行说明](../openspec/changes/solo-restaurant-level-flow/execution-notes.md)，保存范围见[检查点记录](../openspec/changes/solo-success-checkpoint/execution-notes.md)。
+
+普通 Solo 启动时，ProductRoot 的 SoloSavePresentation / UIComponent 复用已注册 UIGridKitchen、原 CodeBind 和按钮模板展示本机记录；选择前不建 Host。选档加载等待归当前 UIGridKitchen.AsyncOwner，取消时关闭原 owner 并重开选择，Epoch 和 EntityRef 拒绝旧回调。确认后根选择表单先关闭，游戏 HUD 改由 ProductClient 持有；不同时建立第二份 HUD。保存等待归 Match 的 SoloSaveResult.AsyncOwner，关闭游戏 HUD 只停止显示等待；写盘完成经 HostSession 本地消息和餐厅服务步确认。首版只新建、不覆盖、无跨设备或联机领取。
 
 ## 准备态工位调整
 
@@ -291,3 +293,11 @@ HUD打开／加载等待归GridPresentation.AsyncOwner，轮次由HudLoadEpoch�
 格子前厅基础显示（协议 11）：原受管 Board 显示紫色伙伴、橙色顾客、工作百分比和阶段；拖动地图查看前厅。准备态点击“开始营业”后，默认节奏自动来客、入座和伙伴询问，询问完成才开单；暂停冻结实际角色与工作。营业／收尾的有效订单提供“前往 餐桌”和手持时的“交付 菜名 → 餐桌”，必须先在桌的合法操作格交付匹配干净菜品，普通放物不计分。吃完离席后空手领取“清桌”，原餐具转脏池产生“洗碗”；玩家可洗一部分“停手前厅工作”，伙伴随后按岗位继续同一任务。洗净后干净池出现“取回 碗（空）／盘（空）”，固定原 ItemId，不补免费餐具。按钮冻结目标、ClaimSerial 或订单／顾客／物品及世界／关身份，经原所属等待发送；角色渲染对象归原 RenderRoot，Hide／ReleaseBoard 统一释放。原Prefab已按UI change扩展并正常重生成CodeBind，表注册保持原UI1101；完整排版、候选buff和UI生命周期现已验收。真实输入与运行边界见 [服务记录](../openspec/changes/solo-customer-order-service/execution-notes.md)。
 
 随机加成基础入口（协议12）：准备态提供“隐藏候选加成／查看候选加成”，开关只改变显示，不提交命令或重抽。候选按钮显示名称和耗时比例，选择实际提交后锁定；必选关此后才出现“开始营业”。已选名称从同版投影显示在提示中；旧世界／关按钮和 await 回调核对原身份。真实旧锅不变／新锅加速／暂停与新关重选见 [加成记录](../openspec/changes/solo-random-level-buffs/execution-notes.md)，完整受管重开UTF和排版已通过UI change验收。
+
+## 厨房设施目标的补充
+
+Solo装修在原结算文字显示固定候选、已选或无候选反馈，原受管目标模板提供“装修新增台面／新增切配台”；当前默认允许不选直接继续，已选后下一Preparing才安装。候选不重抽，选择后旧方向callback、旧关和重开旧owner都不提交；已获得工位沿原“调整”及地图输入移动，并跨关保持身份。未新增Prefab／CodeBind字段、未写盘，实际UI与普通两次跨关记录见[装修记录](../openspec/changes/solo-interlevel-renovation/execution-notes.md)。
+
+Solo有限供应沿同一个受管目标模板显示三种“采购 原料补货 · 余N包”、Ready时的“接收”和空手时的“拆一份”。运输／待收货来自当前Snapshot，接收满槽显示拒绝并保留货物；包装逐份拆出的原材料可照常制作。空包装持物到垃圾桶后显示投垃圾，不能随身删除。SupplyCommandRequest使用原UIGridKitchen所属等待及两段本地有序MailBox，按钮固定世界／关／绑定和货物／材料身份，重开及旧关callback无效；未新增Prefab或CodeBind字段。实际UTF、普通Launcher耗尽再补货制作及在途换关见[供应记录](../openspec/changes/solo-supply-delivery/execution-notes.md)。
+
+Solo 水池接水／排液和垃圾桶固体倾倒使用原 UIGridKitchen 的受管目标模板及同一地图输入，没有新增 Prefab、CodeBind 字段或 UI owner。设施按钮在目标列表前列，仍捕获当前 UI／投影／世界／关卡／绑定的 inputGuard；关闭重开不复用旧 callback。到位前显示已接收／接近，成功只跟随已提交结果；垃圾桶不能销毁液体，水池不洗净容器。真实输入及普通入口结果见[设施记录](../openspec/changes/solo-kitchen-clear-and-discard/execution-notes.md)。

@@ -1,6 +1,6 @@
 # kitchen-item-processing Target Specification
 
-> 状态：目标规格文档已定稿；备料手工子集见[备料记录](../../../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)，Solo自动汤批次与逐份盛碗见[煮汤记录](../../../../openspec/changes/grid-kitchen-soup-batch-cooking/execution-notes.md)。九案单机订单交付、原餐具洗净回收及实物换关已验收，见[关卡记录](../../../../openspec/changes/solo-restaurant-level-flow/execution-notes.md)；完整合作制作、清空丢弃等后续目标未实施。已确认、授权补足与未决范围见[规格索引](../README.md)。
+> 状态：目标规格文档已定稿；备料手工子集见[备料记录](../../../../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)，Solo自动汤批次与逐份盛碗见[煮汤记录](../../../../openspec/changes/grid-kitchen-soup-batch-cooking/execution-notes.md)。九案单机订单交付、原餐具洗净回收及实物换关已验收，见[关卡记录](../../../../openspec/changes/solo-restaurant-level-flow/execution-notes.md)；Solo 水池接水／排液和垃圾桶固体倾倒已验收，见[设施记录](../../../../openspec/changes/solo-kitchen-clear-and-discard/execution-notes.md)。普通双Editor两种角色排列合作制作与清理供应已验收，见[集成记录](../../../../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。Player/AOT及跨设备LAN未验收。已确认、授权补足与未决范围见[规格索引](../README.md)。
 
 ## Purpose
 
@@ -66,11 +66,23 @@
 
 ### Requirement: 锁定、清空与丢弃
 
-已开始锁定的输入 MUST 禁止随意取出或清空；完成批次不能加料、移除输入或再次启动。允许清空时消耗内容及批次，保留容器身份、位置和脏净状态；嵌套容器先取出，不能连带销毁。丢弃只作用于允许物件，不默认销毁锅或设备，不退款、回库、加分或生成结果。
+已开始锁定的输入 MUST 禁止随意取出或清空；完成批次不能加料、移除输入或再次启动。允许处理时须持物到对应设施四邻：液体仅向水池排放，固体仅向垃圾桶倾倒，不允许随时随地清空/丢弃。清内容保留容器身份、位置和脏净；嵌套容器不连带销毁，丢弃不默认删锅或设备，不退款、回库、加分或生成结果。
 
 #### Scenario: 清空剩余成品
-- **WHEN** 对允许清空且未锁定的成品容器执行清空
+- **WHEN** 玩家持允许处理且未锁定的成品容器，到对应水池或垃圾桶合法倾倒
 - **THEN** 剩余份数和内容消失，容器仍在原处，不将材料恢复到供应池
+
+#### Scenario: 设施与内容不匹配
+- **WHEN** 玩家持固体向水池请求清空，或在未到对应设施时发起丢弃
+- **THEN** 明确拒绝且保留物品/内容，不原地销毁或自动换一个清理目的地
+
+### Requirement: 水池接水与排液分开
+
+水池 SHALL 支持向定义兼容的干净空容器接水，并处理合法液体内容。接水形成属于原容器的真实水物件，核对容量/占用；排液保留原脏净而不代替洗碗。Solo 子集已实施，当前烹饪默认供水不因设施增加自动变成显式加水步骤。
+
+#### Scenario: 真实水内容与满容器
+- **WHEN** 玩家持合法空容器到水池接水，随后满容器再次接水
+- **THEN** 首次产生一份属于该容器的水，第二次拒绝并保留内容，不先清空再补水
 
 ### Requirement: 代表汤的合作制作链
 
