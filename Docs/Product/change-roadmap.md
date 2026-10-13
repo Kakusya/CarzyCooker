@@ -16,8 +16,8 @@
 
 | Change | 解决的问题 | 可观察交付 |
 | --- | --- | --- |
-| [streamline-agent-project-context](../../openspec/changes/streamline-agent-project-context/proposal.md) | Agent 入口过长、动态事实多处过期 | 稳定纪律保留，进度/规格/目标各有唯一正文；可审阅的提交和归档分组建议 |
-| [stabilize-product-test-fixtures](../../openspec/changes/stabilize-product-test-fixtures/proposal.md) | 初始化、投影等待与测试收尾重复出错 | 原行为断言不减，消息投递和业务时间明确，失败诊断可定位 |
+| [streamline-agent-project-context](../../openspec/changes/archive/2026-10-13-streamline-agent-project-context/proposal.md) | Agent 入口过长、动态事实多处过期 | 稳定纪律保留，进度/规格/目标各有唯一正文；可审阅的提交和归档分组建议 |
+| [stabilize-product-test-fixtures](../../openspec/changes/archive/2026-10-13-stabilize-product-test-fixtures/proposal.md) | 初始化、投影等待与测试收尾重复出错 | 原行为断言不减，消息投递和业务时间明确，失败诊断可定位 |
 
 两案都不改变产品合同，使用 `skip_specs: true`。提交、push、归档和第二工作区同步仍按相应授权；本轮不执行。没有具体重复问题就不扩大整理范围。
 
@@ -43,7 +43,7 @@
 
 | Change | 归属 | 可观察交付 |
 | --- | --- | --- |
-| [product-local-message-boundaries](../../openspec/changes/product-local-message-boundaries/proposal.md) | 复用已有案 | 入口、终态和功能衔接可从发送端追到接收端；保持唯一时钟、原 owner 与原子效果 |
+| [product-local-message-boundaries](../../openspec/changes/archive/2026-10-13-product-local-message-boundaries/proposal.md) | 复用已有案 | 入口、终态和功能衔接可从发送端追到接收端；保持唯一时钟、原 owner 与原子效果 |
 | [level-buff-variety](../../openspec/changes/level-buff-variety/proposal.md) | 新案 | 切配/烘焙加速，旧作业不重算，Solo 与已交付合作核心分模式验收 |
 | [interlevel-station-upgrade](../../openspec/changes/interlevel-station-upgrade/proposal.md) | 新案 | Solo 原工位单级升级，保留身份/内容/旧作业并保存 |
 | [first-drink-order-binding](../../openspec/changes/first-drink-order-binding/proposal.md) | 新案 | Solo 鲜榨橙汁、杯子供应、锁壶/分装、贴单、交付与清理 |

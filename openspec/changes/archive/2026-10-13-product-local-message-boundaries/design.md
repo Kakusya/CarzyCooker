@@ -156,10 +156,10 @@ ET Event 仅作已提交状态的本地表现观察；Bind 只写表现。Invoke
 
 ## Sources
 
-- [现有产品主规格](../../specs/product-session/spec.md)、[网络](../../specs/network/spec.md)、[关卡](../../specs/restaurant-level-lifecycle/spec.md)、[伙伴](../../specs/fixed-companions/spec.md)。
-- [产品源码](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product)、[Model](../../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product)、[UI 接入](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product)。
-- [原本地消息验收](../archive/2026-10-13-solo-local-message-contracts/execution-notes.md)、[存档设计](../solo-success-checkpoint/design.md)。
-- [发送器](../../../Unity/Assets/Scripts/Library/ET/Core/Runtime/Fiber/Module/Actor/ProcessInnerSenderSystem.cs)、[队列](../../../Unity/Assets/Scripts/Library/ET/Core/Runtime/World/Module/Actor/MessageQueue.cs)、[有序邮箱](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Module/Actor/MailBoxType_OrderedMessageHandler.cs)。
+- [现有产品主规格](../../../specs/product-session/spec.md)、[网络](../../../specs/network/spec.md)、[关卡](../../../specs/restaurant-level-lifecycle/spec.md)、[伙伴](../../../specs/fixed-companions/spec.md)。
+- [产品源码](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product)、[Model](../../../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product)、[UI 接入](../../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product)。
+- [原本地消息验收](../2026-10-13-solo-local-message-contracts/execution-notes.md)、[存档设计](../../solo-success-checkpoint/design.md)。
+- [发送器](../../../../Unity/Assets/Scripts/Library/ET/Core/Runtime/Fiber/Module/Actor/ProcessInnerSenderSystem.cs)、[队列](../../../../Unity/Assets/Scripts/Library/ET/Core/Runtime/World/Module/Actor/MessageQueue.cs)、[有序邮箱](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Module/Actor/MailBoxType_OrderedMessageHandler.cs)。
 
 ## 本轮已实施的厨房、供应和前厅消息名称
 

@@ -38,10 +38,10 @@ AGENTS 保留稳定纪律、架构边界与技能路由；当前进度维护已�
 
 ## Sources
 
-- [AGENTS.md](../../../AGENTS.md)
-- [CarzyCooker当前进度.md](../../../CarzyCooker当前进度.md)
-- [Docs/AI/module-index.md](../../../Docs/AI/module-index.md)
-- [Docs/AI/workflow.md](../../../Docs/AI/workflow.md)
-- [Docs/Product/README.md](../../../Docs/Product/README.md)
-- [Docs/Product/backlog.md](../../../Docs/Product/backlog.md)
-- [openspec/specs/ai-collaboration/spec.md](../../../openspec/specs/ai-collaboration/spec.md)
+- [AGENTS.md](../../../../AGENTS.md)
+- [CarzyCooker当前进度.md](../../../../CarzyCooker当前进度.md)
+- [Docs/AI/module-index.md](../../../../Docs/AI/module-index.md)
+- [Docs/AI/workflow.md](../../../../Docs/AI/workflow.md)
+- [Docs/Product/README.md](../../../../Docs/Product/README.md)
+- [Docs/Product/backlog.md](../../../../Docs/Product/backlog.md)
+- [openspec/specs/ai-collaboration/spec.md](../../../specs/ai-collaboration/spec.md)

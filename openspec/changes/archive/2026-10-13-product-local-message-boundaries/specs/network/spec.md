@@ -36,4 +36,4 @@
 
 ## Sources
 
-以上为本案补充合同；当前缺口来自 [本地发送器](../../../../../Unity/Assets/Scripts/Library/ET/Core/Runtime/Fiber/Module/Actor/ProcessInnerSenderSystem.cs)、[消息队列](../../../../../Unity/Assets/Scripts/Library/ET/Core/Runtime/World/Module/Actor/MessageQueue.cs)、[Ordered 分发](../../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Module/Actor/MailBoxType_OrderedMessageHandler.cs)。原等待与取消合同见 [network 主规格](../../../../specs/network/spec.md)。
+以上为本案补充合同；当前缺口来自 [本地发送器](../../../../../../Unity/Assets/Scripts/Library/ET/Core/Runtime/Fiber/Module/Actor/ProcessInnerSenderSystem.cs)、[消息队列](../../../../../../Unity/Assets/Scripts/Library/ET/Core/Runtime/World/Module/Actor/MessageQueue.cs)、[Ordered 分发](../../../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Module/Actor/MailBoxType_OrderedMessageHandler.cs)。原等待与取消合同见 [network 主规格](../../../../../specs/network/spec.md)。

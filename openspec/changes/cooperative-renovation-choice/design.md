@@ -8,7 +8,7 @@
 
 目标模式：Host/Client 内存餐厅。不接单机升级奖励、联机存档、投票或收益共享凭证；无需等待设备升级。
 
-依赖：[cooperative-restaurant-loopback](../cooperative-restaurant-loopback/proposal.md)、[solo-interlevel-renovation](../solo-interlevel-renovation/proposal.md)、[product-local-message-boundaries](../product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[cooperative-restaurant-loopback](../cooperative-restaurant-loopback/proposal.md)、[solo-interlevel-renovation](../solo-interlevel-renovation/proposal.md)、[product-local-message-boundaries](../archive/2026-10-13-product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 

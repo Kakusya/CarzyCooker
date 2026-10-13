@@ -8,7 +8,7 @@ BuffConfig 当前仅支持煮汤效果，切配与烘焙有各自作业和 Requi
 
 目标模式：Solo 与已交付合作核心。不加多重 Buff 叠加、额外产量、免费材料、全工序或随机效果平台。
 
-依赖：[product-local-message-boundaries](../product-local-message-boundaries/proposal.md)、[cooperative-restaurant-core](../cooperative-restaurant-core/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[product-local-message-boundaries](../archive/2026-10-13-product-local-message-boundaries/proposal.md)、[cooperative-restaurant-core](../cooperative-restaurant-core/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 

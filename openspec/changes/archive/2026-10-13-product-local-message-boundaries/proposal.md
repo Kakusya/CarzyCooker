@@ -29,6 +29,6 @@
 
 主要修改 `ET/Code/Model/Share/Product`、`Hotfix/Share/Product`、现有 `HotfixView/Client/Product` 调用与消费、`Design/Proto/ET-Client` 和 `CarzyCooker.ET.Tests`。必要公共修正仅涉及现有 ProcessInnerSender、MessageQueue 与 Ordered MailBox 的丢弃路径；不新建程序集、调度器或私有 RPC 映射，不修改 Excel 平衡和 UI 结构。
 
-2026-10-13 后续规划核对时源码协议为 17，实施仍以届时实际版本递增；摘要文档中的旧版本不是实施基线。供应、清理、装修与 `solo-success-checkpoint` 已有原案验收，`cooperative-restaurant-core` 已接通 Host/Solo 共同 Restaurant 与真实 KCP 两菜核心。前厅合作等继续由原案推进；本案迁移已有消息边界，不代替它们开发或冒领运行结果。既有未提交修改由原任务保留，实施顺序见设计及[整体路线](../../../Docs/Product/change-roadmap.md)。
+2026-10-13 后续规划核对时源码协议为 17，实施仍以届时实际版本递增；摘要文档中的旧版本不是实施基线。供应、清理、装修与 `solo-success-checkpoint` 已有原案验收，`cooperative-restaurant-core` 已接通 Host/Solo 共同 Restaurant 与真实 KCP 两菜核心。前厅合作等继续由原案推进；本案迁移已有消息边界，不代替它们开发或冒领运行结果。既有未提交修改由原任务保留，实施顺序见设计及[整体路线](../../../../Docs/Product/change-roadmap.md)。
 
 主要风险是拆开功能衔接后漏发／重复终态、误判自然收尾以及旧实例消息写回。以功能清单对应的最小 PlayMode UTF、关键生命周期测试及普通 Launcher 全流程验收控制风险；未改的纯配置证据可复用，改过的消息行为必须重跑。严谨程度与未验证边界见 [execution-notes.md](execution-notes.md)。
