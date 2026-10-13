@@ -2,7 +2,53 @@
 
 ## 当前集成准备（2026-10-13）
 
-三个开发前置现为核心7/7、前厅5/5、清理供应5/5；原案仍0/3。前置普通Host＋独立Fiber真实KCP结果可以复用，但当前普通独立Client入口和完整双Editor尚未执行，1.1不提前勾选。当前协议17，内部Submit／伙伴请求仍不对外开放；没有新增传输／监听入口。
+三个开发前置为核心7/7、前厅5/5、清理供应5/5；原案已实际验收3/3，普通独立Host／Client双Editor两种角色完整合作、真实Client失联后Host继续收货及整轮退出新世界隔离均通过。当前协议17，内部Submit／伙伴请求仍不对外开放；没有新增传输／监听入口。独立Player／AOT、LAN／公网、联机装修／存档／原成员恢复不属于已交付范围。
+
+### 指定同步与普通独立入口1.1
+
+用户授权后，本轮main实现`906829ef`和记录`4bfe1a2c`已提交。第二工作区仅纳入指定四个运行依赖：`820bc3a2`→`a099f888`，`a494229e`→`fc7a7842`，`5c6ffede`→`c4492f38`，`906829ef`→`fed20ee2`。源码、Proto／表与生成物无冲突；文档冲突合并保留来源功能说明与第二本轮未验收边界，AGENTS维持原短执行规则及维护授权。工作树干净，固定`GDK / GameDevelopmentKit-NetTest`和6项技能不变，没有push。
+
+两个Unity6000.3.18f1 Editor按完整projectPath核对：主工程PID59672／工具端口7800，第二PID102004／端口7801。第二启动时使用Orca computer-use处理自己的管理员提示；随后真实Pipeline可达、编译未失败、Error0、Warning2。第二原始日志为`D:/MyWork/CarzyCooker-NetTest/Unity/Logs/coop-loopback-editor-20261013.log`，保留原位。
+
+排列A通过普通Instance Launch／SceneHelper进入`coop-dual-a`：主Host实际KCP endpoint为127.0.0.1:57520，第二Client显式连接。两端Inspect均Passed，world=8d999576a0f1446f8349edef8678be41，level=1284111875440667，成员分别1／2，双方roster=2、库存7，协议17。实际本人Joined、Grid.Confirmed、所属Board／HUD.Ready均满足，Client无authority且无共享控制，三个供应源均实际读取默认40。1.1已完成；此时2.1／2.2完整功能尚未通过，不提前勾选。
+
+### 排列A：主Host／第二Client完整流程2.1
+
+临时验收脚本仅位于主工程Temp，两端通过Pipeline内存编译执行；普通入口、实际HUD Pointer／地图输入和所属消息贯穿全程，不写业务状态、时间、物资或完成结果，没有复制未提交实现到第二工程。
+
+| 功能 | 实际结果／身份与job | 结果 |
+| --- | --- | --- |
+| Host布局／Buff及番茄交接 | HostPrepare job de8cc2b3b9c94e02ad7b663c3db17881：Buff3，交接台1284111875440650实际移到2,12，切配产物1284112026435733交给独立Client | Passed |
+| Client实际蛋液／煮汤 | ClientStartSoup job79cdcb13cb7043039b74cdff91f902d2：原锅1284111875440653，汤批次1284112072573307，冻结耗时60ticks | Passed |
+| 实际加工中的暂停恢复 | Host观察实际烘烤开始，job804a4459c56a4439b8d4f95297d3096a：业务tick4849、原烘烤1284112281240098／progress1停300ms不变，再恢复 | Passed |
+| 耗尽补货／满槽／拆份／清理 | ClientDishesAndSupply jobb6b165da0bc44090b9c63a4cdc86c1fe：初始面包／吐司真实耗尽，满槽拒绝后收包1284112303260587；原材料1284112303260588制作新吐司，1284112303260589与空壳实际丢弃且额度4；原剩汤批次退休，原锅和盛出汤碗保留 | Passed |
+| 真实两菜交付与清桌 | ClientServeAndClear job0c14575ba58746949a1d5d987709ea3b：原汤碗1284111875440647／盘1284111875440660，真实订单交付20分；原餐具实际清桌入池 | Passed |
+| 洗净原餐具／自然结算／实物换关 | HostCompleteAndContinue job578587ef4721467ebb13b8e087bc73a2：伙伴真实洗净，自然20分2星，关1284111875440667→1284112570648363，精确4件身份保持，取回原碗并放交接台；第二Client实际确认同一新关／本人／库存4／Buff0 | Passed |
+
+首个HostPauseRestore检查失败：客户端异步job结束后人工观察晚于实际3秒汤耗时，Host已暂停但汤已Ready，不能证明工作中冻结；保留原失败，恢复该实际暂停后，以同步观察下一真实烘烤的新job通过，不改产品代码。采购失联首次jobe760b95c173542fcb7217fcac937456c失败：餐厅已Draining，真实HUD没有新采购按钮，因此没有预留或货物；保留当前原碗手持与运行，失联采购改在自然下一Preparing执行，未绕阶段门槛或重放旧失败结果。两项均为验收脚本阶段／观察问题，完整合作行为依据上表最新适用证据。
+
+### 实际Client失联、Host继续及退出新轮
+
+排列A的自然下一Preparing中，第二Client经实际Pointer拿交接台原汤碗1284111875440647、采购番茄，随后释放自己实际所属Session：job742c96d6e83349eaab8ea1a842fd4d38 Passed，货物1284112651388825已提交。Host并行观察原手持到失联，job1a5ef934dc4747aaa5580ef1825c2928 Passed：offline1，同一原碗落地保留，Host实际收取同一货物，包装1284112653486023；没有重新预留、退款或停止公共sender。
+
+随后仅停止本轮两端Play；两端VerifyStopped均Passed，ProductBootstrapBridge.Root均为空。主Host旧KCP端口57520不再出现在对应PID的UDP端点查询中。两个Editor／长期目录保留。
+
+角色互换经普通入口建立`coop-dual-b`：第二Host实际endpoint127.0.0.1:52526，主Client显式连接；world=cb755cd276b44e379d92f19a75646ac8，level=1284112919822363，与排列A不同。双方Inspect Passed，成员重新为1／2、当前roster2，库存7、总配额15、分数0、Preparing，实际供应默认40，不继承上一轮4件库存／扣减配额／离线成员。旧关／迟到消息拒绝的未变核心UTF证据复用，不注入伪造完成结果。
+
+### 排列B：主Client／第二Host完整流程2.2
+
+| 功能 | 实际结果／身份与job | 结果 |
+| --- | --- | --- |
+| 第二Host布局／Buff与交接 | HostPrepare jobcc810e352e874b02812016b2b61dc7e1：Buff3、交接台1284112919822346移至2,12，真实切配1284112993222805 | Passed |
+| 主Client蛋液／煮汤与第二Host暂停恢复 | ClientStartSoup jobde2c9b09883d476c9030d9d5eff91b8d：锅1284112919822349、批次1284113048797563／required60；并行HostPauseRestore job5c25958eef614df4a3e756965effcda3：tick2447、Cooking原进度1冻300ms后恢复 | Passed |
+| 耗尽补货、满槽、拆份、剩液／空壳清理 | ClientDishesAndSupply job586c809a75464257bf9ab0a5ee7fddf7：实际包1284113157850021，原材料1284113157850022制作新吐司、1284113157850023和空壳实际垃圾桶处理，配额4；原锅／盛出汤碗保留，剩汤批次退休 | Passed |
+| 实际两菜交付与原餐具清桌 | ClientServeAndClear job55d32a3fd01845a09a49b60d65a3107b：汤碗1284112919822343、原盘1284112919822356真实交付20分，均实际清桌入池 | Passed |
+| 伙伴洗净、自然结算与换关 | HostCompleteAndContinue job9097efe2b535410685f7ce939085df1c：自然20分2星，关1284112919822363→1284113405314798，精确4件原实物保留，第二Host取回同一汤碗并放交接台 | Passed |
+| 主Client当前新关与本人成员 | ClientInspectNext Passed：同一world／新关1284113405314798、member2、库存4、Confirmed、Buff0；无旧顾客／工作 | Passed |
+
+运行结束时两端Console groundTruth均compilationFailed=false、Error0／Warning0；未清Console，脚本早期两项失败保留上述原job和原因。随后只停止本轮两端Play，VerifyStopped均Passed且产品Root为空；Get-NetUDPEndpoint正常查询确认PID59672的57520和PID102004的52526均已释放。两个Editor、各自缓存／日志、长期worktree及产品身份保留，第二本轮编译与完整合作均以实际结果报告。
+
+全部功能按上表和前置记录逐项覆盖，复用未变的Solo与真实KCP UTF，不再为阶段收尾重跑套件。同步与运行原日志保留原位；本轮没有产品构建、push或归档。
 
 | 可复用验收 | 当前证据 | 集成所需补验 |
 | --- | --- | --- |
@@ -46,7 +92,7 @@
 
 原 product-session 两项增量迁入核心案；新基础入口要求按已交付动作族开放，不再要求核心阶段同时完成物流。原 cooperative-restaurant 的详细开发合同分入三案规格，本案保留完整流程、控制／退出组合及交付范围。没有把移动文件视为功能完成。
 
-### 当前严谨程度与验收
+### 初次拆分的严谨程度与验收（历史）
 
 主要风险是局部 KCP 通过但普通独立进程无法完成合作，以及两工作区版本或角色错配。复用三案未变的最小 UTF 和同 Editor 证据，再执行原本已经要求的双 Editor 两种排列即可；不重跑全套历史回归，不构建新验收平台。接受独立 Player／LAN／公网、联机存档／装修／重连未验证，后续相关能力改变时再覆盖。
 

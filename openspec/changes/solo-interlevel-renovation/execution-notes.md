@@ -65,3 +65,7 @@
 ## Planning validation
 
 2026-10-12：`openspec validate solo-interlevel-renovation --strict` 退出码 0，返回 valid；proposal/specs/design/tasks 齐全。本轮五案共 26 份 Markdown 的 UTF-8、行尾空白、本地引用及任务未勾选检查通过。上述检查仅证明规划格式/引用有效，功能运行仍全部 NotRun。
+
+## 2026-10-13 本地提交收尾
+
+用户确认授权后，本案实现随本地main提交906829ef保存，原验收记录随4bfe1a2c保存；此前“未提交”描述保留其当时阶段语义。源码与行为未再改变，逐功能UTF／普通Launcher结果直接复用。本轮五案均已实际验收；归档和push未执行。
