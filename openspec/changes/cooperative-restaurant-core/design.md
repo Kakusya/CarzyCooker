@@ -2,7 +2,7 @@
 
 ## Context
 
-见 [proposal.md](proposal.md)。ProductRuntimeBootstrap 仅 Solo 创建 RestaurantRuntime；ProductWire 仍拒绝 StopWork 之后的 GridAction。ProductEntitySystems 已有“无 Restaurant 才推进 legacy clock”的排他分支，本案须保留并实际断言，不把潜在双推进误述为已发生故障。现有前厅与物流实现属于 Solo 或在写代码。
+见 [proposal.md](proposal.md)。实施前 ProductRuntimeBootstrap 仅 Solo 创建 RestaurantRuntime，ProductWire 拒绝 StopWork 之后动作；当前已接正式 Host 的同一 Restaurant/Level，显式开放核心两菜动作及 Level/Layout/Buff。ProductEntitySystems 保留“无 Restaurant 才推进 legacy clock”的原 guard，单步运行证据确认没有双推进。前厅／物流远端入口仍归后继案。
 
 本案跨启动、请求、投影和生命周期，需此设计。沿用 Model／Hotfix／ModelView／HotfixView；无新程序集、SceneType 或消息框架。
 
@@ -45,7 +45,7 @@ Remote Main Fiber / SceneType.ProductRoot
     UIComponent / GFEntityComponent / GridPresentation
 ```
 
-树为目标接入关系；下层 ET Child／Component 细节沿已有 Solo 类型，不为拆案改变父对象。Solo 采用 Host 权威树但无 NetComponent。根初始化先验证实际定义，再创建 Match／Restaurant／Level、authority 和 Peer，最后监听、Join、投影与视图就绪。通过 ProductKitchen／ProductLevel 访问实际 owner，修受影响 fixture 的旧直接查询，保留其行为断言。
+树为当前实际接入关系；下层 ET Child／Component 细节沿已有 Solo 类型，不为拆案改变父对象。Solo 采用 Host 权威树但无 NetComponent。根初始化先验证实际定义，再创建 Match／Restaurant／Level、authority 和 Peer，最后监听、Join、投影与视图就绪。通过 ProductKitchen／ProductLevel 访问实际 owner，修受影响 fixture 的旧直接查询，保留其行为断言。
 
 替代方案是继续给临时厨房追加餐厅状态；它会形成第二套关卡与时钟，故不采用。新增 Restaurant 后，保留 HostSession 的旧驱动排他分支；网络／消息泵不随业务暂停停止。
 
@@ -62,6 +62,8 @@ Remote Main Fiber / SceneType.ProductRoot
 本地：ClientSession 所属值调用 → LocalMessage 捕获当前 Peer.GetActorId → 根 ProcessInnerSender.Call → ProductHost 的 Peer Ordered MailBox。远端：原 Session.Call → ProductHost NetComponentOnRead／ProductWire → 版本／大小／类型／实际 Session 绑定校验 → 复制独立请求、保存外层 RpcId → 同一 Peer ActorId。
 
 GridPeerHandler／LevelPeerHandler／LayoutPeerHandler／BuffPeerHandler 从真实 Peer 复制内部 Submit → authority.GetActorId → HostSession Ordered MailBox 的对应 Submit handler → 快速接收 → Restaurant 服务步核对当前关、绑定、资格和目标后提交。Host 控制资格从 ProductRuntime.Client → ClientSession.Local → LocalMessage.Peer 的当前 EntityRef／InstanceId／代次取得；Peer 入口与最终提交都校验。消息载荷不授予 Host 权限。
+
+首个快照可先于本地 Join 答复，控制资格只由权威已经提交的在线 Participant／Peer 精确绑定与上述本地路径证明，不依赖客户端收到答复的时点。CanControlRestaurant 是复制的资格值；客户端仍须确认 Join 身份、世界／关／绑定和本人角色，并等 Board／HUD 就绪才开放输入。远端缺少真实本地路径，不能借此取得控制。
 
 两段 Call／Reply 用各自原等待表。转交前保存的 wire RpcId 只用于外层回复；await 后核对原 Session／Peer 身份。handler 消费其请求，原调用观察者 finally 回收响应并结束 Peer 在途责任；UI 取消只结束其观察，不提前销毁物理请求或回滚已提交事实。
 

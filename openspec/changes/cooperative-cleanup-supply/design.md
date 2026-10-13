@@ -2,7 +2,7 @@
 
 ## Context
 
-见 [proposal.md](proposal.md)。Solo 清理已有真实设施验收；供应正在另一会话实施，当前已有 SupplyCommand、ReceiveSupply、TakeSupplyPortion 等源。本案按其最终交付的协议／阶段／配额规则接入，不将当前文件出现当作前置完成。
+见 [proposal.md](proposal.md)。当前Solo清理／供应、联机核心7/7与前厅5/5均已有真实交付。本案已沿协议17和原SupplyCommand／ReceiveSupply／TakeSupplyPortion接入网络与HUD，4/5已有15项实际UTF证据；普通补货与在途换关尚待完成，不将文件存在当作完成。
 
 ## Goals / Non-Goals
 
@@ -20,8 +20,8 @@ Host Main Fiber / ProductRoot
     Child Match -> Child RestaurantRuntime
       Component GridKitchenComponent
         Child GridStation / GridItem / processing records
-        Component SupplyComponent
-          Child Shipment...
+        Component KitchenSupply
+          Child SupplyShipment...
       Child Level -> GridActor / FrontWork
     Component HostSession + Ordered MailBox
       Child HostPeer + Ordered MailBox + LocalDelivery or RemoteDelivery
