@@ -8,7 +8,7 @@
 
 目标模式：Host/Client；Host 与 Client 进程均保留。不自动重连、持久凭证、跨进程重启、Host 迁移、联机存档、账号鉴权或公网安全产品化。
 
-依赖：[cooperative-restaurant-loopback](../../cooperative-restaurant-loopback/proposal.md)、[product-local-message-boundaries](../2026-10-13-product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[cooperative-restaurant-loopback](../2026-10-14-cooperative-restaurant-loopback/proposal.md)、[product-local-message-boundaries](../2026-10-13-product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 

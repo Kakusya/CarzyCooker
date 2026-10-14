@@ -8,7 +8,7 @@
 
 目标模式：Solo 首版。不做购买经济、多级树、扩占地、联机升级或升级中途重算；终关不发奖励。
 
-依赖：[solo-first-chapter](../2026-10-14-solo-first-chapter/proposal.md)、[level-buff-variety](../2026-10-14-level-buff-variety/proposal.md)、[solo-interlevel-renovation](../../solo-interlevel-renovation/proposal.md)、[solo-success-checkpoint](../../solo-success-checkpoint/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[solo-first-chapter](../2026-10-14-solo-first-chapter/proposal.md)、[level-buff-variety](../2026-10-14-level-buff-variety/proposal.md)、[solo-interlevel-renovation](../2026-10-14-solo-interlevel-renovation/proposal.md)、[solo-success-checkpoint](../2026-10-14-solo-success-checkpoint/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 

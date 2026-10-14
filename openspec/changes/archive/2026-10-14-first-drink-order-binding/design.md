@@ -8,7 +8,7 @@
 
 目标模式：Solo。不加冰热糖度、封口小游戏、其他饮品、联机动作或联机存档。
 
-依赖：[product-local-message-boundaries](../2026-10-13-product-local-message-boundaries/proposal.md)、[solo-first-chapter](../2026-10-14-solo-first-chapter/proposal.md)、[solo-supply-delivery](../../solo-supply-delivery/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[product-local-message-boundaries](../2026-10-13-product-local-message-boundaries/proposal.md)、[solo-first-chapter](../2026-10-14-solo-first-chapter/proposal.md)、[solo-supply-delivery](../2026-10-14-solo-supply-delivery/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 

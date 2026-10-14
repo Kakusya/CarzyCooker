@@ -25,7 +25,7 @@ P1 表示近期优先，P2 表示随后推进，P3 表示暂缓。优先级按�
 
 2026-10-14 后续实施授权：第一批五项已完成，8 个不同相关 PlayMode UTF 用例及普通 Launcher 实际显示／输入已验收，逐功能证据见 [execution-notes](../../openspec/changes/archive/2026-10-14-reduce-per-frame-allocations/execution-notes.md)。随后用户要求继续到 9/9，第二批 4.1、4.2、5.1、5.2 已完成：固定步小集 5/5、寻路小集 4/4、综合入口 4/4 Passed；已取得同配置性能对照，恢复页整体帧分配波动如实记录。该性能案已 9/9 并于 2026-10-14 归档，用户已授权随后本地提交。本批不安排 Player／真机。
 
-当前另外八案 tasks 已完成：solo-interlevel-renovation、solo-success-checkpoint、solo-supply-delivery、solo-kitchen-clear-and-discard、cooperative-restaurant-core、cooperative-front-service、cooperative-cleanup-supply、cooperative-restaurant-loopback。它们提供现有基线，不重新排成开发或回归批次；自审、提交与归档按具体授权另行处理。以上是排期时快照，动态状态仍以原 tasks／execution-notes 为准。
+当前另外八案已于 2026-10-14 完成归档（合计 47/47）：solo-interlevel-renovation、solo-success-checkpoint、solo-supply-delivery、solo-kitchen-clear-and-discard、cooperative-restaurant-core、cooperative-front-service、cooperative-cleanup-supply、cooperative-restaurant-loopback。它们提供现有基线，不重新排成开发或回归批次；本次已按用户授权同步主规格并归档，复用原实际验收结果，未新增 commit 或 push。活动案仅余暂缓的 PC LAN、Android 两案。
 
 2026-10-14：合作装修、原成员恢复与合作饮品贴单三案已完成双Editor验收并归档，合计13/13。下文涉及这三案的“新案”或合作补验排期属于归档前快照，相关功能不再作为待验任务；原始失败和未验设备范围保留在归档execution-notes。
 
@@ -79,10 +79,10 @@ P1 表示近期优先，P2 表示随后推进，P3 表示暂缓。优先级按�
 
 | Change | 归属 | 交付边界 |
 | --- | --- | --- |
-| [cooperative-restaurant-core](../../openspec/changes/cooperative-restaurant-core/proposal.md) | 复用已有案 | Host Restaurant、两菜、Host 控制及基本投影的原案证据 |
-| [cooperative-front-service](../../openspec/changes/cooperative-front-service/proposal.md) | 复用进行中案 | 前厅、认领、清桌洗碗、自然结算与换关 |
-| [cooperative-cleanup-supply](../../openspec/changes/cooperative-cleanup-supply/proposal.md) | 复用已有案 | 合作清理、有限采购/收货/拆份与争抢 |
-| [cooperative-restaurant-loopback](../../openspec/changes/cooperative-restaurant-loopback/proposal.md) | 复用已有案 | 前述结果交接及普通双 Editor 两种角色排列，不重复开发 |
+| [cooperative-restaurant-core](../../openspec/changes/archive/2026-10-14-cooperative-restaurant-core/proposal.md) | 复用已有案 | Host Restaurant、两菜、Host 控制及基本投影的原案证据 |
+| [cooperative-front-service](../../openspec/changes/archive/2026-10-14-cooperative-front-service/proposal.md) | 复用进行中案 | 前厅、认领、清桌洗碗、自然结算与换关 |
+| [cooperative-cleanup-supply](../../openspec/changes/archive/2026-10-14-cooperative-cleanup-supply/proposal.md) | 复用已有案 | 合作清理、有限采购/收货/拆份与争抢 |
+| [cooperative-restaurant-loopback](../../openspec/changes/archive/2026-10-14-cooperative-restaurant-loopback/proposal.md) | 复用已有案 | 前述结果交接及普通双 Editor 两种角色排列，不重复开发 |
 | [cooperative-renovation-choice](../../openspec/changes/archive/2026-10-14-cooperative-renovation-choice/proposal.md) | 已验收并归档 | Host 选原新增工位奖励，双方观察，一次安装；不含升级/联机存档 |
 | [cooperative-member-resume](../../openspec/changes/archive/2026-10-14-cooperative-member-resume/proposal.md) | 已验收并归档 | 本轮进程保留时手动恢复同一成员，凭证/绑定/就绪/旧消息有边界 |
 | [cooperative-drink-order-binding](../../openspec/changes/archive/2026-10-14-cooperative-drink-order-binding/proposal.md) | 已验收并归档 | 在 Solo 橙汁基础接远端公开动作、独立投影与多人争抢 |

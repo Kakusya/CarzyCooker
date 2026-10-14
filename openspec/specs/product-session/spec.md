@@ -10,11 +10,11 @@
 
 ### Requirement: 产品会话所有者与角色分离
 
-产品会话 MUST 通过 ET Child／Component 关系持有本轮状态、入口及下级资源。Host 同时包含权威会话和本地客户端，Solo 包含相同权威会话和本地客户端但不创建网络监听，远端 Client 仅包含客户端；运行角色不得由主线／稳定工作区职责决定。成员权威和客户端投影须分开，不共享可变业务状态。
+产品会话 MUST 通过 ET Child／Component 关系持有本轮状态、入口及下级资源。Host 同时包含权威会话和本地客户端，Solo 包含相同权威会话和本地客户端但不创建网络监听，远端 Client 仅包含客户端；运行角色不得由主线／稳定工作区职责决定。成员权威和客户端投影须分开，不共享可变业务状态。正式 Host 与 Solo 须持有同一持续厨房与当前关卡合同，远端不得创建本端餐厅权威。
 
 #### Scenario: 启动 Host
 - **WHEN** 合法 Host 配置进入产品入口
-- **THEN** 创建本轮权威会话及本地客户端，本地玩家必须获得真实加入确认，不能仅因拥有 Host 而报告已加入
+- **THEN** 创建本轮权威会话及本地客户端，本地玩家必须获得真实加入确认，不能仅因拥有 Host 而报告已加入；正式餐厅由本轮权威持有且只有一个业务驱动
 
 #### Scenario: 启动远端 Client
 - **WHEN** 合法 Client 配置进入产品入口
@@ -98,7 +98,7 @@ Host MUST 唯一维护 Match 的逻辑成员名单及在线／离线状态，每
 
 ### Requirement: 协议入口白名单与参数校验
 
-产品入口 MUST 核对协议版本、合法消息类型、当前 Match、必需字段与明确载荷限制，拒绝未知或内部消息。身份来自可信接入绑定，不来自请求自报成员、Actor 地址或机器身份。心跳只维护连接，不增加成员或成为世界时钟。
+产品入口 MUST 核对协议版本、合法消息类型、当前 Match、必需字段与明确载荷限制，拒绝未知或内部消息。身份来自可信接入绑定，不来自请求自报成员、Actor 地址或机器身份。心跳只维护连接，不增加成员或成为世界时钟。餐厅各动作族须按明确交付范围逐项开放并进入共同裁决；新增制作与控制入口不能放开内部转交消息、未知动作或越过共享控制权限。
 
 #### Scenario: wire 发送内部转交消息
 - **WHEN** 远端构造仅供进程内共同裁决的消息类型
@@ -107,6 +107,10 @@ Host MUST 唯一维护 Match 的逻辑成员名单及在线／离线状态，每
 #### Scenario: 无效探测载荷
 - **WHEN** Probe 使用错误 Match、缺失必需字段或超出明确载荷限制
 - **THEN** 返回明确拒绝，不回落 Demo，不创建成员或修改名单
+
+#### Scenario: 核心餐厅请求通过可信入口
+- **WHEN** 同版远端提交已开放的合法两菜动作、无权限控制或尚未开放的动作
+- **THEN** 合法个人动作进入共同裁决；后两类明确拒绝，不能靠动作数值范围或自报身份获得权限
 
 ### Requirement: 消息与结果所有权
 
@@ -435,3 +439,5 @@ Host SHALL 发布包含世界身份、版本和 Tick 的地图快照；各端复
 
 - [本轮成员恢复与验证范围](../../changes/archive/2026-10-14-cooperative-member-resume/execution-notes.md)
 - [恢复实施](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductResumeSystem.cs)
+
+- [cooperative-restaurant-core 逐功能运行与验收](../../changes/archive/2026-10-14-cooperative-restaurant-core/execution-notes.md)。

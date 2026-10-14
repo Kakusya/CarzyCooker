@@ -32,6 +32,12 @@
 | [kitchen-recipe-guide](specs/kitchen-recipe-guide/spec.md) | 实际配方、当前缺口及只读首单提示；玩家理解已豁免 |
 | [restaurant-chapters](specs/restaurant-chapters/spec.md) | Solo 三关、明确终关、完成记录与旧档兼容 |
 | [restaurant-ui](specs/restaurant-ui/spec.md) | 同版显示、真实输入、前厅拖动和受管关闭重开 |
+| [kitchen-supply](specs/kitchen-supply/spec.md) | 有限采购、业务运输、满槽待收货、真实包装拆份及跨关保留 |
+| [restaurant-renovation](specs/restaurant-renovation/spec.md) | 成功固定候选、下一关一次安装、整体布局预检及持续装修归属 |
+| [solo-save-progress](specs/solo-save-progress/spec.md) | 本机选档、成功结果新建提交、最多一次保存及完整载荷恢复 |
+| [cooperative-kitchen](specs/cooperative-kitchen/spec.md) | 正式 Host／Solo 单厨房、可信共享控制、两菜共同裁决及加入就绪 |
+| [cooperative-kitchen-logistics](specs/cooperative-kitchen-logistics/spec.md) | 远端设施、公共有限采购、唯一收货、包装数量和持续物流 |
+| [cooperative-restaurant](specs/cooperative-restaurant/spec.md) | 普通双 Editor 两种角色完整合作、控制／退出组合及基础验收范围 |
 | [multiplayer-peer-workspaces](specs/multiplayer-peer-workspaces/spec.md) | 稳定第二端、独立缓存/身份/日志、精确目标及必要维护 |
 | [ui](specs/ui/spec.md) | GF UI/ETUI/Widget |
 | [entity](specs/entity/spec.md) | GF Entity/ETEntity/UIEntity |
@@ -52,3 +58,5 @@
 工作流见 [Codex/OpenSpec](../Docs/AI/workflow.md)，当前配置见 [config.yaml](config.yaml)。每项要求附场景和来源；协作资料规格描述文档与授权行为，不作为玩法能力。
 
 2026-10-14：纯重构 `reduce-per-frame-allocations` 已 9/9 并归档，无 delta specs／主规格变更。地图、HUD、固定步与 BFS 的逐项 UTF、真实入口及性能限制见[执行记录](changes/archive/2026-10-14-reduce-per-frame-allocations/execution-notes.md)。
+
+2026-10-14：Solo 清理、供应、关间装修、成功检查点及合作核心、前厅、清理供应、普通双 Editor 集成八案已归档，任务合计 47/47。11 份 delta 的 41 项新增／4 项修改要求及 66 个场景已合并核对，新增六份主规格，现共 42 份；原逐功能运行与设备范围见各归档 execution-notes，本次不重复运行实现未变的测试。

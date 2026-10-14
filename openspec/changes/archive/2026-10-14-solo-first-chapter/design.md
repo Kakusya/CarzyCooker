@@ -8,7 +8,7 @@
 
 目标模式：Solo。不实现联机三关、账号解锁、跨设备领取、覆盖旧档或强制失败；不借菜单变化裁决跨关许可缩小。
 
-依赖：[solo-success-checkpoint](../../solo-success-checkpoint/proposal.md)、[solo-interlevel-renovation](../../solo-interlevel-renovation/proposal.md)、[solo-supply-delivery](../../solo-supply-delivery/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[solo-success-checkpoint](../2026-10-14-solo-success-checkpoint/proposal.md)、[solo-interlevel-renovation](../2026-10-14-solo-interlevel-renovation/proposal.md)、[solo-supply-delivery](../2026-10-14-solo-supply-delivery/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 

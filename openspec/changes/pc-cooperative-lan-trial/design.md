@@ -8,7 +8,7 @@
 
 目标模式：PC Player Host/Client。不做公网、中继、NAT、大厅、联机存档或更换正式传输；不新建双包编排器／端口注册表。
 
-依赖：[cooperative-restaurant-loopback](../cooperative-restaurant-loopback/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[cooperative-restaurant-loopback](../archive/2026-10-14-cooperative-restaurant-loopback/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 
