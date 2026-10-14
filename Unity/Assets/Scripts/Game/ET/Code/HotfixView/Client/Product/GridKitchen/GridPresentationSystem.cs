@@ -20,7 +20,7 @@ namespace ET.Client
         [EntitySystem]
         private static void Awake(this GridPresentationComponent self)
         {
-            self.Ready=false;self.Failure=null;self.HudVersion=0;self.HudTargetsKey=null;self.Board=default;self.Hud=default;
+            self.Ready=false;self.Failure=null;self.HudVersion=0;self.HudTargetsValid=false;self.HudInformationValid=false;self.Board=default;self.Hud=default;
             self.PointerHeld=false;self.PointerDragged=false;self.PointerConsumed=false;self.Highlight=null;self.HighlightCommand=0;
             self.LayoutStationId=0;self.LayoutLevelId=0;self.LayoutLevelGeneration=0;
             self.BuffCandidatesVisible=true;
@@ -29,7 +29,9 @@ namespace ET.Client
             self.RecipeDishId=0;self.RecipeVisible=false;
             ProductRuntimeComponent runtime=((Scene)self.IScene).GetComponent<ClientSessionComponent>().Runtime;
             self.FirstOrderGuideVisible=runtime.Config.Role==RuntimeInstanceRole.Solo;
-            self.HudLoading=false;self.HudLoadEpoch=0;
+            self.HudLoading=false;self.HudLoadEpoch=0;self.HudActionFields.Clear();self.HudInformationFields.Clear();
+            self.RecoveryDisplayed=false;self.RecoveryFeedback=null;
+            self.RecoveryRuntime=default;self.RecoveryClient=default;self.RecoveryHud=default;
             EntityRef<GridPresentationComponent> selfRef=self;
             self.GetAsyncOwner().Run(async context=>
             {
@@ -84,11 +86,10 @@ namespace ET.Client
             board.View.SetHudViewport(hud.View.MapViewport());
             float tick=grid.Tick+Mathf.Clamp(TimeInfo.Instance.FrameTime-grid.ReceivedFrameTime,0,grid.TickMilliseconds*grid.StepTicks)/(float)grid.TickMilliseconds;
             if (grid.LevelPaused || grid.LevelPhase == LevelPhase.Completed) tick = grid.Tick;
-            board.View.Render(grid.Actors.Values,grid.Stations.Values,grid.Items.Values,grid.AutoProcesses.Values,grid.BakeProcesses.Values,
-                grid.Companions.Values,grid.Customers.Values,grid.FrontWorks.Values,grid.MemberId,tick,grid.StepTicks,self.Highlight);
+            board.View.Render(grid.Actors,grid.Stations,grid.Items,grid.AutoProcesses,grid.BakeProcesses,grid.Companions,grid.Customers,grid.FrontWorks,grid.MemberId,tick,grid.StepTicks,self.Highlight);
             if(grid.LastCommandId>=self.HighlightCommand && grid.LastStatus is GridResultStatus.Rejected or GridResultStatus.Cancelled)self.Highlight=null;
             if (grid.LastCommandKind == ProductCommandKind.Level) self.Highlight = null;
-            if(self.HudVersion!=grid.Version){self.HudVersion=grid.Version;self.RefreshGridHud();}
+            if(self.HudVersion!=grid.Version){self.RefreshGridHud();}
             var touch=Touchscreen.current?.primaryTouch;
             if(touch!=null && (touch.press.isPressed || touch.press.wasReleasedThisFrame))
                 self.ProcessGridPointer(touch.position.ReadValue(),touch.press.wasPressedThisFrame,touch.press.isPressed,touch.press.wasReleasedThisFrame);
@@ -225,82 +226,91 @@ namespace ET.Client
             ClientSessionComponent client=((Scene)self.IScene).GetComponent<ClientSessionComponent>();
             GridClientComponent grid=client.GetComponent<GridClientComponent>();
             MonoUIGridKitchen view=hud.View;
-            self.RefreshRestaurantPanels(view,grid);
-            view.SetInformation(self.SelectedTargetDescription(grid),self.SelectedTargetDetails(grid),self.DetailsVisible,self.OrdersVisible);
-            string state=grid.LastStatus switch {GridResultStatus.Accepted=>"已接收 · 等待执行",GridResultStatus.PendingApproach=>"等待到位",GridResultStatus.Executed=>"动作已执行",GridResultStatus.Cancelled=>"已取消",GridResultStatus.Rejected=>"无法操作",_=>"就绪"};
-            string reason=grid.LastReason switch {"HandFull"=>"手中已有物品", "TargetChanged"=>"台面或物品已变化", "PickupRequiresSameCell"=>"需要站在物品所在格", "BlockedCell"=>"此格不可行走", "Unreachable"=>"无法到达", "CounterNotAdjacent"=>"需要靠近台面", "WorkBusy"=>"正在工作，先停止或等待队友", "ContainerFull"=>"容器已满", "IncompatibleMaterial"=>"材料不兼容", "NestedContainer"=>"容器不能套容器", "NoRecipe"=>"没有对应配方", "ProcessChanged"=>"作业或批次已变化", "RequiresHeldEggBowl"=>"需要手持含鸡蛋的碗", "RequiresEggLiquidBowl"=>"需要碗中有一份打好的蛋液", "ProcessLocked"=>"这锅已开始加工，不能改动材料", "NotReady"=>"汤还没煮好", "RequiresStove"=>"需要把锅放在灶台上启动", "StationBusy"=>"灶台仍在加工上一锅", "RequiresEmptyBowl"=>"需要手持空碗", _=>grid.LastReason==null?"":grid.LastReason};
-            reason = grid.LastReason switch { "Paused" => "已暂停，请先恢复", "WrongLevel" => "关卡已变化", "LevelCompleted" => "本关已结束", "WrongPhase" => "当前阶段不能执行", "MissingNextLevel" => "下一关配置缺失", "InvalidSpawn" => "下一关出生位不可用", _ => reason };
-            reason = grid.LastReason switch { "LayoutChanged" => "布局已变化，请按当前位置重试", "LayoutBlocked" => "占地越界、重叠或通路被堵住", "LayoutOccupied" => "此处有角色或落物", "LayoutRelationshipsChanged" => "工位物品或作业关系已变化", "InvalidLayout" => "布局参数无效", _ => reason };
-            if (grid.LastReason == "RequiresOven") reason="需要兼容烤箱";
-            reason = grid.LastReason switch
+            if(!grid.Actors.TryGetValue(grid.MemberId,out GridActorProjection own))
             {
-                "ProcessLocked" => "加工中锁定，完成后再搬运或清理",
-                "NotReady" => "加工尚未完成，请等待",
-                "RequiresJuicer" => "请把装料果汁壶放到榨汁机",
-                "RequiresLabelDesk" => "请把成品杯放到贴单台",
-                "RequiresFinishedDrink" => "需要干净的成品饮品杯",
-                "DrinkNotBound" => "饮品需先在贴单台绑定这张订单",
-                "OrderAlreadyBound" => "这张订单已绑定另一杯饮品",
-                "BindingChanged" => "贴单已变化，请刷新后操作",
-                "DrinkMenuRequired" => "本轮菜单未开放饮品",
-                _ => reason
-            };
-            reason=grid.LastReason switch{"RequiresTablePosition"=>"请先走到餐桌旁","WrongDish"=>"手中菜品与订单不符","DirtyUtensil"=>"餐具需要先洗净",
-                "OrderChanged" or "OrderEnded"=>"订单已结束或顾客已更换","ItemChanged"=>"手持物已变化","TableBusy"=>"餐桌暂时不能交付","RequiresFrontAction"=>"请使用前厅工作或交付按钮",_=>reason};
-            reason=grid.LastReason switch {"BuffNotReady"=>"本关加成准备中，请稍候","BuffChoiceRequired"=>"请先选择本关加成","BuffLocked"=>"本关加成已锁定","InvalidBuffChoice"=>"此加成不在本关候选中","DrawChanged"=>"候选已变化",_=>reason};
-            reason=grid.LastReason switch {"SupplyExhausted"=>"供应配额不足","ReceivingFull"=>"收货台已满，腾空后再接收",
-                "ShipmentNotReady"=>"货物仍在运输","AlreadyReceived"=>"这份货物已经接收","ShipmentChanged"=>"货物或收货台已变化",
-                "RequiresSupplyPackage"=>"需要合法原料包装","InvalidQuantity"=>"采购数量必须为正数",_=>reason};
-            reason=grid.LastReason switch {"RenovationNotReady"=>"正在准备装修候选，请稍候","RenovationChanged"=>"结算候选已变化","RenovationLocked"=>"本次装修已锁定",
-                "InvalidRenovationChoice"=>"此装修不在本次候选中","RenovationOccupied"=>"安装位置仍有角色或落物",
-                "RenovationBlocked"=>"安装会重叠或堵住通路","RenovationRelationshipsChanged"=>"厨房物品或加工关系已变化",_=>reason};
-            reason = grid.LastReason switch { "UpgradeTargetChanged" => "升级工位已失效，请保留结果并检查目标", "UpgradeLevelChanged" => "工位等级已变化，未安装升级",
-                "InvalidUpgradeTarget" => "目标不在本次升级候选中", "UpgradeCapabilityMismatch" => "此工位不支持该升级", "ChapterCompleted" => "大关已完成，请保存完成记录并返回选档", _ => reason };
-            reason=grid.LastReason switch {"RequiresSink"=>"液体必须带到水池处理","RequiresTrash"=>"固体必须带到垃圾桶处理",
-                "RequiresLiquid"=>"水池只能排放液体","RequiresSolid"=>"垃圾桶只能接收固体","RequiresContainer"=>"需要手持兼容空容器",
-                "IncompatibleContainer"=>"这个容器不能接水","ProtectedContainer"=>"保留锅碗盘，请先装入需要处理的内容",
-                "ProtectedItem"=>"这个物品不能丢弃","MixedContents"=>"原始固液混合内容暂时不能整体倾倒",
-                "ContentsChanged"=>"容器内容已变化，请重新选择设施","BatchChanged"=>"汤的剩余批次已变化，请重新选择",
-                "StationBusy"=>"工位正被占用，请稍后再试","ProcessLocked"=>"加工中的物品不能处理",_=>reason};
-            view.StatusText.text=$"玩家 {grid.MemberId} · {state} {reason}";
-            if(!grid.Actors.TryGetValue(grid.MemberId,out GridActorProjection own))return;
-            string hand=own.HandItemId!=0 ? grid.ItemDescription(own.HandItemId):"空手";
-            view.HandText.text=$"手持：{hand}";
-            view.HintText.text=string.Join(" · ",grid.Processes.Values.Select(GridClientSystem.WorkDescription).Concat(grid.AutoProcesses.Values.Select(GridClientSystem.AutoWorkDescription)).Concat(grid.BakeProcesses.Values.Select(GridClientSystem.BakeWorkDescription)));
-            if(view.HintText.text.Length==0)view.HintText.text="点击目标拿放／切配 · 拖动查看餐厅";
-            if (grid.LevelId != 0) view.HintText.text += grid.SaveEnabled ? " · 成功结算后可新建检查点" : " · 试玩进度仅保留本次运行";
-            if(grid.SelectedBuffId!=0)view.HintText.text+=" · 本关加成："+Tables.Instance.DTBuffConfig.Get(grid.SelectedBuffId).Name;
-            string supplyStatus=string.Join(" · ",grid.SupplyShipments.Values.Where(value=>value.Stage!=ShipmentStage.Received).OrderBy(value=>value.Id).Select(value=>
-                Tables.Instance.DTSupplyConfig.Get(value.SourceId).Name+(value.Stage==ShipmentStage.InTransit?$" 运输 {value.ProgressTicks}/{value.RequiredTicks}":" 待收货")));
-            if(supplyStatus.Length>0)view.HintText.text+=" · "+supplyStatus;
-            if(self.LayoutStationId!=0 && (grid.LevelId!=self.LayoutLevelId || grid.LevelGeneration!=self.LayoutLevelGeneration || grid.LevelPhase!=LevelPhase.Preparing || grid.LevelPaused)) self.LayoutStationId=0;
-            if(self.LayoutStationId!=0 && grid.Stations.TryGetValue(self.LayoutStationId,out GridStationProjection selected)) view.HintText.text=$"调整 {selected.Name}：点击目标格移动，或点旋转";
-            self.RefreshRenovationStatus(view,grid);
-            self.RefreshSaveStatus(view,grid);
-            self.RefreshRecipeInformation(view,grid);
+                return;
+            }
+            if(self.LayoutStationId!=0 && (grid.LevelId!=self.LayoutLevelId || grid.LevelGeneration!=self.LayoutLevelGeneration || grid.LevelPhase!=LevelPhase.Preparing || grid.LevelPaused))
+            {
+                self.LayoutStationId=0;
+            }
+            if(self.SelectedLevelId!=grid.LevelId || self.SelectedLevelGeneration!=grid.LevelGeneration || !grid.Stations.ContainsKey(self.SelectedStationId))
+            {
+                self.SelectedStationId=0;self.DetailsVisible=false;
+            }
+            if(self.RecipeDishId!=0 && !grid.AllowedDishIds.Contains(self.RecipeDishId))
+            {
+                self.RecipeDishId=0;self.RecipeVisible=false;
+            }
+            bool actionsChanged=self.GridHudActionsChanged(grid,own,hud);
+            if(actionsChanged)
+            {
+                self.HudTargetsValid=false;
+            }
+            if(self.GridHudInformationChanged(grid,actionsChanged))
+            {
+                self.HudInformationValid=false;
+                self.RefreshRestaurantPanels(view,grid);
+                view.SetInformation(self.SelectedTargetDescription(grid),self.SelectedTargetDetails(grid),self.DetailsVisible,self.OrdersVisible);
+                string state=grid.LastStatus switch {GridResultStatus.Accepted=>"已接收 · 等待执行",GridResultStatus.PendingApproach=>"等待到位",GridResultStatus.Executed=>"动作已执行",GridResultStatus.Cancelled=>"已取消",GridResultStatus.Rejected=>"无法操作",_=>"就绪"};
+                string reason=grid.LastReason switch {"HandFull"=>"手中已有物品", "TargetChanged"=>"台面或物品已变化", "PickupRequiresSameCell"=>"需要站在物品所在格", "BlockedCell"=>"此格不可行走", "Unreachable"=>"无法到达", "CounterNotAdjacent"=>"需要靠近台面", "WorkBusy"=>"正在工作，先停止或等待队友", "ContainerFull"=>"容器已满", "IncompatibleMaterial"=>"材料不兼容", "NestedContainer"=>"容器不能套容器", "NoRecipe"=>"没有对应配方", "ProcessChanged"=>"作业或批次已变化", "RequiresHeldEggBowl"=>"需要手持含鸡蛋的碗", "RequiresEggLiquidBowl"=>"需要碗中有一份打好的蛋液", "ProcessLocked"=>"这锅已开始加工，不能改动材料", "NotReady"=>"汤还没煮好", "RequiresStove"=>"需要把锅放在灶台上启动", "StationBusy"=>"灶台仍在加工上一锅", "RequiresEmptyBowl"=>"需要手持空碗", _=>grid.LastReason==null?"":grid.LastReason};
+                reason = grid.LastReason switch { "Paused" => "已暂停，请先恢复", "WrongLevel" => "关卡已变化", "LevelCompleted" => "本关已结束", "WrongPhase" => "当前阶段不能执行", "MissingNextLevel" => "下一关配置缺失", "InvalidSpawn" => "下一关出生位不可用", _ => reason };
+                reason = grid.LastReason switch { "LayoutChanged" => "布局已变化，请按当前位置重试", "LayoutBlocked" => "占地越界、重叠或通路被堵住", "LayoutOccupied" => "此处有角色或落物", "LayoutRelationshipsChanged" => "工位物品或作业关系已变化", "InvalidLayout" => "布局参数无效", _ => reason };
+                if (grid.LastReason == "RequiresOven") reason="需要兼容烤箱";
+                reason = grid.LastReason switch
+                {
+                    "ProcessLocked" => "加工中锁定，完成后再搬运或清理",
+                    "NotReady" => "加工尚未完成，请等待",
+                    "RequiresJuicer" => "请把装料果汁壶放到榨汁机",
+                    "RequiresLabelDesk" => "请把成品杯放到贴单台",
+                    "RequiresFinishedDrink" => "需要干净的成品饮品杯",
+                    "DrinkNotBound" => "饮品需先在贴单台绑定这张订单",
+                    "OrderAlreadyBound" => "这张订单已绑定另一杯饮品",
+                    "BindingChanged" => "贴单已变化，请刷新后操作",
+                    "DrinkMenuRequired" => "本轮菜单未开放饮品",
+                    _ => reason
+                };
+                reason=grid.LastReason switch{"RequiresTablePosition"=>"请先走到餐桌旁","WrongDish"=>"手中菜品与订单不符","DirtyUtensil"=>"餐具需要先洗净",
+                    "OrderChanged" or "OrderEnded"=>"订单已结束或顾客已更换","ItemChanged"=>"手持物已变化","TableBusy"=>"餐桌暂时不能交付","RequiresFrontAction"=>"请使用前厅工作或交付按钮",_=>reason};
+                reason=grid.LastReason switch {"BuffNotReady"=>"本关加成准备中，请稍候","BuffChoiceRequired"=>"请先选择本关加成","BuffLocked"=>"本关加成已锁定","InvalidBuffChoice"=>"此加成不在本关候选中","DrawChanged"=>"候选已变化",_=>reason};
+                reason=grid.LastReason switch {"SupplyExhausted"=>"供应配额不足","ReceivingFull"=>"收货台已满，腾空后再接收",
+                    "ShipmentNotReady"=>"货物仍在运输","AlreadyReceived"=>"这份货物已经接收","ShipmentChanged"=>"货物或收货台已变化",
+                    "RequiresSupplyPackage"=>"需要合法原料包装","InvalidQuantity"=>"采购数量必须为正数",_=>reason};
+                reason=grid.LastReason switch {"RenovationNotReady"=>"正在准备装修候选，请稍候","RenovationChanged"=>"结算候选已变化","RenovationLocked"=>"本次装修已锁定",
+                    "InvalidRenovationChoice"=>"此装修不在本次候选中","RenovationOccupied"=>"安装位置仍有角色或落物",
+                    "RenovationBlocked"=>"安装会重叠或堵住通路","RenovationRelationshipsChanged"=>"厨房物品或加工关系已变化",_=>reason};
+                reason = grid.LastReason switch { "UpgradeTargetChanged" => "升级工位已失效，请保留结果并检查目标", "UpgradeLevelChanged" => "工位等级已变化，未安装升级",
+                    "InvalidUpgradeTarget" => "目标不在本次升级候选中", "UpgradeCapabilityMismatch" => "此工位不支持该升级", "ChapterCompleted" => "大关已完成，请保存完成记录并返回选档", _ => reason };
+                reason=grid.LastReason switch {"RequiresSink"=>"液体必须带到水池处理","RequiresTrash"=>"固体必须带到垃圾桶处理",
+                    "RequiresLiquid"=>"水池只能排放液体","RequiresSolid"=>"垃圾桶只能接收固体","RequiresContainer"=>"需要手持兼容空容器",
+                    "IncompatibleContainer"=>"这个容器不能接水","ProtectedContainer"=>"保留锅碗盘，请先装入需要处理的内容",
+                    "ProtectedItem"=>"这个物品不能丢弃","MixedContents"=>"原始固液混合内容暂时不能整体倾倒",
+                    "ContentsChanged"=>"容器内容已变化，请重新选择设施","BatchChanged"=>"汤的剩余批次已变化，请重新选择",
+                    "StationBusy"=>"工位正被占用，请稍后再试","ProcessLocked"=>"加工中的物品不能处理",_=>reason};
+                view.StatusText.text=$"玩家 {grid.MemberId} · {state} {reason}";
+                string hand=own.HandItemId!=0 ? grid.ItemDescription(own.HandItemId):"空手";
+                view.HandText.text=$"手持：{hand}";
+                view.HintText.text=string.Join(" · ",grid.Processes.Values.Select(GridClientSystem.WorkDescription).Concat(grid.AutoProcesses.Values.Select(GridClientSystem.AutoWorkDescription)).Concat(grid.BakeProcesses.Values.Select(GridClientSystem.BakeWorkDescription)));
+                if(view.HintText.text.Length==0)view.HintText.text="点击目标拿放／切配 · 拖动查看餐厅";
+                if (grid.LevelId != 0) view.HintText.text += grid.SaveEnabled ? " · 成功结算后可新建检查点" : " · 试玩进度仅保留本次运行";
+                if(grid.SelectedBuffId!=0)view.HintText.text+=" · 本关加成："+Tables.Instance.DTBuffConfig.Get(grid.SelectedBuffId).Name;
+                string supplyStatus=string.Join(" · ",grid.SupplyShipments.Values.Where(value=>value.Stage!=ShipmentStage.Received).OrderBy(value=>value.Id).Select(value=>
+                    Tables.Instance.DTSupplyConfig.Get(value.SourceId).Name+(value.Stage==ShipmentStage.InTransit?$" 运输 {value.ProgressTicks}/{value.RequiredTicks}":" 待收货")));
+                if(supplyStatus.Length>0)view.HintText.text+=" · "+supplyStatus;
+                if(self.LayoutStationId!=0 && (grid.LevelId!=self.LayoutLevelId || grid.LevelGeneration!=self.LayoutLevelGeneration || grid.LevelPhase!=LevelPhase.Preparing || grid.LevelPaused)) self.LayoutStationId=0;
+                if(self.LayoutStationId!=0 && grid.Stations.TryGetValue(self.LayoutStationId,out GridStationProjection selected)) view.HintText.text=$"调整 {selected.Name}：点击目标格移动，或点旋转";
+                self.RefreshRenovationStatus(view,grid);
+                self.RefreshSaveStatus(view,grid);
+                self.RefreshRecipeInformation(view,grid);
+                self.HudInformationValid=true;
+            }
+            if(!actionsChanged)
+            {
+                self.HudVersion=grid.Version;
+                return;
+            }
             GridItemProjection[] drops=grid.Items.Values.Where(value=>value.Location==GridItemLocation.Ground && value.Cell==own.Cell).OrderBy(value=>value.Id).ToArray();
-            string targetsKey=$"{own.HandItemId}:{own.WorkId}:"+string.Join(",",drops.Select(value=>value.Id))+"|"+
-                string.Join(";",grid.Stations.Values.OrderBy(v=>v.Id).Select(v=>$"{v.Id}:{v.ItemId}"))+"|"+
-                string.Join(";",grid.Items.Values.OrderBy(v=>v.Id).Select(v=>$"{v.Id}:{string.Join(",",v.Contents)}"))+"|"+
-                string.Join(";",grid.Processes.Values.OrderBy(v=>v.Id).Select(v=>$"{v.Id}:{v.State}:{v.WorkerMemberId}:{v.StationId}"))+"|"+
-                string.Join(";",grid.AutoProcesses.Values.OrderBy(v=>v.Id).Select(v=>$"{v.Id}:{v.State}:{v.RemainingPortions}"));
-            targetsKey += $"|{grid.LevelId}:{grid.LevelGeneration}:{grid.LevelPhase}:{grid.LevelPaused}";
-            targetsKey += $"|{grid.LayoutVersion}:{self.LayoutStationId}";
-            targetsKey+=$"|{grid.BuffDrawVersion}:{grid.SelectedBuffId}:{self.BuffCandidatesVisible}:"+string.Join(",",grid.BuffCandidates);
-            targetsKey += "|"+string.Join(";",grid.BakeProcesses.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{value.State}"));
-            targetsKey += "|"+string.Join(";",grid.FrontWorks.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{value.State}:{value.ClaimSerial}:{value.WorkerId}"));
-            targetsKey += "|"+string.Join(";",grid.Orders.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{value.State}"));
-            targetsKey += "|"+string.Join(";",grid.Stations.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{string.Join(",",value.PoolItemIds)}"));
-            targetsKey += "|"+string.Join(";",grid.SupplySources.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{value.RemainingPackages}"));
-            targetsKey += "|"+string.Join(";",grid.SupplyShipments.Values.OrderBy(value=>value.Id).Select(value=>$"{value.Id}:{value.Stage}:{value.PackageItemId}"));
-            targetsKey += $"|{grid.RenovationChoiceVersion}:{grid.SelectedRenovationId}:"+string.Join(",",grid.RenovationCandidates);
-            targetsKey += "|"+string.Join(",",grid.RenovationApplied.Keys.OrderBy(value=>value));
-            targetsKey += $"|{grid.SaveEnabled}:{grid.SaveState}:{grid.SaveResultId}";
-            targetsKey += $"|{grid.CanControlRestaurant}";
-            targetsKey += $"|{self.SelectedStationId}:{self.DetailsVisible}:{self.OrdersVisible}";
-            targetsKey += $"|{self.RecipeDishId}:{self.RecipeVisible}:{self.FirstOrderGuideVisible}";
-            if(self.HudTargetsKey==targetsKey)return;
-            self.HudTargetsKey=targetsKey;view.ClearTargets();
+            view.ClearTargets();
             EntityRef<GridClientComponent> currentProjection=grid;EntityRef<UIGridKitchen> currentHud=hud;
             string inputWorld=grid.WorldId;long inputWorldGeneration=grid.WorldGeneration,inputBinding=grid.BindingGeneration,inputLevel=grid.LevelId,inputLevelGeneration=grid.LevelGeneration;
             view.SetInputGuard(()=>
@@ -482,6 +492,8 @@ namespace ET.Client
                 long id=item.Id;
                 view.AddTarget($"拾 {item.Name} {++dropIndex}",()=>{GridPresentationComponent current=selfRef;current?.SendGridAction(GridAction.PickupDrop,own.Cell,id);});
             }
+            // 仅在本次信息／结构成功展示后记录，下一次轮询才可跳过该投影。
+            self.HudTargetsValid=true;self.HudVersion=grid.Version;
         }
 
         [EntitySystem]
@@ -491,7 +503,7 @@ namespace ET.Client
             Scene scene=self.Parent as Scene;
             scene?.GetComponent<UIComponent>()?.RemoveComponent<UIGridKitchen>();
             scene?.GetComponent<GFEntityComponent>()?.RemoveComponent<GridKitchenBoard>();
-            self.Board=default;self.Hud=default;
+            self.Board=default;self.Hud=default;self.HudActionFields.Clear();self.HudInformationFields.Clear();
         }
     }
 

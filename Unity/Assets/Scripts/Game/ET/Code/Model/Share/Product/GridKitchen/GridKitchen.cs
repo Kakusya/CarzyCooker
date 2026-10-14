@@ -125,6 +125,13 @@ namespace ET
         public readonly List<GridResultValue> PendingResults = new();
         public readonly Queue<KitchenWorkTransitionValue> WorkTransitions = new();
         public readonly List<KitchenWorkOutcomeValue> WorkOutcomes = new();
+        // 固定步同步快照；MemberId 排序后逐次解引用，不能跨 await 或被容量查询覆盖。
+        public readonly List<KeyValuePair<int,EntityRef<GridActor>>> ActorStepBuffer = new(8);
+        public readonly List<EntityRef<GridManualProcess>> ManualStepBuffer = new(16);
+        // 固定 7×18 厨房的同步 BFS 工作区；公开路线复制，不能跨搜索借用这些前驱或路径。
+        public readonly int[] SearchQueue = new int[GridKitchenRules.Width*GridKitchenRules.Height];
+        public readonly int[] SearchPrevious = new int[GridKitchenRules.Width*GridKitchenRules.Height];
+        public readonly List<GridCell> ActorRouteBuffer = new(GridKitchenRules.Width*GridKitchenRules.Height);
     }
 
     [ChildOf]

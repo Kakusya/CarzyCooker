@@ -1,5 +1,4 @@
 #if !DOTNET
-using System.Linq;
 
 namespace ET
 {
@@ -20,8 +19,22 @@ namespace ET
                 state.ArrivalQueued = true;
                 self.RequestCustomerTransition(level, state, state.ArrivalSerial, CustomerFlowAction.Arrive);
             }
-            foreach (Customer customer in level.Children.Values.OfType<Customer>().OrderBy(value => value.Id).ToArray())
+            state.CustomerStepBuffer.Clear();
+            foreach(Entity child in level.Children.Values)
             {
+                if(child is Customer customer)
+                {
+                    state.CustomerStepBuffer.Add(customer);
+                }
+            }
+            state.CustomerStepBuffer.Sort(static (left,right)=>((Customer)left).Id.CompareTo(((Customer)right).Id));
+            foreach (var reference in state.CustomerStepBuffer)
+            {
+                Customer customer=reference;
+                if(customer==null)
+                {
+                    continue;
+                }
                 if (customer.TransitionQueued) continue;
                 if (customer.Phase is CustomerPhase.Entering or CustomerPhase.WalkingToSeat or CustomerPhase.Leaving)
                 {
@@ -53,8 +66,14 @@ namespace ET
                     if (customer.RemainingEatTicks <= 0) self.QueueCustomerTransition(level, customer, CustomerFlowAction.FinishedEating);
                 }
             }
-            foreach (GridStation station in self.Stations.Values.Select(value => (GridStation)value).Where(value => value.Kind == GridStationKind.Table).OrderBy(value => value.InitialLayoutId))
+            state.CustomerStepBuffer.Clear();
+            foreach (var entry in self.OrderedFrontTables(state))
             {
+                GridStation station=entry.Station;
+                if(station==null)
+                {
+                    continue;
+                }
                 FrontTable table = station.GetComponent<FrontTable>();
                 if (table.State != FrontTableState.Free || station.ItemId != 0 || state.Waiting.Count == 0) continue;
                 Customer customer = level.GetChild<Customer>(state.Waiting.Peek());
@@ -63,6 +82,22 @@ namespace ET
                 self.QueueCustomerTransition(level, customer, CustomerFlowAction.AdmitSeat);
                 break;
             }
+            state.TableStepBuffer.Clear();
+        }
+
+        private static System.Collections.Generic.List<(int Order,int Sequence,EntityRef<GridStation> Station)> OrderedFrontTables(this GridKitchenComponent self,FrontLevelState state)
+        {
+            state.TableStepBuffer.Clear();int sequence=0;
+            foreach(var reference in self.Stations.Values)
+            {
+                GridStation station=reference;
+                if(station!=null && station.Kind==GridStationKind.Table)
+                {
+                    state.TableStepBuffer.Add((station.InitialLayoutId,sequence++,reference));
+                }
+            }
+            state.TableStepBuffer.Sort(static (left,right)=>left.Order!=right.Order?left.Order.CompareTo(right.Order):left.Sequence.CompareTo(right.Sequence));
+            return state.TableStepBuffer;
         }
 
         private static void AdvanceCustomerTransitions(this GridKitchenComponent self, Level level, FrontLevelState state, DRCustomerFlowConfig flow)
@@ -116,8 +151,13 @@ namespace ET
                     case CustomerFlowAction.AdmitSeat:
                         if (customer.Phase != CustomerPhase.Queued || state.Waiting.Count == 0 || state.Waiting.Peek() != customer.Id) continue;
                         GridStation station = null;
-                        foreach (GridStation candidate in self.Stations.Values.Select(item => (GridStation)item).Where(item => item.Kind == GridStationKind.Table).OrderBy(item => item.InitialLayoutId))
+                        foreach (var entry in self.OrderedFrontTables(state))
                         {
+                            GridStation candidate=entry.Station;
+                            if(candidate==null)
+                            {
+                                continue;
+                            }
                             if (candidate.GetComponent<FrontTable>().State != FrontTableState.Free || candidate.ItemId != 0 || !self.PlanCustomerPath(customer, candidate.FrontSeat())) continue;
                             station = candidate; break;
                         }
@@ -173,9 +213,11 @@ namespace ET
 
         private static bool PlanCustomerPath(this GridKitchenComponent self, Customer customer, GridCell goal)
         {
-            var path = self.FindGridPath(customer.Cell, goal);
-            if (path == null) return false;
-            customer.Path.Clear(); customer.Path.AddRange(path.Skip(1)); customer.PathIndex = 0; customer.Motion = GridMotion.Standing;
+            if(!self.FindGridPathInto(customer.Cell,goal,customer.Path))
+            {
+                return false;
+            }
+            customer.Path.RemoveAt(0);customer.PathIndex=0;customer.Motion=GridMotion.Standing;
             return true;
         }
 

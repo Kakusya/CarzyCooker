@@ -12,9 +12,13 @@ namespace ET.Client
         private readonly List<Button> buttons = new();
         private Font font;
         private Func<bool> inputGuard;
+        // 本轮 HUD 的视口工作区；每次重新计算角点，布局变化无需另建事件来源。
+        private readonly Vector3[] viewportCorners = new Vector3[4];
+        private Canvas hudCanvas;
         public void SetInputGuard(Func<bool> guard)=>inputGuard=guard;
         public void ConfigureHud()
         {
+            hudCanvas=GetComponent<Canvas>();
             CameraDragAreaRectTransform.gameObject.SetActive(true);
             if(font==null)font = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "Noto Sans CJK SC", "Arial" }, 34);
             foreach(Text text in new[]{StatusText,HandText,HintText,PhaseText,ClockText,ScoreText,WorkText,OrdersText,BuffText,SettlementText,TargetText,DetailsText})text.font=font;
@@ -23,9 +27,13 @@ namespace ET.Client
         }
         public Rect MapViewport()
         {
-            Canvas root=GetComponent<Canvas>().rootCanvas;Camera camera=root.renderMode==RenderMode.ScreenSpaceOverlay?null:root.worldCamera;
-            var corners=new Vector3[4];CameraDragAreaRectTransform.GetWorldCorners(corners);
-            Vector2 lower=RectTransformUtility.WorldToScreenPoint(camera,corners[0]),upper=RectTransformUtility.WorldToScreenPoint(camera,corners[2]);
+            if(hudCanvas==null)
+            {
+                hudCanvas=GetComponent<Canvas>();
+            }
+            Canvas root=hudCanvas.rootCanvas;Camera camera=root.renderMode==RenderMode.ScreenSpaceOverlay?null:root.worldCamera;
+            CameraDragAreaRectTransform.GetWorldCorners(viewportCorners);
+            Vector2 lower=RectTransformUtility.WorldToScreenPoint(camera,viewportCorners[0]),upper=RectTransformUtility.WorldToScreenPoint(camera,viewportCorners[2]);
             return new Rect(lower.x/Screen.width,lower.y/Screen.height,(upper.x-lower.x)/Screen.width,(upper.y-lower.y)/Screen.height);
         }
         public void ShowPanels(bool preparing,bool completed)
@@ -67,7 +75,7 @@ namespace ET.Client
         }
         public void ReleaseHud()
         {
-            ClearTargets();inputGuard=null; if(font!=null)Destroy(font);font=null;
+            ClearTargets();inputGuard=null;hudCanvas=null; if(font!=null)Destroy(font);font=null;
         }
     }
 }

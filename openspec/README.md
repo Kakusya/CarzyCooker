@@ -50,3 +50,5 @@
 | [automated-testing](specs/automated-testing/spec.md) | 项目测试发现、显式执行、终态和失败报告 |
 
 工作流见 [Codex/OpenSpec](../Docs/AI/workflow.md)，当前配置见 [config.yaml](config.yaml)。每项要求附场景和来源；协作资料规格描述文档与授权行为，不作为玩法能力。
+
+2026-10-14：纯重构 `reduce-per-frame-allocations` 已 9/9 并归档，无 delta specs／主规格变更。地图、HUD、固定步与 BFS 的逐项 UTF、真实入口及性能限制见[执行记录](changes/archive/2026-10-14-reduce-per-frame-allocations/execution-notes.md)。

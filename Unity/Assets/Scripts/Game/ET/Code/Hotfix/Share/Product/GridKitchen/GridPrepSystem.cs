@@ -142,8 +142,15 @@ namespace ET
 
         private static void AdvanceWork(this GridKitchenComponent self)
         {
-            foreach (GridManualProcess process in self.Processes.Values.Select(value => (GridManualProcess)value).ToArray())
+            self.ManualStepBuffer.Clear();
+            foreach(var reference in self.Processes.Values)self.ManualStepBuffer.Add(reference);
+            foreach (var reference in self.ManualStepBuffer)
             {
+                GridManualProcess process=reference;
+                if(process==null)
+                {
+                    continue;
+                }
                 if (process.State != GridWorkState.Working) continue;
                 GridActor actor = self.Actor(process.WorkerMemberId);
                 GridItem input = self.Item(process.InputItemId), target = self.Item(process.TargetItemId);
@@ -184,6 +191,7 @@ namespace ET
                 process.CompletionQueued = false; process.CompletionReceived = false;
                 self.PublishKitchenStage(process, KitchenProcessKind.Manual, KitchenWorkStage.Finished, ++process.TransitionSerial, output.Id);
             }
+            self.ManualStepBuffer.Clear();
         }
     }
 

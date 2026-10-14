@@ -83,6 +83,7 @@ namespace ET
         }
 
         [Test]
+        [Category("PerFramePath")]
         public void GridCoreRetargetFinishesStepAndCancelsOldInteraction()
         {
             StartHost();
@@ -111,6 +112,7 @@ namespace ET
         }
 
         [Test]
+        [Category("PerFramePath")]
         public void GridCoreTwoStandThirdWaitsAndCanCrossFullCell()
         {
             StartHost();
@@ -136,6 +138,7 @@ namespace ET
         }
 
         [Test]
+        [Category("PerFrameTraversal")]
         public void GridCoreItemRaceDropIdentityAndSameCellPickup()
         {
             StartHost();

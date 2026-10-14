@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace ET.Client
 {
@@ -10,7 +11,18 @@ namespace ET.Client
         public bool Ready;
         public string Failure;
         public long HudVersion;
-        public string HudTargetsKey;
+        // 已展示字段，不含消息或业务实体。动作结构与时间／进度分别失效；重开首次完整显示。
+        public bool HudTargetsValid, HudInformationValid;
+        public readonly List<(long Number,string Text)> HudActionFields=new(512);
+        public readonly List<(long Number,string Text)> HudInformationFields=new(128);
+        // 本轮恢复页的派生显示上下文；凭证只比较可用性，绝不存入显示键。
+        public bool RecoveryDisplayed, RecoveryCredentialAvailable;
+        public ProductStage RecoveryStage;
+        public long RecoveryAttempt, RecoveryHudEpoch;
+        public string RecoveryFeedback;
+        public EntityRef<ProductRuntimeComponent> RecoveryRuntime;
+        public EntityRef<ClientSessionComponent> RecoveryClient;
+        public EntityRef<UIGridKitchen> RecoveryHud;
         public bool PointerHeld, PointerDragged, PointerConsumed;
         public Vector2 PointerStart, PointerLast;
         public GridCell? Highlight;

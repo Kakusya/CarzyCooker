@@ -19,7 +19,7 @@ namespace ET.Client
                     UIGridKitchen hud=await ui.AddUIFormComponentAsync<UIGridKitchen>(UGFUIFormId.UIGridKitchen);
                     context.ThrowIfStopped();self=original;
                     if(self==null || self.HudLoadEpoch!=epoch){hud?.Dispose();return;}
-                    self.Hud=hud;self.HudTargetsKey=null;self.HudVersion=0;hud.View.ConfigureHud();self.TryGridReady();self.RefreshGridHud();
+                    self.Hud=hud;self.RecoveryDisplayed=false;self.HudTargetsValid=false;self.HudInformationValid=false;self.HudVersion=0;hud.View.ConfigureHud();self.TryGridReady();self.RefreshGridHud();
                 }
                 catch(OperationCanceledException){}
                 catch(Exception error){self=original;if(self!=null && self.HudLoadEpoch==epoch){self.Failure=error.Message;self.RefreshGridHud();}}
@@ -28,13 +28,17 @@ namespace ET.Client
         }
         public static void CloseGridHud(this GridPresentationComponent self)
         {
-            self.Ready=false;self.HudLoading=false;++self.HudLoadEpoch;self.PointerHeld=false;self.Highlight=null;self.HudTargetsKey=null;
+            self.Ready=false;self.HudLoading=false;++self.HudLoadEpoch;self.PointerHeld=false;self.Highlight=null;self.HudTargetsValid=false;self.HudInformationValid=false;
+            self.RecoveryDisplayed=false;self.RecoveryFeedback=null;self.RecoveryRuntime=default;self.RecoveryClient=default;self.RecoveryHud=default;
+            self.HudActionFields.Clear();self.HudInformationFields.Clear();
             ((Scene)self.IScene).GetComponent<UIComponent>()?.RemoveComponent<UIGridKitchen>();self.Hud=default;
         }
         public static void GridHudClosed(this GridPresentationComponent self,UIGridKitchen hud)
         {
             if((UIGridKitchen)self.Hud!=hud)return;
-            self.Ready=false;self.PointerHeld=false;self.Highlight=null;self.HudTargetsKey=null;self.Hud=default;
+            self.RecoveryDisplayed=false;self.RecoveryFeedback=null;self.RecoveryRuntime=default;self.RecoveryClient=default;self.RecoveryHud=default;
+            self.HudActionFields.Clear();self.HudInformationFields.Clear();
+            self.Ready=false;self.PointerHeld=false;self.Highlight=null;self.HudTargetsValid=false;self.HudInformationValid=false;self.Hud=default;
         }
         private static AsyncOwnerComponent GridCommandOwner(this GridPresentationComponent self)
         {

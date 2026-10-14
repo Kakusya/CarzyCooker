@@ -53,13 +53,50 @@ namespace ET
         {
             if (level.Phase != LevelPhase.Operating && level.Phase != LevelPhase.Draining) return;
             FrontWorkCommands commands = level.GetComponent<FrontWorkCommands>();
-            FrontWorkEnvelope[] queued = commands.Pending.ToArray(); commands.Pending.Clear();
-            foreach (FrontWorkEnvelope command in queued.Where(value => value.Intent.Action == FrontWorkAction.Stop)) self.ApplyQueuedFront(level, command);
+            commands.StepCommands.Clear();
+            int pendingCount=commands.Pending.Count;
+            for(int i=0;i<pendingCount;i++)commands.StepCommands.Add(commands.Pending.Dequeue());
+            foreach (FrontWorkEnvelope command in commands.StepCommands)
+            {
+                if(command.Intent.Action==FrontWorkAction.Stop)
+                {
+                    self.ApplyQueuedFront(level,command);
+                }
+            }
             self.AdvanceFrontCreations(level, commands);
             self.AdvanceFrontTransitions(level, commands);
-            foreach (CompanionRole role in level.Children.Values.OfType<CompanionRole>().OrderBy(value => value.Id)) self.AdvanceCompanionMovement(level, role);
-            foreach (FrontWork work in level.Children.Values.OfType<FrontWork>().OrderBy(value => value.Id).ToArray())
+            commands.MovementRoles.Clear();commands.WorkStepBuffer.Clear();
+            foreach(Entity child in level.Children.Values)
             {
+                if(child is CompanionRole role)
+                {
+                    commands.MovementRoles.Add(role);
+                }
+            }
+            commands.MovementRoles.Sort(static (left,right)=>((CompanionRole)left).Id.CompareTo(((CompanionRole)right).Id));
+            foreach(var reference in commands.MovementRoles)
+            {
+                CompanionRole role=reference;
+                if(role!=null)
+                {
+                    self.AdvanceCompanionMovement(level,role);
+                }
+            }
+            foreach(Entity child in level.Children.Values)
+            {
+                if(child is FrontWork work)
+                {
+                    commands.WorkStepBuffer.Add(work);
+                }
+            }
+            commands.WorkStepBuffer.Sort(static (left,right)=>((FrontWork)left).Id.CompareTo(((FrontWork)right).Id));
+            foreach (var reference in commands.WorkStepBuffer)
+            {
+                FrontWork work=reference;
+                if(work==null)
+                {
+                    continue;
+                }
                 if (work.State != FrontWorkState.Approaching && work.State != FrontWorkState.Working) continue;
                 if (self.CheckFrontTarget(level, work) != null) { self.ReleaseFrontClaim(level, work, FrontWorkState.Cancelled, true); continue; }
                 GridCell cell; GridMotion motion; bool valid;
@@ -111,7 +148,14 @@ namespace ET
                 self.NotifyFrontFinished(level, work);
                 if (finisher != null) NotifyFrontResult(finisher, request, work.Id, serial, GridResultStatus.Executed, null, 2);
             }
-            foreach (FrontWorkEnvelope command in queued.Where(value => value.Intent.Action == FrontWorkAction.Claim)) self.ApplyQueuedFront(level, command);
+            foreach (FrontWorkEnvelope command in commands.StepCommands)
+            {
+                if(command.Intent.Action==FrontWorkAction.Claim)
+                {
+                    self.ApplyQueuedFront(level,command);
+                }
+            }
+            commands.StepCommands.Clear();commands.MovementRoles.Clear();commands.WorkStepBuffer.Clear();
         }
 
         private static void ApplyQueuedFront(this GridKitchenComponent self, Level level, FrontWorkEnvelope command)
@@ -159,18 +203,25 @@ namespace ET
             if (level.Children.Values.OfType<FrontWork>().Any(value => value.Id != work.Id && value.StationId == work.StationId &&
                 value.State is FrontWorkState.Approaching or FrontWorkState.Working)) return "StationBusy";
             GridCell start = actor?.Cell ?? role.Cell; GridStation station = self.Station(work.StationId);
-            List<GridCell> best = null; GridCell operation = default;
+            int best = int.MaxValue; GridCell operation = default;
             foreach (GridCell approach in station.StationApproaches())
             {
                 if (actor != null && !self.CanStop(approach, actor)) continue;
                 if (level.Children.Values.OfType<FrontWork>().Any(value => value.Id != work.Id && value.OperationCell == approach &&
                     value.State is FrontWorkState.Approaching or FrontWorkState.Working)) continue;
-                List<GridCell> path = self.FindGridPath(start, approach);
-                if (path != null && (best == null || path.Count < best.Count)) { best = path; operation = approach; }
+                int length=self.GridPathLength(start,approach);
+                if(length>=0 && length<best)
+                {
+                    best=length;operation=approach;
+                }
             }
-            if (best == null) return "Unreachable";
+            if (best == int.MaxValue) return "Unreachable";
             if (work.ClaimSerial == long.MaxValue) return "InvalidCommand";
             if (actor != null && !self.PlanRoute(actor, operation)) return "Unreachable";
+            if(role!=null && !self.FindGridPathInto(start,operation,role.Path))
+            {
+                return "Unreachable";
+            }
             ++work.ClaimSerial; work.WorkerKind = command.Kind; work.WorkerId = worker; work.WorkerInstanceId = instance;
             work.WorkerGeneration = actor?.Generation ?? role.LevelGeneration; work.WorkerCommandId = command.RequestId;
             work.OperationCell = operation; work.State = FrontWorkState.Approaching; work.FrozenTicks = work.BaseTicks; work.StartedTick = self.Tick;
@@ -183,7 +234,7 @@ namespace ET
             if (actor != null) { actor.FrontWorkId = work.Id; actor.FrontClaimSerial = work.ClaimSerial; actor.ActiveIntent = new GridIntent(0, GridAction.Move, operation); actor.HasIntent = true; }
             else
             {
-                role.WorkId = work.Id; role.ClaimSerial = work.ClaimSerial; role.Path.Clear(); role.Path.AddRange(best.Skip(1)); role.PathIndex = 0;
+                role.WorkId = work.Id; role.ClaimSerial = work.ClaimSerial; role.Path.RemoveAt(0); role.PathIndex = 0;
             }
             ++work.TransitionSerial; work.TransitionQueued = work.StartReceived = work.CompletionReceived = false;
             self.PublishFrontStage(level, work, FrontWorkStage.Claimed);

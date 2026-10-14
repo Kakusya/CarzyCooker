@@ -297,6 +297,14 @@ Unity/
 - ET 业务：Model/ModelView 持数据，Hotfix/HotfixView 的 `System` 持逻辑；命名空间按 `ET` / `ET.Client` / `ET.Server`
 - 生成文件只读；FriendOf / EntitySystemOf 等属性按现有模式使用
 
+### 逐帧执行与 GC
+
+- **逐帧热路径尽量减少托管内存分配，稳定运行阶段优先做到零或接近零分配，避免持续制造垃圾和频繁 GC。** 适用于 `Update` / `LateUpdate` / `FixedUpdate`、ET `IUpdate` / `ILateUpdate`、UGF `OnUpdate`、逐帧定时器、协程及其间接调用；固定业务 Tick 和高频消息／投影刷新也按热路径检查。
+- 集合、数组和临时缓冲优先由实际 owner 持有并复用，按合理容量预分配；不要每帧 `new List` / `Dictionary` / `HashSet` / 数组或反复 `ToArray` / `ToList`。优先直接遍历与已有无分配 API；注意 LINQ 迭代器、捕获闭包、装箱及经接口枚举值类型枚举器的分配，不能把所有 `foreach` 或值类型 `new` 一概认定为 GC。
+- 文本、排序、布局、组件查找和按钮结构只在相关状态变化时更新；每帧保留必要的输入采样、位移和插值。避免每帧拼接／格式化字符串、打印常规日志、重复创建委托或 `Instantiate` / `Destroy` 同一组表现对象；逐帧 yield 的等待对象在语义允许时复用。
+- 缓存和复用必须沿既有 ET/GF/UI/Entity owner 与生命周期；关闭、换关、重绑和销毁时正确失效、解绑及收尾。消息／投影仍须保持独立值、回收责任与重入安全，不能为减少分配直接共享可写 DTO、删除必要快照或新建私有池绕过 owner。
+- 优化先处理明确、常驻且容易局部修复的分配；需要确认收益时用一次代表性场景检查 `GC.Alloc` 和帧耗时，区分预热、稳定运行与事件触发。不以每帧 `GC.Collect` 或关闭 GC 代替减少分配，不为追求绝对零分配扩大架构或验证成本；未实测不得声称零 GC 或已改善帧率。
+
 ## 文档与实现一致
 
 - **发现文档与实现对不上时要提出来**：OpenSpec（proposal / design / specs / tasks）、`AGENTS.md`、`Book/`、`references/`、产品文档、`CarzyCooker当前进度.md`、注释或 README 与代码行为不一致时，先向用户说明差异与影响，再动手改；不要静默按「可能过时」的文档硬做，也不要默认文档一定对。

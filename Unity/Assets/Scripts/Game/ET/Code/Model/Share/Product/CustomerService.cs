@@ -25,7 +25,7 @@ namespace ET
     }
 
     [ComponentOf(typeof(Level))]
-    public sealed class FrontLevelState : Entity, IAwake<DRCustomerFlowConfig>
+    public sealed class FrontLevelState : Entity, IAwake<DRCustomerFlowConfig>, IDestroy
     {
         public int FlowDefinitionId;
         public int NextArrivalOperatingTick;
@@ -37,6 +37,9 @@ namespace ET
         public readonly Queue<ServeOrderEnvelope> Serves = new();
         public readonly Queue<CustomerFlowTransitionValue> Transitions = new();
         public readonly Queue<CustomerFlowFinishedValue> FinishedTransitions = new();
+        // 当前关的同步遍历工作区；转换先提交，再采集本阶段成员，退出清有效引用。
+        public readonly List<EntityRef<Customer>> CustomerStepBuffer = new(16);
+        public readonly List<(int Order,int Sequence,EntityRef<GridStation> Station)> TableStepBuffer = new(8);
     }
 
     [ComponentOf(typeof(GridStation))]

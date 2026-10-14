@@ -131,6 +131,7 @@ namespace ET
         }
 
         [Test]
+        [Category("PerFrameTraversal")]
         public void SoloCompanionScheduleAskPriorityAndStartedWashIsNotPreempted()
         {
             StartSolo(); LevelDo(LevelControlAction.Start);
@@ -168,6 +169,7 @@ namespace ET
 
         [TestCase(false)]
         [TestCase(true)]
+        [Category("PerFrameTraversal")]
         public void SoloCompanionScheduleSameKindUsesCreationFifo(bool washing)
         {
             StartSolo(); LevelDo(LevelControlAction.Start); FrontWork first, second;
@@ -194,6 +196,7 @@ namespace ET
         }
 
         [Test]
+        [Category("PerFramePath")]
         public void SoloStationTerrainPlayerCompanionAndActualCustomerUseMovedTableTerrain()
         {
             StartSolo(liveFront: true); GridStation table = Grid.Stations.Values.Select(value => (GridStation)value).Single(value => value.InitialLayoutId == 11);

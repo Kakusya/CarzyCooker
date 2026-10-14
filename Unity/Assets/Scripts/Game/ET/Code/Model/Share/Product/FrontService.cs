@@ -33,13 +33,19 @@ namespace ET
     }
 
     [ComponentOf(typeof(Level))]
-    public sealed class FrontWorkCommands : Entity, IAwake
+    public sealed class FrontWorkCommands : Entity, IAwake, IDestroy
     {
         public readonly Queue<FrontWorkEnvelope> Pending = new();
         public readonly Queue<FrontWorkTransitionValue> Transitions = new();
         public readonly Queue<FrontWorkFinishedValue> FinishedTransitions = new();
         public readonly Queue<FrontWorkCreateValue> Creations = new();
         public readonly List<FrontWorkOutcomeValue> Outcomes = new();
+        // 同步阶段各有工作区；Stop→推进→Claim 的原批次不受新入队命令影响。
+        public readonly List<FrontWorkEnvelope> StepCommands = new(16);
+        public readonly List<EntityRef<CompanionRole>> MovementRoles = new(8);
+        public readonly List<EntityRef<FrontWork>> WorkStepBuffer = new(16);
+        public readonly List<EntityRef<CompanionRole>> ScheduleRoles = new(8);
+        public readonly List<EntityRef<FrontWork>> ScheduleCandidates = new(16);
     }
 
     [ChildOf(typeof(RestaurantRuntime))]

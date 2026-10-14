@@ -6,6 +6,27 @@
 
 2026-10-14：UI 信息分层、菜谱引导、Solo 三关、Buff 扩展、原工位升级、首饮贴单和试玩调校七案已完成并归档。下文“未执行／未归档”描述的是创建规划时的历史状态。用户随后明确豁免菜谱与调校的真人观察；相关任务按该例外闭环，工程复玩已有运行证据，真人理解效果仍未验证，未据此调整平衡数值。
 
+## 当前批次与优先级（2026-10-14）
+
+按当前未归档 change 的剩余工作安排。用户要求暂时不考虑真机测试，本轮只调整计划；Editor、相关 UTF 和真实入口仍是各实施批次的验收，物理两机 LAN／Android 真机以及配套 Player 构建暂缓。已有设备任务保留 NotRun，不删除、勾选或改成“已豁免”。
+
+P1 表示近期优先，P2 表示随后推进，P3 表示暂缓。优先级按明确收益、改动范围和当前剩余工作判断，不是风险评分；每批只补与实际改动对应的验证。
+
+| 批次 | 优先级 | Change／任务 | 执行顺序与交付 |
+|---|---|---|---|
+| 第一批：明确逐帧分配（已验收） | P1 | [reduce-per-frame-allocations](../../openspec/changes/archive/2026-10-14-reduce-per-frame-allocations/tasks.md)：1.1、2.2、2.1、3.2、3.1 | 已取得改动前基线，完成视口／地图、恢复／正常 HUD 优化及各组本地行为验收；结果见该案 execution-notes |
+| 第二批：业务步优化与收口（已验收） | P2；收口验收必需 | 同一性能案：4.1、4.2、5.1、5.2 | 有序遍历、BFS、真实输入／生命周期和性能复测已完成；保留所有权与执行顺序，结果见该案 execution-notes |
+| 第三批：合作跨 Editor 补验 | P2 | [成员恢复](../../openspec/changes/archive/2026-10-14-cooperative-member-resume/tasks.md) 5.1 → [合作装修](../../openspec/changes/archive/2026-10-14-cooperative-renovation-choice/tasks.md) 4.1 → [合作饮品](../../openspec/changes/archive/2026-10-14-cooperative-drink-order-binding/tasks.md) 4.1 | 只补尚缺的双 Editor 新增链；恢复先核对原成员／绑定，再验证装修和饮品交接，不重做已通过的核心或全餐厅套件 |
+| 暂缓批次：包体与设备 | P3 | [pc-cooperative-lan-trial](../../openspec/changes/pc-cooperative-lan-trial/tasks.md)、[android-solo-playable](../../openspec/changes/android-solo-playable/tasks.md) | 当前不安排独立 Player／LAN／Android 工作；重新纳入时按所选功能清单恢复各自前置和验收 |
+
+第三批属于 Editor 验收，仍与真机测试区分；启动前需已有明确 main 提交／第二工作区同步清单和实际 Editor 匹配。当前排期不额外授权提交、cherry-pick、构建或设备操作。若已具备双 Editor 基线且没有同文件修改冲突，第三批可以先于第二批独立完成；批次顺序不是新增硬依赖。
+
+性能案内部的完整任务顺序与每批退出条件见其 [tasks.md](../../openspec/changes/archive/2026-10-14-reduce-per-frame-allocations/tasks.md)。第一、第二批现已逐项验收；该 change 的九项任务均已完成，不以优先级替代功能覆盖。
+
+2026-10-14 后续实施授权：第一批五项已完成，8 个不同相关 PlayMode UTF 用例及普通 Launcher 实际显示／输入已验收，逐功能证据见 [execution-notes](../../openspec/changes/archive/2026-10-14-reduce-per-frame-allocations/execution-notes.md)。随后用户要求继续到 9/9，第二批 4.1、4.2、5.1、5.2 已完成：固定步小集 5/5、寻路小集 4/4、综合入口 4/4 Passed；已取得同配置性能对照，恢复页整体帧分配波动如实记录。该性能案已 9/9 并于 2026-10-14 归档，用户已授权随后本地提交。本批不安排 Player／真机。
+
+当前另外八案 tasks 已完成：solo-interlevel-renovation、solo-success-checkpoint、solo-supply-delivery、solo-kitchen-clear-and-discard、cooperative-restaurant-core、cooperative-front-service、cooperative-cleanup-supply、cooperative-restaurant-loopback。它们提供现有基线，不重新排成开发或回归批次；自审、提交与归档按具体授权另行处理。以上是排期时快照，动态状态仍以原 tasks／execution-notes 为准。
+
 2026-10-14：合作装修、原成员恢复与合作饮品贴单三案已完成双Editor验收并归档，合计13/13。下文涉及这三案的“新案”或合作补验排期属于归档前快照，相关功能不再作为待验任务；原始失败和未验设备范围保留在归档execution-notes。
 
 ## 方向与使用方式

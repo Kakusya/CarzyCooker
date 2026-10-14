@@ -11,6 +11,7 @@ namespace ET
     public sealed partial class SoloRestaurantUiTests
     {
         [UnityTest]
+        [NUnit.Framework.Category("PerFrameIntegration")]
         public IEnumerator CoopMemberResumeUiRealDisconnectManualButtonReopenAndRetiredInput()
         {
             yield return StartCoopHostLauncher(); ((Scene)Client.IScene).RemoveComponent<GridPresentationComponent>(); yield return null;
@@ -29,6 +30,22 @@ namespace ET
                 yield return WaitCoopUi(remote, () => runtime.Stage == ProductStage.Disconnected, "Real Session close retains running intent");
                 Assert.That(remote.Presentation.Ready, Is.False); Assert.That(remote.Grid.Confirmed, Is.False);
                 oldTake(); Assert.That(remote.Client.NextCommandId, Is.EqualTo(command));
+                Button stableResume=RemoteButton("手动恢复");
+                for(int frame=0;frame<12;frame++)
+                {
+                    remote.Tick();yield return null;
+                    Assert.That(RemoteButton("手动恢复"),Is.SameAs(stableResume),"Stable lost frames keep managed button identity");
+                    Assert.That(remote.Presentation.Ready,Is.False);
+                }
+                ProductResumeIntent intent=runtime.GetComponent<ProductResumeIntent>();
+                long originalAttempt=intent.AttemptId;
+                intent.Feedback="恢复页同状态反馈更新";remote.Presentation.RefreshGridHud();
+                Assert.That(remote.Hud.HintText.text,Is.EqualTo(intent.Feedback));
+                Assert.That(intent.AttemptId,Is.EqualTo(originalAttempt));
+                var retiredAttempt=CaptureButtonCallback(RemoteButton("手动恢复"));
+                ++intent.AttemptId;remote.Presentation.RefreshGridHud();
+                Assert.That(RemoteButton("手动恢复"),Is.Not.SameAs(stableResume));
+                retiredAttempt();Assert.That(runtime.Stage,Is.EqualTo(ProductStage.Disconnected),"Previous attempt callback is no longer eligible");
                 var oldResume = CaptureButtonCallback(RemoteButton("手动恢复")); int mono = remote.Hud.GetInstanceID();
                 remote.Presentation.CloseGridHud(); oldResume(); Assert.That(runtime.Stage, Is.EqualTo(ProductStage.Disconnected));
                 yield return null; remote.Presentation.OpenGridHud();
