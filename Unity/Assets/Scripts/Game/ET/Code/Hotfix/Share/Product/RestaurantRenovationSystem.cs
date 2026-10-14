@@ -14,6 +14,7 @@ namespace ET
         {
             self.ResultLevelId = 0; self.ResultLevelGeneration = 0; self.ChoiceVersion = 0;
             self.SelectedDefinitionId = 0; self.SelectedName = null;
+            self.Failure = null;
             self.Candidates = Array.Empty<int>(); self.PendingPlacements = Array.Empty<GridStationPlacement>();
             self.PendingUpgradeStation = default; self.PendingUpgradeExpectedLevel = 0; self.UpgradeTargets.Clear();
             self.AppliedStations.Clear(); self.Choices.Clear();
@@ -29,18 +30,19 @@ namespace ET
     [FriendOf(typeof(ProductRuntimeComponent))]
     public static partial class RestaurantRuntimeSystem
     {
-        private static bool IsSoloRenovation(this RestaurantRuntime self)
+        private static bool SupportsRenovation(this RestaurantRuntime self)
         {
             HostSessionComponent authority = ((Scene)self.IScene).GetComponent<HostSessionComponent>();
             ProductRuntimeComponent runtime = authority?.Runtime ?? default;
-            return runtime?.Config.Role == RuntimeInstanceRole.Solo;
+            return runtime?.Config.Role is RuntimeInstanceRole.Solo or RuntimeInstanceRole.Host;
         }
 
         public static string QueueRenovationChoice(this RestaurantRuntime self, HostPeer peer, ProductCommandContext context, RenovationChoiceIntent intent)
         {
             GridKitchenComponent kitchen = self.Kitchen; Level level = self.CurrentLevel; Match match = self.Match;
             if (self.Stopped || peer == null || !kitchen.HasBinding(peer.MemberId, peer.Generation)) return "EntryClosed";
-            if (!self.IsSoloRenovation()) return "SoloRestaurantOnly";
+            if (!peer.CanControlRestaurant()) return "HostControlOnly";
+            if (!self.SupportsRenovation()) return "RestaurantUnavailable";
             string error = context.Validate(match.MatchId, kitchen.WorldId, kitchen.WorldGeneration, level.Id, level.Generation, peer.Generation);
             if (error != null) return error;
             error = peer.CheckProductCommand(context, ProductCommandKind.Renovation, intent.Equals(peer.LastRenovationCommand), out bool replay);
@@ -54,7 +56,7 @@ namespace ET
 
         private static void PrepareRenovationChoices(this RestaurantRuntime self, Level level)
         {
-            if (!self.IsSoloRenovation()) return;
+            if (!self.SupportsRenovation()) return;
             RestaurantRenovation renovation = self.GetComponent<RestaurantRenovation>(); GridKitchenComponent kitchen = self.Kitchen;
             if (level.IsChapterTerminal)
             {
@@ -70,6 +72,7 @@ namespace ET
             renovation.Prepared = renovation.PreparationQueued = renovation.NotifyPrepared = false;
             renovation.ResultLevelId = renovation.ResultLevelGeneration = 0;
             renovation.Candidates = Array.Empty<int>(); renovation.SelectedDefinitionId = 0; renovation.SelectedName = null;
+            renovation.Failure = null;
             renovation.PendingPlacements = Array.Empty<GridStationPlacement>();
             renovation.PendingUpgradeStation = default; renovation.PendingUpgradeExpectedLevel = 0; renovation.UpgradeTargets.Clear();
             self.Root().GetComponent<ProcessInnerSender>().Send(((Scene)self.IScene).GetComponent<HostSessionComponent>().GetActorId(), ProductMessages.Create<LevelFinished>(value =>
@@ -82,7 +85,7 @@ namespace ET
 
         private static void AdvanceRenovationPreparation(this RestaurantRuntime self, Level level)
         {
-            if (!self.IsSoloRenovation() || level.Phase != LevelPhase.Completed || level.Paused) return;
+            if (!self.SupportsRenovation() || level.Phase != LevelPhase.Completed || level.Paused) return;
             RestaurantRenovation renovation = self.GetComponent<RestaurantRenovation>(); GridKitchenComponent kitchen = self.Kitchen;
             while (self.FinishedTransitions.Count > 0)
             {
@@ -123,6 +126,12 @@ namespace ET
                 var definition = Tables.Instance.DTRenovationConfig.Get(id);
                 if (definition.RewardKind == 2)
                 {
+                    HostSessionComponent authority = ((Scene)self.IScene).GetComponent<HostSessionComponent>();
+                    ProductRuntimeComponent runtime = authority.Runtime;
+                    if (runtime.Config.Role != RuntimeInstanceRole.Solo)
+                    {
+                        continue;
+                    }
                     var upgrade = Tables.Instance.DTStationUpgradeConfig.Get(definition.UpgradeDefinitionId);
                     foreach (GridStation station in kitchen.Stations.Values.Select(value => (GridStation)value).OrderBy(station => station.Id))
                         if (station.UpgradeLevel == 0 && StationUpgradeConfig.Matches(upgrade, (int)station.Kind, station.Capabilities))
@@ -143,6 +152,7 @@ namespace ET
                 RenovationChoiceEnvelope command = renovation.Choices.Dequeue(); HostPeer peer = command.Peer;
                 string error = peer == null || !kitchen.HasBinding(peer.MemberId, command.Context.BindingGeneration) ? "EntryClosed"
                     : command.Context.Validate(match.MatchId, kitchen.WorldId, kitchen.WorldGeneration, level.Id, level.Generation, peer.Generation);
+                if (error == null && !peer.CanControlRestaurant()) error = "HostControlOnly";
                 if (error == null) error = level.Phase != LevelPhase.Completed ? "WrongPhase"
                     : !renovation.Prepared ? "RenovationNotReady"
                     : renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation ||
@@ -175,7 +185,7 @@ namespace ET
         {
             RestaurantRenovation renovation = self.GetComponent<RestaurantRenovation>();
             Level level = self.CurrentLevel;
-            if (self.IsSoloRenovation() && (!renovation.Prepared || renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation))
+            if (self.SupportsRenovation() && (!renovation.Prepared || renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation))
                 return "RenovationNotReady";
             if (renovation.SelectedDefinitionId != 0 && Tables.Instance.DTRenovationConfig.Get(renovation.SelectedDefinitionId).RewardKind == 2)
                 return CheckUpgradeTarget(Tables.Instance.DTRenovationConfig.Get(renovation.SelectedDefinitionId), renovation.PendingUpgradeStation, renovation.PendingUpgradeExpectedLevel);
@@ -186,6 +196,7 @@ namespace ET
         private static void ApplyPendingRenovation(this RestaurantRuntime self)
         {
             RestaurantRenovation renovation = self.GetComponent<RestaurantRenovation>(); GridKitchenComponent kitchen = self.Kitchen;
+            renovation.Failure = null;
             if (renovation.SelectedDefinitionId == 0) return;
             var reward = Tables.Instance.DTRenovationConfig.Get(renovation.SelectedDefinitionId);
             if (reward.RewardKind == 2)

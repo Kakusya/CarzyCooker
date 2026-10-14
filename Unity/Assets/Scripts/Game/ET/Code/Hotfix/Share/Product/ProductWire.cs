@@ -15,7 +15,7 @@ namespace ET
         public override void Handle(NetComponentOnRead args)
         {
             Session session = args.Session;
-            if (args.Message is not (ProductJoinRequest or ProductProbeRequest or ProductLeaveRequest or ProductHeartbeatRequest or GridCommandRequest or LevelCommandRequest or StationLayoutRequest or ChooseBuffRequest or ServeOrderRequest or FrontWorkRequest or SupplyCommandRequest))
+            if (args.Message is not (ProductJoinRequest or ProductResumeRequest or ProductProbeRequest or ProductLeaveRequest or ProductHeartbeatRequest or GridCommandRequest or LevelCommandRequest or StationLayoutRequest or ChooseBuffRequest or ChooseRenovationRequest or ServeOrderRequest or FrontWorkRequest or SupplyCommandRequest))
             {
                 (args.Message as MessageObject)?.Dispose();
                 session.Error = ProductError.InvalidRequest;
@@ -23,7 +23,7 @@ namespace ET
                 return;
             }
             ProductPeerBinding binding = session.GetComponent<ProductPeerBinding>();
-            if (binding == null && args.Message is ProductJoinRequest)
+            if (binding == null && args.Message is ProductJoinRequest or ProductResumeRequest)
             {
                 HostSessionComponent authority = ((Scene)session.IScene).GetComponent<HostSessionComponent>();
                 HostPeer peer = ProductAuthority.CreatePeer(authority);
@@ -82,6 +82,12 @@ namespace ET
                     IRequest inner = wire switch
                     {
                         ProductJoinRequest join => ProductMessages.Create<ProductJoinRequest>(message => { message.ProtocolVersion = join.ProtocolVersion; }),
+                        ProductResumeRequest resume => ProductMessages.Create<ProductResumeRequest>(message =>
+                        {
+                            message.ProtocolVersion = resume.ProtocolVersion; message.MatchId = resume.MatchId;
+                            message.ResumeCredential = resume.ResumeCredential; message.AttemptId = resume.AttemptId;
+                            message.PlatformId = resume.PlatformId;
+                        }),
                         ProductProbeRequest probe => ProductMessages.Create<ProductProbeRequest>(message => { message.MatchId = probe.MatchId; message.Sequence = probe.Sequence; message.Payload = probe.Payload; }),
                         ProductLeaveRequest leave => ProductMessages.Create<ProductLeaveRequest>(message => { message.MatchId = leave.MatchId; }),
                         GridCommandRequest grid => ProductMessages.Create<GridCommandRequest>(message =>
@@ -118,6 +124,14 @@ namespace ET
                             message.LevelId = buff.LevelId; message.LevelGeneration = buff.LevelGeneration; message.CommandId = buff.CommandId;
                             message.DrawVersion = buff.DrawVersion; message.ChoiceDefId = buff.ChoiceDefId;
                         }),
+                        ChooseRenovationRequest renovation => ProductMessages.Create<ChooseRenovationRequest>(message =>
+                        {
+                            message.ProtocolVersion = renovation.ProtocolVersion; message.MatchId = renovation.MatchId; message.WorldId = renovation.WorldId;
+                            message.WorldGeneration = renovation.WorldGeneration; message.BindingGeneration = renovation.BindingGeneration;
+                            message.LevelId = renovation.LevelId; message.LevelGeneration = renovation.LevelGeneration; message.CommandId = renovation.CommandId;
+                            message.ChoiceVersion = renovation.ChoiceVersion; message.DefinitionId = renovation.DefinitionId;
+                            message.TargetStationId = renovation.TargetStationId; message.ExpectedUpgradeLevel = renovation.ExpectedUpgradeLevel;
+                        }),
                         ServeOrderRequest serve => ProductMessages.Create<ServeOrderRequest>(message =>
                         {
                             message.ProtocolVersion = serve.ProtocolVersion; message.MatchId = serve.MatchId; message.WorldId = serve.WorldId;
@@ -148,6 +162,10 @@ namespace ET
                 }
                 session = sessionRef;
                 peer = peerRef;
+                if (responseObject is ProductResumeResponse { Error: 0 } resumed)
+                {
+                    generation = resumed.BindingGeneration;
+                }
                 if (session == null || (entered && (peer == null || peer.Generation != generation)))
                 {
                     return;
@@ -159,12 +177,12 @@ namespace ET
                 {
                     return;
                 }
-                if (response is ProductJoinResponse { Error: 0 })
+                if (response is ProductJoinResponse { Error: 0 } or ProductResumeResponse { Error: 0 })
                 {
                     session.RemoveComponent<SessionAcceptTimeoutComponent>();
                 }
                 session.Send((IMessage)responseObject);
-                if (committedLeave || response is ProductJoinResponse { Error: not 0 })
+                if (committedLeave || response is ProductJoinResponse { Error: not 0 } or ProductResumeResponse { Error: not 0 })
                 {
                     // KCP Send 入队后由后续 Update 发出，不能立即 Dispose 丢弃该响应。
                     await session.Root().GetComponent<TimerComponent>().WaitAsync(ProductSessionRules.ResponseCloseGrace);
@@ -198,19 +216,32 @@ namespace ET
             (int)GridAction.PlaceCounter or (int)GridAction.PickupDrop or (int)GridAction.AddToContainer or
             (int)GridAction.StartStationWork or (int)GridAction.StartHeldWork or (int)GridAction.StopWork or
             (int)GridAction.PourContents or (int)GridAction.StartAutoWork or (int)GridAction.PortionSoup or (int)GridAction.StartBake or
-            (int)GridAction.FillWater or (int)GridAction.DrainLiquid or (int)GridAction.DiscardSolid or (int)GridAction.ReceiveSupply or (int)GridAction.TakeSupplyPortion;
+            (int)GridAction.FillWater or (int)GridAction.DrainLiquid or (int)GridAction.DiscardSolid or (int)GridAction.ReceiveSupply or (int)GridAction.TakeSupplyPortion or
+            (int)GridAction.StartJuice or (int)GridAction.PortionJuice or (int)GridAction.BindDrink or (int)GridAction.UnbindDrink;
 
         private static MessageObject CopyResponse(MessageObject result)
         {
             switch (result)
             {
                 case ProductJoinResponse join:
-                    var response = ProductMessages.Create<ProductJoinResponse>(message => { message.Error = join.Error; message.Message = join.Message; message.MatchId = join.MatchId; message.MemberId = join.MemberId; message.BindingGeneration = join.BindingGeneration; message.RosterVersion = join.RosterVersion; });
+                    var response = ProductMessages.Create<ProductJoinResponse>(message => { message.Error = join.Error; message.Message = join.Message; message.MatchId = join.MatchId; message.MemberId = join.MemberId; message.BindingGeneration = join.BindingGeneration; message.RosterVersion = join.RosterVersion; message.ResumeCredential = join.ResumeCredential; });
                     foreach (ProductRosterMember member in join.Members)
                     {
                         response.Members.Add(ProductMessages.Create<ProductRosterMember>(message => { message.MemberId = member.MemberId; message.Online = member.Online; }));
                     }
                     return response;
+                case ProductResumeResponse resume:
+                    var resumed = ProductMessages.Create<ProductResumeResponse>(message =>
+                    {
+                        message.Error = resume.Error; message.Message = resume.Message; message.MatchId = resume.MatchId;
+                        message.MemberId = resume.MemberId; message.BindingGeneration = resume.BindingGeneration;
+                        message.RosterVersion = resume.RosterVersion; message.AttemptId = resume.AttemptId;
+                    });
+                    foreach (ProductRosterMember member in resume.Members)
+                    {
+                        resumed.Members.Add(ProductMessages.Create<ProductRosterMember>(message => { message.MemberId = member.MemberId; message.Online = member.Online; }));
+                    }
+                    return resumed;
                 case ProductProbeResponse probe:
                     return ProductMessages.Create<ProductProbeResponse>(message => { message.Error = probe.Error; message.Message = probe.Message; message.MemberId = probe.MemberId; message.Sequence = probe.Sequence; message.Payload = probe.Payload; });
                 case ProductLeaveResponse leave:
@@ -223,6 +254,8 @@ namespace ET
                     return ProductMessages.Create<StationLayoutResponse>(message => { message.Error = layout.Error; message.Message = layout.Message; message.CommandId = layout.CommandId; message.Status = layout.Status; });
                 case ChooseBuffResponse buff:
                     return ProductMessages.Create<ChooseBuffResponse>(message => { message.Error = buff.Error; message.Message = buff.Message; message.CommandId = buff.CommandId; message.Status = buff.Status; });
+                case ChooseRenovationResponse renovation:
+                    return ProductMessages.Create<ChooseRenovationResponse>(message => { message.Error = renovation.Error; message.Message = renovation.Message; message.CommandId = renovation.CommandId; message.Status = renovation.Status; });
                 case ServeOrderResponse serve:
                     return ProductMessages.Create<ServeOrderResponse>(message => { message.Error = serve.Error; message.Message = serve.Message; message.CommandId = serve.CommandId; message.Status = serve.Status; });
                 case FrontWorkResponse front:
@@ -238,6 +271,7 @@ namespace ET
     [Invoke((long)SceneType.ProductClient)]
     [FriendOf(typeof(ProductClientBinding))]
     [FriendOf(typeof(Session))]
+    [FriendOf(typeof(ClientSessionComponent))]
     public sealed class ProductClientOnRead : AInvokeHandler<NetComponentOnRead>
     {
         public override void Handle(NetComponentOnRead args)
@@ -245,12 +279,12 @@ namespace ET
             Session session = args.Session;
             ClientSessionComponent client = session.GetComponent<ProductClientBinding>()?.Client ?? default;
             MessageObject message = args.Message as MessageObject;
-            if (client == null || message == null)
+            if (client == null || message == null || (Session)client.Session != session)
             {
                 message?.Dispose();
                 return;
             }
-            if (message is ProductJoinResponse or ProductProbeResponse or ProductLeaveResponse or ProductHeartbeatResponse or GridCommandResponse or LevelCommandResponse or StationLayoutResponse or ChooseBuffResponse or ServeOrderResponse or FrontWorkResponse or SupplyCommandResponse)
+            if (message is ProductJoinResponse or ProductResumeResponse or ProductProbeResponse or ProductLeaveResponse or ProductHeartbeatResponse or GridCommandResponse or LevelCommandResponse or StationLayoutResponse or ChooseBuffResponse or ChooseRenovationResponse or ServeOrderResponse or FrontWorkResponse or SupplyCommandResponse)
             {
                 IResponse response = (IResponse)message;
                 if (!session.requestCallbacks.TryGetValue(response.RpcId, out RpcInfo pending))

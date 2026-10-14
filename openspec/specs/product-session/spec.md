@@ -26,15 +26,15 @@
 
 ### Requirement: 逻辑成员独立于连接
 
-Match MUST 独立持有 Participant 和名单权威，HostPeer／Session 只绑定成员，不作为其释放父对象。连接断开仅撤销绑定并标离线，显式 Leave 才退出逻辑协作；原型不提供身份恢复凭证，不准凭自报编号接管旧成员。
+Match MUST 独立持有 Participant 和名单权威，HostPeer／Session 只绑定成员，不作为其释放父对象。连接断开仅撤销绑定并标离线，显式 Leave 才退出逻辑协作；合法恢复必须持有本 Match 内有效恢复凭证，不准凭自报编号接管旧成员。首版恢复仅限 Host 与 Client 进程均保留的本轮运行。
 
 #### Scenario: 断线释放连接子树
 - **WHEN** 某已加入 Session 及其 HostPeer 被清理
 - **THEN** 原 Participant 由 Match 保留，在线状态变为离线，其他成员及公共消息资源不受影响
 
 #### Scenario: 新连接自报旧成员编号
-- **WHEN** 新绑定试图用请求自报的旧 MemberId 恢复身份
-- **THEN** 不授予原成员权限；本原型仅允许合法新加入，旧成员继续离线，不宣称完整重连已实现
+- **WHEN** 新绑定试图只用请求自报的旧 MemberId 恢复身份
+- **THEN** 不授予原成员权限；仅合法新加入或持有效凭证的恢复请求可取得相应权限
 
 ### Requirement: 本地与远端共用裁决
 
@@ -390,6 +390,34 @@ Host SHALL 发布包含世界身份、版本和 Tick 的地图快照；各端复
 - **WHEN** 测试依次控制开始请求、业务时间和消息投递
 - **THEN** 能分别观察接收、开始、到点待转换及最终完成，并验证实际物品或业务阶段只修改一次
 
+### Requirement: 恢复凭证仅在本轮有效
+合法加入 SHALL 获得不可猜测的内存恢复凭证，绑定本 Match 和成员。成功 Leave 或整轮停止撤销凭证；错误运行、协议或运行平台、未知或已撤销凭证不得恢复身份，不持久化或公开打印凭证。
+
+#### Scenario: Leave 后使用旧凭证
+- **WHEN** 成员已成功 Leave，随后新连接提交原凭证
+- **THEN** 恢复被拒绝，不重建原成员或角色
+
+### Requirement: 恢复串行替换连接
+合法恢复 MUST 绑定原逻辑成员并建立新绑定代次，不增加逻辑成员。多个有效连接竞争时串行处理，后提交合法绑定替换前者；同一连接重复同一尝试不重复建角色。凭证在本轮保持有效，使回执丢失后可显式新尝试。
+
+#### Scenario: 成功回执丢失后手动重试
+- **WHEN** 第一次恢复已提交但 Client 未收到回执，随后发起新恢复尝试
+- **THEN** 能以原有效凭证恢复同一成员，最多保留一个当前有效绑定和角色，不重复落物
+
+### Requirement: 当前世界就绪后开放输入
+恢复 MUST 以当前关为准建立角色，保持断线落物及空手恢复规则；匹配本人确认、完整投影与视图全部就绪后才开放输入。旧连接答复、动作及快照不能改变新绑定。
+
+#### Scenario: 失联期间已换关且物品被拿走
+- **WHEN** Client 在 Host 换关后恢复，而其断线落物已被其他人取得
+- **THEN** 原成员在当前关空手出现，不复制或收回旧物品，取得匹配投影前不能操作
+
+### Requirement: 恢复由玩家显式发起
+连接失联 SHALL 显示可手动恢复或结束本地尝试，不自动重放未确认业务动作。超时不等于原动作未提交；本地取消未成功送达 Leave 时不得宣称 Host 已删除成员。
+
+#### Scenario: 玩家取消恢复但无法通知 Host
+- **WHEN** 网络仍不可用，玩家结束本地恢复
+- **THEN** 清理本地等待并显示未恢复，不伪造成功 Leave，其他成员继续运行
+
 ## Sources
 
 - [产品设计与当前验证边界](../../changes/product-session-bootstrap/design.md)、[执行记录](../../changes/product-session-bootstrap/execution-notes.md)
@@ -404,3 +432,6 @@ Host SHALL 发布包含世界身份、版本和 Tick 的地图快照；各端复
 - [solo-restaurant-level-flow 执行与验收记录](../../changes/archive/2026-10-13-solo-restaurant-level-flow/execution-notes.md)。
 
 - [产品本地消息边界设计与验收](../../changes/archive/2026-10-13-product-local-message-boundaries/design.md)、[逐功能运行记录](../../changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
+
+- [本轮成员恢复与验证范围](../../changes/cooperative-member-resume/execution-notes.md)
+- [恢复实施](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductResumeSystem.cs)

@@ -40,6 +40,8 @@ namespace ET
         public long ResultLevelId, ResultLevelGeneration, ChoiceVersion;
         public int SelectedDefinitionId;
         public string SelectedName;
+        // Host 最近一次合法 Continue 的安装预检失败，双方观察同一结果。
+        public string Failure;
         public IReadOnlyList<int> Candidates;
         public IReadOnlyList<GridStationPlacement> PendingPlacements;
         public EntityRef<GridStation> PendingUpgradeStation;

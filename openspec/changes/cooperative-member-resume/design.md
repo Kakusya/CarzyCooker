@@ -2,7 +2,7 @@
 
 ## Context
 
-现有断线保留 Participant 并移除角色/落物，新的 Join 不能接管原成员；尚无恢复凭证。首版只支持 Host 和 Client 进程、本轮 Match 都还在的手动恢复，不承诺跨进程或跨设备身份。 动机见 [proposal.md](proposal.md)。本案为待实施规划。
+现有断线保留 Participant 并移除角色/落物，新的 Join 不能接管原成员；尚无恢复凭证。首版只支持 Host 和 Client 进程、本轮 Match 都还在的手动恢复，不承诺跨进程或跨设备身份。 动机见 [proposal.md](proposal.md)。本案正在实施，运行范围见 execution-notes。
 
 ## Goals / Non-Goals
 
@@ -32,7 +32,9 @@
 
 ```text
 Product Fiber / RootScene (SceneType.ProductRoot)
-├─ Component: ProductRuntime、ProcessInnerSender、Timer、CoroutineLock
+├─ Component: ProductRuntime
+│  └─ Component: ProductResumeIntent（Client 本轮凭证／endpoint／尝试号）
+├─ Component: ProcessInnerSender、Timer、CoroutineLock
 ├─ ChildScene: ProductHost (SceneType.ProductHost)
 │  ├─ Component: HostSession + Ordered MailBox
 │  │  └─ Child: HostPeer + Ordered MailBox（绑定 Participant，非其 owner）
@@ -72,3 +74,11 @@ Host/Solo 先建立权威及餐厅，再建立接入、客户端和视图；远�
 - [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductAuthority.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductAuthority.cs)
 - [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)
 - [openspec/specs/product-session/spec.md](../../../openspec/specs/product-session/spec.md)
+
+## 实际重建与收尾
+
+失联保留原 ProductClient Scene 及受管 GridPresentation，禁止输入并显示手动恢复。恢复在同 Scene 移除旧 ClientSession，创建新 ClientSession／GridClient／Session；消息仍投递到新实例的 MailBox，旧 EntityRef 与 HUD guard 不能生效。本人确认后先安装成员，再等待匹配完整投影和原视图。旧 Session.Dispose 在原 Fiber 下一帧收尾，避免 Session.Destroy 重入；整轮 Stop 才停止公共发送器。Match关闭通知走不可恢复失败，在线 Leave 成功移除恢复组件，本地取消明确不等于Host确认Leave。
+
+恢复代次在 HostSession 串行 Resume 提交点重新分配，并同时更新可信 Session→Peer 绑定；不能沿用早已创建的未绑定 Peer 代次。wire 的成功 Resume 回送使用已提交代次核对本次 Session／Peer，重复同尝试仍返回同一代次。
+
+Resume公开字段PlatformId6值复制到内部Control.PlatformId12，Host在串行裁决核对本进程平台（PC=1，Android Player=2）。旧入口失败、错误平台不更改原Participant。Android／LAN运行仍属于后续设备层，本案仅验证明确错误平台值的真实KCP拒绝。

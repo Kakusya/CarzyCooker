@@ -20,9 +20,10 @@ namespace ET
         public void SoloRenovationConfigActualFiniteCounterAndChoppingRewardsCreateNoExtraInitialItems()
         {
             RenovationConfig.ValidateAll(); var definitions = Tables.Instance.DTRenovationConfig.DataList;
-            Assert.That(definitions.Count, Is.EqualTo(4)); Assert.That(definitions.Where(row => row.RewardKind == 1).Select(row => row.Quantity), Is.All.EqualTo(1));
-            Assert.That(definitions.Where(row => row.RewardKind == 1).Select(row => Tables.Instance.DTStationConfig.Get(row.StationDefinitionId).Kind), Is.EqualTo(new[] { 0, 1 }));
-            Assert.That(Tables.Instance.DTLevelConfig.DataList.Where(row => row.ChapterId == 0).All(row => row.AllowedRenovationIds.SequenceEqual(new[] { 1, 2 })), Is.True);
+            Assert.That(definitions.Count, Is.EqualTo(6)); Assert.That(definitions.Where(row => row.RewardKind == 1).Select(row => row.Quantity), Is.All.EqualTo(1));
+            Assert.That(definitions.Where(row => row.RewardKind == 1).Select(row => Tables.Instance.DTStationConfig.Get(row.StationDefinitionId).Kind), Is.EqualTo(new[] { 0, 1, 0, 1 }));
+            Assert.That(Tables.Instance.DTLevelConfig.DataList.Where(row => row.ChapterId == 0 && row.MenuVariant == 0).All(row => row.AllowedRenovationIds.SequenceEqual(new[] { 1, 2 })), Is.True);
+            Assert.That(Tables.Instance.DTLevelConfig.DataList.Where(row => row.ChapterId == 0 && row.MenuVariant == 1).All(row => row.AllowedRenovationIds.SequenceEqual(new[] { 5, 6 })), Is.True);
             StartSolo(); Assert.That(Grid.Items.Count, Is.EqualTo(7)); Assert.That(Grid.Stations.Count, Is.EqualTo(16));
             Assert.That(CurrentLevel.AllowedRenovationIds, Is.EqualTo(new[] { 1, 2, 3, 4 }));
         }

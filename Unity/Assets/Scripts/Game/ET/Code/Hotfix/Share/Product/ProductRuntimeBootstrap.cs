@@ -59,7 +59,7 @@ namespace ET
                     }
                     var firstDefinition = header != null ? Tables.Instance.DTLevelConfig.Get(header.NextLevelId)
                         : self.Config.Role == RuntimeInstanceRole.Solo ? Tables.Instance.DTLevelConfig.DataList.Single(row => row.ChapterId == 1 && row.ChapterStage == 1 && row.MenuVariant == menuVariant)
-                        : Tables.Instance.DTLevelConfig.Get(1);
+                        : Tables.Instance.DTLevelConfig.Get(menuVariant == 1 ? 3 : 1);
                     Scene host = EntitySceneFactory.CreateScene(root, IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(), SceneType.ProductHost, "ProductHost");
                     self.HostScene = host;
                     Match match = host.AddChild<Match>();

@@ -123,10 +123,10 @@ namespace ET
         }
 
         public static async UniTask<ProductControlResponse> Forward(this HostPeer peer, ProductControlAction action,
-            int version = 0, string matchId = null, int sequence = 0, string payload = null)
+            int version = 0, string matchId = null, int sequence = 0, string payload = null, string credential = null, long attempt = 0, int platform = 0)
         {
             HostSessionComponent authority = peer.Authority;
-            var request = ProductMessages.Create<ProductControlRequest>(message => { message.Action = (int)action; message.PeerId = peer.Id; message.PeerInstanceId = peer.InstanceId; message.BindingGeneration = peer.Generation; message.ProtocolVersion = version; message.MatchId = matchId; message.Sequence = sequence; message.Payload = payload; });
+            var request = ProductMessages.Create<ProductControlRequest>(message => { message.Action = (int)action; message.PeerId = peer.Id; message.PeerInstanceId = peer.InstanceId; message.BindingGeneration = peer.Generation; message.ProtocolVersion = version; message.MatchId = matchId; message.Sequence = sequence; message.Payload = payload; message.ResumeCredential = credential; message.ResumeAttempt = attempt; message.PlatformId = platform; });
             return (ProductControlResponse)await peer.Root().GetComponent<ProcessInnerSender>().Call(authority.GetActorId(), request, false);
         }
     }
@@ -149,6 +149,7 @@ namespace ET
             response.MemberId = result.MemberId;
             response.BindingGeneration = result.BindingGeneration;
             response.RosterVersion = result.RosterVersion;
+            response.ResumeCredential = result.ResumeCredential;
             foreach (ProductRosterMember member in result.Members)
             {
                 response.Members.Add(ProductMessages.Create<ProductRosterMember>(message => { message.MemberId = member.MemberId; message.Online = member.Online; }));

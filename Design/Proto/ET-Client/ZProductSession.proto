@@ -25,6 +25,7 @@ message ProductJoinResponse // IResponse
     int64 BindingGeneration = 6;
     int64 RosterVersion = 7;
     repeated ProductRosterMember Members = 8;
+    string ResumeCredential = 9;
 }
 
 // ResponseType ProductProbeResponse
@@ -103,6 +104,9 @@ message ProductControlRequest // IRequest
     string MatchId = 7;
     int32 Sequence = 8;
     string Payload = 9;
+    string ResumeCredential = 10;
+    int64 ResumeAttempt = 11;
+    int32 PlatformId = 12;
 }
 
 message ProductControlResponse // IResponse
@@ -118,4 +122,6 @@ message ProductControlResponse // IResponse
     int32 Sequence = 9;
     string Payload = 10;
     bool Committed = 11;
+    string ResumeCredential = 12;
+    int64 ResumeAttempt = 13;
 }

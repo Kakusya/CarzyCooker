@@ -141,13 +141,13 @@ namespace ET
             return fiber;
         }
 
-        private ProductRuntimeComponent StartHost(bool join = true, int port = 0)
+        private ProductRuntimeComponent StartHost(bool join = true, int port = 0, bool liveDrinks = false)
         {
             RuntimeInstanceConfig config = RuntimeInstanceConfig.Create("product-test", "test", "host", "127.0.0.1:" + port);
             RuntimeInstanceContext.Prepare(config);
             Fiber fiber = CreateFiber();
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
-            host.InitializeProduct(join);
+            host.InitializeProduct(join, menuVariant: liveDrinks ? 1 : 0);
             Pump(8);
             return host;
         }

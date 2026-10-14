@@ -2,7 +2,7 @@
 
 ## Context
 
-合作核心已在同 Editor KCP 接通两菜与 Host 控制；装修目前 Solo。依赖现有前厅/补货/loopback 案的普通双端链，扩展一次新增工位选择与安装。 动机见 [proposal.md](proposal.md)。本案为待实施规划。
+合作核心已在同 Editor KCP 接通两菜与 Host 控制；装修目前 Solo。依赖现有前厅/补货/loopback 案的普通双端链，扩展一次新增工位选择与安装。 动机见 [proposal.md](proposal.md)。本案正在实施，运行范围见 execution-notes。
 
 ## Goals / Non-Goals
 
@@ -66,3 +66,9 @@ Host/Solo 先建立权威及餐厅，再建立接入、客户端和视图；远�
 - [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)
 - [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RestaurantRenovationSystem.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RestaurantRenovationSystem.cs)
 - [Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationRenovationSystem.cs](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationRenovationSystem.cs)
+
+## 饮品布局的安装位置
+
+实际 Launcher 饮品地图无法合法安装原 1／2 奖励；保留旧两菜池，另用配置 5／6 的同类型新增台面／切配台，安装位 (2,16)／(4,16)，无免费物品、无升级。真实 KCP 安装与移动已验证；普通受管 Host 选择／Client 只读／继续换关也已运行。
+
+安装预检失败归 RestaurantRenovation.Failure，经 GridWorldSnapshot66 值复制到双方 GridClient.RenovationFailure，HUD 只读显示；不是 Client 私有状态。新合法准备与成功 Continue 清除该失败，拒绝不改厨房实物／布局／当前 Level。

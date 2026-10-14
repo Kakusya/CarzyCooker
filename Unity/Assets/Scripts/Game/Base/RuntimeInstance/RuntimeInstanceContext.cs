@@ -14,6 +14,8 @@ namespace Game
 
     public static class RuntimeInstanceContext
     {
+        // Unity 平台事实由壳层提供，ET Model 不引用 UnityEngine。
+        public static int ProductPlatformId => UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android ? 2 : 1;
         public static RuntimeInstanceConfig Config { get; private set; }
         public static RuntimeInstanceState State { get; private set; }
         public static string Failure { get; private set; }

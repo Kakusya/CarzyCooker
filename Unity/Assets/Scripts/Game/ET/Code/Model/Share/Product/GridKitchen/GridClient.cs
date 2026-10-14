@@ -155,6 +155,7 @@ namespace ET
         public int PendingUpgradeExpectedLevel;
         public IReadOnlyList<RenovationUpgradeTarget> UpgradeTargets;
         public long RenovationChoiceVersion, RenovationLevelId, RenovationLevelGeneration;
+        public string RenovationFailure;
         public readonly Dictionary<int, IReadOnlyList<long>> RenovationApplied = new();
         public bool SaveEnabled;
         public bool CanControlRestaurant;

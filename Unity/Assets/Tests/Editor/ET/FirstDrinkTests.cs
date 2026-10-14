@@ -73,12 +73,12 @@ namespace ET
             return cup;
         }
 
-        private void DrinkOnlyCustomers()
+        private void DrinkOnlyCustomers(int levelConfig = 201, int interval = 100)
         {
             var rows = (System.Collections.Generic.List<DRCustomerFlowConfig>)Tables.Instance.DTCustomerFlowConfig.DataList;
             var map = (System.Collections.Generic.Dictionary<int, DRCustomerFlowConfig>)Tables.Instance.DTCustomerFlowConfig.DataMap;
-            var original = rows.Single(row => row.LevelConfigId == 201); var buffer = new Luban.ByteBuf();
-            foreach (int value in new[] { original.Id, original.LevelConfigId, 20, 100, original.QueueCapacity, 1200,
+            var original = rows.Single(row => row.LevelConfigId == levelConfig); var buffer = new Luban.ByteBuf();
+            foreach (int value in new[] { original.Id, original.LevelConfigId, 20, interval, original.QueueCapacity, 1200,
                 original.EatTicks, original.EntranceX, original.EntranceY, original.QueueX, original.QueueY }) buffer.WriteInt(value);
             buffer.WriteSize(1); buffer.WriteInt(3);
             var replacement = new DRCustomerFlowConfig(buffer); rows[rows.IndexOf(original)] = replacement; map[replacement.Id] = replacement;

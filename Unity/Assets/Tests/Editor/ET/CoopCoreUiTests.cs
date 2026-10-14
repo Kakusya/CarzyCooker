@@ -1,6 +1,7 @@
 #if UNITY_ET_VIEW && UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
@@ -19,6 +20,7 @@ namespace ET
 {
     public sealed partial class SoloRestaurantUiTests
     {
+        private readonly List<CoopUiRemote> ownedCoopUiRemotes = new();
         private IEnumerator StartCoopHostLauncher()
         {
             Assert.That(Init.Instance, Is.Null, "Do not replace another active ET entry");
@@ -44,7 +46,9 @@ namespace ET
             private static readonly MethodInfo UpdateFiber = typeof(Fiber).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic);
             private static readonly MethodInfo LateUpdateFiber = typeof(Fiber).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
             private readonly Fiber fiber;
-            public ClientSessionComponent Client { get; }
+            private EntityRef<ProductRuntimeComponent> runtimeRef;
+            private bool disposed;
+            public ClientSessionComponent Client => ((ProductRuntimeComponent)runtimeRef)?.Client ?? default;
             public GridClientComponent Grid => Client.GetComponent<GridClientComponent>();
             public GridPresentationComponent Presentation => ((Scene)Client.IScene).GetComponent<GridPresentationComponent>();
             public MonoUIGridKitchen Hud => ((UIGridKitchen)Presentation.Hud).View;
@@ -64,10 +68,10 @@ namespace ET
                     fiber.Root.AddComponent<ProcessInnerSender>();
                     var config = RuntimeInstanceConfig.Create("coop-core-ui", "client", "client", connect: endpoint);
                     var runtime = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
+                    runtimeRef = runtime;
                     Scene scene = EntitySceneFactory.CreateScene(fiber.Root, IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(), SceneType.ProductClient, "CoopUiRemote");
                     runtime.ClientScene = scene;
-                    Client = scene.AddComponent<ClientSessionComponent, ProductRuntimeComponent>(runtime);
-                    runtime.Client = Client;
+                    runtime.Client = scene.AddComponent<ClientSessionComponent, ProductRuntimeComponent>(runtime);
                     Client.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
                     var service = new KService(AddressFamily.InterNetwork, NetworkProtocol.UDP, ServiceType.Outer);
                     NetComponent net = scene.AddComponent<NetComponent, AService, bool>(service, false);
@@ -108,6 +112,8 @@ namespace ET
 
             public void Dispose()
             {
+                if (disposed) { return; }
+                disposed = true;
                 object previous = CurrentFiber.GetValue(null);
                 SynchronizationContext previousContext = SynchronizationContext.Current;
                 try

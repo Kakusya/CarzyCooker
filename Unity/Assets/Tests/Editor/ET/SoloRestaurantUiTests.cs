@@ -157,6 +157,8 @@ namespace ET
         {
             try
             {
+                foreach (CoopUiRemote remote in ownedCoopUiRemotes) { remote.Dispose(); }
+                ownedCoopUiRemotes.Clear();
                 if(ownedRoot!=null)
                 {
                     if(ownedInit!=null && Init.Instance==ownedInit)ownedInit.Shutdown();

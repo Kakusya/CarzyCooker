@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Security.Cryptography;
 using Cysharp.Threading.Tasks;
 
 namespace ET
@@ -13,6 +14,7 @@ namespace ET
     [FriendOf(typeof(ProductRuntimeComponent))]
     [FriendOf(typeof(LocalDelivery))]
     [FriendOf(typeof(RemoteDelivery))]
+    [FriendOf(typeof(ProductPeerBinding))]
     public static class ProductAuthority
     {
         public static HostPeer CreatePeer(HostSessionComponent authority)
@@ -79,6 +81,9 @@ namespace ET
                         int memberId = ++match.NextMemberId;
                         Participant member = match.AddChildWithId<Participant>(memberId);
                         member.MemberId = memberId;
+                        byte[] credential = new byte[32];
+                        using (RandomNumberGenerator random = RandomNumberGenerator.Create()) { random.GetBytes(credential); }
+                        member.ResumeCredential = Convert.ToBase64String(credential);
                         member.Online = true;
                         member.BoundPeer = peer;
                         member.BindingGeneration = peer.Generation;
@@ -87,6 +92,64 @@ namespace ET
                         Changed(authority, match);
                     }
                     FillJoin(match, peer, response);
+                    return;
+                case ProductControlAction.Resume:
+                    if (request.ProtocolVersion != ProductSessionRules.ProtocolVersion)
+                    {
+                        response.Error = ProductError.IncompatibleProtocol;
+                        return;
+                    }
+                    if (request.PlatformId != ProductSessionRules.CurrentPlatformId)
+                    {
+                        response.Error = ProductError.InvalidRequest; response.Message = "PlatformMismatch";
+                        return;
+                    }
+                    if (request.MatchId != match.MatchId)
+                    {
+                        response.Error = ProductError.WrongMatch;
+                        return;
+                    }
+                    Participant returning = match.Children.Values.OfType<Participant>().FirstOrDefault(member =>
+                        member.ResumeCredential != null && member.ResumeCredential == request.ResumeCredential);
+                    if (returning == null || request.ResumeAttempt <= 0 || peer.GetComponent<RemoteDelivery>() == null)
+                    {
+                        response.Error = ProductError.InvalidRequest;
+                        response.Message = "InvalidResumeCredential";
+                        return;
+                    }
+                    if (peer.MemberId != 0)
+                    {
+                        if (peer.MemberId != returning.MemberId || (HostPeer)returning.BoundPeer != peer ||
+                            returning.LastResumeAttempt != request.ResumeAttempt)
+                        {
+                            response.Error = ProductError.InvalidRequest; response.Message = "ResumeAttemptConflict";
+                            return;
+                        }
+                        FillJoin(match, peer, response); response.ResumeAttempt = request.ResumeAttempt;
+                        return;
+                    }
+                    if (returning.LastResumeAttempt == request.ResumeAttempt)
+                    {
+                        response.Error = ProductError.InvalidRequest; response.Message = "ResumeAttemptConflict";
+                        return;
+                    }
+                    if (authority.NextBindingGeneration == long.MaxValue)
+                    {
+                        response.Error = ProductError.InvalidRequest;
+                        return;
+                    }
+                    // 接入 Peer 可能先创建、后恢复；新绑定代次只能在串行提交点分配。
+                    peer.Generation = ++authority.NextBindingGeneration;
+                    Session remoteSession = ((RemoteDelivery)peer.GetComponent<RemoteDelivery>()).Session;
+                    remoteSession.GetComponent<ProductPeerBinding>().Generation = peer.Generation;
+                    HostPeer previous = returning.BoundPeer;
+                    match.ProductKitchen().QueueGridMember(returning.MemberId, returning.BindingGeneration, false);
+                    previous?.CloseEntry();
+                    returning.Online = true; returning.BoundPeer = peer; returning.BindingGeneration = peer.Generation;
+                    returning.LastResumeAttempt = request.ResumeAttempt; peer.MemberId = returning.MemberId;
+                    match.ProductKitchen().QueueGridMember(returning.MemberId, peer.Generation, true);
+                    Changed(authority, match);
+                    FillJoin(match, peer, response); response.ResumeAttempt = request.ResumeAttempt;
                     return;
                 case ProductControlAction.Probe:
                 case ProductControlAction.Leave:
@@ -133,6 +196,7 @@ namespace ET
             response.MemberId = peer.MemberId;
             response.BindingGeneration = peer.Generation;
             response.RosterVersion = match.RosterVersion;
+            response.ResumeCredential = match.GetChild<Participant>(peer.MemberId).ResumeCredential;
             foreach (Participant member in match.Children.Values.OfType<Participant>())
             {
                 response.Members.Add(ProductMessages.Create<ProductRosterMember>(message => { message.MemberId = member.MemberId; message.Online = member.Online; }));

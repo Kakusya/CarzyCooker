@@ -1,0 +1,26 @@
+syntax = "proto3";
+package ET;
+
+// ResponseType ProductResumeResponse
+message ProductResumeRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    string ResumeCredential = 4;
+    int64 AttemptId = 5;
+    int32 PlatformId = 6;
+}
+
+message ProductResumeResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    string MatchId = 4;
+    int32 MemberId = 5;
+    int64 BindingGeneration = 6;
+    int64 RosterVersion = 7;
+    repeated ProductRosterMember Members = 8;
+    int64 AttemptId = 9;
+}

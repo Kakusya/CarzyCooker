@@ -22,7 +22,9 @@
 | [dish-recipes](specs/dish-recipes/spec.md) | 菜品身份、依赖闭包、真实烘焙和盘装吐司 |
 | [fixed-companions](specs/fixed-companions/spec.md) | 固定伙伴、单执行者、接续、关内成长及新关重置 |
 | [orders-front-service](specs/orders-front-service/spec.md) | 有界客流、询问开单、类型化交付、原餐具回收和自然排空 |
-| [drink-preparation](specs/drink-preparation/spec.md) | Solo 鲜榨橙汁、加工锁壶、完成搬壶与有限分杯；普通三关整链已验收 |
+| [drink-preparation](specs/drink-preparation/spec.md) | 鲜榨橙汁、加工锁壶、完成搬壶与有限分杯；Solo 原三关证据保留 |
+| [cooperative-drinks](specs/cooperative-drinks/spec.md) | 合作饮品公开动作、独立投影与争抢；新增验收进行中 |
+| [cooperative-renovation](specs/cooperative-renovation/spec.md) | Host 独占选择、新增工位一次安装、双方只读结果；双 Editor 待验收 |
 | [level-buffs](specs/level-buffs/spec.md) | 本关固定候选、一次选择、新作业冻结效果和跨关隔离 |
 | [restaurant-level-lifecycle](specs/restaurant-level-lifecycle/spec.md) | 持续厨房、统一时钟、暂停、零星结算及内存换关 |
 | [kitchen-recipe-guide](specs/kitchen-recipe-guide/spec.md) | 实际配方、当前缺口及只读首单提示；玩家理解已豁免 |

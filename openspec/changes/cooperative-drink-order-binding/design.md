@@ -2,7 +2,7 @@
 
 ## Context
 
-先完成 Solo 橙汁实体链，合作补货/清理与普通双 Editor 链；本案只接公开饮品动作和独立投影，不复制加工或交付规则。 动机见 [proposal.md](proposal.md)。本案为待实施规划。
+先完成 Solo 橙汁实体链，合作补货/清理与普通双 Editor 链；本案只接公开饮品动作和独立投影，不复制加工或交付规则。 动机见 [proposal.md](proposal.md)。本案正在实施，运行范围见 execution-notes。
 
 ## Goals / Non-Goals
 
@@ -67,3 +67,7 @@ Host/Solo 先建立权威及餐厅，再建立接入、客户端和视图；远�
 - [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridMessages.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridMessages.cs)
 - [Unity/Assets/Tests/Editor/ET/CoopCoreCookingTests.cs](../../../Unity/Assets/Tests/Editor/ET/CoopCoreCookingTests.cs)
 - [Docs/Product/specs/orders-front-service/spec.md](../../../Docs/Product/specs/orders-front-service/spec.md)
+
+## 实施入口补足
+
+原 Host 默认两菜配置不包含橙子／杯，不能用仅开放 wire 冒充普通联机饮品。沿现有 LevelConfig 与 CustomerFlowConfig 增加 3→4→4 的合作饮品配置（MenuVariant=1、ChapterId=0），正式 Host Launcher 使用 3；旧 1→2 和 Solo 101／201 三关保持。饮品地图原新增工位位置会堵通路，新增同类型奖励 5／6 分别放在 (2,16)／(4,16)，合作 3／4 只列这两项。复用相同初始实物、有限供应及配方，不建立新餐厅算法。改 Excel 源并正常 Check／导出。

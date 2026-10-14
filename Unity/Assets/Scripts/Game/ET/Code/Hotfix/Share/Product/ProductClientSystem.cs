@@ -156,6 +156,14 @@ namespace ET
                 self.MatchId = response.MatchId;
                 self.MemberId = response.MemberId;
                 self.BindingGeneration = response.BindingGeneration;
+                runtime = self.Runtime;
+                if (runtime.Config.Role == RuntimeInstanceRole.Client)
+                {
+                    if (string.IsNullOrEmpty(response.ResumeCredential)) { throw new InvalidOperationException("MissingResumeCredential"); }
+                    ProductResumeIntent intent = runtime.GetComponent<ProductResumeIntent>() ?? runtime.AddComponent<ProductResumeIntent>();
+                    intent.MatchId = response.MatchId; intent.Credential = response.ResumeCredential;
+                    intent.Endpoint = runtime.Config.Address + ":" + runtime.Config.Port; intent.Feedback = null;
+                }
                 Install(self, response.RosterVersion, members);
                 if (self.CandidateMatchId == self.MatchId && self.CandidateGeneration == self.BindingGeneration && self.CandidateVersion > self.RosterVersion)
                 {
@@ -300,6 +308,7 @@ namespace ET
                 self = selfRef;
                 if (self != null)
                 {
+                    if (committed) { ((ProductRuntimeComponent)self.Runtime)?.RemoveComponent<ProductResumeIntent>(); }
                     self.StopClient();
                 }
                 return committed;
@@ -333,14 +342,20 @@ namespace ET
             EventSystem.Instance.Publish((Scene)self.IScene, new ProductClientLeft());
         }
 
-        public static void FailClient(this ClientSessionComponent self, string reason)
+        public static void FailClient(this ClientSessionComponent self, string reason, bool recoverable = true)
         {
-            if (self.Stage is ProductClientStage.Stopping or ProductClientStage.Stopped or ProductClientStage.Failed)
+            if (self.Stage is ProductClientStage.Stopping or ProductClientStage.Stopped or ProductClientStage.Failed ||
+                recoverable && self.Stage == ProductClientStage.Disconnected)
             {
                 return;
             }
-            self.Stage = ProductClientStage.Failed;
             ProductRuntimeComponent runtime = self.Runtime;
+            if (recoverable && runtime?.Config.Role == RuntimeInstanceRole.Client && runtime.GetComponent<ProductResumeIntent>() != null)
+            {
+                self.DisconnectProduct(reason);
+                return;
+            }
+            self.Stage = ProductClientStage.Failed;
             runtime?.FailProduct(reason); // 同步失效，销毁在原 Fiber 下帧进行以避开 Session.Destroy 重入。
         }
 
@@ -416,7 +431,7 @@ namespace ET
             {
                 if (client.MatchId == message.MatchId && client.BindingGeneration == message.BindingGeneration)
                 {
-                    client.FailClient($"ProductMatchClosed: {message.Reason}");
+                    client.FailClient($"ProductMatchClosed: {message.Reason}", recoverable: false);
                 }
             }
             finally
