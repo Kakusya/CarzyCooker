@@ -6,6 +6,8 @@
 
 2026-10-14：UI 信息分层、菜谱引导、Solo 三关、Buff 扩展、原工位升级、首饮贴单和试玩调校七案已完成并归档。下文“未执行／未归档”描述的是创建规划时的历史状态。用户随后明确豁免菜谱与调校的真人观察；相关任务按该例外闭环，工程复玩已有运行证据，真人理解效果仍未验证，未据此调整平衡数值。
 
+2026-10-14：合作装修、原成员恢复与合作饮品贴单三案已完成双Editor验收并归档，合计13/13。下文涉及这三案的“新案”或合作补验排期属于归档前快照，相关功能不再作为待验任务；原始失败和未验设备范围保留在归档execution-notes。
+
 ## 方向与使用方式
 
 保留现有 ET / GF / HybridCLR / Luban 底座，把投入逐步移向“看懂操作、完整经营、有意义的内容选择、合作可持续”。工程整理围绕具体重复和错误展开，不为理论完整性再造框架、消息总线、测试平台或资产安全系统。
@@ -60,9 +62,9 @@
 | [cooperative-front-service](../../openspec/changes/cooperative-front-service/proposal.md) | 复用进行中案 | 前厅、认领、清桌洗碗、自然结算与换关 |
 | [cooperative-cleanup-supply](../../openspec/changes/cooperative-cleanup-supply/proposal.md) | 复用已有案 | 合作清理、有限采购/收货/拆份与争抢 |
 | [cooperative-restaurant-loopback](../../openspec/changes/cooperative-restaurant-loopback/proposal.md) | 复用已有案 | 前述结果交接及普通双 Editor 两种角色排列，不重复开发 |
-| [cooperative-renovation-choice](../../openspec/changes/cooperative-renovation-choice/proposal.md) | 新案 | Host 选原新增工位奖励，双方观察，一次安装；不含升级/联机存档 |
-| [cooperative-member-resume](../../openspec/changes/cooperative-member-resume/proposal.md) | 新案 | 本轮进程保留时手动恢复同一成员，凭证/绑定/就绪/旧消息有边界 |
-| [cooperative-drink-order-binding](../../openspec/changes/cooperative-drink-order-binding/proposal.md) | 新案 | 在 Solo 橙汁基础接远端公开动作、独立投影与多人争抢 |
+| [cooperative-renovation-choice](../../openspec/changes/archive/2026-10-14-cooperative-renovation-choice/proposal.md) | 已验收并归档 | Host 选原新增工位奖励，双方观察，一次安装；不含升级/联机存档 |
+| [cooperative-member-resume](../../openspec/changes/archive/2026-10-14-cooperative-member-resume/proposal.md) | 已验收并归档 | 本轮进程保留时手动恢复同一成员，凭证/绑定/就绪/旧消息有边界 |
+| [cooperative-drink-order-binding](../../openspec/changes/archive/2026-10-14-cooperative-drink-order-binding/proposal.md) | 已验收并归档 | 在 Solo 橙汁基础接远端公开动作、独立投影与多人争抢 |
 
 现有核心不等于完整餐厅；单机测试不等于远端通过。同 Editor KCP、双 Editor、Player 和物理两机各证明自己的范围。恢复、装修、饮品可按独立前置分开推进；饮品仅在已选恢复能力时补原成员恢复场景。
 

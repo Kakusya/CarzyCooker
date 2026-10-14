@@ -36,5 +36,5 @@
 
 ## Sources
 
-- [本轮实施与逐项运行记录](../../changes/cooperative-renovation-choice/execution-notes.md)
+- [本轮实施与逐项运行记录](../../changes/archive/2026-10-14-cooperative-renovation-choice/execution-notes.md)
 - [共同网络入口](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)

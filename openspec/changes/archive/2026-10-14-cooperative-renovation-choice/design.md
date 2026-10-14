@@ -2,13 +2,13 @@
 
 ## Context
 
-合作核心已在同 Editor KCP 接通两菜与 Host 控制；装修目前 Solo。依赖现有前厅/补货/loopback 案的普通双端链，扩展一次新增工位选择与安装。 动机见 [proposal.md](proposal.md)。本案正在实施，运行范围见 execution-notes。
+变更前合作核心已接通两菜与 Host 控制，装修仅限 Solo。依赖现有前厅/补货/loopback 案的普通双端链，扩展一次新增工位选择与安装。 动机见 [proposal.md](proposal.md)。本案已完成实施与约定验收，运行范围见 execution-notes。
 
 ## Goals / Non-Goals
 
 目标模式：Host/Client 内存餐厅。不接单机升级奖励、联机存档、投票或收益共享凭证；无需等待设备升级。
 
-依赖：[cooperative-restaurant-loopback](../cooperative-restaurant-loopback/proposal.md)、[solo-interlevel-renovation](../solo-interlevel-renovation/proposal.md)、[product-local-message-boundaries](../archive/2026-10-13-product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[cooperative-restaurant-loopback](../../cooperative-restaurant-loopback/proposal.md)、[solo-interlevel-renovation](../../solo-interlevel-renovation/proposal.md)、[product-local-message-boundaries](../2026-10-13-product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 
@@ -62,10 +62,10 @@ Host/Solo 先建立权威及餐厅，再建立接入、客户端和视图；远�
 
 ## Sources
 
-- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RenovationMessages.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RenovationMessages.cs)
-- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)
-- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RestaurantRenovationSystem.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RestaurantRenovationSystem.cs)
-- [Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationRenovationSystem.cs](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationRenovationSystem.cs)
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RenovationMessages.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RenovationMessages.cs)
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RestaurantRenovationSystem.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RestaurantRenovationSystem.cs)
+- [Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationRenovationSystem.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationRenovationSystem.cs)
 
 ## 饮品布局的安装位置
 

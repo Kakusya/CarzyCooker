@@ -48,7 +48,7 @@ UTF 执行阶段使用现有 Tools/AutoTesting，先发现模式与方法再记�
 | 2.1 | CurrentLevelEmptyHandsOneMemberAndOldProjectionRejected／DuplicateAttemptAndTwoConnectionsKeepOneBinding | Passed；同成员、新代次、唯一角色，不停公共 sender |
 | 3.1 | 上述当前关／投影门槛 + LocalCancel + BoundaryTimeout + CoopMemberResumeUiRealDisconnectManualButtonReopenAndRetiredInput | Passed；空手、完整就绪、超时未知、本地取消／重开／旧回调 |
 | 4.1 | CoopMemberResume 最新11项小集，含重复、竞争、较早连接、丢回执、旧请求／快照与Host关闭 | Passed；只释放所属会话／Fiber |
-| 5.1 | 双 Editor 真实失联与恢复 | NotRun；需明确同步基线 |
+| 5.1 | 双 Editor 真实失联与恢复，详见末尾逐任务记录 | Passed；原成员／当前关／落物与其他成员连续运行 |
 
 首版不建立账号或跨设备凭证，不扩大为自动重连。UI 保留原受管 owner，原 Session 销毁与新 ClientSession 实例重建的边界各有真实运行证据。
 
@@ -62,7 +62,7 @@ UTF 执行阶段使用现有 Tools/AutoTesting，先发现模式与方法再记�
 
 任务1.1–4.1对应的实现与当前运行证据均已覆盖，已勾选4/5；尚缺5.1真实双Editor。WireInternalMessageCannotJoinOrTakeLocalIdentity也已在当前协议运行Passed，证明自报可信Actor／成员绑定字段不能从wire接管身份；凭证只由运行内owner持有，未增加任何保存读取路径。
 
-## 本轮本机核对结论
+## 本轮本机核对结论（双 Editor 之前的历史记录）
 
 本轮新增22个唯一功能UTF有适用当前实现的Passed证据（装修4核心＋1UI，恢复10核心＋1UI，饮品5核心＋1UI）；11个直接相关回归Passed。严格OpenSpec验证3个change及36主规格有效，diff空白与18份当前文档链接／UTF-8检查通过。未触碰ProjectSettings／Packages或用户已有未跟踪截图。目标仍未完成：每案最后一项双EditorNotRun，未提交、未同步、未归档、未push。
 
@@ -77,3 +77,21 @@ UTF 执行阶段使用现有 Tools/AutoTesting，先发现模式与方法再记�
 ## 双 Editor 验收开始
 
 2026-10-14：用户明确要求进行双Editor验收，按此前已说明的前置条件执行本次功能的本地提交、指定同步和验收，不扩大到push或归档。排除其他逐帧优化改动及已有截图。补齐05d3c79e、b2848b0d、4bfe1a2c、6d56bd0d等历史文档依赖后，候选序列的临时索引预检仅有Markdown冲突；运行源码、协议、Excel和生成配置相对main无差异。同步中仍禁止第二端修源码冲突；实际运行结论待回填。
+
+## 双 Editor 最终验收（2026-10-14）
+
+本轮使用真实普通 Launcher：主工作区 Host（PID72252、Pipeline7800），第二工作区 Client（PID87600、Pipeline7801）。业务 KCP 实际监听 127.0.0.1:57766；工具端口不作为业务端口。主端代码基线 main 32f2c9f1；第二端指定同步结果239882ce，短执行指令维护后aab4a08d。必要清单顺序为05d3c79e、b2848b0d、4bfe1a2c、6d56bd0d、ebb6d15f、389cc1e0、9c435906、54e5804f、bd0badff、32f2c9f1。前四项及389/54补齐历史文档依赖；临时索引预检仅Markdown冲突，明确采用Git theirs自动处理文档后恢复短AGENTS。运行源码／协议／Excel／配置与main一致，第二端没有开发或修源码冲突，仍只有6项执行技能，工作树干净。
+
+两端产品身份为GDK/GameDevelopmentKit与GDK/GameDevelopmentKit-NetTest，persistentDataPath各自独立，场景均Assets/Launcher.unity。通过Pipeline run_script在既有Fiber同步上下文操作真实受管按钮和地图；没有临时远端Fiber、业务事实注入、暂停计时或修改配置。运行回执保留于本会话CLI原输出；原生日志主端 `C:/Users/Administrator/AppData/Local/Unity/Editor/Editor.log`，第二端 `D:/MyWork/CarzyCooker-NetTest/Unity/Logs/Multiplayer-Peer-Editor.log`。实际GameView帧捕获已检查：[Host](../../../../Unity/Temp/pipeline-screenshots/coop-three-dual-game-20261014.png)、[Client](D:/MyWork/CarzyCooker-NetTest/Unity/Temp/pipeline-screenshots/coop-three-dual-game-20261014.png)。Pipeline默认screenshot只离屏渲染MainCamera，得到黑图，未将其当作画面通过；改经同一Pipeline在帧末读取实际GameView，确认Host控制与Client只读呈现。
+
+Console如实区分：两端compilationFailed=false；主端原生Console当前Error=0，Pipeline历史缓冲含2条本轮此前已修复的平台取值编译错误。第二端保留1次 `UnityConnectWebRequestException: Token Exchange failed due a failure with the web request.`，属于Editor账号服务，未阻止真实Join、恢复、玩法或清理；本次未修复该账号服务异常，不声称Console全绿。已有22项新增UTF和11项相关回归结果完整覆盖未变行为，本轮不重跑。Player/AOT、Android、两台物理PC LAN、进程重启恢复、Host迁移及联机存档仍未验收／不在范围内。
+
+两端本轮Play已通过editor_stop正常结束，Editor与长期工作区保留；KCP端口57766已释放。以下逐任务结论取代上方实施阶段的NotRun／待授权历史状态。三案实施及约定验收合计13/13，尚未归档；其他逐帧优化改动及已有截图保持原样。
+
+| 任务 | 双Editor实际行为 | 结果 |
+| --- | --- | --- |
+| 5.1 | Client成员2、绑定2，在关卡1284191765397539通过HUD拿碗1284191765397511后Dispose其真实Session；Client呈Disconnected、Confirmed=false、Ready=false且只剩恢复／取消按钮。Host名单显示成员2离线，同时继续通过HUD采购橙子成功，Tick1547→1920。Client真实点手动恢复后仍成员2、同Match同Level，绑定4、名单仅1/2两名成员、空手且Confirmed/Ready=true；原碗在Host世界Ground/Holder0，唯一原物没有复制 | Passed；后续饮品均由恢复后的成员2操作，恢复案5/5 |
+
+## 归档收口（2026-10-14）
+
+用户明确授权归档、commit和push。本案全部任务及双Editor验收完成；delta需求与场景已逐项核对主规格，复用原有功能证据，不重跑测试。三个change各严格验证通过，36份主规格严格验证通过。使用CLI --skip-specs归档仅避免重复应用已同步delta，不是跳过需求核对。归档后同步正文引用、保留历史失败和设备未验收范围；原生日志、缓存及其他任务现场不纳入提交。

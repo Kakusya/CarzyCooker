@@ -2,13 +2,13 @@
 
 ## Context
 
-先完成 Solo 橙汁实体链，合作补货/清理与普通双 Editor 链；本案只接公开饮品动作和独立投影，不复制加工或交付规则。 动机见 [proposal.md](proposal.md)。本案正在实施，运行范围见 execution-notes。
+先完成 Solo 橙汁实体链，合作补货/清理与普通双 Editor 链；本案只接公开饮品动作和独立投影，不复制加工或交付规则。 动机见 [proposal.md](proposal.md)。本案已完成实施与约定验收，运行范围见 execution-notes。
 
 ## Goals / Non-Goals
 
 目标模式：Host/Client 内存餐厅。不增加饮品配方、联机持久化、自动恢复或新传输；重连能力单列依赖时才验收其组合。
 
-依赖：[first-drink-order-binding](../archive/2026-10-14-first-drink-order-binding/proposal.md)、[cooperative-cleanup-supply](../cooperative-cleanup-supply/proposal.md)、[cooperative-restaurant-loopback](../cooperative-restaurant-loopback/proposal.md)、[product-local-message-boundaries](../archive/2026-10-13-product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[first-drink-order-binding](../2026-10-14-first-drink-order-binding/proposal.md)、[cooperative-cleanup-supply](../../cooperative-cleanup-supply/proposal.md)、[cooperative-restaurant-loopback](../../cooperative-restaurant-loopback/proposal.md)、[product-local-message-boundaries](../2026-10-13-product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 
@@ -62,11 +62,11 @@ Host/Solo 先建立权威及餐厅，再建立接入、客户端和视图；远�
 
 ## Sources
 
-- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)
-- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridClientSystem.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridClientSystem.cs)
-- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridMessages.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridMessages.cs)
-- [Unity/Assets/Tests/Editor/ET/CoopCoreCookingTests.cs](../../../Unity/Assets/Tests/Editor/ET/CoopCoreCookingTests.cs)
-- [Docs/Product/specs/orders-front-service/spec.md](../../../Docs/Product/specs/orders-front-service/spec.md)
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridClientSystem.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridClientSystem.cs)
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridMessages.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridMessages.cs)
+- [Unity/Assets/Tests/Editor/ET/CoopCoreCookingTests.cs](../../../../Unity/Assets/Tests/Editor/ET/CoopCoreCookingTests.cs)
+- [Docs/Product/specs/orders-front-service/spec.md](../../../../Docs/Product/specs/orders-front-service/spec.md)
 
 ## 实施入口补足
 

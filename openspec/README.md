@@ -8,12 +8,14 @@
 
 2026-10-14 已同步并归档 UI 信息分层、菜谱引导、Solo 三关、Buff 扩展、原工位升级、首饮贴单和试玩调校七案，任务合计29/29。现有34份主规格严格验证通过；真人观察按用户豁免记 Skipped，工程运行证据及例外仍以各归档案的 execution-notes 为准。
 
+同日已完成并归档合作装修、原成员恢复与合作饮品贴单三案，合计13/13；新增链在主工作区Host／第二工作区Client的真实双Editor通过，复用22项新增UTF及11项相关回归结果。三份delta的13项需求与场景已核对主规格，当前36份主规格严格验证通过；原始失败及设备未验收范围保留在各归档案记录。
+
 | 规格 | 范围 |
 |---|---|
 | [startup](specs/startup/spec.md) | 启动/模式 |
 | [runtime-foundation](specs/runtime-foundation/spec.md) | 公共组件/流程/示例 |
 | [runtime-instances](specs/runtime-instances/spec.md) | 显式实例配置、工程范围请求、Play 交接与本轮入口收尾 |
-| [product-session](specs/product-session/spec.md) | Unity 本机最小产品树、共同裁决、逻辑成员/连接分离、本地/远端消息与收尾 |
+| [product-session](specs/product-session/spec.md) | Unity 本机产品树、共同裁决、逻辑成员/连接分离、本轮手动恢复、本地/远端消息与收尾 |
 | [grid-kitchen](specs/grid-kitchen/spec.md) | 竖屏固定地图、四方向行走、台面交接、断线落物与同格拾取 |
 | [kitchen-item-processing](specs/kitchen-item-processing/spec.md) | 真实材料／碗内容、切配与手持打蛋、单工作者 Tick、暂停接续与合作交接 |
 | [kitchen-batch-cooking](specs/kitchen-batch-cooking/spec.md) | 蛋液倾倒、显式煮汤、可搬批次、有限盛装与最后一份复位 |
@@ -23,8 +25,8 @@
 | [fixed-companions](specs/fixed-companions/spec.md) | 固定伙伴、单执行者、接续、关内成长及新关重置 |
 | [orders-front-service](specs/orders-front-service/spec.md) | 有界客流、询问开单、类型化交付、原餐具回收和自然排空 |
 | [drink-preparation](specs/drink-preparation/spec.md) | 鲜榨橙汁、加工锁壶、完成搬壶与有限分杯；Solo 原三关证据保留 |
-| [cooperative-drinks](specs/cooperative-drinks/spec.md) | 合作饮品公开动作、独立投影与争抢；新增验收进行中 |
-| [cooperative-renovation](specs/cooperative-renovation/spec.md) | Host 独占选择、新增工位一次安装、双方只读结果；双 Editor 待验收 |
+| [cooperative-drinks](specs/cooperative-drinks/spec.md) | 合作饮品公开动作、独立投影与争抢；恢复后采购到清桌已双Editor验收 |
+| [cooperative-renovation](specs/cooperative-renovation/spec.md) | Host 独占选择、新增工位一次安装、Client只读结果；选择／换关／移动已双Editor验收 |
 | [level-buffs](specs/level-buffs/spec.md) | 本关固定候选、一次选择、新作业冻结效果和跨关隔离 |
 | [restaurant-level-lifecycle](specs/restaurant-level-lifecycle/spec.md) | 持续厨房、统一时钟、暂停、零星结算及内存换关 |
 | [kitchen-recipe-guide](specs/kitchen-recipe-guide/spec.md) | 实际配方、当前缺口及只读首单提示；玩家理解已豁免 |

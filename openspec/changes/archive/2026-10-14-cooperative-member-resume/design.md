@@ -2,13 +2,13 @@
 
 ## Context
 
-现有断线保留 Participant 并移除角色/落物，新的 Join 不能接管原成员；尚无恢复凭证。首版只支持 Host 和 Client 进程、本轮 Match 都还在的手动恢复，不承诺跨进程或跨设备身份。 动机见 [proposal.md](proposal.md)。本案正在实施，运行范围见 execution-notes。
+变更前断线保留 Participant 并移除角色/落物，新的 Join 不能接管原成员；本案新增本轮恢复凭证。首版只支持 Host 和 Client 进程、本轮 Match 都还在的手动恢复，不承诺跨进程或跨设备身份。 动机见 [proposal.md](proposal.md)。本案已完成实施与约定验收，运行范围见 execution-notes。
 
 ## Goals / Non-Goals
 
 目标模式：Host/Client；Host 与 Client 进程均保留。不自动重连、持久凭证、跨进程重启、Host 迁移、联机存档、账号鉴权或公网安全产品化。
 
-依赖：[cooperative-restaurant-loopback](../cooperative-restaurant-loopback/proposal.md)、[product-local-message-boundaries](../archive/2026-10-13-product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[cooperative-restaurant-loopback](../../cooperative-restaurant-loopback/proposal.md)、[product-local-message-boundaries](../2026-10-13-product-local-message-boundaries/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 
@@ -68,12 +68,12 @@ Host/Solo 先建立权威及餐厅，再建立接入、客户端和视图；远�
 
 ## Sources
 
-- [Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product/ProductSession.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product/ProductSession.cs)
-- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductClientSystem.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductClientSystem.cs)
-- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductPeerSystem.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductPeerSystem.cs)
-- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductAuthority.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductAuthority.cs)
-- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)
-- [openspec/specs/product-session/spec.md](../../../openspec/specs/product-session/spec.md)
+- [Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product/ProductSession.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product/ProductSession.cs)
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductClientSystem.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductClientSystem.cs)
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductPeerSystem.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductPeerSystem.cs)
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductAuthority.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductAuthority.cs)
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs](../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)
+- [openspec/specs/product-session/spec.md](../../../specs/product-session/spec.md)
 
 ## 实际重建与收尾
 

@@ -1,6 +1,6 @@
 # 合作餐厅操作说明
 
-Host／Client 首版只支持本轮内存餐厅与回环 KCP；运行结果见三个 change 的 execution-notes，双 Editor 新增功能尚待同步验收。单机存档不作为联机存档。普通 Host 从饮品关卡 3 开始，随后关卡 4 可继续；旧两菜配置 1／2 保留给既有调用者。
+Host／Client 首版只支持本轮内存餐厅与回环 KCP；运行结果见三个 change 的 execution-notes，装修、成员恢复与饮品贴单新增链已在主端Host／第二端Client的真实双Editor通过。单机存档不作为联机存档。普通 Host 从饮品关卡 3 开始，随后关卡 4 可继续；旧两菜配置 1／2 保留给既有调用者。
 
 ## 装修
 

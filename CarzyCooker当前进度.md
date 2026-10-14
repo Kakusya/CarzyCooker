@@ -2,7 +2,7 @@
 
 人读的交付进度入口，不是业务状态副本或产品验收证明。冲突时以代码/表、OpenSpec 与用户最新意图为准；改变实际能力时同步更新本页。
 
-## 单机与联机总览（2026-10-13 核对）
+## 单机与联机总览（2026-10-14 核对）
 
 **单机已到完整餐厅的连续试玩与本机成功检查点；联机已完成普通双Editor两种角色排列的完整餐厅合作验收。** 两菜交付、补货清理、暂停恢复、原餐具回收、自然换关、真实Client失联后Host收货和整轮退出新世界隔离均已运行。下文分别记录实际范围。
 
@@ -11,8 +11,10 @@
 | 交付线 | 当前可确认的阶段 | 主要缺口 |
 | --- | --- | --- |
 | 单机 Solo | 九案66/66已归档；两菜、顾客餐具、伙伴、Buff、布局、暂停、自然换关和受管UI已验收；清理／供应／检查点各7/7、装修6/6已验收 | Solo 三关终点和原工位升级已验收；鲜榨橙汁已验收；Player/AOT未验收 |
-| 联机 Host/Client | 核心7/7、前厅5/5、清理供应5/5、集成3/3；普通双Editor两种排列均真实合作交付20分2星、补货清理、原餐具回收和自然换关；Client失联后Host收货与退出新轮隔离通过 | 联机装修、存档与原成员恢复仍未实现 |
+| 联机 Host/Client | 核心7/7、前厅5/5、清理供应5/5、集成3/3；普通双Editor两种排列均真实合作交付20分2星、补货清理、原餐具回收和自然换关；Client失联后Host收货与退出新轮隔离通过 | 本轮装修／原成员恢复／饮品贴单已补双Editor验收，三案13/13；联机存档仍未实现 |
 | 设备与网络范围 | Solo普通Launcher及联机普通双Editor本机loopback已实跑；相关真实KCP／受管UI UTF结果复用 | 独立Player、物理两机LAN、Android真机／AOT、公网未验收 |
+
+2026-10-14：合作装修、原成员恢复与合作饮品贴单三案已完成13/13并归档；逐项功能和双Editor运行结果见下表的归档记录。复用适用的22项新增UTF及11项相关回归，不因归档重复运行。
 
 “Host 权威”是玩法写入职责，不等于联机完整餐厅已接通；“本地请求”可以是 Solo 或同进程 Peer，也不等于远端 wire 已开放。
 
@@ -44,7 +46,7 @@
 
 | 功能 | 目前实际支持／证据 | 尚缺的餐厅接入或验证 |
 | --- | --- | --- |
-| 启动、Join、名单、Probe、心跳与 Leave | 已实现；[会话记录](openspec/changes/archive/2026-10-11-product-session-bootstrap/execution-notes.md)含真实 KCP 与双 Editor 两种角色排列 | 历史名单／Probe 验收不证明餐厅玩法；普通 Join 新增成员；本轮 Resume 已接入并有真实 KCP／受管 HUD 证据，双 Editor 新增恢复仍待验收 |
+| 启动、Join、名单、Probe、心跳与 Leave | 已实现；[会话记录](openspec/changes/archive/2026-10-11-product-session-bootstrap/execution-notes.md)含真实 KCP 与双 Editor 两种角色排列 | 历史名单／Probe 验收不证明餐厅玩法；普通 Join 新增成员；本轮 Resume 已接入并有真实 KCP／受管 HUD 证据，双 Editor 新增恢复已验收，进程重启恢复不在范围 |
 | 共同裁决、本地消息、可信 Peer 与独立投影 | 早期会话／地图范围已实现并运行 | 新餐厅请求仍需逐类网络桥接、身份校验和字段复制，不因本地 handler 存在而自动支持 |
 | 格子移动、交接、掉落与拾取 | 旧样机已有真实 KCP 证据 | [格子记录](openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)为同 Editor 独立 Fiber；不能当作新餐厅双进程验收 |
 | 番茄切配、碗内打蛋、停手交接与接续 | 已实现；[备料记录](openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)有同 Editor 真实 KCP＋受管 HUD 实操 | 当次未运行独立 Client 进程；关闭 Peer 的失联操作不等于进程重启重连 |
@@ -53,10 +55,10 @@
 | 开店、暂停／恢复、换关、布局、Buff | 已接通Level／Layout／Buff与Host本地可信控制；远端越权零改动，真实前厅暂停／旧关隔离通过 | 普通入口首关20分／2星、次关0分／0星自然结算，双方新角色与新Buff就绪，精确6件库存保留 |
 | 顾客、订单、伙伴、洗碗和前厅 HUD | 远端Serve／FrontWork已开放并验收；同版顾客／工作／伙伴成长／池投影及受管重开通过 | 竞争单执行者／单时钟、远端Stop／Leave／失联接续、原碗清洗回收与下一关取回均有真实KCP／普通入口证据 |
 | 水池／垃圾桶、供应 | 远端网络／HUD已接入，物流案5/5：15项真实KCP／受管UI最新结果通过 | 普通入口耗尽面包后补货制作并交付、满槽保货、剩液／空包装清理与同一在途货物跨关通过；默认运输40已恢复并由新Host实际读取，见[物流记录](openspec/changes/cooperative-cleanup-supply/execution-notes.md) |
-| 餐厅中的争抢与成员退出 | 核心末份／原物落下／自动与手工接续、前厅三方认领／远端断线洗碗接续、公共货物唯一收货及采购未读确认便断线保货已验收；双Editor真实Client失联后同一原碗落物与同一货物被Host收取通过 | 新 Join 是新成员；本轮凭证 Resume 复用原成员，双 Editor 新增链尚待验收 |
-| 联机关间装修 | 代码及 4 核心＋1真实 HUD UTF 已运行；待双 Editor 增量 | Host 独占选择／继续，Client 只读，饮品布局新增工位 5／6，失败零安装；见[装修记录](openspec/changes/cooperative-renovation-choice/execution-notes.md) |
-| 原成员恢复 | 代码及10核心＋1真实HUD UTF Passed；待双Editor增量 | 内存凭证／新 Session／同成员新绑定、当前关空手、旧回调隔离；回执丢失／超时／平台／旧请求均已验，双 Editor 待验，见[恢复记录](openspec/changes/cooperative-member-resume/execution-notes.md) |
-| 合作橙汁与贴单 | 5核心＋1采购到清桌真实HUD UTF Passed；待双Editor增量 | Host 默认 3→4→4 饮品关卡、公开制作／分杯／贴单动作及独立投影；双 Editor 待验，见[饮品记录](openspec/changes/cooperative-drink-order-binding/execution-notes.md) |
+| 餐厅中的争抢与成员退出 | 核心末份／原物落下／自动与手工接续、前厅三方认领／远端断线洗碗接续、公共货物唯一收货及采购未读确认便断线保货已验收；双Editor真实Client失联后同一原碗落物与同一货物被Host收取通过 | 新 Join 是新成员；本轮凭证 Resume 复用原成员，同成员／当前关／空手／原物落地已通过双 Editor |
+| 联机关间装修 | 4核心＋1真实HUD UTF及真实双Editor增量Passed，4/4 | Host 独占选择／继续，Client 只读，饮品布局新增工位 5／6，失败零安装；见[装修记录](openspec/changes/archive/2026-10-14-cooperative-renovation-choice/execution-notes.md) |
+| 原成员恢复 | 10核心＋1真实HUD UTF及真实双Editor恢复Passed，5/5 | 内存凭证／新 Session／同成员新绑定、当前关空手、旧回调隔离；回执丢失／超时／平台／旧请求均已验，同成员新绑定／原物落地已双Editor核实，见[恢复记录](openspec/changes/archive/2026-10-14-cooperative-member-resume/execution-notes.md) |
+| 合作橙汁与贴单 | 5核心＋1真实HUD UTF及真实双Editor全链Passed，4/4 | Host 默认 3→4→4 饮品关卡、公开制作／分杯／贴单动作及独立投影；恢复后分工制作／贴单／交付／清桌已双Editor核实，见[饮品记录](openspec/changes/archive/2026-10-14-cooperative-drink-order-binding/execution-notes.md) |
 | 联机存档／Owner／恢复进度 | 未实现，现有联机案明确排除 | 单机成功档不能直接充当联机存档，Host 也不自动成为 Save Owner |
 | LAN、公网、独立 Player | 未验收；当前仅 loopback | 配置仍限制回环地址；公网、正式传输选择和 Host 迁移均不属于已有交付 |
 

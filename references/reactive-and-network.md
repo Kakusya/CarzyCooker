@@ -91,7 +91,7 @@ Tick 提交后为每端生成独立 GridWorldSnapshot 与本人 GridCommandResul
 
 Host／Solo当前都持有持续Restaurant／厨房和当前Level；共享控制只来自权威在线Participant／Peer绑定及runtime.Client.Local的当前真实Peer引用。首个快照可以早于Join答复，复制的CanControlRestaurant不替代客户端Join／当前角色／受管视图就绪条件。核心7/7、阶段28个核心UTF及普通Host＋独立Fiber真实KCP受管两菜已验收，见[核心记录](../openspec/changes/cooperative-restaurant-core/execution-notes.md)；前厅5/5、19项UTF及普通入口两菜交付／原餐具循环／自然两关已验收，见[前厅记录](../openspec/changes/cooperative-front-service/execution-notes.md)；物流5/5已有15项真实KCP／受管UI及普通补货制作交付／剩液空壳清理／同一在途货物跨关证据，见[物流记录](../openspec/changes/cooperative-cleanup-supply/execution-notes.md)。当前未知动作0／99两项与受影响核心UI已新运行通过；普通双Editor完整合作3/3已通过，见[集成记录](../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。
 
-早期格子样机的核心／共同入口UTF、竖屏操作、真实KCP交接与断线拾物见[地图执行说明](../openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)。当前普通双Editor完整餐厅两种角色排列已验收3/3，前厅真实交付／原餐具循环、有限供应／清理、自然换关、真实Client失联后Host收货与退出新世界隔离通过，见[集成记录](../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。真实手机Player/AOT、LAN／公网和持久餐厅未交付。协议22已接入合作装修／原成员恢复，双 Editor 新增链仍待验收。
+早期格子样机的核心／共同入口UTF、竖屏操作、真实KCP交接与断线拾物见[地图执行说明](../openspec/changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)。当前普通双Editor完整餐厅两种角色排列已验收3/3，前厅真实交付／原餐具循环、有限供应／清理、自然换关、真实Client失联后Host收货与退出新世界隔离通过，见[集成记录](../openspec/changes/cooperative-restaurant-loopback/execution-notes.md)。真实手机Player/AOT、LAN／公网和持久餐厅未交付。协议22的合作装修／原成员恢复／饮品贴单新增链已在主工作区Host、第二工作区Client的真实双Editor通过；含恢复后分工制作与交付，见对应三个change的execution-notes，不扩大为两台物理PC或Player证据。
 
 ## owner 所属等待
 
@@ -214,4 +214,4 @@ Grid18–21通过显式wire字段复制复用原榨汁／分杯／贴单逻辑�
 
 Join生成Participant所属32字节随机恢复凭证；Client将本轮凭证／endpoint／尝试号保存到ProductRuntime的ProductResumeIntent，只在内存。新Session发ProductResumeRequest→新HostPeer的ProductPeerResumeHandler→原HostSession Ordered MailBox的ProductControlHandler／Resume裁决→原Participant撤旧绑定、排旧角色落物并绑定新Peer。答复返回原wire RpcId，匹配本人确认后再由完整投影开放输入。单成员失联不停止Root sender；Stop／Leave／Host关闭清理相关资格。Client在原Scene重建ClientSession／Session及投影，旧EntityRef／绑定不能写入新实例；HUD仍归原GridPresentation／UIComponent，支持手动恢复和本地取消。含凭证的JoinResponse／Control／Resume消息在LogMsg入口排除，禁止ToString调试展开。
 
-逐项结果与未验证范围见[装修](../openspec/changes/cooperative-renovation-choice/execution-notes.md)、[恢复](../openspec/changes/cooperative-member-resume/execution-notes.md)、[饮品](../openspec/changes/cooperative-drink-order-binding/execution-notes.md)，操作见[合作餐厅说明](../Docs/Product/cooperative-play-guide.md)。
+逐项结果与未验证范围见[装修](../openspec/changes/archive/2026-10-14-cooperative-renovation-choice/execution-notes.md)、[恢复](../openspec/changes/archive/2026-10-14-cooperative-member-resume/execution-notes.md)、[饮品](../openspec/changes/archive/2026-10-14-cooperative-drink-order-binding/execution-notes.md)，操作见[合作餐厅说明](../Docs/Product/cooperative-play-guide.md)。

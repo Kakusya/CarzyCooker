@@ -2,9 +2,9 @@
 
 ## Purpose
 
-为产品提供可在本机验证的最小 Host／Client 会话，明确本地与远端玩家的共用裁决、成员状态、消息与运行生命周期。该能力只建立会话基础，不宣称厨房玩法、持久进度、正式传输选型或重连恢复已经成立。
+为产品提供可在本机验证的 Host／Client 会话及本轮手动原成员恢复，明确本地与远端玩家的共用裁决、成员状态、消息与运行生命周期。厨房玩法由相关独立规格定义；本规格不宣称持久进度、正式传输选型、自动重连或跨进程重启恢复已经支持。
 
-本规格依据交接 A3／G3 捕获最小 Match／Participant 与连接分离，断线保留离线成员。自动重连、成员恢复凭证、Profile 和厨房尚未纳入本原型，不以新连接成立冒充旧身份恢复。
+本规格保留交接 A3／G3 的 Match／Participant 与连接分离，断线保留离线成员，并接入本 Match 内存凭证支持手动恢复原成员；该凭证不持久化，不以普通 Join 的新连接成立冒充旧身份恢复。Profile、跨设备身份和 Host 迁移尚未纳入本原型。
 
 ## Requirements
 
@@ -433,5 +433,5 @@ Host SHALL 发布包含世界身份、版本和 Tick 的地图快照；各端复
 
 - [产品本地消息边界设计与验收](../../changes/archive/2026-10-13-product-local-message-boundaries/design.md)、[逐功能运行记录](../../changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。
 
-- [本轮成员恢复与验证范围](../../changes/cooperative-member-resume/execution-notes.md)
+- [本轮成员恢复与验证范围](../../changes/archive/2026-10-14-cooperative-member-resume/execution-notes.md)
 - [恢复实施](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductResumeSystem.cs)
