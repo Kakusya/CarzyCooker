@@ -17,7 +17,7 @@ Match MUST 独立持有 Participant 和名单权威，HostPeer／Session 只绑�
 ## ADDED Requirements
 
 ### Requirement: 恢复凭证仅在本轮有效
-合法加入 SHALL 获得不可猜测的内存恢复凭证，绑定本 Match 和成员。成功 Leave 或整轮停止撤销凭证；错误运行、未知或已撤销凭证不得恢复身份，不持久化或公开打印凭证。
+合法加入 SHALL 获得不可猜测的内存恢复凭证，绑定本 Match 和成员。成功 Leave 或整轮停止撤销凭证；错误运行、协议或运行平台、未知或已撤销凭证不得恢复身份，不持久化或公开打印凭证。
 
 #### Scenario: Leave 后使用旧凭证
 - **WHEN** 成员已成功 Leave，随后新连接提交原凭证

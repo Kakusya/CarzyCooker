@@ -144,5 +144,7 @@ namespace ET
          public const ushort RenovationPrepared = 10138;
          public const ushort FrontWorkCreateRequest = 10139;
          public const ushort LevelFinished = 10140;
+         public const ushort ProductResumeRequest = 10141;
+         public const ushort ProductResumeResponse = 10142;
     }
 }

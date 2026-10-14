@@ -88,6 +88,7 @@ namespace ET
                 return;
             }
             self.Stage = ProductStage.Stopping;
+            self.RemoveComponent<ProductResumeIntent>();
             HostSessionComponent authority = self.Authority;
             Match match = authority?.Match ?? default;
             ((RestaurantRuntime)(match?.Restaurant ?? default))?.StopRestaurant();
@@ -175,7 +176,7 @@ namespace ET
                     runtime.RegisterProductEntry();
                     EventSystem.Instance.Publish(root, new SoloSaveSelectionRequested());
                 }
-                else runtime.InitializeProduct();
+                else runtime.InitializeProduct(menuVariant: 1);
             }
             catch (Exception e)
             {

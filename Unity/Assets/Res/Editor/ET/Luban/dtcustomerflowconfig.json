@@ -137,5 +137,41 @@
       2,
       3
     ]
+  },
+  {
+    "Id": 3,
+    "LevelConfigId": 3,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 60,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 200,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "Id": 4,
+    "LevelConfigId": 4,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 60,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 200,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      1,
+      2,
+      3
+    ]
   }
 ]

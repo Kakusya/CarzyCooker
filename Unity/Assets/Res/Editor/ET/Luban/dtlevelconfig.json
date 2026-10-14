@@ -278,5 +278,77 @@
     "AllowedDrinkIds": [
       3
     ]
+  },
+  {
+    "Id": 3,
+    "NextLevelConfigId": 4,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      5,
+      6
+    ],
+    "ChapterId": 0,
+    "ChapterStage": 0,
+    "IsChapterTerminal": false,
+    "MenuVariant": 1,
+    "AllowedDrinkIds": [
+      3
+    ]
+  },
+  {
+    "Id": 4,
+    "NextLevelConfigId": 4,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      5,
+      6
+    ],
+    "ChapterId": 0,
+    "ChapterStage": 0,
+    "IsChapterTerminal": false,
+    "MenuVariant": 1,
+    "AllowedDrinkIds": [
+      3
+    ]
   }
 ]

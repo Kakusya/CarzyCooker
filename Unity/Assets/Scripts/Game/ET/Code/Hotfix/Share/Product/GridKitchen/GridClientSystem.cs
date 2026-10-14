@@ -41,6 +41,7 @@ namespace ET
             self.BuffSeed=0;self.BuffDrawVersion=0;self.SelectedBuffId=0;self.RequireBuffChoice=false;self.BuffCandidates=Array.Empty<int>();
             self.SupplySources.Clear(); self.SupplyShipments.Clear();
             self.RenovationCandidates = Array.Empty<int>(); self.SelectedRenovationId = 0;
+            self.RenovationFailure = null;
             self.SelectedUpgradeStationId = 0; self.PendingUpgradeExpectedLevel = 0; self.UpgradeTargets = Array.Empty<RenovationUpgradeTarget>();
             self.RenovationChoiceVersion = 0; self.RenovationLevelId = 0; self.RenovationLevelGeneration = 0; self.RenovationApplied.Clear();
             self.SaveEnabled = false; self.SaveResultId = null; self.SaveFailure = null; self.LastSavedSlotId = null; self.SaveState = default;
@@ -130,6 +131,7 @@ namespace ET
             self.UpgradeTargets = Array.AsReadOnly(snapshot.UpgradeTargets.Select(target => new RenovationUpgradeTarget(target.DefinitionId, target.StationId, target.ExpectedLevel)).ToArray());
             self.RenovationChoiceVersion = snapshot.RenovationChoiceVersion; self.RenovationLevelId = snapshot.RenovationLevelId;
             self.RenovationLevelGeneration = snapshot.RenovationLevelGeneration;
+            self.RenovationFailure = snapshot.RenovationFailure;
             self.RenovationApplied.Clear(); foreach (var value in renovationApplied) self.RenovationApplied.Add(value.Key, value.Value);
             self.SaveEnabled = snapshot.SaveEnabled; self.SaveResultId = snapshot.SaveResultId; self.SaveFailure = snapshot.SaveFailure;
             self.SaveState = (SoloSaveState)snapshot.SaveState; self.LastSavedSlotId = snapshot.LastSavedSlotId;

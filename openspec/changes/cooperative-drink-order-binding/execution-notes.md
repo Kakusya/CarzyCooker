@@ -1,5 +1,15 @@
 # 执行说明
 
+## 2026-10-14 实施状态
+
+用户已授权完成三个 change。以下为最新实施与运行事实；文末 2026-10-13 的 NotRun 为规划历史。
+
+协议 22 公开 Grid 18–21（StartJuice／PortionJuice／BindDrink／UnbindDrink），逐字段值复制原上下文及 ExpectedOrderId，内部推进消息仍拒绝。新增合作 3→4→4 关卡、橙子／杯有限来源，旧两菜及 Solo 保持。Luban Check 与正常导出各 5/5 成功，只改源表及派生数据；Proto2CS 正常生成成功。3 项 CoopDrink 核心 UTF Passed（首轮最后份数夹具在非空台面注入失败，改空台面后该单例 Passed；其余两项复用已通过结果）：远端加工锁定／搬壶／传杯、独立份数、最后份竞争、贴单拒绝保物／解绑／交付、杯落下与原成员空手恢复。真实采购到清桌 UI 首轮因测试采购按钮名称错误 Failed，正在修正；双 Editor 未运行。
+
+运行模式为 PlayMode，过滤为上文实际前缀／FullName，原始输出在 `Unity/Temp/pipeline_test_status.json`，原生 Editor 日志原位保留，均未复制或改写。Passed 运行的 Console 覆盖由 AutoTesting 核对；失败结果不被后续通过覆盖为成功。
+
+接受的未验收范围：独立 Player／手机／LAN／公网／持久凭证／Host 迁移在本案范围外。三个 change 的双 Editor 增量仍是必须完成项，不缩成同 Editor；主工作区提交与第二工作区同步尚需对应授权。没有运行证据的任务不勾选。
+
 ## 本轮状态与决策
 
 2026-10-13：用户授权“由浅到深写成 change”，并要求真机测试最后。本案目前仅为规划；所有 tasks 未勾选，未实现业务、未执行 UTF、未启动 Unity/Player、未构建或操作第二工作区。第三关保存完成后返回选档、无装修和第四关；橙汁加工锁壶、完成可搬壶分杯、产量/耗时配表，已获用户确认。具体相关合同以本案 specs/design 为准。
@@ -28,3 +38,40 @@ UTF 执行阶段使用现有 Tools/AutoTesting，先发现模式与方法再记�
 ## 本轮规划检查
 
 2026-10-13：`openspec validate cooperative-drink-order-binding --strict --no-interactive` 退出码 0，规划格式通过。当前相关文档检查共 80 份 Markdown，链接缺失 0、编码/尾随空格/原规格场景遗漏 0；新案依赖无环。以上均为静态规划检查，表内功能仍全部 NotRun，任务未勾选。
+
+## 最新逐任务映射
+
+| 任务 | 实际运行 | 结果 |
+| --- | --- | --- |
+| 1.1 | CoopDrink公开动作＋CoopCoreWire 4项＋WireInternalMessageCannotJoinOrTakeLocalIdentity | Passed；公开字段／回执、未知动作／内部转交拒绝与协议生成 |
+| 2.1 | LocksJugCopiesPortionsTransfersCupAndResumesEmptyHanded + AtomicBindingWrongOrder最新旧快照分支 + 真实CoopDrinkUi | Passed；独立锁定／份数／杯／绑定、确认门槛及旧关隔离 |
+| 3.1 | 上述制作／落物与恢复 + LastPortionRace + AtomicRealKcpRebind + WrongDishRealKcpFoodOrder | Passed；最后份／原子重绑／错菜保物与空手接续 |
+| 4.1 | CoopDrinkUiOrdinaryPurchaseSplitPreparationBindingDeliveryAndClear；随后双 Editor | 普通双端真实HUD全链Passed；双 Editor NotRun，任务未勾选 |
+
+普通 UI 失败诊断已修正采购名称（空杯补货），并发现满固体包装倾倒后保留空包装，须再丢空包才能空手拆杯；这是原清理合同，未放宽规则。新增测试专属远端 Fiber 在 UTF teardown 前回收，避免嵌套迭代器失败遗留 view／Fiber 的二次异常。原错误仍保留；每次修复新建运行。
+
+普通饮品 UI 最新运行行为 1/1 Passed，但 AutoTesting 给 Conclusion: Error：50秒流程的逐帧 GridWorldSnapshot 调试日志超出2000条 Console 缓冲，覆盖不完整，未按完整通过记账。已在既有 LogMsg 高频排除集合中禁止展开该快照，动作消息、Warning／Error 保持；须新运行覆盖完整后才能勾选。
+
+CoopDrinkAtomicRealKcpRebindRejectsOccupiedOrderAndPreservesBothCups 新运行 Passed：远端从一张合法订单原子换到另一张，再验证占用订单换绑拒绝仍保留两杯原内容／原关系。原配方、清理和旧关过滤未改，复用原首饮 execution-notes 中适用于当前实现的对应行为，不重跑全套。
+
+关闭高频 Snapshot 调试展开后的新运行：`CoopDrinkUiOrdinaryPurchaseSplitPreparationBindingDeliveryAndClear` 1/1 Passed，Console 覆盖完整，编排退出0。真实 Host Launcher 菜单3，Remote 实际采购橙子／杯、接收／拆份，Host 用本地消息切配所购橙子，Client 榨汁／盛所购杯／贴单／交付／清桌；原一次性杯消失、不创建Wash、两个来源库存各减一。余料与空包装各自按原规则处理。与4核心UTF合计5个唯一新增用例已有效通过；双Editor仍NotRun。
+
+最小相关回归当前结果：WireInternalMessageCannotJoinOrTakeLocalIdentity 1/1 Passed；CoopCoreWire 4/4 Passed（未知动作、旧协议／内部Submit、物理RPC与业务编号关联）；SoloRenovationConfig 6/6 Passed（新旧池与非法配置无Host建树）。所有 Console 覆盖完整、编排退出0；未扩大到全餐厅／全仓。
+
+最终局部补验：CoopDrinkWrongDishRealKcpFoodOrderKeepsFinishedCupAndScore Passed，真实远端向合法食物订单贴单／交付橙汁均WrongDish拒绝，原杯及饮品不消失、订单仍Waiting、得分／成功数仍0。AtomicBindingWrongOrderKeepsCupAndRemoteServesOriginalContents 追加旧快照分支的新运行 Failed：前厅仍 Draining，尚未到快照断言。旧贴单／交付部分此前已通过，新增旧关分支未验收，不能把该新运行写为Passed；任务2.1保持未完成。
+
+旧关快照补验失败诊断：仍有 Clear/Available，伙伴调度只认领Ask／Wash，测试未执行玩家清桌。修正为真实远端认领清桌，并仅给此隔离用例单个顾客；多订单并发仍由另一个真实KCP用例覆盖。清桌后自然完成已到达，但旧零星装修夹具错误要求0星（实际成功交付10分／1星），再次Failed。现直接断言真实Completed、装修准备及1星，再检查旧快照，不增加等待预算或改业务规则。以上失败不算Passed。
+
+旧快照最终有效运行：`CoopDrinkRealKcpAtomicBindingWrongOrderKeepsCupAndRemoteServesOriginalContents` 新运行1/1 Passed，Console覆盖完整、编排退出0。远端完成真实清桌并自然结算10分／1星，合法Continue后上一关含贴单杯的高版本快照被拒绝，当前Level／版本保持且不复活旧杯／订单。任务2.1据此重新勾选；任务1.1–3.1为3/4，4.1双Editor仍NotRun。5核心＋1真实HUD为6个唯一新UTF已有效覆盖；历史失败保留。
+
+## 本轮本机核对结论
+
+同步前置补充：首个候选 ebb6d15f 的 Git 内存预检发现 AGENTS.md、Book/快速开始.md、CarzyCooker当前进度.md 冲突；没有实际 cherry-pick 或修改第二工作区。候选清单须收敛交接方式后才能执行，提交／同步授权仍待明确答复。详细预检见 [成员恢复记录](../cooperative-member-resume/execution-notes.md#同步预检补充)。本案4.1保持 NotRun。
+
+本轮新增22个唯一功能UTF有适用当前实现的Passed证据（装修4核心＋1UI，恢复10核心＋1UI，饮品5核心＋1UI）；11个直接相关回归Passed。严格OpenSpec验证3个change及36主规格有效，diff空白与18份当前文档链接／UTF-8检查通过。未触碰ProjectSettings／Packages或用户已有未跟踪截图。目标仍未完成：每案最后一项双EditorNotRun，未提交、未同步、未归档、未push。
+
+拟收口动作：只将本轮代码／协议源和正常生成结果／Excel与派生数据／行为UTF／对应规格及说明提交到本地main，标题“接通合作装修、成员恢复与饮品贴单”，基于当前main bd0badff。第二工作区当前fed20ee2（协议17）、工作树干净，保留6项执行技能；必要前置候选ebb6d15f（协议源）、9c435906（消息边界）、bd0badff（已交付饮品／升级／UI）及本轮新提交，明确清单在执行前复核。纯文档／截图提交不默认加入；不做merge／pull／DLL复制。最新主工作区规则优先于第二端旧放宽规则，源码冲突中止并回报，不在执行端开发。main新提交仍须用户授权；双Editor验收保持原目标，不降格为同Editor通过。
+
+## 双 Editor 验收开始
+
+2026-10-14：用户明确要求进行双Editor验收，按此前已说明的前置条件执行本次功能的本地提交、指定同步和验收，不扩大到push或归档。排除其他逐帧优化改动及已有截图。补齐05d3c79e、b2848b0d、4bfe1a2c、6d56bd0d等历史文档依赖后，候选序列的临时索引预检仅有Markdown冲突；运行源码、协议、Excel和生成配置相对main无差异。同步中仍禁止第二端修源码冲突；实际运行结论待回填。

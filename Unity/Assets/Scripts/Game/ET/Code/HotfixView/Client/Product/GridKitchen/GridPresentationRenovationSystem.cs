@@ -9,9 +9,7 @@ namespace ET.Client
     {
         private static bool RenovationReadyForContinue(GridClientComponent grid)
         {
-            ProductRuntimeComponent runtime = grid.Root().GetComponent<ProductRuntimeComponent>();
-            return runtime?.Config.Role != RuntimeInstanceRole.Solo ||
-                grid.RenovationLevelId == grid.LevelId && grid.RenovationLevelGeneration == grid.LevelGeneration && grid.RenovationChoiceVersion > 0;
+            return grid.RenovationLevelId == grid.LevelId && grid.RenovationLevelGeneration == grid.LevelGeneration && grid.RenovationChoiceVersion > 0;
         }
         private static void RefreshRenovationStatus(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
@@ -25,18 +23,31 @@ namespace ET.Client
                 return;
             }
             if (grid.RenovationLevelId != grid.LevelId || grid.RenovationLevelGeneration != grid.LevelGeneration) return;
+            if (grid.RenovationFailure != null)
+            {
+                string reason = grid.RenovationFailure switch
+                {
+                    "RenovationOccupied" => "安装位置仍有角色或落物",
+                    "RenovationBlocked" => "安装会重叠或堵住通路",
+                    "RenovationRelationshipsChanged" => "厨房物品或加工关系已变化",
+                    _ => "请检查布局后重试"
+                };
+                view.SettlementText.text += "\n装修未安装：" + reason;
+            }
             if (grid.SelectedRenovationId != 0)
             {
                 view.SettlementText.text += "\n已选装修：" + Tables.Instance.DTRenovationConfig.Get(grid.SelectedRenovationId).Name + "，下一关安装";
                 return;
             }
             if (grid.RenovationCandidates.Count == 0) { view.SettlementText.text += "\n当前没有可选装修，可以继续"; return; }
-            view.SettlementText.text += grid.SaveEnabled ? "\n选择一项装修后保存并继续" : "\n可选择一项装修，或直接继续";
+            view.SettlementText.text += !grid.CanControlRestaurant
+                ? "\n等待 Host 选择装修：" + string.Join("、", grid.RenovationCandidates.Select(id => Tables.Instance.DTRenovationConfig.Get(id).Name))
+                : grid.SaveEnabled ? "\n选择一项装修后保存并继续" : "\n可选择一项装修，或直接继续";
         }
 
         private static void AddRenovationTargets(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
-            if (grid.LevelPhase != LevelPhase.Completed || grid.RenovationLevelId != grid.LevelId || grid.RenovationLevelGeneration != grid.LevelGeneration ||
+            if (!grid.CanControlRestaurant || grid.LevelPhase != LevelPhase.Completed || grid.RenovationLevelId != grid.LevelId || grid.RenovationLevelGeneration != grid.LevelGeneration ||
                 grid.SelectedRenovationId != 0) return;
             EntityRef<GridPresentationComponent> selfRef = self;
             long level = grid.LevelId, generation = grid.LevelGeneration, version = grid.RenovationChoiceVersion;
@@ -65,7 +76,7 @@ namespace ET.Client
             {
                 ClientSessionComponent client = ((Scene)self.IScene).GetComponent<ClientSessionComponent>();
                 GridClientComponent grid = client.GetComponent<GridClientComponent>(); EntityRef<GridClientComponent> gridRef = grid;
-                if (grid.LevelId != expectedLevel || grid.LevelGeneration != expectedGeneration || grid.RenovationChoiceVersion != choiceVersion ||
+                if (!grid.CanControlRestaurant || grid.LevelId != expectedLevel || grid.LevelGeneration != expectedGeneration || grid.RenovationChoiceVersion != choiceVersion ||
                     grid.SelectedRenovationId != 0 || grid.LevelPhase != LevelPhase.Completed) return;
                 if (station != 0 && (!grid.Stations.TryGetValue(station, out var projected) || projected.UpgradeLevel != upgradeLevel)) return;
                 ChooseRenovationRequest request = grid.CreateRenovationChoice(definition, choiceVersion, station, upgradeLevel);

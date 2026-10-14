@@ -74,6 +74,7 @@ namespace ET.Client
         private static void Update(this GridPresentationComponent self)
         {
             self.TryGridReady();
+            if (self.RefreshConnectionRecovery()) return;
             if(!self.Ready)return;
             ClientSessionComponent client=((Scene)self.IScene).GetComponent<ClientSessionComponent>();
             GridClientComponent grid=client.GetComponent<GridClientComponent>();
@@ -220,6 +221,7 @@ namespace ET.Client
         public static void RefreshGridHud(this GridPresentationComponent self)
         {
             UIGridKitchen hud=self.Hud;if(hud?.View==null)return;
+            if (self.RefreshConnectionRecovery()) return;
             ClientSessionComponent client=((Scene)self.IScene).GetComponent<ClientSessionComponent>();
             GridClientComponent grid=client.GetComponent<GridClientComponent>();
             MonoUIGridKitchen view=hud.View;

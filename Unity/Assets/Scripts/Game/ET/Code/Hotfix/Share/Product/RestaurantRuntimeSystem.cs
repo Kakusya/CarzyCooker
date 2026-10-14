@@ -186,7 +186,12 @@ namespace ET
                     string nextError = self.CheckNextLevel(next);
                     if (nextError != null) return nextError;
                     string renovationError = self.CheckPendingRenovation();
-                    if (renovationError != null) return renovationError;
+                    if (renovationError != null)
+                    {
+                        self.GetComponent<RestaurantRenovation>().Failure = renovationError;
+                        kitchen.Dirty = true;
+                        return renovationError;
+                    }
                     kitchen.RetireLevelActors();
                     level.Dispose(); self.InstallLevel(next);
                     self.ApplyPendingRenovation();

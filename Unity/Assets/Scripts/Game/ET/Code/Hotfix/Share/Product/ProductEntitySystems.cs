@@ -29,6 +29,8 @@ namespace ET
             self.Online = false;
             self.BoundPeer = default;
             self.BindingGeneration = 0;
+            self.ResumeCredential = null;
+            self.LastResumeAttempt = 0;
         }
     }
 

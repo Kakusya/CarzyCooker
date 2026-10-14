@@ -31,5 +31,5 @@ Solo 装修已交付，但联机尚无对应入口和权限。将已有新增工
 - [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RestaurantRenovationSystem.cs](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/RestaurantRenovationSystem.cs)
 - [Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationRenovationSystem.cs](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationRenovationSystem.cs)
 
-主要是远端越权和重复安装。真实 KCP 双端选择／拒绝／重放／换关与实际 UI 足够，复用 Solo 布局算法；存档与 Player 不在本案。验证取舍与逐任务映射见 [execution-notes.md](execution-notes.md)。本轮仅授权规划，功能／UTF／构建均 NotRun；不执行提交、归档或第二工作区操作。
+主要是远端越权和重复安装。真实 KCP 双端选择／拒绝／重放／换关与实际 UI 足够，复用 Solo 布局算法；存档与 Player 不在本案。验证取舍与逐任务映射见 [execution-notes.md](execution-notes.md)。本轮已获三个 change 的实施授权；功能及 UTF 结果逐项回填 execution-notes。提交、归档和第二工作区版本维护仍需对应授权。
 

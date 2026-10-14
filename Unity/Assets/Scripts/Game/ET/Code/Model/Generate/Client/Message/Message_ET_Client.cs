@@ -1303,6 +1303,8 @@ namespace ET
         public long RosterVersion { get; set; }
         [MemoryPackOrder(7)]
         public List<ProductRosterMember> Members { get; set; } = new List<ProductRosterMember>();
+        [MemoryPackOrder(8)]
+        public string ResumeCredential { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1314,11 +1316,12 @@ namespace ET
             this.BindingGeneration = default;
             this.RosterVersion = default;
             this.Members.Clear();
+            this.ResumeCredential = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZProductSession.proto (line:31)
+    // proto file : ET-Client/ZProductSession.proto (line:32)
     [MemoryPackable]
     [Message(Message_ET_Client.ProductProbeRequest)]
     [ResponseType(nameof(ProductProbeResponse))]
@@ -1348,7 +1351,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZProductSession.proto (line:39)
+    // proto file : ET-Client/ZProductSession.proto (line:40)
     [MemoryPackable]
     [Message(Message_ET_Client.ProductProbeResponse)]
     public partial class ProductProbeResponse: MessageObject, IResponse
@@ -1383,7 +1386,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZProductSession.proto (line:50)
+    // proto file : ET-Client/ZProductSession.proto (line:51)
     [MemoryPackable]
     [Message(Message_ET_Client.ProductLeaveRequest)]
     [ResponseType(nameof(ProductLeaveResponse))]
@@ -1407,7 +1410,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZProductSession.proto (line:56)
+    // proto file : ET-Client/ZProductSession.proto (line:57)
     [MemoryPackable]
     [Message(Message_ET_Client.ProductLeaveResponse)]
     public partial class ProductLeaveResponse: MessageObject, IResponse
@@ -1436,7 +1439,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZProductSession.proto (line:64)
+    // proto file : ET-Client/ZProductSession.proto (line:65)
     [MemoryPackable]
     [Message(Message_ET_Client.ProductRosterSnapshot)]
     public partial class ProductRosterSnapshot: MessageObject, IMessage
@@ -1465,7 +1468,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZProductSession.proto (line:73)
+    // proto file : ET-Client/ZProductSession.proto (line:74)
     [MemoryPackable]
     [Message(Message_ET_Client.ProductHeartbeatRequest)]
     [ResponseType(nameof(ProductHeartbeatResponse))]
@@ -1492,7 +1495,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZProductSession.proto (line:80)
+    // proto file : ET-Client/ZProductSession.proto (line:81)
     [MemoryPackable]
     [Message(Message_ET_Client.ProductHeartbeatResponse)]
     public partial class ProductHeartbeatResponse: MessageObject, IResponse
@@ -1518,7 +1521,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZProductSession.proto (line:87)
+    // proto file : ET-Client/ZProductSession.proto (line:88)
     [MemoryPackable]
     [Message(Message_ET_Client.ProductMatchClosed)]
     public partial class ProductMatchClosed: MessageObject, IMessage
@@ -1544,7 +1547,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZProductSession.proto (line:95)
+    // proto file : ET-Client/ZProductSession.proto (line:96)
     [MemoryPackable]
     [Message(Message_ET_Client.ProductControlRequest)]
     [ResponseType(nameof(ProductControlResponse))]
@@ -1573,6 +1576,12 @@ namespace ET
         public int Sequence { get; set; }
         [MemoryPackOrder(8)]
         public string Payload { get; set; }
+        [MemoryPackOrder(9)]
+        public string ResumeCredential { get; set; }
+        [MemoryPackOrder(10)]
+        public long ResumeAttempt { get; set; }
+        [MemoryPackOrder(11)]
+        public int PlatformId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1585,11 +1594,14 @@ namespace ET
             this.MatchId = default;
             this.Sequence = default;
             this.Payload = default;
+            this.ResumeCredential = default;
+            this.ResumeAttempt = default;
+            this.PlatformId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZProductSession.proto (line:108)
+    // proto file : ET-Client/ZProductSession.proto (line:112)
     [MemoryPackable]
     [Message(Message_ET_Client.ProductControlResponse)]
     public partial class ProductControlResponse: MessageObject, IResponse
@@ -1621,6 +1633,10 @@ namespace ET
         public string Payload { get; set; }
         [MemoryPackOrder(10)]
         public bool Committed { get; set; }
+        [MemoryPackOrder(11)]
+        public string ResumeCredential { get; set; }
+        [MemoryPackOrder(12)]
+        public long ResumeAttempt { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1635,6 +1651,8 @@ namespace ET
             this.Sequence = default;
             this.Payload = default;
             this.Committed = default;
+            this.ResumeCredential = default;
+            this.ResumeAttempt = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
@@ -2239,6 +2257,8 @@ namespace ET
         public int PendingUpgradeExpectedLevel { get; set; }
         [MemoryPackOrder(64)]
         public List<GridRenovationUpgradeTarget> UpgradeTargets { get; set; } = new List<GridRenovationUpgradeTarget>();
+        [MemoryPackOrder(65)]
+        public string RenovationFailure { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -2307,11 +2327,12 @@ namespace ET
             this.SelectedUpgradeStationId = default;
             this.PendingUpgradeExpectedLevel = default;
             this.UpgradeTargets.Clear();
+            this.RenovationFailure = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:215)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:216)
     [MemoryPackable]
     [Message(Message_ET_Client.GridCommandResult)]
     public partial class GridCommandResult: MessageObject, IMessage
@@ -2358,7 +2379,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:229)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:230)
     [MemoryPackable]
     [Message(Message_ET_Client.GridManualProcessState)]
     public partial class GridManualProcessState: MessageObject
@@ -2408,7 +2429,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:244)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:245)
     [MemoryPackable]
     [Message(Message_ET_Client.GridAutoProcessState)]
     public partial class GridAutoProcessState: MessageObject
@@ -5490,6 +5511,86 @@ namespace ET
             this.SourceId = default;
             this.SourceInstanceId = default;
             this.TransitionSerial = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZMemberResume.proto (line:5)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductResumeRequest)]
+    [ResponseType(nameof(ProductResumeResponse))]
+    public partial class ProductResumeRequest: MessageObject, IRequest
+    {
+        public static ProductResumeRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductResumeRequest), isFromPool) as ProductResumeRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(2)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(3)]
+        public string ResumeCredential { get; set; }
+        [MemoryPackOrder(4)]
+        public long AttemptId { get; set; }
+        [MemoryPackOrder(5)]
+        public int PlatformId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.ResumeCredential = default;
+            this.AttemptId = default;
+            this.PlatformId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZMemberResume.proto (line:15)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductResumeResponse)]
+    public partial class ProductResumeResponse: MessageObject, IResponse
+    {
+        public static ProductResumeResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductResumeResponse), isFromPool) as ProductResumeResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(4)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(5)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long RosterVersion { get; set; }
+        [MemoryPackOrder(7)]
+        public List<ProductRosterMember> Members { get; set; } = new List<ProductRosterMember>();
+        [MemoryPackOrder(8)]
+        public long AttemptId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.MatchId = default;
+            this.MemberId = default;
+            this.BindingGeneration = default;
+            this.RosterVersion = default;
+            this.Members.Clear();
+            this.AttemptId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }

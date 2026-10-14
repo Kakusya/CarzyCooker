@@ -191,6 +191,7 @@ namespace ET
                 snapshot.RenovationCandidates.AddRange(renovation.Candidates); snapshot.SelectedRenovationId = renovation.SelectedDefinitionId;
                 snapshot.RenovationChoiceVersion = renovation.ChoiceVersion; snapshot.RenovationLevelId = renovation.ResultLevelId;
                 snapshot.RenovationLevelGeneration = renovation.ResultLevelGeneration;
+                snapshot.RenovationFailure = renovation.Failure;
                 snapshot.SelectedUpgradeStationId = ((GridStation)renovation.PendingUpgradeStation)?.Id ?? 0;
                 snapshot.PendingUpgradeExpectedLevel = renovation.PendingUpgradeExpectedLevel;
                 foreach (var target in renovation.UpgradeTargets)

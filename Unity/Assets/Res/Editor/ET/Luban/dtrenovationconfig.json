@@ -42,5 +42,27 @@
     "Orientation": 0,
     "RewardKind": 2,
     "UpgradeDefinitionId": 2
+  },
+  {
+    "Id": 5,
+    "Name": "新增台面",
+    "StationDefinitionId": 1,
+    "Quantity": 1,
+    "InstallX": 2,
+    "InstallY": 16,
+    "Orientation": 0,
+    "RewardKind": 1,
+    "UpgradeDefinitionId": 0
+  },
+  {
+    "Id": 6,
+    "Name": "新增切配台",
+    "StationDefinitionId": 2,
+    "Quantity": 1,
+    "InstallX": 4,
+    "InstallY": 16,
+    "Orientation": 0,
+    "RewardKind": 1,
+    "UpgradeDefinitionId": 0
   }
 ]

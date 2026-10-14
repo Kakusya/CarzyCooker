@@ -32,7 +32,11 @@ namespace ET
         {
             if (CurrentLevel.Phase == LevelPhase.Preparing) LevelDo(LevelControlAction.Start);
             for (int i = 0; i < 1800 && CurrentLevel.Phase != LevelPhase.Completed; ++i) { AdvanceTicks(1); PumpMessages(3); }
-            Assert.That(CurrentLevel.Phase, Is.EqualTo(LevelPhase.Completed)); PumpMessages(8);
+            Assert.That(CurrentLevel.Phase, Is.EqualTo(LevelPhase.Completed),
+                "customers=" + string.Join(";", CurrentLevel.Children.Values.OfType<Customer>().Where(value => value.Phase != CustomerPhase.Gone).Select(value => value.Phase + "@" + value.Cell)) +
+                "; works=" + string.Join(";", CurrentLevel.Children.Values.OfType<FrontWork>().Where(value => value.State != FrontWorkState.Completed).Select(value => value.Kind + "/" + value.State + "@" + value.Progress)) +
+                "; actors=" + string.Join(";", Grid.Actors.Values.Select(value => (GridActor)value).Select(value => value.MemberId + "@" + value.Cell)));
+            PumpMessages(8);
             FrontWait(() => Renovation.Prepared, 8);
             Assert.That(CurrentLevel.Stars, Is.Zero);
         }

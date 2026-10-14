@@ -14,7 +14,9 @@ namespace ET
         Failed,
         Stopping,
         Stopped,
-        SoloReady
+        SoloReady,
+        Disconnected,
+        Resuming
     }
 
     public enum ProductClientStage
@@ -24,7 +26,8 @@ namespace ET
         Joined,
         Failed,
         Stopping,
-        Stopped
+        Stopped,
+        Disconnected
     }
 
     public enum ProductControlAction
@@ -32,17 +35,20 @@ namespace ET
         Join = 1,
         Probe = 2,
         Leave = 3,
-        Close = 4
+        Close = 4,
+        Resume = 5
     }
 
     public static class ProductSessionRules
     {
-        public const int ProtocolVersion = 21;
+        public const int ProtocolVersion = 22;
         public const int MaxPayloadBytes = 1024;
         public const int RequestTimeout = 4000;
         public const int HeartbeatInterval = 2000;
         public const int HeartbeatTimeout = 2000;
         public const int ResponseCloseGrace = 100;
+        // 恢复限定当前运行平台；Editor 属 PC，Android Player 独立。
+        public static int CurrentPlatformId => RuntimeInstanceContext.ProductPlatformId;
     }
 
     [UniqueId(205000, 205099)]
@@ -101,6 +107,9 @@ namespace ET
         public bool Online;
         public EntityRef<HostPeer> BoundPeer;
         public long BindingGeneration;
+        // 本 Match 内能力凭证，仅由 Join 创建，Leave/Match 释放撤销。
+        public string ResumeCredential;
+        public long LastResumeAttempt;
     }
 
     [ComponentOf(typeof(Scene))]
@@ -188,6 +197,19 @@ namespace ET
         public long CandidateVersion;
         public readonly Dictionary<int, ProductMemberSnapshot> CandidateRoster = new();
     }
+
+    [ComponentOf(typeof(ProductRuntimeComponent))]
+    public sealed class ProductResumeIntent : Entity, IAwake, IDestroy
+    {
+        // Session 可重建，凭证和手动尝试序号只保留在本进程的本轮运行。
+        public string MatchId;
+        public string Credential;
+        public string Endpoint;
+        public long AttemptId;
+        public string Feedback;
+    }
+
+    public struct ProductConnectionLost { }
 
     [ComponentOf(typeof(Scene))]
     public sealed class LocalMessageComponent : Entity, IAwake<ClientSessionComponent, HostPeer>

@@ -32,5 +32,5 @@ Solo 橙汁链不能自动证明远端可用。单列网络接入、身份和多
 - [Unity/Assets/Tests/Editor/ET/CoopCoreCookingTests.cs](../../../Unity/Assets/Tests/Editor/ET/CoopCoreCookingTests.cs)
 - [Docs/Product/specs/orders-front-service/spec.md](../../../Docs/Product/specs/orders-front-service/spec.md)
 
-远端字段漏拷贝、杯／订单重复消费和旧绑定是主要风险。用真实 KCP 请求加两端真实输入，复用 Solo 配方算法证据。验证取舍与逐任务映射见 [execution-notes.md](execution-notes.md)。本轮仅授权规划，功能／UTF／构建均 NotRun；不执行提交、归档或第二工作区操作。
+远端字段漏拷贝、杯／订单重复消费和旧绑定是主要风险。用真实 KCP 请求加两端真实输入，复用 Solo 配方算法证据。验证取舍与逐任务映射见 [execution-notes.md](execution-notes.md)。本轮已获三个 change 的实施授权；功能及 UTF 结果逐项回填 execution-notes。提交、归档和第二工作区版本维护仍需对应授权。
 
