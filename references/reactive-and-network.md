@@ -18,6 +18,8 @@
 
 UI 观察权威领域状态或明确 UI context，不保存网络 response 作为第二事实来源。每项独立表现只有一个更新 owner，首次投影与后续刷新走同一机制；不要叠 event、OnOpen 手动 Refresh、Bind 和 UI cache 更新同一控件。
 
+地图／HUD 的局部性能约定见 [reduce-per-frame-allocations](../openspec/changes/archive/2026-10-14-reduce-per-frame-allocations/execution-notes.md)：Board 同步只读具体投影字典，不持有业务 Entity，派生标签、几何、落物顺序和路径颜色归原 Board，ReleaseBoard 清空；插值与跟随仍每帧执行。正常 HUD 刷新记录已展示版本，动作字段和时间／进度／反馈字段分别比较；本地面板和同版本命令反馈仍显式刷新，Close／重开失效。恢复页比较阶段、尝试、反馈、凭证可用性及原 Runtime／Client／HUD 上下文，实际输入 guard 继续实时检查资格，不把显示缓存当作授权，不记录凭证内容。没有改变消息／快照安装合同。
+
 外部 ReactiveBinding 是 manifest 声明的包；ET 的 IETReactive/ETReactiveSystem/Source/Bind 是仓库自己的生成机制。两套 attribute 不混用。ET owner 实现 IETReactive、声明 partial，System 符合 EntitySystemOf 与生成诊断，Bind 用 nameof 指向源。具体签名查 [响应式规格](../openspec/specs/reactive-ui/spec.md) 的源文件。
 
 最小投影只依赖相关字段/语言/可用状态。Bind 只写表现，不发请求、不写领域状态、不承担生命周期清理。集合变更需按选中机制传播版本；不能假定普通集合修改就可观察。对象池与上下文重绑清理观察缓存，具体 Reset API 以实际包或 ET generator 为准。
@@ -217,3 +219,9 @@ Grid18–21通过显式wire字段复制复用原榨汁／分杯／贴单逻辑�
 Join生成Participant所属32字节随机恢复凭证；Client将本轮凭证／endpoint／尝试号保存到ProductRuntime的ProductResumeIntent，只在内存。新Session发ProductResumeRequest→新HostPeer的ProductPeerResumeHandler→原HostSession Ordered MailBox的ProductControlHandler／Resume裁决→原Participant撤旧绑定、排旧角色落物并绑定新Peer。答复返回原wire RpcId，匹配本人确认后再由完整投影开放输入。单成员失联不停止Root sender；Stop／Leave／Host关闭清理相关资格。Client在原Scene重建ClientSession／Session及投影，旧EntityRef／绑定不能写入新实例；HUD仍归原GridPresentation／UIComponent，支持手动恢复和本地取消。含凭证的JoinResponse／Control／Resume消息在LogMsg入口排除，禁止ToString调试展开。
 
 逐项结果与未验证范围见[装修](../openspec/changes/cooperative-renovation-choice/execution-notes.md)、[恢复](../openspec/changes/cooperative-member-resume/execution-notes.md)、[饮品](../openspec/changes/cooperative-drink-order-binding/execution-notes.md)，操作见[合作餐厅说明](../Docs/Product/cooperative-play-guide.md)。
+
+### 固定步与搜索工作区复用
+
+GridKitchen 持角色／手工作业 EntityRef 快照和固定 7×18 BFS 队列／前驱工作区；FrontLevelState 持顾客及稳定餐桌顺序，FrontWorkCommands 分开持原批次命令、角色移动、工作推进和伙伴调度候选。同步阶段填充后按原 MemberId／ID／优先级排序，使用前重新解引用，阶段末及 Awake／Destroy 清有效引用；CanStop 仅直接计数，不覆盖角色步缓冲。原 Stop→创建／转换→角色移动→工作推进→Claim 次序不变。
+
+搜索保持上右下左；内部长度／可达性查询不创建结果列表，玩家借厨房临时路线后复制至自身 Path，伙伴和顾客直接填充自身 Path。搜索与消费之间没有 await／通知；公开 FindGridPath 每次返回独立列表，后续搜索或调用者修改互不影响。保留工位几何、公开 Neighbours、消息和完整投影的独立值边界，不宣称固定步零 GC。行为、真实入口和性能采样限制见 [执行记录](../openspec/changes/archive/2026-10-14-reduce-per-frame-allocations/execution-notes.md)。

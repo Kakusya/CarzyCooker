@@ -129,3 +129,5 @@
 | 自动化配套 | Unity CLI/Pipeline、Tools/AutoTesting、相关技能及启动/资源/测试/打包/错误/端口/UI/归档 SOP 已迁入；专用双包编排、PortRegistry、UI 结构 runner 等仍未接入 | [已迁入配套](Docs/AI/skill-roadmap.md)、[剩余缺口](Docs/AI/reference-alignment.md) |
 
 不会因设计写完、候选表存在、任务勾选或格式通过，把未来玩法列为已实现。后续玩法必须有实际代码/配置和对应验证结果后再更新。
+
+main 历史记录（2026-10-14）：逐帧分配优化已 9/9 并归档，覆盖地图／视口、正常及恢复 HUD、固定步遍历与 BFS。当时相关 UTF 13/13 Passed，另复用四项未变表现结果；普通 Launcher／真实 KCP 恢复入口已验收。相同 Editor 条件下准备／营业帧分配约降 7%／14%，帧耗时无明显退化，恢复页总体帧分配波动及设备未验收范围见[执行记录](openspec/changes/archive/2026-10-14-reduce-per-frame-allocations/execution-notes.md)。第二工作区本轮运行验证均为 NotRun。

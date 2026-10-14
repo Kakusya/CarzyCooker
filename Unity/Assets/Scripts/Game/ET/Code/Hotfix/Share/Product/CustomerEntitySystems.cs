@@ -13,6 +13,12 @@ namespace ET
             self.Serves.Clear();
             self.Transitions.Clear(); self.FinishedTransitions.Clear();
             self.ArrivalSerial = 1; self.ArrivalQueued = false;
+            self.CustomerStepBuffer.Clear();self.TableStepBuffer.Clear();
+        }
+        [EntitySystem]
+        private static void Destroy(this FrontLevelState self)
+        {
+            self.CustomerStepBuffer.Clear();self.TableStepBuffer.Clear();
         }
     }
 

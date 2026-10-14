@@ -42,6 +42,8 @@ namespace ET
             self.MemberChanges.Clear(); self.Incoming.Clear(); self.Results.Clear(); self.PendingResults.Clear();
             self.LayoutCommands.Clear();
             self.WorkTransitions.Clear(); self.WorkOutcomes.Clear();
+            self.ActorStepBuffer.Clear();self.ManualStepBuffer.Clear();
+            self.ActorRouteBuffer.Clear();Array.Clear(self.SearchQueue,0,self.SearchQueue.Length);Array.Clear(self.SearchPrevious,0,self.SearchPrevious.Length);
             if (!self.RestoreKitchenBaseline())
             {
                 int variant = restaurant?.MenuVariant ?? 0;
@@ -91,7 +93,11 @@ namespace ET
         }
 
         [EntitySystem]
-        private static void Destroy(this GridKitchenComponent self) => self.StopGrid();
+        private static void Destroy(this GridKitchenComponent self)
+        {
+            self.StopGrid();self.ActorStepBuffer.Clear();self.ManualStepBuffer.Clear();
+            self.ActorRouteBuffer.Clear();Array.Clear(self.SearchQueue,0,self.SearchQueue.Length);Array.Clear(self.SearchPrevious,0,self.SearchPrevious.Length);
+        }
 
         public static void StopGrid(this GridKitchenComponent self)
         {
@@ -202,8 +208,16 @@ namespace ET
             if (self.Stopped) return;
             ++self.Tick;
             self.ApplyGridMembers();
-            foreach (GridActor actor in self.OrderedActors())
+            self.ActorStepBuffer.Clear();
+            foreach(var pair in self.Actors)self.ActorStepBuffer.Add(pair);
+            self.ActorStepBuffer.Sort(static (left,right)=>left.Key.CompareTo(right.Key));
+            foreach(var entry in self.ActorStepBuffer)
             {
+                GridActor actor=entry.Value;
+                if(actor==null)
+                {
+                    continue;
+                }
                 if (!self.HasBinding(actor.MemberId, actor.Generation)) continue;
                 if (actor.Motion == GridMotion.Transit)
                 {
@@ -237,6 +251,7 @@ namespace ET
                 actor.HasIntent = false; actor.Motion = GridMotion.Standing;
                 self.Dirty = true;
             }
+            self.ActorStepBuffer.Clear();
             self.AdvanceKitchenTransitions();
             self.AdvanceWork();
             self.AdvanceAutoWork();
@@ -272,13 +287,16 @@ namespace ET
             {
                 GridStation station = self.Station(intent.TargetId);
                 if (station == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "UnknownCounter", intent.OriginKind); return; }
-                List<GridCell> shortest = null;
+                int shortest = int.MaxValue;
                 foreach (GridCell adjacent in station.StationApproaches())
                 {
-                    List<GridCell> path = self.FindGridPath(actor.Cell, adjacent);
-                    if (path != null && (shortest == null || path.Count < shortest.Count)) { shortest = path; goal = adjacent; }
+                    int length=self.GridPathLength(actor.Cell,adjacent);
+                    if(length>=0 && length<shortest)
+                    {
+                        shortest=length;goal=adjacent;
+                    }
                 }
-                if (shortest == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable", intent.OriginKind); return; }
+                if (shortest == int.MaxValue) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable", intent.OriginKind); return; }
             }
             if (intent.Action is GridAction.PickupDrop or GridAction.StartHeldWork or GridAction.StopWork) goal = actor.Cell;
             if (!self.PlanRoute(actor, goal)) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable", intent.OriginKind); return; }
@@ -292,15 +310,20 @@ namespace ET
 
         private static bool PlanRoute(this GridKitchenComponent self, GridActor actor, GridCell goal)
         {
-            List<GridCell> route = self.FindGridPath(actor.Cell, goal);
-            if (route == null) return false;
+            List<GridCell> route=self.ActorRouteBuffer;
+            if(!self.FindGridPathInto(actor.Cell,goal,route))
+            {
+                return false;
+            }
             int stopIndex = route.Count - 1;
             while (stopIndex >= 0 && !self.CanStop(route[stopIndex], actor)) --stopIndex;
             if (stopIndex < 0)
             {
                 // 改目标时当前格可能只是满员格的经过点，保留原合法停点。
-                route = actor.HasStopReservation ? self.FindGridPath(actor.Cell, actor.StopCell) : null;
-                if (route == null) return false;
+                if(!actor.HasStopReservation || !self.FindGridPathInto(actor.Cell,actor.StopCell,route))
+                {
+                    return false;
+                }
                 stopIndex = route.Count - 1;
             }
             actor.Goal = goal; actor.StopCell = route[stopIndex]; actor.HasStopReservation = true;
@@ -315,9 +338,13 @@ namespace ET
         public static bool CanStop(this GridKitchenComponent self, GridCell cell, GridActor except)
         {
             int count = 0;
-            foreach (GridActor other in self.OrderedActors())
+            foreach (var reference in self.Actors.Values)
             {
-                if (other == except) continue;
+                GridActor other=reference;
+                if (other == null || other == except)
+                {
+                    continue;
+                }
                 if (other.HasStopReservation && other.StopCell == cell || other.Motion != GridMotion.Transit && other.Cell == cell) ++count;
             }
             return count < GridKitchenRules.StandingCapacity;
@@ -335,25 +362,89 @@ namespace ET
 
         public static List<GridCell> FindGridPath(this GridKitchenComponent self, GridCell from, GridCell to)
         {
-            if (!self.IsWalkable(from) || !self.IsWalkable(to)) return null;
-            var queue = new Queue<GridCell>(); var previous = new Dictionary<GridCell, GridCell>();
-            queue.Enqueue(from); previous.Add(from, from);
-            while (queue.Count > 0)
+            if(!self.SearchGridPath(from,to))
             {
-                GridCell cell = queue.Dequeue();
-                if (cell == to)
+                return null;
+            }
+            var result=new List<GridCell>(self.SearchResultLength(from,to));
+            self.CopySearchPath(from,to,result);return result;
+        }
+
+        private static bool FindGridPathInto(this GridKitchenComponent self,GridCell from,GridCell to,List<GridCell> destination)
+        {
+            if(!self.SearchGridPath(from,to))
+            {
+                return false;
+            }
+            self.CopySearchPath(from,to,destination);return true;
+        }
+
+        private static int GridPathLength(this GridKitchenComponent self,GridCell from,GridCell to)
+        {
+            return self.SearchGridPath(from,to)?self.SearchResultLength(from,to):-1;
+        }
+
+        private static int SearchResultLength(this GridKitchenComponent self,GridCell from,GridCell to)
+        {
+            int first=from.Y*GridKitchenRules.Width+from.X,current=to.Y*GridKitchenRules.Width+to.X,length=1;
+            while(current!=first)
+            {
+                current=self.SearchPrevious[current];++length;
+            }
+            return length;
+        }
+
+        private static void CopySearchPath(this GridKitchenComponent self,GridCell from,GridCell to,List<GridCell> destination)
+        {
+            // 搜索和复制之间没有 await、消息分发或观察事件；调用者只得到自己的路径。
+            int first=from.Y*GridKitchenRules.Width+from.X,current=to.Y*GridKitchenRules.Width+to.X;
+            destination.Clear();
+            while(true)
+            {
+                destination.Add(new GridCell(current%GridKitchenRules.Width,current/GridKitchenRules.Width));
+                if(current==first)
                 {
-                    var result = new List<GridCell> { cell };
-                    while (cell != from) { cell = previous[cell]; result.Add(cell); }
-                    result.Reverse(); return result;
+                    break;
                 }
-                foreach (GridCell next in Neighbours(cell))
+                current=self.SearchPrevious[current];
+            }
+            destination.Reverse();
+        }
+
+        private static bool SearchGridPath(this GridKitchenComponent self,GridCell from,GridCell to)
+        {
+            if(!self.IsWalkable(from) || !self.IsWalkable(to))
+            {
+                return false;
+            }
+            Array.Fill(self.SearchPrevious,-1);
+            int head=0,tail=0,first=from.Y*GridKitchenRules.Width+from.X,target=to.Y*GridKitchenRules.Width+to.X;
+            self.SearchQueue[tail++]=first;self.SearchPrevious[first]=first;
+            while(head<tail)
+            {
+                int current=self.SearchQueue[head++];
+                if(current==target)
                 {
-                    if (!self.IsWalkable(next) || previous.ContainsKey(next)) continue;
-                    previous.Add(next, cell); queue.Enqueue(next);
+                    return true;
+                }
+                int x=current%GridKitchenRules.Width,y=current/GridKitchenRules.Width;
+                for(int direction=0;direction<4;direction++)
+                {
+                    // 保留上、右、下、左的确定顺序；GridCell 是值类型，不申请邻格数组。
+                    GridCell next=direction switch{0=>new GridCell(x,y+1),1=>new GridCell(x+1,y),2=>new GridCell(x,y-1),_=>new GridCell(x-1,y)};
+                    if(!self.IsWalkable(next))
+                    {
+                        continue;
+                    }
+                    int nextIndex=next.Y*GridKitchenRules.Width+next.X;
+                    if(self.SearchPrevious[nextIndex]!=-1)
+                    {
+                        continue;
+                    }
+                    self.SearchPrevious[nextIndex]=current;self.SearchQueue[tail++]=nextIndex;
                 }
             }
-            return null;
+            return false;
         }
 
         private static void ExecuteInteraction(this GridKitchenComponent self, GridActor actor)

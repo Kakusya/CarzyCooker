@@ -15,11 +15,28 @@ namespace ET.Client
             if (intent == null || runtime.Stage is not (ProductStage.Disconnected or ProductStage.Resuming) &&
                 !(client.Stage == ProductClientStage.Joined && !client.GetComponent<GridClientComponent>().Confirmed))
             {
+                if(self.RecoveryDisplayed)
+                {
+                    self.RecoveryDisplayed=false;self.RecoveryFeedback=null;
+                    self.RecoveryRuntime=default;self.RecoveryClient=default;self.RecoveryHud=default;
+                    self.HudTargetsValid=false;self.HudInformationValid=false;self.HudVersion=long.MinValue;
+                }
                 return false;
             }
-            self.Ready = false; self.PointerHeld = false; self.Highlight = null; self.HudTargetsKey = null;
+            self.Ready = false; self.PointerHeld = false; self.Highlight = null; self.HudTargetsValid=false;self.HudInformationValid=false;
             UIGridKitchen hud = self.Hud;
             if (hud?.View == null) { return true; }
+            bool hasCredential=intent.Credential!=null;
+            if(self.RecoveryDisplayed && self.RecoveryStage==runtime.Stage && self.RecoveryAttempt==intent.AttemptId &&
+                self.RecoveryFeedback==intent.Feedback && self.RecoveryCredentialAvailable==hasCredential &&
+                (ProductRuntimeComponent)self.RecoveryRuntime==runtime && (ClientSessionComponent)self.RecoveryClient==client &&
+                (UIGridKitchen)self.RecoveryHud==hud && self.RecoveryHudEpoch==self.HudLoadEpoch)
+            {
+                return true;
+            }
+            self.RecoveryDisplayed=true;self.RecoveryStage=runtime.Stage;self.RecoveryAttempt=intent.AttemptId;
+            self.RecoveryFeedback=intent.Feedback;self.RecoveryCredentialAvailable=hasCredential;
+            self.RecoveryRuntime=runtime;self.RecoveryClient=client;self.RecoveryHud=hud;self.RecoveryHudEpoch=self.HudLoadEpoch;
             MonoUIGridKitchen view = hud.View;
             view.StatusText.text = runtime.Stage == ProductStage.Disconnected ? "连接失联" : "恢复中";
             view.HintText.text = intent.Feedback;

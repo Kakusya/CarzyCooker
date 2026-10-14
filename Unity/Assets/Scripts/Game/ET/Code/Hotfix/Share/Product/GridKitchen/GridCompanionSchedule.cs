@@ -1,5 +1,4 @@
 #if !DOTNET
-using System.Linq;
 using Cysharp.Threading.Tasks;
 
 namespace ET
@@ -11,19 +10,70 @@ namespace ET
         public static void ScheduleCompanions(this GridKitchenComponent self, Level level)
         {
             if (level.Phase != LevelPhase.Operating && level.Phase != LevelPhase.Draining) return;
-            foreach (CompanionRole role in level.Children.Values.OfType<CompanionRole>())
+            FrontWorkCommands commands=level.GetComponent<FrontWorkCommands>();
+            commands.ScheduleRoles.Clear();commands.ScheduleCandidates.Clear();
+            foreach(Entity child in level.Children.Values)
             {
+                if(child is CompanionRole role)
+                {
+                    commands.ScheduleRoles.Add(role);
+                }
+                if(child is FrontWork work && work.State==FrontWorkState.Available && work.Kind is FrontWorkKind.Ask or FrontWorkKind.Wash)
+                {
+                    commands.ScheduleCandidates.Add(work);
+                }
+            }
+            commands.ScheduleCandidates.Sort(static (left,right)=>
+            {
+                FrontWork first=left,second=right;
+                int priority=(first.Kind==FrontWorkKind.Ask?0:1).CompareTo(second.Kind==FrontWorkKind.Ask?0:1);
+                return priority!=0?priority:first.Id.CompareTo(second.Id);
+            });
+            foreach (var reference in commands.ScheduleRoles)
+            {
+                CompanionRole role=reference;
+                if(role==null)
+                {
+                    continue;
+                }
                 if (role.WorkId != 0 || role.RequestInFlight || role.Motion != GridMotion.Standing ||
                     role.LastSubmittedRequestId > role.LastCommittedRequestId || self.Tick < role.NextScheduleTick) continue;
                 role.NextScheduleTick = self.Tick + 1;
-                FrontWork candidate = level.Children.Values.OfType<FrontWork>().Where(work => work.State == FrontWorkState.Available &&
-                        work.Kind is FrontWorkKind.Ask or FrontWorkKind.Wash)
-                    .OrderBy(work => work.Kind == FrontWorkKind.Ask ? 0 : 1).ThenBy(work => work.Id)
-                    .FirstOrDefault(work => self.CheckFrontTarget(level, work) == null &&
-                        !level.Children.Values.OfType<FrontWork>().Any(other => other.StationId == work.StationId && other.State is FrontWorkState.Approaching or FrontWorkState.Working) &&
-                        self.Station(work.StationId).StationApproaches().Any(cell => self.FindGridPath(role.Cell, cell) != null));
+                FrontWork candidate=null;
+                foreach(var workRef in commands.ScheduleCandidates)
+                {
+                    FrontWork work=workRef;
+                    if(work==null || work.State!=FrontWorkState.Available || self.CheckFrontTarget(level,work)!=null)
+                    {
+                        continue;
+                    }
+                    bool busy=false;
+                    foreach(Entity child in level.Children.Values)
+                    {
+                        if(child is FrontWork other && other.StationId==work.StationId && other.State is FrontWorkState.Approaching or FrontWorkState.Working)
+                        {
+                            busy=true;break;
+                        }
+                    }
+                    if(busy)
+                    {
+                        continue;
+                    }
+                    foreach(GridCell cell in self.Station(work.StationId).StationApproaches())
+                    {
+                        if(self.SearchGridPath(role.Cell,cell))
+                        {
+                            candidate=work;break;
+                        }
+                    }
+                    if(candidate!=null)
+                    {
+                        break;
+                    }
+                }
                 if (candidate != null) role.RequestCompanionWork(new FrontWorkIntent(FrontWorkAction.Claim, candidate.Id, candidate.ClaimSerial)).Forget();
             }
+            commands.ScheduleRoles.Clear();commands.ScheduleCandidates.Clear();
         }
     }
 }

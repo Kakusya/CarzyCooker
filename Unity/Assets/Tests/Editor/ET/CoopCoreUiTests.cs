@@ -143,6 +143,7 @@ namespace ET
         }
 
         [UnityTest]
+        [NUnit.Framework.Category("PerFrameIntegration")]
         public IEnumerator CoopCoreUiRemoteManagedReopenAndRetiredHostCallbacksKeepTheirOwners()
         {
             yield return StartCoopHostLauncher();

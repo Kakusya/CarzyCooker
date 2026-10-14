@@ -115,6 +115,12 @@ namespace ET
         {
             self.Pending.Clear(); self.Transitions.Clear(); self.FinishedTransitions.Clear();
             self.Creations.Clear(); self.Outcomes.Clear();
+            self.StepCommands.Clear();self.MovementRoles.Clear();self.WorkStepBuffer.Clear();self.ScheduleRoles.Clear();self.ScheduleCandidates.Clear();
+        }
+        [EntitySystem]
+        private static void Destroy(this FrontWorkCommands self)
+        {
+            self.StepCommands.Clear();self.MovementRoles.Clear();self.WorkStepBuffer.Clear();self.ScheduleRoles.Clear();self.ScheduleCandidates.Clear();
         }
     }
 }

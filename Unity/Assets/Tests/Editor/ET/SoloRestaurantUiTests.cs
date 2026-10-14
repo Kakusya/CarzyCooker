@@ -345,11 +345,12 @@ namespace ET
         }
 
         [UnityTest]
+        [NUnit.Framework.Category("PerFrameIntegration")]
         public IEnumerator SoloRestaurantUiLifecycleInputAndProjectionWithSoloBuffDrawReopen()
         {
             yield return StartLauncher();GridPresentationComponent presentation=Presentation;
             UIGridKitchen original=presentation.Hud;Assert.That(original.Parent,Is.SameAs(((Scene)Client.IScene).GetComponent<UIComponent>()));
-            Assert.That(Hud.UGFUIForm,Is.SameAs(original));Assert.That(Hud.PhaseText.text,Is.EqualTo("准备"));Assert.That(Hud.ScoreText.text,Does.Contain("0 分"));
+            Assert.That(Hud.UGFUIForm,Is.SameAs(original));Assert.That(Hud.PhaseText.text,Is.EqualTo("准备 · 第 1/3 关"));Assert.That(Hud.ScoreText.text,Does.Contain("0 分"));
             foreach(GridCell corner in new[]{new GridCell(0,Grid.KitchenBottom),new GridCell(Grid.Width-1,Grid.KitchenBottom),new GridCell(0,Grid.Height-1),new GridCell(Grid.Width-1,Grid.Height-1)})
                 Assert.That(Board.InputScreenRect.Contains(Board.BoardCamera.WorldToScreenPoint(Board.CellToWorld(corner))),Is.True,"Kitchen fits the actual unobstructed map region");
             int seed=Grid.BuffSeed;int[] candidates=Grid.BuffCandidates.ToArray();long command=Client.NextCommandId;
@@ -452,6 +453,7 @@ namespace ET
         }
 
         [UnityTest]
+        [NUnit.Framework.Category("PerFrameIntegration")]
         public IEnumerator SoloRestaurantUiProjectionActualBakingSeparatesReceiptProgressAndCompletion()
         {
             yield return StartLauncher();yield return Command("拿 面包台 ·",true);yield return Command("放 烤箱 ·",true);
