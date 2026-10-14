@@ -22,6 +22,7 @@ public sealed class DRLevelConfig :  Luban.EditorBeanBase
             AllowedDishIds = new System.Collections.Generic.List<int>();
             AllowedBuffIds = new System.Collections.Generic.List<int>();
             AllowedRenovationIds = new System.Collections.Generic.List<int>();
+            AllowedDrinkIds = new System.Collections.Generic.List<int>();
     }
 
     public override void LoadJson(JSONObject _json)
@@ -114,6 +115,46 @@ public sealed class DRLevelConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["ChapterId"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  ChapterId = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["ChapterStage"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  ChapterStage = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["IsChapterTerminal"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsBoolean) { throw new SerializationException(); }  IsChapterTerminal = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["MenuVariant"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  MenuVariant = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["AllowedDrinkIds"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsArray) { throw new SerializationException(); } AllowedDrinkIds = new System.Collections.Generic.List<int>(); foreach(JSONNode __e0 in _fieldJson.Children) { int __v0;  if(!__e0.IsNumber) { throw new SerializationException(); }  __v0 = __e0;  AllowedDrinkIds.Add(__v0); }  
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -158,6 +199,23 @@ public sealed class DRLevelConfig :  Luban.EditorBeanBase
 
             if (AllowedRenovationIds == null) { throw new System.ArgumentNullException(); }
             { var __cjson0 = new JSONArray(); _json["AllowedRenovationIds"] = __cjson0; foreach(var _e0 in AllowedRenovationIds) { JSONNode __v0; __v0 = new JSONNumber(_e0); __cjson0.Add(__v0); } }
+        }
+        {
+            _json["ChapterId"] = new JSONNumber(ChapterId);
+        }
+        {
+            _json["ChapterStage"] = new JSONNumber(ChapterStage);
+        }
+        {
+            _json["IsChapterTerminal"] = new JSONBool(IsChapterTerminal);
+        }
+        {
+            _json["MenuVariant"] = new JSONNumber(MenuVariant);
+        }
+        {
+
+            if (AllowedDrinkIds == null) { throw new System.ArgumentNullException(); }
+            { var __cjson0 = new JSONArray(); _json["AllowedDrinkIds"] = __cjson0; foreach(var _e0 in AllowedDrinkIds) { JSONNode __v0; __v0 = new JSONNumber(_e0); __cjson0.Add(__v0); } }
         }
     }
 
@@ -227,6 +285,31 @@ public sealed class DRLevelConfig :  Luban.EditorBeanBase
     /// AllowedRenovationIds
     /// </summary>
     public System.Collections.Generic.List<int> AllowedRenovationIds;
+
+    /// <summary>
+    /// ChapterId
+    /// </summary>
+    public int ChapterId;
+
+    /// <summary>
+    /// ChapterStage
+    /// </summary>
+    public int ChapterStage;
+
+    /// <summary>
+    /// IsChapterTerminal
+    /// </summary>
+    public bool IsChapterTerminal;
+
+    /// <summary>
+    /// MenuVariant
+    /// </summary>
+    public int MenuVariant;
+
+    /// <summary>
+    /// AllowedDrinkIds
+    /// </summary>
+    public System.Collections.Generic.List<int> AllowedDrinkIds;
 
 }
 }

@@ -38,11 +38,12 @@ namespace ET
             while(!condition())
             {
                 Assert.That(Time.realtimeSinceStartup-started,Is.LessThan(seconds),reason+"; "+Presentation?.Failure+
-                    $"; phase={Grid?.LevelPhase}, tick={Grid?.Tick}, operating={Grid?.LevelElapsedTicks}, customers={Grid?.Customers.Count}, works={Grid?.FrontWorks.Count}");
+                    $"; phase={Grid?.LevelPhase}, tick={Grid?.Tick}, operating={Grid?.LevelElapsedTicks}, customers={Grid?.Customers.Count}, works={Grid?.FrontWorks.Count}; last={Grid?.LastCommandId}/{Grid?.LastStatus}/{Grid?.LastReason}" +
+                    (Grid?.Actors.ContainsKey(Grid.MemberId) == true ? $"; actor={Grid.Actors[Grid.MemberId].Cell}/{Grid.Actors[Grid.MemberId].Motion}, goal={Grid.Actors[Grid.MemberId].Goal}" : ""));
                 yield return null;
             }
         }
-        private IEnumerator StartLauncher(bool waitReady=true, bool chooseGame=true)
+        private IEnumerator StartLauncher(bool waitReady=true, bool chooseGame=true, int menuVariant=0)
         {
             Assert.That(Init.Instance,Is.Null,"Do not replace another active ET entry");
             Assert.That(FiberManager.Instance,Is.Null,"Do not replace another active World");
@@ -55,6 +56,8 @@ namespace ET
                 ((UIGridKitchen)selection.Hud)?.Available == true, "Real managed save selector ready");
             if (!chooseGame) yield break;
             var selector = Runtime.Root().GetComponent<SoloSavePresentation>();
+            // This existing suite exercises the retained two-food configuration; drink tests opt into the new menu.
+            selector.NewMenuVariant = menuVariant;
             var menu = ((UIGridKitchen)selector.Hud).View;
             Pointer(menu.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "内存试玩"));
             if(waitReady)yield return Wait(()=>Presentation?.Ready==true,"Real managed HUD ready");
@@ -80,7 +83,7 @@ namespace ET
         {
             long command=Client.NextCommandId+1;Pointer(Button(caption,prefix));
             Assert.That(Client.NextCommandId,Is.EqualTo(command),"One pointer click sends one command");
-            yield return Wait(()=>Grid.LastCommandId==command && Grid.LastStatus==GridResultStatus.Executed,"Actual command executed");
+            yield return Wait(()=>Grid.LastCommandId==command && Grid.LastStatus==GridResultStatus.Executed,"Actual command executed: " + caption + "; expected=" + command);
         }
 
         [UnityTest]
@@ -178,14 +181,17 @@ namespace ET
         {
             GameObject asset=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Res/UI/UIForm/Product/UIGridKitchen.prefab");
             Assert.That(asset,Is.Not.Null);var view=asset.GetComponent<MonoUIGridKitchen>();Assert.That(view,Is.Not.Null);
-            foreach(Text text in new[]{view.PhaseText,view.ClockText,view.ScoreText,view.HandText,view.WorkText,view.StatusText,view.HintText,view.OrdersText,view.BuffText,view.SettlementText})
+            foreach(Text text in new[]{view.PhaseText,view.ClockText,view.ScoreText,view.HandText,view.WorkText,view.StatusText,view.HintText,view.OrdersText,view.BuffText,view.SettlementText,view.TargetText,view.DetailsText})
                 Assert.That(text,Is.Not.Null,"Generated Text binding");
-            foreach(RectTransform rect in new[]{view.OrderPanelRectTransform,view.BuffPanelRectTransform,view.SettlementPanelRectTransform,view.ControlPanelRectTransform,view.CameraDragAreaRectTransform,view.OrderActionsRectTransform,view.BuffActionsRectTransform,view.TargetsRectTransform})
+            foreach(RectTransform rect in new[]{view.OrderPanelRectTransform,view.BuffPanelRectTransform,view.SettlementPanelRectTransform,view.ControlPanelRectTransform,view.CameraDragAreaRectTransform,view.OrderActionsRectTransform,view.BuffActionsRectTransform,view.TargetsRectTransform,view.PrimaryActionsRectTransform,view.DetailsPanelRectTransform})
                 Assert.That(rect,Is.Not.Null,"Generated panel binding");
             Assert.That(asset.GetComponent<Canvas>().renderMode,Is.EqualTo(RenderMode.WorldSpace));
             Assert.That(asset.GetComponent<GraphicRaycaster>(),Is.Not.Null);Assert.That(view.TargetTemplateButton.gameObject.activeSelf,Is.False);
             Assert.That(view.CameraDragAreaRectTransform.GetComponent<Image>().raycastTarget,Is.False);
             Assert.That(view.TargetsRectTransform.GetComponentInParent<ScrollRect>(true).content,Is.SameAs(view.TargetsRectTransform));
+            Assert.That(view.DetailsPanelRectTransform.GetComponent<ScrollRect>().content,Is.SameAs(view.DetailsText.rectTransform));
+            Assert.That(view.DetailsPanelRectTransform.gameObject.activeSelf,Is.False);
+            Assert.That(view.TargetText.raycastTarget,Is.False);
         }
 
         [UnityTest]
@@ -196,7 +202,7 @@ namespace ET
             yield return Command(buff); yield return Command("开始营业");
             yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Actual zero-star renovation result", 75);
             yield return Wait(() => Grid.RenovationLevelId == Grid.LevelId && Grid.RenovationChoiceVersion > 0, "Actual renovation preparation delivered");
-            Assert.That(Grid.LevelStars, Is.Zero); Assert.That(Grid.RenovationCandidates, Is.EqualTo(new[] { 1, 2 }));
+            Assert.That(Grid.LevelStars, Is.Zero); Assert.That(Grid.RenovationCandidates, Is.EqualTo(new[] { 1, 2, 3, 4 }));
             long version = Grid.RenovationChoiceVersion; int[] candidates = Grid.RenovationCandidates.ToArray();
             UnityAction retired = CaptureButtonCallback(Button("装修 新增台面")); int mono = Hud.GetInstanceID();
             long before = Client.NextCommandId; Presentation.CloseGridHud(); yield return null; Presentation.OpenGridHud();
@@ -230,7 +236,7 @@ namespace ET
         }
 
         [UnityTest]
-        public IEnumerator SoloRenovationUiActualBlockedCandidatesShowsEmptyFeedbackAndCanContinue()
+        public IEnumerator SoloRenovationUiActualBlockedAdditionsKeepUpgradeFeedbackAndCanContinue()
         {
             yield return StartLauncher();
             yield return RenovationUiMoveStation("切配台", new GridCell(2, 13));
@@ -239,8 +245,8 @@ namespace ET
             yield return Command(buff); yield return Command("开始营业");
             yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Actual empty renovation result", 75);
             yield return Wait(() => Grid.RenovationLevelId == Grid.LevelId && Grid.RenovationChoiceVersion > 0, "Actual empty candidates prepared");
-            Assert.That(Grid.RenovationCandidates, Is.Empty); Assert.That(Hud.SettlementText.text, Does.Contain("当前没有可选装修"));
-            Assert.That(Hud.GetComponentsInChildren<Button>(false).Any(value => value.GetComponentInChildren<Text>().text.StartsWith("装修 ")), Is.False);
+            Assert.That(Grid.RenovationCandidates, Is.EqualTo(new[] { 3, 4 })); Assert.That(Hud.SettlementText.text, Does.Contain("可选择一项装修"));
+            Assert.That(Hud.GetComponentsInChildren<Button>(false).Count(value => value.GetComponentInChildren<Text>().text.StartsWith("装修 升级")), Is.EqualTo(2));
             long[] items = Grid.Items.Keys.OrderBy(value => value).ToArray(); yield return Command("下一关");
             Assert.That(Grid.Stations.Count, Is.EqualTo(16)); Assert.That(Grid.RenovationApplied, Is.Empty);
             Assert.That(Grid.Items.Keys.OrderBy(value => value), Is.EqualTo(items));
@@ -411,6 +417,39 @@ namespace ET
         }
 
         [UnityTest]
+        public IEnumerator SoloRestaurantUiInformationHierarchyTargetDetailsAndPrimaryActionUseCurrentProjection()
+        {
+            yield return StartLauncher();
+            yield return Command("拿 碗台 ·",true);
+            long bowl=Grid.Actors[Client.MemberId].HandItemId;
+            long station=Grid.Stations.Values.Single(value=>value.Name=="碗台").Id;
+            Assert.That(Presentation.SelectedStationId,Is.EqualTo(station));
+            Assert.That(Hud.HandText.text,Does.Contain("碗（空）"));
+            Assert.That(Hud.TargetText.text,Does.Contain("碗台").And.Contain("空"));
+            Button place=Button("放 碗台 ·",true);
+            Assert.That(place.transform.parent,Is.SameAs(Hud.PrimaryActionsRectTransform));
+            long command=Client.NextCommandId;
+            Pointer(Button("查看详情"));yield return null;
+            Assert.That(Hud.DetailsPanelRectTransform.gameObject.activeSelf,Is.True);
+            Assert.That(Hud.DetailsText.text,Does.Contain("内容：空"));
+            Assert.That(Client.NextCommandId,Is.EqualTo(command));
+            var oldClose=CaptureButtonCallback(Button("收起详情"));
+            int pooled=Hud.GetInstanceID();
+            Presentation.CloseGridHud();yield return null;Presentation.OpenGridHud();
+            yield return Wait(()=>Presentation.Ready,"Reopen actual selected-target HUD");
+            Assert.That(Hud.GetInstanceID(),Is.EqualTo(pooled));
+            oldClose();yield return null;
+            Assert.That(Hud.DetailsPanelRectTransform.gameObject.activeSelf,Is.True,"Retired callback cannot close new owner details");
+            Assert.That(Client.NextCommandId,Is.EqualTo(command));
+            Pointer(Button("收起详情"));yield return null;
+            yield return Command("放 碗台 ·",true);
+            Assert.That(Grid.Actors[Client.MemberId].HandItemId,Is.Zero);
+            Assert.That(Grid.Stations[station].ItemId,Is.EqualTo(bowl));
+            Assert.That(Hud.TargetText.text,Does.Contain("碗（空）"));
+            Assert.That(Client.NextCommandId,Is.EqualTo(command+1));
+        }
+
+        [UnityTest]
         public IEnumerator SoloRestaurantUiProjectionActualBakingSeparatesReceiptProgressAndCompletion()
         {
             yield return StartLauncher();yield return Command("拿 面包台 ·",true);yield return Command("放 烤箱 ·",true);
@@ -420,6 +459,17 @@ namespace ET
             yield return Wait(()=>Grid.BakeProcesses.Values.Any(value=>value.State==GridBakeState.Baking),"Actual bake started");
             yield return Wait(()=>Hud.WorkText.text.Contains("烤制已开始"),"Explicit work-start message displayed");
             long process=Grid.BakeProcesses.Values.Single().Id;Assert.That(Hud.HintText.text,Does.Contain("烘烤"));
+            Assert.That(Hud.TargetText.text,Does.Contain("烤箱"));
+            Assert.That(Hud.PrimaryActionsRectTransform.GetComponentsInChildren<Button>(false).Length,Is.GreaterThan(0),"Selected station action remains reachable");
+            long beforeDetails=Client.NextCommandId;
+            Pointer(Button("查看详情"));yield return null;
+            Assert.That(Client.NextCommandId,Is.EqualTo(beforeDetails),"Reading details cannot send a domain command");
+            Assert.That(Hud.DetailsPanelRectTransform.gameObject.activeSelf,Is.True);
+            Assert.That(Hud.DetailsText.text,Does.Contain("烤箱").Or.Contain("烘烤"));
+            Assert.That(Hud.DetailsText.text,Does.Contain("面包片"));
+            Pointer(Button("收起详情"));yield return null;
+            Assert.That(Hud.DetailsPanelRectTransform.gameObject.activeSelf,Is.False);
+            Assert.That(Client.NextCommandId,Is.EqualTo(beforeDetails));
             Assert.That(Grid.BakeProcesses[process].ProgressTicks,Is.LessThan(Grid.BakeProcesses[process].RequiredTicks));
             Assert.That(Grid.Items.Values.Any(value=>value.DefinitionId==GridKitchenRules.Toast),Is.False);
             yield return Command("暂停");int progress=Grid.BakeProcesses[process].ProgressTicks;string hint=Hud.HintText.text;

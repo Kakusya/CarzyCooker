@@ -42,8 +42,10 @@ namespace ET
                     GridItem used = self.Item(work.ItemId);
                     if (departed == null || departed.Phase != CustomerPhase.Gone || departed.LevelGeneration != level.Generation ||
                         departed.TableStationId != station.Id || dirtyTable == null || dirtyTable.CustomerId != departed.Id ||
-                        dirtyTable.State != FrontTableState.Dirty || station.ItemId != work.ItemId || used == null ||
-                        used.Hygiene != ItemHygiene.Dirty || used.Location != GridItemLocation.Table || used.HolderId != station.Id || used.Contents.Count != 0)
+                        dirtyTable.State != FrontTableState.Dirty || station.ItemId != work.ItemId ||
+                        (work.ItemId == 0 ? level.GetChild<Order>(departed.OrderId)?.State != OrderState.Served ||
+                            !Tables.Instance.DTDishConfig.Get(level.GetChild<Order>(departed.OrderId).DishId).RequiresOrderBinding :
+                            used == null || used.Hygiene != ItemHygiene.Dirty || used.Location != GridItemLocation.Table || used.HolderId != station.Id || used.Contents.Count != 0))
                         return "TableChanged";
                     return null;
                 case FrontWorkKind.Wash:
@@ -76,6 +78,12 @@ namespace ET
                     customer.OrderId = order.Id; customer.Phase = CustomerPhase.Ordered;
                     break;
                 case FrontWorkKind.Clear:
+                    if (work.ItemId == 0)
+                    {
+                        FrontTable emptyTable = station.GetComponent<FrontTable>();
+                        emptyTable.CustomerId = 0; emptyTable.State = FrontTableState.Free;
+                        break;
+                    }
                     GridStation destination = self.AvailableUtensilPool(GridStationKind.DirtyPool);
                     if (destination == null) return "PoolFull";
                     GridStation washing = self.Stations.Values.Select(value => (GridStation)value).OrderBy(value => value.Id).FirstOrDefault(value => value.Kind == GridStationKind.Wash);

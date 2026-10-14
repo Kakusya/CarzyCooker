@@ -23,6 +23,7 @@ namespace ET
         {
             var buffer = new Luban.ByteBuf(); buffer.WriteInt(id); buffer.WriteInt(definition); buffer.WriteInt(x); buffer.WriteInt(y);
             buffer.WriteInt(orientation); buffer.WriteString("测试工位" + id); buffer.WriteInt(item);
+            buffer.WriteInt(0);
             return new DRInitialLayoutConfig(buffer);
         }
 

@@ -44,8 +44,11 @@ namespace ET
             self.WorkTransitions.Clear(); self.WorkOutcomes.Clear();
             if (!self.RestoreKitchenBaseline())
             {
-                self.Blocked.UnionWith(ValidateStationConfiguration());
-                foreach (var initial in Tables.Instance.DTInitialLayoutConfig.DataList) self.AddConfiguredStation(initial);
+                int variant = restaurant?.MenuVariant ?? 0;
+                var layout = Tables.Instance.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == 0 || row.MenuVariant == variant).ToArray();
+                self.Blocked.UnionWith(GridStationConfig.ValidateInitialLayout(Tables.Instance.DTStationConfig.DataList, layout,
+                    Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTLevelConfig.DataList.Where(row => row.MenuVariant == variant).Select(row => new GridCell(row.SpawnX, row.SpawnY))));
+                foreach (var initial in layout) self.AddConfiguredStation(initial);
                 self.AddComponent<KitchenSupply>();
             }
         }
@@ -170,7 +173,8 @@ namespace ET
         {
             GridActor actor = self.Actor(memberId);
             if (self.Stopped || !self.HasBinding(memberId, generation) || actor == null || actor.Generation != generation) return "EntryClosed";
-            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.TakeSupplyPortion) return "InvalidCommand";
+            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.UnbindDrink) return "InvalidCommand";
+            if (intent.Action >= GridAction.StartJuice && ((RestaurantRuntime)self.Restaurant)?.MenuVariant != 1) return "DrinkMenuRequired";
             Match match = self.Match;
             Participant member = match.GetChild<Participant>(memberId);
             HostPeer peer = member.BoundPeer;
@@ -181,7 +185,7 @@ namespace ET
             if (level != null && level.Paused) return "Paused";
             if (level != null && level.Phase == LevelPhase.Completed) return "LevelCompleted";
             if (intent.Action == GridAction.Move && !self.IsWalkable(intent.Cell)) return "BlockedCell";
-            if ((intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake || IsCleanupAction(intent.Action) || IsSupplyInteraction(intent.Action)) && self.Station(intent.TargetId) == null) return "UnknownCounter";
+            if ((intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake || intent.Action >= GridAction.StartJuice || IsCleanupAction(intent.Action) || IsSupplyInteraction(intent.Action)) && self.Station(intent.TargetId) == null) return "UnknownCounter";
             if (intent.Action == GridAction.PickupDrop && self.Item(intent.TargetId) == null) return "UnknownItem";
             // 接收元数据不移动角色/物品；世界修改留给固定 Tick。
             actor.LastReceivedCommandId = intent.CommandId; actor.LastReceivedIntent = intent;
@@ -264,7 +268,7 @@ namespace ET
             if (intent.Action is GridAction.StartStationWork or GridAction.StartHeldWork && actor.WorkId != 0)
             { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "WorkBusy", intent.OriginKind); return; }
             GridCell goal = intent.Cell;
-            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake || IsCleanupAction(intent.Action) || IsSupplyInteraction(intent.Action))
+            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake || intent.Action >= GridAction.StartJuice || IsCleanupAction(intent.Action) || IsSupplyInteraction(intent.Action))
             {
                 GridStation station = self.Station(intent.TargetId);
                 if (station == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "UnknownCounter", intent.OriginKind); return; }
@@ -380,14 +384,16 @@ namespace ET
                     {
                         GridItem item = self.Item(station.ItemId);
                         if (actor.HandItemId != 0 || item == null || item.Id != intent.ExpectedItemId || item.Location != GridItemLocation.Counter || item.HolderId != station.Id) error = "TargetChanged";
+                        else if (self.AutoProcess(item.AutoProcessId) is GridAutoProcess locked && locked.LockContainer && locked.State == GridAutoState.Cooking) error = "ProcessLocked";
                         else if (self.ItemWorking(item.Id)) error = "WorkBusy";
                         else { self.PauseWork(actor); station.ItemId = 0; actor.HandItemId = item.Id; item.Location = GridItemLocation.Hand; item.HolderId = actor.MemberId; }
                     }
                     else if (intent.Action == GridAction.AddToContainer) error = self.AddToContainer(actor, station, intent);
                     else if (intent.Action == GridAction.StartStationWork) error = self.StartWork(actor, station, intent);
                     else if (intent.Action == GridAction.PourContents) error = self.PourContents(actor, station, intent);
-                    else if (intent.Action == GridAction.StartAutoWork) error = self.StartAutoWork(actor, station, intent);
-                    else if (intent.Action == GridAction.PortionSoup) error = self.PortionSoup(actor, station, intent);
+                    else if (intent.Action is GridAction.StartAutoWork or GridAction.StartJuice) error = self.StartAutoWork(actor, station, intent);
+                    else if (intent.Action is GridAction.PortionSoup or GridAction.PortionJuice) error = self.PortionSoup(actor, station, intent);
+                    else if (intent.Action is GridAction.BindDrink or GridAction.UnbindDrink) error = self.BindDrink(actor, station, intent);
                     else if (intent.Action == GridAction.StartBake) error = self.StartBake(actor, station, intent);
                     else
                     {
@@ -445,7 +451,7 @@ namespace ET
     public static partial class GridStationSystem
     {
         [EntitySystem]
-        private static void Awake(this GridStation self) { self.InitialLayoutId = 0; self.PoolItemIds.Clear(); }
+        private static void Awake(this GridStation self) { self.InitialLayoutId = 0; self.UpgradeDefinitionId = self.UpgradeLevel = 0; self.PoolItemIds.Clear(); }
     }
     [EntitySystemOf(typeof(GridItem))]
     [FriendOf(typeof(GridItem))]

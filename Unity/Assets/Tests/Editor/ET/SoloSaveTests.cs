@@ -343,7 +343,7 @@ namespace ET
             var match = (Match)((HostSessionComponent)host.Authority).Match;
             Assert.That(match.GetComponent<SoloSaveBinding>(), Is.Not.Null);
             Assert.That(match.Children.Values.OfType<SelectedSaveBaseline>(), Is.Empty);
-            Assert.That(Grid.Items.Count, Is.EqualTo(7)); Assert.That(CurrentLevel.ConfigId, Is.EqualTo(1));
+            Assert.That(Grid.Items.Count, Is.EqualTo(7)); Assert.That(CurrentLevel.ConfigId, Is.EqualTo(101));
         }
     }
 }

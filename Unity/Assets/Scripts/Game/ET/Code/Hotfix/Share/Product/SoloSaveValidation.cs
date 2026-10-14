@@ -7,7 +7,7 @@ namespace ET
 {
     public static class SoloSaveValidation
     {
-        public const int FormatVersion = 1;
+        public const int FormatVersion = 4;
         public const int MaxEntries = 512;
 
         public static bool IsIdentifier(string value) => value != null && value.Length == 32 &&
@@ -15,7 +15,7 @@ namespace ET
 
         public static void Header(SoloSaveHeader header, string profile)
         {
-            Require(header != null && header.Version == FormatVersion, "UnsupportedVersion");
+            Require(header != null && header.Version is 1 or 2 or 3 or FormatVersion, "UnsupportedVersion");
             Require(header.Platform == "PC", "WrongPlatform");
             Require(IsIdentifier(profile) && header.ProfileId == profile, "WrongProfile");
             Require(IsIdentifier(header.SlotId) && IsIdentifier(header.ResultId) && header.Revision == 1, "InvalidIdentity");
@@ -24,8 +24,20 @@ namespace ET
             Require(header.Score >= 0 && header.Stars is >= 0 and <= 3 && header.SavedUtcTicks > 0 &&
                 header.SavedUtcTicks <= DateTime.MaxValue.Ticks, "InvalidResult");
             var completed = Tables.Instance.DTLevelConfig.GetOrDefault(header.CompletedLevelId);
-            Require(completed != null && completed.NextLevelConfigId == header.NextLevelId &&
-                Tables.Instance.DTLevelConfig.GetOrDefault(header.NextLevelId) != null, "InvalidNextLevel");
+            Require(completed != null && completed.NextLevelConfigId == header.NextLevelId, "InvalidNextLevel");
+            Require(header.Version >= 4 || completed.MenuVariant == 0, "UnsupportedDrinkCatalog");
+            if (header.Version == 1)
+                Require(completed.ChapterId == 0 && header.RecordKind == SoloSaveRecordKind.Continue &&
+                    Tables.Instance.DTLevelConfig.GetOrDefault(header.NextLevelId) != null, "InvalidLegacyNextLevel");
+            else
+            {
+                Require(header.RecordKind is SoloSaveRecordKind.Continue or SoloSaveRecordKind.ChapterCompleted &&
+                    header.ServedOrders >= 0 && header.UnfulfilledOrders >= 0, "InvalidChapterResult");
+                Require(header.RecordKind == SoloSaveRecordKind.ChapterCompleted
+                    ? completed.IsChapterTerminal && header.NextLevelId == 0 && header.ChapterId == completed.ChapterId && header.ChapterStage == 3
+                    : !completed.IsChapterTerminal && Tables.Instance.DTLevelConfig.GetOrDefault(header.NextLevelId) != null,
+                    "InvalidRecordKind");
+            }
             Require(header.Stars == completed.StarThresholds.Count(threshold => header.Score >= threshold), "InvalidResultStars");
         }
 
@@ -41,7 +53,8 @@ namespace ET
             var renovations = Index(payload.Renovations, r => r.DefinitionId);
             var tables = Tables.Instance;
             var definitions = GridStationConfig.ValidateDefinitions(tables.DTStationConfig.DataList);
-            var layouts = tables.DTInitialLayoutConfig.DataList.ToDictionary(row => row.Id);
+            int menuVariant = tables.DTLevelConfig.Get(header.CompletedLevelId).MenuVariant;
+            var layouts = tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == 0 || row.MenuVariant == menuVariant).ToDictionary(row => row.Id);
             var initialIds = new HashSet<int>();
             var required = tables.DTLevelConfig.DataList.Select(row => new GridCell(row.SpawnX, row.SpawnY))
                 .Concat(tables.DTCompanionConfig.DataList.Select(row => new GridCell(row.SpawnX, row.SpawnY)))
@@ -52,6 +65,8 @@ namespace ET
                 Require(station.InitialLayoutId == 0 || layouts.TryGetValue(station.InitialLayoutId, out var layout) &&
                     layout.StationDefinitionId == station.DefinitionId && initialIds.Add(station.InitialLayoutId), "InvalidInitialStation");
                 var definition = definitions[station.DefinitionId];
+                Require(station.UpgradeLevel == 0 && station.UpgradeDefinitionId == 0 || header.Version >= 3 && station.UpgradeLevel == 1 &&
+                    StationUpgradeConfig.Matches(tables.DTStationUpgradeConfig.GetOrDefault(station.UpgradeDefinitionId), definition.Kind, (GridStationCapability)definition.Capabilities), "InvalidSavedUpgrade");
                 Require(station.PoolItemKeys != null && station.PoolItemKeys.Length <= definition.ItemSlotCapacity &&
                     station.PoolItemKeys.Distinct().Count() == station.PoolItemKeys.Length, "PoolCapacity");
                 bool pool = definition.Kind is (int)GridStationKind.DirtyPool or (int)GridStationKind.CleanPool;
@@ -74,35 +89,58 @@ namespace ET
             }
             Require(initialIds.SetEquals(layouts.Keys), "MissingInitialStation");
             var installedKeys = new HashSet<int>();
+            var upgradedKeys = new HashSet<int>();
             foreach (var renovation in renovations.Values)
             {
                 var definition = tables.DTRenovationConfig.GetOrDefault(renovation.DefinitionId);
+                if (definition?.RewardKind == 2)
+                {
+                    Require(header.Version >= 3 && renovation.StationKeys != null && renovation.StationKeys.Length > 0, "InvalidUpgradeRenovation");
+                    foreach (int key in renovation.StationKeys)
+                        Require(stations.TryGetValue(key, out var upgraded) && upgraded.UpgradeLevel == 1 &&
+                            upgraded.UpgradeDefinitionId == definition.UpgradeDefinitionId && upgradedKeys.Add(key), "UpgradeStationReference");
+                    continue;
+                }
                 Require(definition != null && renovation.StationKeys != null && renovation.StationKeys.Length == definition.Quantity, "InvalidRenovation");
                 foreach (int key in renovation.StationKeys)
                     Require(stations.TryGetValue(key, out var station) && station.InitialLayoutId == 0 && station.DefinitionId == definition.StationDefinitionId &&
                         installedKeys.Add(key), "RenovationStationReference");
             }
             Require(stations.Values.Where(s => s.InitialLayoutId == 0).All(s => installedKeys.Contains(s.Key)), "UnownedRenovationStation");
+            Require(stations.Values.Where(s => s.UpgradeLevel != 0).All(s => upgradedKeys.Contains(s.Key)), "UnownedStationUpgrade");
             var pending = Array.Empty<GridStationPlacement>();
             if (payload.PendingRenovationId != 0)
             {
                 var definition = tables.DTRenovationConfig.GetOrDefault(payload.PendingRenovationId);
-                Require(definition != null && !renovations.ContainsKey(definition.Id) &&
+                Require(definition != null && (definition.RewardKind == 2 || !renovations.ContainsKey(definition.Id)) &&
                     tables.DTLevelConfig.Get(header.CompletedLevelId).AllowedRenovationIds.Contains(definition.Id), "InvalidPendingRenovation");
-                pending = RenovationConfig.Placements(definition).ToArray();
+                if (definition.RewardKind == 2)
+                {
+                    Require(header.Version >= 3 && payload.PendingUpgradeExpectedLevel == 0 &&
+                        stations.TryGetValue(payload.PendingUpgradeStationKey, out var target) && target.UpgradeLevel == 0 && target.UpgradeDefinitionId == 0 &&
+                        StationUpgradeConfig.Matches(tables.DTStationUpgradeConfig.GetOrDefault(definition.UpgradeDefinitionId), definitions[target.DefinitionId].Kind,
+                            (GridStationCapability)definitions[target.DefinitionId].Capabilities), "InvalidPendingUpgrade");
+                }
+                else
+                {
+                    Require(payload.PendingUpgradeStationKey == 0 && payload.PendingUpgradeExpectedLevel == 0, "UnexpectedUpgradeTarget");
+                    pending = RenovationConfig.Placements(definition).ToArray();
+                }
             }
+            else Require(payload.PendingUpgradeStationKey == 0 && payload.PendingUpgradeExpectedLevel == 0, "UnexpectedUpgradeTarget");
             var placements = stations.Values.Select(s => new GridStationPlacement(s.DefinitionId, new GridCell(s.X, s.Y), s.Orientation));
             var blocked = GridStationConfig.ValidateTerrain(definitions, placements.Concat(pending), required);
             foreach (var item in items.Values)
             {
                 var definition = tables.DTGridItemConfig.GetOrDefault(item.DefinitionId);
-                Require(definition != null && item.Hygiene is (int)ItemHygiene.Clean or (int)ItemHygiene.Dirty &&
+                Require(definition != null && (definition.MenuVariant == 0 || definition.MenuVariant == menuVariant) && item.Hygiene is (int)ItemHygiene.Clean or (int)ItemHygiene.Dirty &&
                     GridStationGeometry.Inside(new GridCell(item.X, item.Y)), "InvalidItem");
                 Require(item.ContentKeys != null && item.ContentKeys.Length <= definition.ContainerCapacity &&
                     item.ContentKeys.Distinct().Count() == item.ContentKeys.Length && (definition.Kind == 2 || item.ContentKeys.Length == 0), "ContainerCapacity");
                 foreach (int key in item.ContentKeys)
                     Require(items.TryGetValue(key, out var content) && content.Location == (int)GridItemLocation.Container && content.HolderKey == item.Key &&
-                        definition.AcceptedDefinitionIds.Contains(content.DefinitionId) && tables.DTGridItemConfig.Get(content.DefinitionId).Kind == 1, "ContentReference");
+                        definition.AcceptedDefinitionIds.Contains(content.DefinitionId) && (tables.DTGridItemConfig.Get(content.DefinitionId).Kind == 1 ||
+                            definition.AllowsEmptyContainers && tables.DTGridItemConfig.Get(content.DefinitionId).Disposable && content.ContentKeys.Length == 0 && content.Hygiene == (int)ItemHygiene.Clean), "ContentReference");
                 switch ((GridItemLocation)item.Location)
                 {
                     case GridItemLocation.Ground:
@@ -142,6 +180,9 @@ namespace ET
                 var pot = items.GetValueOrDefault(process.PotKey);
                 Require(recipe != null && pot != null && pot.DefinitionId == recipe.ContainerDefinitionId &&
                     stations.ContainsKey(process.StationKey) && workItems.Add(process.PotKey), "InvalidBatchReference");
+                int capability = header.Version < 4 ? (int)GridStationCapability.Cook : process.RequiredCapability;
+                Require(capability == recipe.StationCapability && (header.Version < 4 ? !recipe.LockContainer && !process.LockContainer &&
+                    process.RequiredCapability is 0 or (int)GridStationCapability.Cook : process.LockContainer == recipe.LockContainer), "InvalidBatchLock");
                 Require(process.InputKeys != null && process.InputKeys.SequenceEqual(pot.ContentKeys) &&
                     process.OutputDefinitionId == recipe.OutputDefinitionId && process.TotalPortions == recipe.OutputPortions &&
                     process.ServingContainerDefinitionId == recipe.ServingContainerDefinitionId && process.RequiredTicks > 0, "InvalidBatchParameters");
@@ -150,7 +191,8 @@ namespace ET
                     counts.GetValueOrDefault(id) == recipe.InputCounts[index]).All(value => value), "BatchInputRecipe");
                 if (process.State == (int)GridAutoState.Cooking)
                     Require(InProgress(process.RequiredTicks, process.ProgressTicks) && process.RemainingPortions == 0 && workStations.Add(process.StationKey) &&
-                        (definitions[stations[process.StationKey].DefinitionId].Capabilities & (int)GridStationCapability.Cook) != 0, "InvalidCookingState");
+                        (definitions[stations[process.StationKey].DefinitionId].Capabilities & capability) != 0 &&
+                        (!process.LockContainer || pot.Location == (int)GridItemLocation.Counter && pot.HolderKey == process.StationKey && stations[process.StationKey].ItemKey == pot.Key), "InvalidCookingState");
                 else Require(process.State == (int)GridAutoState.Ready && process.ProgressTicks == process.RequiredTicks &&
                     process.RemainingPortions > 0 && process.RemainingPortions <= process.TotalPortions, "InvalidBatchPortions");
             }
@@ -163,7 +205,7 @@ namespace ET
                     input.Location == (int)GridItemLocation.Counter && input.HolderKey == station.Key &&
                     (definitions[station.DefinitionId].Capabilities & (int)GridStationCapability.Bake) != 0 && workItems.Add(input.Key) && workStations.Add(station.Key), "InvalidBakeWork");
             }
-            var sources = tables.DTSupplyConfig.DataList.ToDictionary(row => row.Id);
+            var sources = tables.DTSupplyConfig.DataList.Where(row => row.MenuVariant == 0 || row.MenuVariant == menuVariant).ToDictionary(row => row.Id);
             Require(balances.Keys.ToHashSet().SetEquals(sources.Keys), "MissingSupplyBalance");
             foreach (var balance in balances.Values)
                 Require(balance.RemainingPackages >= 0 && balance.RemainingPackages <= sources[balance.SourceId].AvailablePackages &&

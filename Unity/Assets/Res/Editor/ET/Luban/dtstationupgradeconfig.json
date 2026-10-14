@@ -1,0 +1,22 @@
+[
+  {
+    "Id": 1,
+    "Name": "升级切配",
+    "StationKind": 1,
+    "StationCapability": 1,
+    "WorkKind": 2,
+    "TargetLevel": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4
+  },
+  {
+    "Id": 2,
+    "Name": "升级烤箱",
+    "StationKind": 3,
+    "StationCapability": 4,
+    "WorkKind": 3,
+    "TargetLevel": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4
+  }
+]

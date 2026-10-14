@@ -6,7 +6,8 @@
     "Y": 11,
     "Orientation": 0,
     "Name": "备料台",
-    "InitialItemDefinitionId": 1
+    "InitialItemDefinitionId": 1,
+    "MenuVariant": 0
   },
   {
     "Id": 2,
@@ -15,7 +16,8 @@
     "Y": 11,
     "Orientation": 0,
     "Name": "碗台",
-    "InitialItemDefinitionId": 5
+    "InitialItemDefinitionId": 5,
+    "MenuVariant": 0
   },
   {
     "Id": 3,
@@ -24,7 +26,8 @@
     "Y": 11,
     "Orientation": 0,
     "Name": "食材台",
-    "InitialItemDefinitionId": 3
+    "InitialItemDefinitionId": 3,
+    "MenuVariant": 0
   },
   {
     "Id": 4,
@@ -33,7 +36,8 @@
     "Y": 8,
     "Orientation": 0,
     "Name": "交接台",
-    "InitialItemDefinitionId": 0
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 0
   },
   {
     "Id": 5,
@@ -42,7 +46,8 @@
     "Y": 8,
     "Orientation": 0,
     "Name": "切配台",
-    "InitialItemDefinitionId": 0
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 0
   },
   {
     "Id": 6,
@@ -51,7 +56,8 @@
     "Y": 8,
     "Orientation": 0,
     "Name": "灶台",
-    "InitialItemDefinitionId": 6
+    "InitialItemDefinitionId": 6,
+    "MenuVariant": 0
   },
   {
     "Id": 7,
@@ -60,7 +66,8 @@
     "Y": 14,
     "Orientation": 0,
     "Name": "第二碗台",
-    "InitialItemDefinitionId": 5
+    "InitialItemDefinitionId": 5,
+    "MenuVariant": 0
   },
   {
     "Id": 8,
@@ -69,7 +76,8 @@
     "Y": 14,
     "Orientation": 0,
     "Name": "烤箱",
-    "InitialItemDefinitionId": 0
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 0
   },
   {
     "Id": 9,
@@ -78,7 +86,8 @@
     "Y": 14,
     "Orientation": 0,
     "Name": "面包台",
-    "InitialItemDefinitionId": 8
+    "InitialItemDefinitionId": 8,
+    "MenuVariant": 0
   },
   {
     "Id": 10,
@@ -87,7 +96,8 @@
     "Y": 16,
     "Orientation": 0,
     "Name": "盘台",
-    "InitialItemDefinitionId": 10
+    "InitialItemDefinitionId": 10,
+    "MenuVariant": 0
   },
   {
     "Id": 11,
@@ -96,7 +106,8 @@
     "Y": 3,
     "Orientation": 0,
     "Name": "餐桌1",
-    "InitialItemDefinitionId": 0
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 0
   },
   {
     "Id": 12,
@@ -105,7 +116,8 @@
     "Y": 3,
     "Orientation": 0,
     "Name": "餐桌2",
-    "InitialItemDefinitionId": 0
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 0
   },
   {
     "Id": 13,
@@ -114,7 +126,8 @@
     "Y": 5,
     "Orientation": 0,
     "Name": "水池／洗碗台",
-    "InitialItemDefinitionId": 0
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 0
   },
   {
     "Id": 14,
@@ -123,7 +136,8 @@
     "Y": 5,
     "Orientation": 0,
     "Name": "脏餐具池",
-    "InitialItemDefinitionId": 0
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 0
   },
   {
     "Id": 15,
@@ -132,7 +146,8 @@
     "Y": 5,
     "Orientation": 0,
     "Name": "干净餐具池",
-    "InitialItemDefinitionId": 0
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 0
   },
   {
     "Id": 16,
@@ -141,6 +156,57 @@
     "Y": 10,
     "Orientation": 0,
     "Name": "垃圾桶",
-    "InitialItemDefinitionId": 0
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 0
+  },
+  {
+    "Id": 17,
+    "StationDefinitionId": 10,
+    "X": 2,
+    "Y": 9,
+    "Orientation": 0,
+    "Name": "榨汁机",
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 1
+  },
+  {
+    "Id": 18,
+    "StationDefinitionId": 11,
+    "X": 5,
+    "Y": 12,
+    "Orientation": 0,
+    "Name": "贴单台",
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 1
+  },
+  {
+    "Id": 19,
+    "StationDefinitionId": 1,
+    "X": 2,
+    "Y": 12,
+    "Orientation": 0,
+    "Name": "橙子台",
+    "InitialItemDefinitionId": 15,
+    "MenuVariant": 1
+  },
+  {
+    "Id": 20,
+    "StationDefinitionId": 1,
+    "X": 3,
+    "Y": 12,
+    "Orientation": 0,
+    "Name": "果汁壶台",
+    "InitialItemDefinitionId": 17,
+    "MenuVariant": 1
+  },
+  {
+    "Id": 21,
+    "StationDefinitionId": 1,
+    "X": 1,
+    "Y": 13,
+    "Orientation": 0,
+    "Name": "杯台",
+    "InitialItemDefinitionId": 19,
+    "MenuVariant": 1
   }
 ]

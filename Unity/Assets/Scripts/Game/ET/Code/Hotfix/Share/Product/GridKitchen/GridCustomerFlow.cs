@@ -103,7 +103,7 @@ namespace ET
                     if (order == null || order.InstanceId != identity.SourceInstanceId || order.TransitionSerial != identity.Serial || !order.TransitionQueued) continue;
                     order.TransitionQueued = false; ++order.TransitionSerial;
                     if (order.State == OrderState.Waiting && self.Tick >= order.DeadlineTick && ordered?.Phase == CustomerPhase.Ordered)
-                    { order.State = OrderState.Expired; self.BeginCustomerExit(ordered, flow); ++ordered.TransitionSerial; ordered.TransitionQueued = false; }
+                    { order.State = OrderState.Expired; self.ReleaseDrinkOrder(level, order.Id); ++level.UnfulfilledOrders; self.BeginCustomerExit(ordered, flow); ++ordered.TransitionSerial; ordered.TransitionQueued = false; }
                     continue;
                 }
                 Customer customer = level.GetChild<Customer>(identity.SourceId);
@@ -201,10 +201,15 @@ namespace ET
         private static void FinishCustomerExit(this GridKitchenComponent self, Level level, Customer customer)
         {
             GridStation station = self.Station(customer.TableStationId); FrontTable table = station.GetComponent<FrontTable>();
-            if (station.ItemId == 0) { table.CustomerId = 0; table.State = FrontTableState.Free; }
+            self.ReleaseDrinkOrder(level, customer.OrderId);
+            Order servedOrder = level.GetChild<Order>(customer.OrderId);
+            bool disposableMeal = servedOrder?.State == OrderState.Served && Tables.Instance.DTDishConfig.Get(servedOrder.DishId).RequiresOrderBinding;
+            if (station.ItemId == 0 && !disposableMeal) { table.CustomerId = 0; table.State = FrontTableState.Free; }
             else
             {
-                GridItem utensil = self.Item(station.ItemId); utensil.Hygiene = ItemHygiene.Dirty; table.State = FrontTableState.Dirty;
+                GridItem utensil = self.Item(station.ItemId);
+                if (utensil != null) utensil.Hygiene = ItemHygiene.Dirty;
+                table.State = FrontTableState.Dirty;
                 customer.SuccessorPending = true; customer.SuccessorQueued = false;
             }
             customer.Phase = CustomerPhase.Gone; customer.Path.Clear(); customer.PathIndex = 0;

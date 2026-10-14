@@ -79,6 +79,22 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["RewardKind"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  RewardKind = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["UpgradeDefinitionId"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  UpgradeDefinitionId = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -105,6 +121,12 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
         }
         {
             _json["Orientation"] = new JSONNumber(Orientation);
+        }
+        {
+            _json["RewardKind"] = new JSONNumber(RewardKind);
+        }
+        {
+            _json["UpgradeDefinitionId"] = new JSONNumber(UpgradeDefinitionId);
         }
     }
 
@@ -154,6 +176,16 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
     /// Orientation
     /// </summary>
     public int Orientation;
+
+    /// <summary>
+    /// RewardKind
+    /// </summary>
+    public int RewardKind;
+
+    /// <summary>
+    /// UpgradeDefinitionId
+    /// </summary>
+    public int UpgradeDefinitionId;
 
 }
 }

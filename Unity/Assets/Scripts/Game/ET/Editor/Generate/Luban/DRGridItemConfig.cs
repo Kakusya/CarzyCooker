@@ -80,6 +80,30 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["AllowsEmptyContainers"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsBoolean) { throw new SerializationException(); }  AllowsEmptyContainers = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["Disposable"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsBoolean) { throw new SerializationException(); }  Disposable = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["MenuVariant"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  MenuVariant = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -108,6 +132,15 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
         }
         {
             _json["Discardable"] = new JSONBool(Discardable);
+        }
+        {
+            _json["AllowsEmptyContainers"] = new JSONBool(AllowsEmptyContainers);
+        }
+        {
+            _json["Disposable"] = new JSONBool(Disposable);
+        }
+        {
+            _json["MenuVariant"] = new JSONNumber(MenuVariant);
         }
     }
 
@@ -157,6 +190,21 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
     /// Discardable
     /// </summary>
     public bool Discardable;
+
+    /// <summary>
+    /// AllowsEmptyContainers
+    /// </summary>
+    public bool AllowsEmptyContainers;
+
+    /// <summary>
+    /// Disposable
+    /// </summary>
+    public bool Disposable;
+
+    /// <summary>
+    /// MenuVariant
+    /// </summary>
+    public int MenuVariant;
 
 }
 }

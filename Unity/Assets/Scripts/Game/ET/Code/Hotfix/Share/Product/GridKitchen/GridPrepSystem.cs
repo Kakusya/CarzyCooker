@@ -22,7 +22,10 @@ namespace ET
                 if (string.IsNullOrWhiteSpace(item.Name) || item.Kind is not (1 or 2) ||
                     (item.Kind == 1 && (item.ContainerCapacity != 0 || item.AcceptedDefinitionIds.Count != 0)) ||
                     (item.Kind == 2 && (item.ContainerCapacity <= 0 || item.AcceptedDefinitionIds.Count == 0)) ||
-                    item.AcceptedDefinitionIds.Any(id => !items.ContainsKey(id) || items[id].Kind != 1))
+                    item.MenuVariant is not (0 or 1) || item.Disposable && (item.Kind != 2 || item.ContainerCapacity != 1) ||
+                    item.AllowsEmptyContainers && (item.Kind != 2 || !item.Discardable) ||
+                    item.AcceptedDefinitionIds.Any(id => !items.ContainsKey(id) || items[id].Kind != 1 &&
+                        !(item.AllowsEmptyContainers && items[id].Kind == 2 && items[id].Disposable)))
                     throw new InvalidOperationException($"Invalid grid item definition {item.Id}");
             foreach (DRGridManualRecipeConfig recipe in recipes)
                 if (recipe.RequiredTicks <= 0 || recipe.Mode is not (1 or 2) ||
@@ -51,7 +54,8 @@ namespace ET
         public static GridManualProcess Process(this GridKitchenComponent self, long id) => self.Processes.TryGetValue(id, out var value) ? value : null;
         public static GridManualProcess InputProcess(this GridKitchenComponent self, long input) => self.Processes.Values
             .Select(value => (GridManualProcess)value).FirstOrDefault(value => value.InputItemId == input && value.State != GridWorkState.Completed);
-        private static bool ItemWorking(this GridKitchenComponent self, long item) => (self.Item(item)?.BakeProcessId ?? 0) != 0 || self.Processes.Values
+        private static bool ItemWorking(this GridKitchenComponent self, long item) => (self.Item(item)?.BakeProcessId ?? 0) != 0 ||
+            self.AutoProcess(self.Item(item)?.AutoProcessId ?? 0) is { LockContainer: true, State: GridAutoState.Cooking } || self.Processes.Values
             .Select(value => (GridManualProcess)value).Any(p => p.State == GridWorkState.Working && (p.InputItemId == item || p.TargetItemId == item));
 
         private static void PauseWork(this GridKitchenComponent self, GridActor actor)
@@ -74,7 +78,7 @@ namespace ET
             if (source.Kind == 2) return "NestedContainer";
             if (bowl.Kind != 2 || !bowl.AcceptedDefinitionIds.Contains(input.DefinitionId)) return "IncompatibleMaterial";
             if (target.Contents.Count >= bowl.ContainerCapacity) return "ContainerFull";
-            if (target.DefinitionId == GridKitchenRules.Pot)
+            if (target.DefinitionId is GridKitchenRules.Pot or GridKitchenRules.JuiceJug)
             {
                 string error = self.CheckPotAddition(target, input.DefinitionId);
                 if (error != null) return error;
@@ -116,7 +120,7 @@ namespace ET
             {
                 process = self.AddChild<GridManualProcess>();
                 process.RecipeId = recipe.Id; process.InputItemId = input.Id; process.TargetItemId = target.Id;
-                process.RequiredTicks = recipe.RequiredTicks; process.ProgressTicks = 0; process.OutputItemId = 0;
+                process.RequiredTicks = self.FrozenManualTicks(recipe, mode == 1 ? station : null); process.ProgressTicks = 0; process.OutputItemId = 0;
                 self.Processes.Add(process.Id, process);
             }
             if (process.RecipeId != recipe.Id || process.TargetItemId != target.Id) return "ProcessChanged";

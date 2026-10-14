@@ -65,11 +65,31 @@ namespace ET
     [FriendOf(typeof(LevelBuff))]
     public static partial class GridKitchenSystem
     {
-        private static int FrozenCookingTicks(this GridKitchenComponent kitchen,DRGridAutoRecipeConfig recipe)
+        private static int FrozenCookingTicks(this GridKitchenComponent kitchen,DRGridAutoRecipeConfig recipe, GridStation station)
         {
-            LevelBuff buff=kitchen.ProductLevel()?.GetComponent<LevelBuff>();
-            DRBuffConfig choice=buff==null || buff.SelectedId==0?null:Tables.Instance.DTBuffConfig.Get(buff.SelectedId);
-            return choice==null || choice.BatchRecipeId!=recipe.Id?recipe.RequiredTicks:BuffConfig.ScaleTicks(recipe.RequiredTicks,choice.DurationNumerator,choice.DurationDenominator);
+            return kitchen.FrozenStationTicks(station, recipe.RequiredTicks, 1, recipe.Id);
+        }
+
+        private static int FrozenManualTicks(this GridKitchenComponent kitchen, DRGridManualRecipeConfig recipe, GridStation station)
+        {
+            return kitchen.FrozenStationTicks(station, recipe.RequiredTicks, 2, recipe.Id);
+        }
+
+        private static int FrozenBakingTicks(this GridKitchenComponent kitchen, DRGridBakeRecipeConfig recipe, GridStation station)
+        {
+            return kitchen.FrozenStationTicks(station, recipe.RequiredTicks, 3, recipe.Id);
+        }
+
+        private static int FrozenStationTicks(this GridKitchenComponent kitchen, GridStation station, int basis, int workKind, int recipeId)
+        {
+            LevelBuff buff = kitchen.ProductLevel()?.GetComponent<LevelBuff>();
+            DRBuffConfig choice = buff == null || buff.SelectedId == 0 ? null : Tables.Instance.DTBuffConfig.Get(buff.SelectedId);
+            int target = choice == null ? 0 : workKind switch { 1 => choice.BatchRecipeId, 2 => choice.ManualRecipeId, 3 => choice.BakeRecipeId, _ => 0 };
+            bool matched = choice?.EffectKind == workKind && target == recipeId;
+            var upgrade = station?.UpgradeLevel > 0 ? Tables.Instance.DTStationUpgradeConfig.Get(station.UpgradeDefinitionId) : null;
+            bool upgraded = upgrade?.WorkKind == workKind;
+            return StationUpgradeConfig.CombinedTicks(basis, matched ? choice.DurationNumerator : 1, matched ? choice.DurationDenominator : 1,
+                upgraded ? upgrade.DurationNumerator : 1, upgraded ? upgrade.DurationDenominator : 1);
         }
     }
     [FriendOf(typeof(LevelBuff))]

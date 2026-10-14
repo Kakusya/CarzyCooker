@@ -63,6 +63,7 @@ namespace ET
                 item.Contents.Any(id => self.Item(id) == null || self.Item(id).Location != GridItemLocation.Container || self.Item(id).HolderId != item.Id)))
                 return "LayoutRelationshipsChanged";
             GridAutoProcess batch = self.AutoProcess(station.AutoProcessId);
+            if (batch is { LockContainer: true, State: GridAutoState.Cooking }) return "ProcessLocked";
             if (station.AutoProcessId != 0 && (batch == null || batch.StartStationId != station.Id)) return "LayoutRelationshipsChanged";
             GridBakeProcess bake = self.BakeProcess(station.BakeProcessId);
             if (station.BakeProcessId != 0 && (bake == null || bake.StationId != station.Id || bake.InputItemId != station.ItemId || item?.BakeProcessId != bake.Id))

@@ -13,6 +13,7 @@ namespace ET
             buffer.WriteInt(material ?? source.MaterialDefinitionId); buffer.WriteInt(package ?? source.PackageDefinitionId);
             buffer.WriteInt(units ?? source.PackageUnits); buffer.WriteInt(quota ?? source.AvailablePackages);
             buffer.WriteInt(transit ?? source.TransitTicks); buffer.WriteInt(receiving ?? source.ReceivingLayoutId);
+            buffer.WriteInt(source.MenuVariant);
             return new DRSupplyConfig(buffer);
         }
 
@@ -22,7 +23,7 @@ namespace ET
             var tables = Tables.Instance;
             var definitions = SupplyConfig.Validate(tables.DTSupplyConfig.DataList, tables.DTGridItemConfig.DataList,
                 tables.DTStationConfig.DataList, tables.DTInitialLayoutConfig.DataList, SupplyConfig.ProducedDefinitions());
-            Assert.That(definitions.Values.Select(row => row.MaterialDefinitionId).OrderBy(id => id), Is.EqualTo(new[] { 1, 3, 8 }));
+            Assert.That(definitions.Values.Select(row => row.MaterialDefinitionId).OrderBy(id => id), Is.EqualTo(new[] { 1, 3, 8, 15, 19 }));
             foreach (var definition in definitions.Values)
             {
                 var package = tables.DTGridItemConfig.Get(definition.PackageDefinitionId);
@@ -40,6 +41,7 @@ namespace ET
                     int index = layouts.FindIndex(value => value.Id == row.Id);
                     var buffer = new Luban.ByteBuf(); buffer.WriteInt(row.Id); buffer.WriteInt(row.StationDefinitionId);
                     buffer.WriteInt(row.X); buffer.WriteInt(row.Y); buffer.WriteInt(row.Orientation); buffer.WriteString(row.Name); buffer.WriteInt(0);
+                    buffer.WriteInt(row.MenuVariant);
                     layouts[index] = new DRInitialLayoutConfig(buffer);
                 }
                 GridDishConfig.ValidateAllMenus(); StartSolo();

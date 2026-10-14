@@ -23,6 +23,7 @@ public sealed partial class DRSupplyConfig : Luban.BeanBase
         AvailablePackages = _buf.ReadInt();
         TransitTicks = _buf.ReadInt();
         ReceivingLayoutId = _buf.ReadInt();
+        MenuVariant = _buf.ReadInt();
         PostInit();
     }
 
@@ -63,6 +64,10 @@ public sealed partial class DRSupplyConfig : Luban.BeanBase
     /// ReceivingLayoutId
     /// </summary>
     public readonly int ReceivingLayoutId;
+    /// <summary>
+    /// MenuVariant
+    /// </summary>
+    public readonly int MenuVariant;
     public const int __ID__ = -91791169;
     public override int GetTypeId() => __ID__;
 
@@ -82,6 +87,7 @@ public sealed partial class DRSupplyConfig : Luban.BeanBase
         + "AvailablePackages:" + AvailablePackages + ","
         + "TransitTicks:" + TransitTicks + ","
         + "ReceivingLayoutId:" + ReceivingLayoutId + ","
+        + "MenuVariant:" + MenuVariant + ","
         + "}";
     }
 

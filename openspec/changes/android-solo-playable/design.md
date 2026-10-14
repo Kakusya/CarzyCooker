@@ -8,7 +8,7 @@
 
 目标模式：Android Solo。不做 Android 联机、跨平台互通、跨设备存档、自动后台保存或任意断电保证；不关闭 HybridCLR 规避问题。
 
-依赖：[solo-first-chapter](../solo-first-chapter/proposal.md)、[kitchen-recipe-guide](../kitchen-recipe-guide/proposal.md)、[solo-playability-tuning](../solo-playability-tuning/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[solo-first-chapter](../archive/2026-10-14-solo-first-chapter/proposal.md)、[kitchen-recipe-guide](../archive/2026-10-14-kitchen-recipe-guide/proposal.md)、[solo-playability-tuning](../archive/2026-10-14-solo-playability-tuning/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 

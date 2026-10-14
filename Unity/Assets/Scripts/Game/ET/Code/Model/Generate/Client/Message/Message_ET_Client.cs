@@ -1688,6 +1688,8 @@ namespace ET
         public int ExpectedRemainingPortions { get; set; }
         [MemoryPackOrder(18)]
         public long ExpectedLayoutVersion { get; set; }
+        [MemoryPackOrder(19)]
+        public long ExpectedOrderId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1710,11 +1712,12 @@ namespace ET
             this.ExpectedContentIds.Clear();
             this.ExpectedRemainingPortions = default;
             this.ExpectedLayoutVersion = default;
+            this.ExpectedOrderId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:28)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:29)
     [MemoryPackable]
     [Message(Message_ET_Client.GridCommandResponse)]
     public partial class GridCommandResponse: MessageObject, IResponse
@@ -1747,7 +1750,7 @@ namespace ET
     }
 
     // 内部可信转交，不进入 wire 白名单。
-    // proto file : ET-Client/ZZGridKitchen.proto (line:39)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:40)
     [MemoryPackable]
     [Message(Message_ET_Client.GridSubmitRequest)]
     [ResponseType(nameof(GridSubmitResponse))]
@@ -1802,6 +1805,8 @@ namespace ET
         public int ExpectedRemainingPortions { get; set; }
         [MemoryPackOrder(21)]
         public long ExpectedLayoutVersion { get; set; }
+        [MemoryPackOrder(22)]
+        public long ExpectedOrderId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1827,11 +1832,12 @@ namespace ET
             this.ExpectedContentIds.Clear();
             this.ExpectedRemainingPortions = default;
             this.ExpectedLayoutVersion = default;
+            this.ExpectedOrderId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:65)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:67)
     [MemoryPackable]
     [Message(Message_ET_Client.GridSubmitResponse)]
     public partial class GridSubmitResponse: MessageObject, IResponse
@@ -1863,7 +1869,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:74)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:76)
     [MemoryPackable]
     [Message(Message_ET_Client.GridPathCell)]
     public partial class GridPathCell: MessageObject
@@ -1886,7 +1892,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:80)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:82)
     [MemoryPackable]
     [Message(Message_ET_Client.GridActorState)]
     public partial class GridActorState: MessageObject
@@ -1960,7 +1966,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:103)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:105)
     [MemoryPackable]
     [Message(Message_ET_Client.GridStationState)]
     public partial class GridStationState: MessageObject
@@ -2004,6 +2010,10 @@ namespace ET
         public int WaterDefinitionId { get; set; }
         [MemoryPackOrder(16)]
         public int WaterUnits { get; set; }
+        [MemoryPackOrder(17)]
+        public int UpgradeDefinitionId { get; set; }
+        [MemoryPackOrder(18)]
+        public int UpgradeLevel { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -2024,11 +2034,13 @@ namespace ET
             this.PoolItemIds.Clear();
             this.WaterDefinitionId = default;
             this.WaterUnits = default;
+            this.UpgradeDefinitionId = default;
+            this.UpgradeLevel = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:124)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:128)
     [MemoryPackable]
     [Message(Message_ET_Client.GridItemState)]
     public partial class GridItemState: MessageObject
@@ -2064,6 +2076,8 @@ namespace ET
         public int Form { get; set; }
         [MemoryPackOrder(12)]
         public bool Discardable { get; set; }
+        [MemoryPackOrder(13)]
+        public long BoundOrderId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -2080,11 +2094,12 @@ namespace ET
             this.Hygiene = default;
             this.Form = default;
             this.Discardable = default;
+            this.BoundOrderId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:141)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:146)
     [MemoryPackable]
     [Message(Message_ET_Client.GridWorldSnapshot)]
     public partial class GridWorldSnapshot: MessageObject, IMessage
@@ -2214,6 +2229,16 @@ namespace ET
         public string LastSavedSlotId { get; set; }
         [MemoryPackOrder(59)]
         public bool CanControlRestaurant { get; set; }
+        [MemoryPackOrder(60)]
+        public int ServedOrders { get; set; }
+        [MemoryPackOrder(61)]
+        public int UnfulfilledOrders { get; set; }
+        [MemoryPackOrder(62)]
+        public long SelectedUpgradeStationId { get; set; }
+        [MemoryPackOrder(63)]
+        public int PendingUpgradeExpectedLevel { get; set; }
+        [MemoryPackOrder(64)]
+        public List<GridRenovationUpgradeTarget> UpgradeTargets { get; set; } = new List<GridRenovationUpgradeTarget>();
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -2277,11 +2302,16 @@ namespace ET
             this.SaveFailure = default;
             this.LastSavedSlotId = default;
             this.CanControlRestaurant = default;
+            this.ServedOrders = default;
+            this.UnfulfilledOrders = default;
+            this.SelectedUpgradeStationId = default;
+            this.PendingUpgradeExpectedLevel = default;
+            this.UpgradeTargets.Clear();
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:205)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:215)
     [MemoryPackable]
     [Message(Message_ET_Client.GridCommandResult)]
     public partial class GridCommandResult: MessageObject, IMessage
@@ -2328,7 +2358,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:219)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:229)
     [MemoryPackable]
     [Message(Message_ET_Client.GridManualProcessState)]
     public partial class GridManualProcessState: MessageObject
@@ -2378,7 +2408,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:234)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:244)
     [MemoryPackable]
     [Message(Message_ET_Client.GridAutoProcessState)]
     public partial class GridAutoProcessState: MessageObject
@@ -2414,6 +2444,10 @@ namespace ET
         public int State { get; set; }
         [MemoryPackOrder(12)]
         public List<long> InputItemIds { get; set; } = new List<long>();
+        [MemoryPackOrder(13)]
+        public int RequiredCapability { get; set; }
+        [MemoryPackOrder(14)]
+        public bool LockContainer { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -2430,6 +2464,8 @@ namespace ET
             this.ServingContainerDefinitionId = default;
             this.State = default;
             this.InputItemIds.Clear();
+            this.RequiredCapability = default;
+            this.LockContainer = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
@@ -4082,6 +4118,10 @@ namespace ET
         public long ChoiceVersion { get; set; }
         [MemoryPackOrder(10)]
         public int DefinitionId { get; set; }
+        [MemoryPackOrder(11)]
+        public long TargetStationId { get; set; }
+        [MemoryPackOrder(12)]
+        public int ExpectedUpgradeLevel { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -4096,11 +4136,13 @@ namespace ET
             this.CommandId = default;
             this.ChoiceVersion = default;
             this.DefinitionId = default;
+            this.TargetStationId = default;
+            this.ExpectedUpgradeLevel = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZZZZZZRenovation.proto (line:20)
+    // proto file : ET-Client/ZZZZZZZRenovation.proto (line:22)
     [MemoryPackable]
     [Message(Message_ET_Client.ChooseRenovationResponse)]
     public partial class ChooseRenovationResponse: MessageObject, IResponse
@@ -4133,7 +4175,7 @@ namespace ET
     }
 
     // 内部可信请求，不进入wire。
-    // proto file : ET-Client/ZZZZZZZRenovation.proto (line:31)
+    // proto file : ET-Client/ZZZZZZZRenovation.proto (line:33)
     [MemoryPackable]
     [Message(Message_ET_Client.ChooseRenovationSubmitRequest)]
     [ResponseType(nameof(ChooseRenovationSubmitResponse))]
@@ -4172,6 +4214,10 @@ namespace ET
         public long ChoiceVersion { get; set; }
         [MemoryPackOrder(13)]
         public int DefinitionId { get; set; }
+        [MemoryPackOrder(14)]
+        public long TargetStationId { get; set; }
+        [MemoryPackOrder(15)]
+        public int ExpectedUpgradeLevel { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -4189,11 +4235,13 @@ namespace ET
             this.CommandId = default;
             this.ChoiceVersion = default;
             this.DefinitionId = default;
+            this.TargetStationId = default;
+            this.ExpectedUpgradeLevel = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZZZZZZRenovation.proto (line:49)
+    // proto file : ET-Client/ZZZZZZZRenovation.proto (line:53)
     [MemoryPackable]
     [Message(Message_ET_Client.ChooseRenovationSubmitResponse)]
     public partial class ChooseRenovationSubmitResponse: MessageObject, IResponse
@@ -4225,7 +4273,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZZZZZZRenovation.proto (line:58)
+    // proto file : ET-Client/ZZZZZZZRenovation.proto (line:62)
     [MemoryPackable]
     [Message(Message_ET_Client.GridRenovationAppliedState)]
     public partial class GridRenovationAppliedState: MessageObject
@@ -4244,6 +4292,32 @@ namespace ET
             if (!this.IsFromPool) { return; }
             this.DefinitionId = default;
             this.StationIds.Clear();
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZRenovation.proto (line:68)
+    [MemoryPackable]
+    [Message(Message_ET_Client.GridRenovationUpgradeTarget)]
+    public partial class GridRenovationUpgradeTarget: MessageObject
+    {
+        public static GridRenovationUpgradeTarget Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(GridRenovationUpgradeTarget), isFromPool) as GridRenovationUpgradeTarget;
+        }
+
+        [MemoryPackOrder(0)]
+        public int DefinitionId { get; set; }
+        [MemoryPackOrder(1)]
+        public long StationId { get; set; }
+        [MemoryPackOrder(2)]
+        public int ExpectedLevel { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.DefinitionId = default;
+            this.StationId = default;
+            this.ExpectedLevel = default;
             ObjectPool.Instance.Recycle(this);
         }
     }

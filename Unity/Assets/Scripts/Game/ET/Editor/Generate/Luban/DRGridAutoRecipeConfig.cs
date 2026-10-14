@@ -88,6 +88,30 @@ public sealed class DRGridAutoRecipeConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["StationCapability"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  StationCapability = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["LockContainer"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsBoolean) { throw new SerializationException(); }  LockContainer = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["MenuVariant"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  MenuVariant = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -119,6 +143,15 @@ public sealed class DRGridAutoRecipeConfig :  Luban.EditorBeanBase
         }
         {
             _json["ServingContainerDefinitionId"] = new JSONNumber(ServingContainerDefinitionId);
+        }
+        {
+            _json["StationCapability"] = new JSONNumber(StationCapability);
+        }
+        {
+            _json["LockContainer"] = new JSONBool(LockContainer);
+        }
+        {
+            _json["MenuVariant"] = new JSONNumber(MenuVariant);
         }
     }
 
@@ -173,6 +206,21 @@ public sealed class DRGridAutoRecipeConfig :  Luban.EditorBeanBase
     /// ServingContainerDefinitionId
     /// </summary>
     public int ServingContainerDefinitionId;
+
+    /// <summary>
+    /// StationCapability
+    /// </summary>
+    public int StationCapability;
+
+    /// <summary>
+    /// LockContainer
+    /// </summary>
+    public bool LockContainer;
+
+    /// <summary>
+    /// MenuVariant
+    /// </summary>
+    public int MenuVariant;
 
 }
 }

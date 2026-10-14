@@ -8,5 +8,10 @@
     "Id": 2,
     "DishId": 2,
     "Score": 10
+  },
+  {
+    "Id": 3,
+    "DishId": 3,
+    "Score": 10
   }
 ]

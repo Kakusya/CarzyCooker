@@ -117,6 +117,8 @@ namespace ET
             buffer.WriteSize(2); buffer.WriteInt(1); buffer.WriteInt(2);
             buffer.WriteSize(0);buffer.WriteInt(0);buffer.WriteBool(false);
             buffer.WriteSize(0);
+            buffer.WriteInt(0); buffer.WriteInt(0); buffer.WriteBool(false);
+            buffer.WriteInt(0); buffer.WriteSize(0);
             return new DRLevelConfig(buffer);
         }
 
@@ -132,6 +134,8 @@ namespace ET
                 buffer.WriteSize(row.AllowedBuffIds.Count);foreach(int buff in row.AllowedBuffIds)buffer.WriteInt(buff);
                 buffer.WriteInt(row.CandidateCount);buffer.WriteBool(false);
                 buffer.WriteSize(row.AllowedRenovationIds.Count);foreach(int id in row.AllowedRenovationIds)buffer.WriteInt(id);
+                buffer.WriteInt(row.ChapterId); buffer.WriteInt(row.ChapterStage); buffer.WriteBool(row.IsChapterTerminal);
+                buffer.WriteInt(row.MenuVariant); buffer.WriteSize(row.AllowedDrinkIds.Count); foreach (int drink in row.AllowedDrinkIds) buffer.WriteInt(drink);
                 rows[i]=new DRLevelConfig(buffer);map[row.Id]=rows[i];
             }
         }
@@ -266,16 +270,16 @@ namespace ET
             LevelDo(LevelControlAction.Start); AdvanceTicks(CurrentLevel.OperatingTicks - CurrentLevel.ElapsedOperatingTicks + 2); PumpMessages(8);
             Level originalLevel = CurrentLevel; GridActor originalRole = Grid.Actor(client.MemberId); GridCell cell = originalRole.Cell;
             long[] items = Grid.Items.Keys.OrderBy(id => id).ToArray();
-            var definitions = (System.Collections.Generic.Dictionary<int, DRLevelConfig>)Tables.Instance.DTLevelConfig.DataMap; DRLevelConfig next = definitions[2];
+            var definitions = (System.Collections.Generic.Dictionary<int, DRLevelConfig>)Tables.Instance.DTLevelConfig.DataMap; int nextId = CurrentLevel.NextLevelConfigId; DRLevelConfig next = definitions[nextId];
             try
             {
-                definitions.Remove(2);
+                definitions.Remove(nextId);
                 LevelDo(LevelControlAction.Continue, "MissingNextLevel");
                 Assert.That(CurrentLevel, Is.SameAs(originalLevel)); Assert.That(Grid.Actor(client.MemberId), Is.SameAs(originalRole));
                 Assert.That(originalRole.HandItemId, Is.EqualTo(bowl)); Assert.That(originalRole.Cell, Is.EqualTo(cell));
                 Assert.That(Grid.Items.Keys.OrderBy(id => id), Is.EqualTo(items));
             }
-            finally { definitions.Add(2, next); }
+            finally { definitions.Add(nextId, next); }
             HostPeer peer = ((LocalMessageComponent)client.Local).Peer;
             using GridWorldSnapshot old = GridBroadcast.CreateSnapshot(Grid, peer);
             LevelDo(LevelControlAction.Continue);

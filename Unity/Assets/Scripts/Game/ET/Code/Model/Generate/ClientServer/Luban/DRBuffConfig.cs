@@ -21,6 +21,8 @@ public sealed partial class DRBuffConfig : Luban.BeanBase
         DurationNumerator = _buf.ReadInt();
         DurationDenominator = _buf.ReadInt();
         BatchRecipeId = _buf.ReadInt();
+        ManualRecipeId = _buf.ReadInt();
+        BakeRecipeId = _buf.ReadInt();
         PostInit();
     }
 
@@ -53,6 +55,14 @@ public sealed partial class DRBuffConfig : Luban.BeanBase
     /// BatchRecipeId
     /// </summary>
     public readonly int BatchRecipeId;
+    /// <summary>
+    /// ManualRecipeId
+    /// </summary>
+    public readonly int ManualRecipeId;
+    /// <summary>
+    /// BakeRecipeId
+    /// </summary>
+    public readonly int BakeRecipeId;
     public const int __ID__ = 1790902435;
     public override int GetTypeId() => __ID__;
 
@@ -70,6 +80,8 @@ public sealed partial class DRBuffConfig : Luban.BeanBase
         + "DurationNumerator:" + DurationNumerator + ","
         + "DurationDenominator:" + DurationDenominator + ","
         + "BatchRecipeId:" + BatchRecipeId + ","
+        + "ManualRecipeId:" + ManualRecipeId + ","
+        + "BakeRecipeId:" + BakeRecipeId + ","
         + "}";
     }
 

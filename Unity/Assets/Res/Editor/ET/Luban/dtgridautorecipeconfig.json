@@ -13,6 +13,26 @@
     "RequiredTicks": 120,
     "OutputDefinitionId": 7,
     "OutputPortions": 2,
-    "ServingContainerDefinitionId": 5
+    "ServingContainerDefinitionId": 5,
+    "StationCapability": 2,
+    "LockContainer": false,
+    "MenuVariant": 0
+  },
+  {
+    "Id": 2,
+    "ContainerDefinitionId": 17,
+    "InputDefinitionIds": [
+      16
+    ],
+    "InputCounts": [
+      1
+    ],
+    "RequiredTicks": 120,
+    "OutputDefinitionId": 18,
+    "OutputPortions": 2,
+    "ServingContainerDefinitionId": 19,
+    "StationCapability": 1024,
+    "LockContainer": true,
+    "MenuVariant": 1
   }
 ]

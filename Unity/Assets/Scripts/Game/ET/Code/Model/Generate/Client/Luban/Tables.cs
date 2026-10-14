@@ -31,6 +31,7 @@ public partial class Tables
     public DTBuffConfig DTBuffConfig { private set; get; }
     public DTSupplyConfig DTSupplyConfig { private set; get; }
     public DTRenovationConfig DTRenovationConfig { private set; get; }
+    public DTStationUpgradeConfig DTStationUpgradeConfig { private set; get; }
     private System.Collections.Generic.Dictionary<string, IDataTable> _tables;
     public System.Collections.Generic.IEnumerable<IDataTable> DataTables => _tables.Values;
     public IDataTable GetDataTable(string tableName) => _tables.TryGetValue(tableName, out var v) ? v : null;
@@ -96,6 +97,9 @@ public partial class Tables
         DTRenovationConfig = new DTRenovationConfig(() => loader("dtrenovationconfig"));
         loadTasks.Add(DTRenovationConfig.LoadAsync());
         _tables.Add("DTRenovationConfig", DTRenovationConfig);
+        DTStationUpgradeConfig = new DTStationUpgradeConfig(() => loader("dtstationupgradeconfig"));
+        loadTasks.Add(DTStationUpgradeConfig.LoadAsync());
+        _tables.Add("DTStationUpgradeConfig", DTStationUpgradeConfig);
 
         await Cysharp.Threading.Tasks.UniTask.WhenAll(loadTasks);
 
@@ -124,6 +128,7 @@ public partial class Tables
         DTBuffConfig.ResolveRef(this);
         DTSupplyConfig.ResolveRef(this);
         DTRenovationConfig.ResolveRef(this);
+        DTStationUpgradeConfig.ResolveRef(this);
         PostResolveRef();
     }
 

@@ -182,15 +182,16 @@ namespace ET.Client
                 renderer.transform.localScale = new Vector3(maxX - minX + .88f, (maxY - minY) * GroundY + .65f, 1);
                 renderer.sortingOrder = 100 - Mathf.RoundToInt(counter.Cell.Y * GroundY * 10);
                 GridItemProjection item = objectValues.FirstOrDefault(v=>v.Id==counter.ItemId);
-                string contents = item.Id != 0 && Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Kind == 2 ? "（"+(item.Contents.Count==0?"空":string.Join("、",item.Contents.Select(id=>objectValues.First(v=>v.Id==id).Name)))+"）" : "";
                 GridAutoProcessProjection batch = batchValues.FirstOrDefault(value => value.Id == item.AutoProcessId);
                 string progress = batch.Id == 0 ? "" : batch.State == GridAutoState.Cooking
-                    ? $"\n煮制 {batch.ProgressTicks}/{batch.RequiredTicks}" : $"\n已熟 · 剩 {batch.RemainingPortions} 份";
+                    ? $"\n煮制 {batch.ProgressTicks * 100 / batch.RequiredTicks}%" : $"\n已熟 · {batch.RemainingPortions} 份";
                 GridBakeProjection bake = bakeValues.FirstOrDefault(value=>value.Id==counter.BakeProcessId);
-                if(bake.Id!=0)progress+=$"\n烘烤 {bake.ProgressTicks}/{bake.RequiredTicks}";
+                if(bake.Id!=0)progress+=bake.State==GridBakeState.Baking?$"\n烘烤 {bake.ProgressTicks * 100 / bake.RequiredTicks}%":"\n烘烤完成";
                 Text caption = Label(counter.Id,CellToWorld(counter.Cell)+new Vector3(0,-.32f,0));
                 caption.transform.parent.localPosition = CellToWorld(counter.Cell) + new Vector3(0,-.32f,0);
-                caption.text=counter.Name+"\n"+(item.Id==0?"空":item.Name+contents)+progress;
+                // 地图保留短名称与进度；容器内容在选中目标详情中展开。
+                caption.text=counter.Name+progress;
+                caption.fontSize=highlight.HasValue && counter.Footprint.Contains(highlight.Value)?18:16;
             }
             foreach (long id in items.Keys.Except(objectValues.Where(v=>v.Location!=GridItemLocation.Container).Select(v=>v.Id)).ToArray())
             { Destroy(items[id].gameObject); items.Remove(id); }

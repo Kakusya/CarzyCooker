@@ -23,7 +23,7 @@ namespace ET
             var recipe = recipes[0]; self.PauseWork(actor);
             GridBakeProcess process = self.AddChild<GridBakeProcess>();
             process.RecipeId = recipe.Id; process.StationId = station.Id; process.InputItemId = input.Id;
-            process.OutputDefinitionId = recipe.OutputDefinitionId; process.RequiredTicks = recipe.RequiredTicks;
+            process.OutputDefinitionId = recipe.OutputDefinitionId; process.RequiredTicks = self.FrozenBakingTicks(recipe, station);
             process.ProgressTicks = 0; process.State = GridBakeState.Baking; process.StartedTick = self.Tick;
             self.BakeProcesses.Add(process.Id, process); station.BakeProcessId = process.Id; input.BakeProcessId = process.Id;
             self.PublishKitchenStage(process, KitchenProcessKind.Bake, KitchenWorkStage.Started, ++process.TransitionSerial);

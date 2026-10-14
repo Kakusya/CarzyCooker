@@ -27,6 +27,16 @@ namespace ET
             self.ClientScene = default;
             self.Authority = default;
             self.Client = default;
+            self.FinishingRestaurant = default;
+        }
+
+        [EntitySystem]
+        private static void Update(this ProductRuntimeComponent self)
+        {
+            RestaurantRuntime restaurant = self.FinishingRestaurant;
+            if (restaurant == null) return;
+            self.FinishingRestaurant = default;
+            self.ReturnToSoloSelection(restaurant);
         }
 
         [EntitySystem]
@@ -117,6 +127,34 @@ namespace ET
             self.Stage = ProductStage.Stopped;
             ProductBootstrapBridge.Clear(self.Config);
             RuntimeInstanceContext.ReportProductStage(self.Config, "Stopped");
+        }
+
+        public static void ReturnToSoloSelection(this ProductRuntimeComponent self, RestaurantRuntime restaurant)
+        {
+            EntityRef<ProductRuntimeComponent> original = self;
+            EntityRef<RestaurantRuntime> expected = restaurant;
+            self.Fiber().ThreadSynchronizationContext.Post(() =>
+            {
+                ProductRuntimeComponent current = original; RestaurantRuntime old = expected;
+                HostSessionComponent authority = current?.Authority ?? default;
+                Match match = authority?.Match ?? default;
+                if (current == null || old == null || (RestaurantRuntime)(match?.Restaurant ?? default) != old ||
+                    current.Config.Role != RuntimeInstanceRole.Solo || current.Stage is ProductStage.Stopping or ProductStage.Stopped) return;
+                // Retire only this run. The root repository and local sender also serve the selector and the next run.
+                old.StopRestaurant();
+                foreach (HostPeer peer in authority.Children.Values.OfType<HostPeer>()) { peer.EntryOpen = false; peer.Closing = true; }
+                ClientSessionComponent client = current.Client;
+                if (client != null)
+                {
+                    client.Stage = ProductClientStage.Stopping;
+                    EventSystem.Instance.Publish((Scene)client.IScene, new ProductClientLeft());
+                }
+                ((Scene)current.ClientScene)?.Dispose(); ((Scene)current.HostScene)?.Dispose();
+                current.ClientScene = default; current.HostScene = default; current.Authority = default; current.Client = default;
+                current.Stage = ProductStage.Initializing;
+                RuntimeInstanceContext.ReportProductStage(current.Config, "SelectingSave");
+                EventSystem.Instance.Publish(current.Root(), new SoloSaveSelectionRequested());
+            });
         }
     }
 

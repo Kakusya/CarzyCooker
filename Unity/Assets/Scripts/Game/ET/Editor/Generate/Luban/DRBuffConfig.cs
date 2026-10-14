@@ -71,6 +71,22 @@ public sealed class DRBuffConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["ManualRecipeId"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  ManualRecipeId = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["BakeRecipeId"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  BakeRecipeId = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -94,6 +110,12 @@ public sealed class DRBuffConfig :  Luban.EditorBeanBase
         }
         {
             _json["BatchRecipeId"] = new JSONNumber(BatchRecipeId);
+        }
+        {
+            _json["ManualRecipeId"] = new JSONNumber(ManualRecipeId);
+        }
+        {
+            _json["BakeRecipeId"] = new JSONNumber(BakeRecipeId);
         }
     }
 
@@ -138,6 +160,16 @@ public sealed class DRBuffConfig :  Luban.EditorBeanBase
     /// BatchRecipeId
     /// </summary>
     public int BatchRecipeId;
+
+    /// <summary>
+    /// ManualRecipeId
+    /// </summary>
+    public int ManualRecipeId;
+
+    /// <summary>
+    /// BakeRecipeId
+    /// </summary>
+    public int BakeRecipeId;
 
 }
 }

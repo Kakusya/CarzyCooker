@@ -37,7 +37,7 @@ namespace ET
 
     public static class ProductSessionRules
     {
-        public const int ProtocolVersion = 18;
+        public const int ProtocolVersion = 21;
         public const int MaxPayloadBytes = 1024;
         public const int RequestTimeout = 4000;
         public const int HeartbeatInterval = 2000;
@@ -70,8 +70,9 @@ namespace ET
     }
 
     [ComponentOf(typeof(Scene))]
-    public sealed class ProductRuntimeComponent : Entity, IAwake<RuntimeInstanceConfig>, IDestroy
+    public sealed class ProductRuntimeComponent : Entity, IAwake<RuntimeInstanceConfig>, IUpdate, IDestroy
     {
+        public EntityRef<RestaurantRuntime> FinishingRestaurant;
         public RuntimeInstanceConfig Config;
         public ProductStage Stage;
         public string Failure;

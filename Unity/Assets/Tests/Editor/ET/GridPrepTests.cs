@@ -11,19 +11,19 @@ namespace ET
         private GridStation PrepStation(string name) => Grid.Stations.Values.Select(v => (GridStation)v).Single(v => v.Name == name);
         private GridManualProcess PrepProcess(long input) => Grid.InputProcess(input);
 
-        private long PrepSend(ClientSessionComponent client, GridAction action, long target=0, long input=0, long expectedTarget=0, long process=0, GridCell cell=default)
+        private long PrepSend(ClientSessionComponent client, GridAction action, long target=0, long input=0, long expectedTarget=0, long process=0, GridCell cell=default, long order = 0)
         {
             var projection = client.GetComponent<GridClientComponent>();
-            var request = projection.CreateGridCommand(action, cell, target, input, expectedTarget, process);
+            var request = projection.CreateGridCommand(action, cell, target, input, expectedTarget, process, expectedOrderId: order);
             long command = request.CommandId;
             using var response = (GridCommandResponse)Finish(client.CallProduct(request), 300);
             Assert.That(response.Error, Is.Zero, response.Message);
             return command;
         }
 
-        private void PrepDo(ClientSessionComponent client, GridAction action, long target=0, long input=0, long expectedTarget=0, long process=0, GridCell cell=default, string rejection=null)
+        private void PrepDo(ClientSessionComponent client, GridAction action, long target=0, long input=0, long expectedTarget=0, long process=0, GridCell cell=default, string rejection=null, long order = 0)
         {
-            long command = PrepSend(client,action,target,input,expectedTarget,process,cell);
+            long command = PrepSend(client,action,target,input,expectedTarget,process,cell,order);
             GridActor actor = Grid.Actor(client.MemberId);
             for(int i=0; i<350 && (actor.LastResultCommandId!=command || actor.LastResultStatus==GridResultStatus.PendingApproach); ++i) Pump();
             Assert.That(actor.LastResultCommandId, Is.EqualTo(command));

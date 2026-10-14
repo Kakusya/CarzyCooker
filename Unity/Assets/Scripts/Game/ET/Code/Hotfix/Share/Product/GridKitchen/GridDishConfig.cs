@@ -11,9 +11,11 @@ namespace ET
         {
             Tables tables = Tables.Instance;
             foreach (var level in tables.DTLevelConfig.DataList)
-                ValidateMenu(level.AllowedDishIds, tables.DTDishConfig.DataList, tables.DTDishStageConfig.DataList,
+                ValidateMenu(level.AllowedDishIds.Concat(level.AllowedDrinkIds), tables.DTDishConfig.DataList, tables.DTDishStageConfig.DataList,
                     tables.DTGridItemConfig.DataList, tables.DTGridManualRecipeConfig.DataList, tables.DTGridAutoRecipeConfig.DataList,
-                    tables.DTGridBakeRecipeConfig.DataList, tables.DTStationConfig.DataList, tables.DTInitialLayoutConfig.DataList, tables.DTSupplyConfig.DataList);
+                    tables.DTGridBakeRecipeConfig.DataList, tables.DTStationConfig.DataList,
+                    tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == 0 || row.MenuVariant == level.MenuVariant),
+                    tables.DTSupplyConfig.DataList.Where(row => row.MenuVariant == 0 || row.MenuVariant == level.MenuVariant));
         }
 
         public static void ValidateMenu(IEnumerable<int> menuIds, IEnumerable<DRDishConfig> dishRows,
@@ -89,7 +91,7 @@ namespace ET
                             batch.RequiredTicks <= 0 || batch.OutputPortions <= 0 || batch.InputDefinitionIds.Count == 0 || batch.InputDefinitionIds.Count != batch.InputCounts.Count || batch.InputCounts.Any(count => count <= 0) ||
                             batch.InputDefinitionIds.Distinct().Count() != batch.InputDefinitionIds.Count || batch.InputDefinitionIds.Any(input => !Compatible(batch.ContainerDefinitionId, input)))
                             throw new InvalidOperationException("Invalid batch stage recipe");
-                        NeedInputs(stage, batch.InputDefinitionIds.Concat(new[] { batch.ContainerDefinitionId }).ToArray()); NeedCapability((int)GridStationCapability.Cook);
+                        NeedInputs(stage, batch.InputDefinitionIds.Concat(new[] { batch.ContainerDefinitionId }).ToArray()); NeedCapability(batch.StationCapability);
                         int batchCount = int.MaxValue;
                         for (int i = 0; i < batch.InputDefinitionIds.Count; ++i) batchCount = Math.Min(batchCount, UnitsFor(stage, batch.InputDefinitionIds[i]) / batch.InputCounts[i]);
                         units = checked(batchCount * batch.OutputPortions);
@@ -124,6 +126,7 @@ namespace ET
             {
                 if (!dishes.TryGetValue(id, out var dish) || id <= 0 || string.IsNullOrWhiteSpace(dish.Name) || !Compatible(dish.ContainerDefinitionId, dish.ContentDefinitionId))
                     throw new InvalidOperationException("Invalid menu dish / container");
+                if (dish.RequiresOrderBinding) NeedCapability((int)GridStationCapability.LabelDrink);
                 Visit(dish.FinalStageId); var final = stages[dish.FinalStageId];
                 if (final.Kind is not ((int)DishStageKind.Portion or (int)DishStageKind.AddToContainer) ||
                     final.OutputDefinitionId != dish.ContentDefinitionId || final.ContainerDefinitionId != dish.ContainerDefinitionId)

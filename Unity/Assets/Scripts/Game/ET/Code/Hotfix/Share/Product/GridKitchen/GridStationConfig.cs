@@ -18,12 +18,14 @@ namespace ET
                 var footprint = ReadOffsets(row.FootprintOffsets);
                 var approach = ReadOffsets(row.ApproachOffsets);
                 bool pool = row.Kind is (int)GridStationKind.DirtyPool or (int)GridStationKind.CleanPool;
-                int capability = row.Kind == (int)GridStationKind.Trash ? (int)GridStationCapability.Trash
+                int capability = row.Kind == (int)GridStationKind.Juicer ? (int)GridStationCapability.Juice
+                    : row.Kind == (int)GridStationKind.LabelDesk ? (int)GridStationCapability.LabelDrink
+                    : row.Kind == (int)GridStationKind.Trash ? (int)GridStationCapability.Trash
                     : row.Kind == 0 ? 0 : 1 << (row.Kind - 1);
                 int sink = (int)(GridStationCapability.FillWater | GridStationCapability.DrainLiquid);
                 bool isSink = row.Kind == (int)GridStationKind.Wash && row.Capabilities == (capability | sink);
                 if (row.Id <= 0 || !rows.TryAdd(row.Id, row) || string.IsNullOrWhiteSpace(row.Name) ||
-                    row.Kind < 0 || row.Kind > (int)GridStationKind.Trash || (!isSink && row.Capabilities != capability) ||
+                    row.Kind < 0 || row.Kind > (int)GridStationKind.LabelDesk || (!isSink && row.Capabilities != capability) ||
                     (isSink ? row.WaterDefinitionId <= 0 || row.WaterUnits != 1 : row.WaterDefinitionId != 0 || row.WaterUnits != 0) ||
                     (pool ? row.ItemSlotCapacity <= 0 : row.ItemSlotCapacity != 1) ||
                     !footprint.Contains(new GridCell(0, 0)) || approach.Any(cell => footprint.Contains(cell) ||

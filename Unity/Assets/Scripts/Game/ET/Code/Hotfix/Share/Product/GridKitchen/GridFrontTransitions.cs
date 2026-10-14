@@ -59,7 +59,7 @@ namespace ET
                         var definition = new FrontWorkDefinition(FrontWorkKind.Ask, customer.Id, station.Id, 0, config.AskTicks);
                         customer.AskWorkId = level.AddChild<FrontWork, FrontWorkDefinition, long>(definition, level.Generation).Id;
                     }
-                    else if (value.Kind == FrontWorkKind.Clear && customer.Phase == CustomerPhase.Gone && station.ItemId != 0)
+                    else if (value.Kind == FrontWorkKind.Clear && customer.Phase == CustomerPhase.Gone && station.GetComponent<FrontTable>()?.State == FrontTableState.Dirty)
                     {
                         var definition = new FrontWorkDefinition(FrontWorkKind.Clear, customer.Id, station.Id, station.ItemId, config.ClearTicks);
                         level.AddChild<FrontWork, FrontWorkDefinition, long>(definition, level.Generation);

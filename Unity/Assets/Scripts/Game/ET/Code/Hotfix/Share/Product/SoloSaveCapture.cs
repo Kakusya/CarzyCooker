@@ -27,9 +27,9 @@ namespace ET
                 throw new InvalidOperationException("SuccessRequired");
             GridKitchenComponent kitchen = restaurant.Kitchen;
             var renovation = restaurant.GetComponent<RestaurantRenovation>();
-            if (!renovation.Prepared || renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation)
+            if (!level.IsChapterTerminal && (!renovation.Prepared || renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation))
                 throw new InvalidOperationException("RenovationNotReady");
-            if (renovation.Candidates.Count > 0 && renovation.SelectedDefinitionId == 0)
+            if (!level.IsChapterTerminal && renovation.Candidates.Count > 0 && renovation.SelectedDefinitionId == 0)
                 throw new InvalidOperationException("RenovationRequired");
             var stationKeys = kitchen.Stations.Keys.OrderBy(id => id).Select((id, index) => (id, key: index + 1)).ToDictionary(p => p.id, p => p.key);
             var itemKeys = kitchen.Items.Keys.OrderBy(id => id).Select((id, index) => (id, key: index + 1)).ToDictionary(p => p.id, p => p.key);
@@ -46,7 +46,8 @@ namespace ET
                         Key = StationKey(station.Id), DefinitionId = station.DefinitionId, InitialLayoutId = station.InitialLayoutId,
                         X = station.Cell.X, Y = station.Cell.Y, Orientation = station.Orientation, ItemKey = ItemKey(station.ItemId),
                         PoolItemKeys = station.PoolItemIds.Select(ItemKey).ToArray(), TableDefinitionId = table?.DefinitionId ?? 0,
-                        TableDirty = table?.State == FrontTableState.Dirty
+                        TableDirty = table?.State == FrontTableState.Dirty,
+                        UpgradeDefinitionId = station.UpgradeDefinitionId, UpgradeLevel = station.UpgradeLevel
                     };
                 }).ToArray(),
                 Items = kitchen.Items.Values.Select(value => (GridItem)value).OrderBy(i => i.Id).Select(item =>
@@ -75,7 +76,8 @@ namespace ET
                     Key = index + 1, RecipeId = p.RecipeId, RequiredTicks = p.RequiredTicks, ProgressTicks = p.ProgressTicks,
                     PotKey = ItemKey(p.PotItemId), StationKey = StationKey(p.StartStationId), State = (int)p.State,
                     OutputDefinitionId = p.OutputDefinitionId, TotalPortions = p.TotalPortions, RemainingPortions = p.RemainingPortions,
-                    ServingContainerDefinitionId = p.ServingContainerDefinitionId, InputKeys = p.InputItemIds.Select(ItemKey).ToArray()
+                    ServingContainerDefinitionId = p.ServingContainerDefinitionId, InputKeys = p.InputItemIds.Select(ItemKey).ToArray(),
+                    RequiredCapability = p.RequiredCapability, LockContainer = p.LockContainer
                 }).ToArray(),
                 Baking = kitchen.BakeProcesses.Values.Select(value => (GridBakeProcess)value).Where(p => p.State != GridBakeState.Completed)
                     .OrderBy(p => p.Id).Select((p, index) => new SoloSavedBake
@@ -94,7 +96,9 @@ namespace ET
                 }).ToArray(),
                 Renovations = renovation.AppliedStations.OrderBy(pair => pair.Key).Select(pair => new SoloSavedRenovation
                     { DefinitionId = pair.Key, StationKeys = pair.Value.Select(StationKey).ToArray() }).ToArray(),
-                PendingRenovationId = renovation.SelectedDefinitionId
+                PendingRenovationId = renovation.SelectedDefinitionId,
+                PendingUpgradeStationKey = StationKey(((GridStation)renovation.PendingUpgradeStation)?.Id ?? 0),
+                PendingUpgradeExpectedLevel = renovation.PendingUpgradeExpectedLevel
             };
         }
     }

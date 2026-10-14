@@ -20,6 +20,7 @@ namespace ET
         private static void Awake(this RestaurantRuntime self, DRLevelConfig first)
         {
             self.Match = self.GetParent<Match>(); self.Stopped = false; self.Controls.Clear();
+            self.MenuVariant = first.MenuVariant;
             self.Transitions.Clear();
             self.FinishedTransitions.Clear();
             self.PhaseOutcomes.Clear();
@@ -83,7 +84,8 @@ namespace ET
                 return identity;
             }
             if (prior != null || replay) return prior;
-            if (intent.Action < LevelControlAction.Start || intent.Action > LevelControlAction.SaveAndContinue) return "InvalidCommand";
+            if (intent.Action < LevelControlAction.Start || intent.Action > LevelControlAction.FinishChapter) return "InvalidCommand";
+            if (level.IsChapterTerminal && intent.Action is LevelControlAction.Continue or LevelControlAction.SaveAndContinue) return "ChapterCompleted";
             if (intent.Action is LevelControlAction.Continue or LevelControlAction.SaveAndContinue && intent.NextLevelConfigId != level.NextLevelConfigId) return "NextLevelChanged";
             peer.RecordProductCommand(context, ProductCommandKind.Level); peer.LastLevelCommand = intent;
             self.Controls.Enqueue(new LevelControlEnvelope(context, intent, peer));
@@ -106,9 +108,10 @@ namespace ET
                 string error = peer == null || !kitchen.HasBinding(peer.MemberId, control.Context.BindingGeneration) ? "EntryClosed"
                     : control.Context.Validate(match.MatchId, kitchen.WorldId, kitchen.WorldGeneration, level.Id, level.Generation, peer.Generation);
                 if (error == null && !peer.CanControlRestaurant()) error = "HostControlOnly";
-                if (error == null) error = control.Intent.Action == LevelControlAction.SaveAndContinue
+                if (error == null) error = control.Intent.Action == LevelControlAction.SaveAndContinue ||
+                    control.Intent.Action == LevelControlAction.FinishChapter && ((Match)self.Match).GetComponent<SoloSaveBinding>() != null
                     ? self.BeginSoloSave(level, control) : self.ApplyLevelControl(level, control.Intent);
-                var status = error == null ? control.Intent.Action == LevelControlAction.SaveAndContinue && self.SoloSavePending()
+                var status = error == null ? control.Intent.Action is LevelControlAction.SaveAndContinue or LevelControlAction.FinishChapter && self.SoloSavePending()
                     ? GridResultStatus.Accepted : GridResultStatus.Executed : GridResultStatus.Rejected;
                 Level installed = self.CurrentLevel;
                 if (status == GridResultStatus.Executed && installed != level && !installed.GetComponent<LevelBuff>().Prepared)
@@ -172,6 +175,7 @@ namespace ET
                     if (!level.Paused) return "NotPaused";
                     level.Paused = false; self.PublishLevelPhase(level); return null;
                 case LevelControlAction.Continue:
+                    if (level.IsChapterTerminal) return "ChapterCompleted";
                     if (level.Phase != LevelPhase.Completed) return "WrongPhase";
                     string saveGate = self.CheckSoloSaveGate(level);
                     if (saveGate != null) return saveGate;
@@ -191,6 +195,14 @@ namespace ET
                         kitchen.QueueGridMember(member.MemberId, member.BindingGeneration, true);
                     kitchen.ApplyGridMembers();
                     self.AdvanceSoloSaveSource();
+                    return null;
+                case LevelControlAction.FinishChapter:
+                    if (!level.IsChapterTerminal || level.Phase != LevelPhase.Completed) return "WrongPhase";
+                    string finishGate = self.CheckSoloSaveGate(level);
+                    if (finishGate != null) return finishGate;
+                    var runtime = ((Scene)self.IScene).GetComponent<HostSessionComponent>().Runtime;
+                    if (((ProductRuntimeComponent)runtime)?.Config.Role != Game.RuntimeInstanceRole.Solo) return "SoloRestaurantOnly";
+                    ((ProductRuntimeComponent)runtime).FinishingRestaurant = self;
                     return null;
                 default: return "InvalidCommand";
             }
@@ -216,8 +228,11 @@ namespace ET
             self.ConfigId = definition.Id; self.NextLevelConfigId = definition.NextLevelConfigId; self.Generation = generation;
             self.Phase = LevelPhase.Preparing; self.Paused = false; self.OperatingTicks = definition.OperatingTicks;
             self.ElapsedOperatingTicks = 0; self.Score = 0; self.Stars = 0; self.DrainingStartedTick = 0;
+            self.ServedOrders = self.UnfulfilledOrders = 0; self.IsChapterTerminal = definition.IsChapterTerminal;
             self.StarThresholds = definition.StarThresholds.ToArray(); self.SpawnCell = new GridCell(definition.SpawnX, definition.SpawnY);
-            self.AllowedDishIds = definition.AllowedDishIds.ToArray();
+            self.MenuVariant = definition.MenuVariant;
+            self.DrinkBindings.Clear();
+            self.AllowedDishIds = definition.AllowedDishIds.Concat(definition.AllowedDrinkIds).ToArray();
             self.AllowedRenovationIds = definition.AllowedRenovationIds.ToArray();
             self.CompletionSerial = 1;
             self.TransitionSerial = 1; self.TransitionQueued = false;

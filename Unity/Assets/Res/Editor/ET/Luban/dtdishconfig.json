@@ -4,13 +4,23 @@
     "Name": "番茄蛋花汤",
     "ContentDefinitionId": 7,
     "ContainerDefinitionId": 5,
-    "FinalStageId": 8
+    "FinalStageId": 8,
+    "RequiresOrderBinding": false
   },
   {
     "Id": 2,
     "Name": "盘装吐司",
     "ContentDefinitionId": 9,
     "ContainerDefinitionId": 10,
-    "FinalStageId": 12
+    "FinalStageId": 12,
+    "RequiresOrderBinding": false
+  },
+  {
+    "Id": 3,
+    "Name": "鲜榨橙汁",
+    "ContentDefinitionId": 18,
+    "ContainerDefinitionId": 19,
+    "FinalStageId": 18,
+    "RequiresOrderBinding": true
   }
 ]

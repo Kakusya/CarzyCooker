@@ -106,7 +106,7 @@ namespace ET
                     CompanionGrowth growth = level.GetComponent<CompanionGrowth>();
                     growth.CompletedByCompanion.TryGetValue(identity.Id, out int count); growth.CompletedByCompanion[identity.Id] = count + 1;
                 }
-                work.SuccessorPending = work.Kind == FrontWorkKind.Clear;
+                work.SuccessorPending = work.Kind == FrontWorkKind.Clear && work.ItemId != 0;
                 self.ReleaseFrontClaim(level, work, FrontWorkState.Completed, true);
                 self.NotifyFrontFinished(level, work);
                 if (finisher != null) NotifyFrontResult(finisher, request, work.Id, serial, GridResultStatus.Executed, null, 2);

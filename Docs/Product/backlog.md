@@ -39,7 +39,7 @@
 - 原成员恢复首版只做本次运行内手动恢复，不包含程序重启后的身份恢复。
 - Android 后台自动暂停，回前台仍暂停，手动继续；系统结束程序后读取最后成功检查点。
 
-具体产量、耗时、各关来客与评分数值仍属配置和平衡工作，不把“由配置决定”解释成已经确定数值。饮品 Solo 与合作适配已分别建案：[first-drink-order-binding](../../openspec/changes/first-drink-order-binding/proposal.md)、[cooperative-drink-order-binding](../../openspec/changes/cooperative-drink-order-binding/proposal.md)。
+具体产量、耗时、各关来客与评分数值仍属配置和平衡工作，不把“由配置决定”解释成已经确定数值。饮品 Solo 与合作适配已分别建案：[first-drink-order-binding](../../openspec/changes/archive/2026-10-14-first-drink-order-binding/proposal.md)、[cooperative-drink-order-binding](../../openspec/changes/cooperative-drink-order-binding/proposal.md)。
 
 ### 联机长期进度仍是独立缺口
 

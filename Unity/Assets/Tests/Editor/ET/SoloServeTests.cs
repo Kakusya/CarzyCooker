@@ -81,6 +81,8 @@ namespace ET
             using(var reply=ServeReply(Replay(bowl)))Assert.That(reply.Status,Is.EqualTo((int)GridResultStatus.Executed));
             using(var reply=ServeReply(Replay(bowl+1)))Assert.That(reply.Message,Is.EqualTo("CommandConflict"));
             AdvanceTicks(1);Assert.That(CurrentLevel.Score,Is.EqualTo(order.Score));Assert.That(table.ItemId,Is.EqualTo(bowl));
+            Assert.That(CurrentLevel.ServedOrders, Is.EqualTo(1));
+            Assert.That(projection.ServedOrders, Is.EqualTo(1));
         }
 
         [TestCase("dish")]

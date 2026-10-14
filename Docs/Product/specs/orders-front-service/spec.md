@@ -1,6 +1,6 @@
 # orders-front-service Target Specification
 
-> 状态：目标规格文档已定稿，业务尚未实现；已确认、授权补足与未决范围见 [规格索引](../README.md)。
+> 状态：目标规格已定稿；两菜顾客／交付／原餐具回收及自然收尾已有实际验收，见[订单记录](../../../../openspec/changes/archive/2026-10-13-solo-customer-order-service/execution-notes.md)。Solo 首饮贴单、一次性杯消费／清桌的核心及受管 UI UTF 已通过，普通三关采购／交付／清理及返回选档也已通过，见[首饮记录](../../../../openspec/changes/archive/2026-10-14-first-drink-order-binding/execution-notes.md)。其余饮品／特殊顾客、Player与手机端没有因此完成；已确认、授权补足与未决范围见 [规格索引](../README.md)。
 
 ## Purpose
 

@@ -565,7 +565,7 @@ namespace ET
         [Test]
         public void ProductMessageBoundaryFrontExitClearWashPendingGapsKeepNaturalLevelOpenAndOriginalBowl()
         {
-            InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(1), duration: 120));
+            InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(101), duration: 120));
             ConfigureFrontFlow(interval: 100000); StartSolo(liveFront: true); long bowl = PrepareServingMeal(1);
             LevelDo(LevelControlAction.Start); Order order = WaitActualOrder(1); Customer customer = CurrentLevel.GetChild<Customer>(order.CustomerId);
             ServeDo(order, bowl); Assert.That(CurrentLevel.Score, Is.EqualTo(10));

@@ -13,11 +13,21 @@ namespace ET
         public static Dictionary<int, DRRenovationConfig> Validate(IEnumerable<DRRenovationConfig> source,
             IEnumerable<DRStationConfig> stations, IEnumerable<DRLevelConfig> levels)
         {
+            StationUpgradeConfig.ValidateAll();
             var definitions = GridStationConfig.ValidateDefinitions(stations);
             var rewards = new Dictionary<int, DRRenovationConfig>();
             foreach (DRRenovationConfig reward in source)
             {
+                if (reward.RewardKind == 2)
+                {
+                    if (reward.Id <= 0 || !rewards.TryAdd(reward.Id, reward) || string.IsNullOrWhiteSpace(reward.Name) ||
+                        reward.StationDefinitionId != 0 || reward.Quantity != 0 || reward.InstallX != 0 || reward.InstallY != 0 || reward.Orientation != 0 ||
+                        Tables.Instance.DTStationUpgradeConfig.GetOrDefault(reward.UpgradeDefinitionId) == null)
+                        throw new InvalidOperationException("InvalidUpgradeReward:" + reward.Id);
+                    continue;
+                }
                 if (reward.Id <= 0 || !rewards.TryAdd(reward.Id, reward) || string.IsNullOrWhiteSpace(reward.Name) ||
+                    reward.RewardKind != 1 || reward.UpgradeDefinitionId != 0 ||
                     reward.Quantity <= 0 || reward.Quantity > (GridKitchenRules.Width - 2) * (GridKitchenRules.Height - 2) ||
                     reward.Orientation < 0 || reward.Orientation > 3 ||
                     !definitions.TryGetValue(reward.StationDefinitionId, out var station) ||

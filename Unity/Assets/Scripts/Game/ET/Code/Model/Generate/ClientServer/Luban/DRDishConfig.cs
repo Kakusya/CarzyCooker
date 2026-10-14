@@ -20,6 +20,7 @@ public sealed partial class DRDishConfig : Luban.BeanBase
         ContentDefinitionId = _buf.ReadInt();
         ContainerDefinitionId = _buf.ReadInt();
         FinalStageId = _buf.ReadInt();
+        RequiresOrderBinding = _buf.ReadBool();
         PostInit();
     }
 
@@ -48,6 +49,10 @@ public sealed partial class DRDishConfig : Luban.BeanBase
     /// FinalStageId
     /// </summary>
     public readonly int FinalStageId;
+    /// <summary>
+    /// RequiresOrderBinding
+    /// </summary>
+    public readonly bool RequiresOrderBinding;
     public const int __ID__ = 274230442;
     public override int GetTypeId() => __ID__;
 
@@ -64,6 +69,7 @@ public sealed partial class DRDishConfig : Luban.BeanBase
         + "ContentDefinitionId:" + ContentDefinitionId + ","
         + "ContainerDefinitionId:" + ContainerDefinitionId + ","
         + "FinalStageId:" + FinalStageId + ","
+        + "RequiresOrderBinding:" + RequiresOrderBinding + ","
         + "}";
     }
 

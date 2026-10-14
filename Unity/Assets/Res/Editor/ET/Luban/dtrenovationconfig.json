@@ -6,7 +6,9 @@
     "Quantity": 1,
     "InstallX": 2,
     "InstallY": 13,
-    "Orientation": 0
+    "Orientation": 0,
+    "RewardKind": 1,
+    "UpgradeDefinitionId": 0
   },
   {
     "Id": 2,
@@ -15,6 +17,30 @@
     "Quantity": 1,
     "InstallX": 4,
     "InstallY": 12,
-    "Orientation": 0
+    "Orientation": 0,
+    "RewardKind": 1,
+    "UpgradeDefinitionId": 0
+  },
+  {
+    "Id": 3,
+    "Name": "升级切配台",
+    "StationDefinitionId": 0,
+    "Quantity": 0,
+    "InstallX": 0,
+    "InstallY": 0,
+    "Orientation": 0,
+    "RewardKind": 2,
+    "UpgradeDefinitionId": 1
+  },
+  {
+    "Id": 4,
+    "Name": "升级烤箱",
+    "StationDefinitionId": 0,
+    "Quantity": 0,
+    "InstallX": 0,
+    "InstallY": 0,
+    "Orientation": 0,
+    "RewardKind": 2,
+    "UpgradeDefinitionId": 2
   }
 ]

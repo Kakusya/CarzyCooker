@@ -91,6 +91,7 @@ namespace ET
                             message.CommandId = grid.CommandId; message.Action = grid.Action; message.X = grid.X; message.Y = grid.Y;
                             message.TargetId = grid.TargetId; message.ExpectedItemId = grid.ExpectedItemId;
                             message.ExpectedTargetItemId = grid.ExpectedTargetItemId; message.ExpectedProcessId = grid.ExpectedProcessId;
+                            message.ExpectedOrderId = grid.ExpectedOrderId;
                             message.LevelId = grid.LevelId; message.LevelGeneration = grid.LevelGeneration;
                             message.ExpectedContentIds.AddRange(grid.ExpectedContentIds);
                             message.ExpectedRemainingPortions = grid.ExpectedRemainingPortions; message.ExpectedLayoutVersion = grid.ExpectedLayoutVersion;

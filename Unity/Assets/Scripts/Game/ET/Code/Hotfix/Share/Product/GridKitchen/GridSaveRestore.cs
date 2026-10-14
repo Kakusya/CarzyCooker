@@ -25,6 +25,7 @@ namespace ET
             {
                 var station = self.RestoreSaveStation(saved.DefinitionId, saved.InitialLayoutId, new GridCell(saved.X, saved.Y), saved.Orientation);
                 stations.Add(saved.Key, station);
+                station.UpgradeDefinitionId = saved.UpgradeDefinitionId; station.UpgradeLevel = saved.UpgradeLevel;
                 if (saved.TableDefinitionId != 0)
                 {
                     var table = station.AddComponent<FrontTable, DRTableConfig>(Tables.Instance.DTTableConfig.Get(saved.TableDefinitionId));
@@ -60,6 +61,8 @@ namespace ET
                 process.PotItemId = pot.Id; process.StartStationId = stations[saved.StationKey].Id; process.State = (GridAutoState)saved.State;
                 process.OutputDefinitionId = saved.OutputDefinitionId; process.TotalPortions = saved.TotalPortions; process.RemainingPortions = saved.RemainingPortions;
                 process.ServingContainerDefinitionId = saved.ServingContainerDefinitionId; process.InputItemIds.AddRange(saved.InputKeys.Select(key => items[key].Id));
+                process.RequiredCapability = saved.RequiredCapability == 0 ? (int)GridStationCapability.Cook : saved.RequiredCapability;
+                process.LockContainer = saved.LockContainer;
                 process.StartedTick = -1; pot.AutoProcessId = process.Id; self.AutoProcesses.Add(process.Id, process);
                 if (process.State == GridAutoState.Cooking) stations[saved.StationKey].AutoProcessId = process.Id;
             }
@@ -87,8 +90,18 @@ namespace ET
             if (payload.PendingRenovationId != 0)
             {
                 var definition = Tables.Instance.DTRenovationConfig.Get(payload.PendingRenovationId);
-                var ids = RenovationConfig.Placements(definition).Select(p => self.RestoreSaveStation(p.DefinitionId, 0, p.Cell, p.Orientation).Id).ToArray();
-                renovation.AppliedStations.Add(definition.Id, Array.AsReadOnly(ids));
+                if (definition.RewardKind == 2)
+                {
+                    var target = stations[payload.PendingUpgradeStationKey]; var upgrade = Tables.Instance.DTStationUpgradeConfig.Get(definition.UpgradeDefinitionId);
+                    target.UpgradeDefinitionId = upgrade.Id; target.UpgradeLevel = upgrade.TargetLevel;
+                    renovation.AppliedStations.TryGetValue(definition.Id, out var previous);
+                    renovation.AppliedStations[definition.Id] = Array.AsReadOnly((previous ?? Array.Empty<long>()).Append(target.Id).Distinct().ToArray());
+                }
+                else
+                {
+                    var ids = RenovationConfig.Placements(definition).Select(p => self.RestoreSaveStation(p.DefinitionId, 0, p.Cell, p.Orientation).Id).ToArray();
+                    renovation.AppliedStations.Add(definition.Id, Array.AsReadOnly(ids));
+                }
             }
             self.Blocked.UnionWith(GridStationConfig.ValidateTerrain(GridStationConfig.ValidateDefinitions(Tables.Instance.DTStationConfig.DataList),
                 self.Stations.Values.Select(value => (GridStation)value).Select(s => new GridStationPlacement(s.DefinitionId, s.Cell, s.Orientation)),
