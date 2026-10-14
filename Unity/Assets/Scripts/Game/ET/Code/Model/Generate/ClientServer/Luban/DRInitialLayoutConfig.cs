@@ -22,6 +22,7 @@ public sealed partial class DRInitialLayoutConfig : Luban.BeanBase
         Orientation = _buf.ReadInt();
         Name = _buf.ReadString();
         InitialItemDefinitionId = _buf.ReadInt();
+        MenuVariant = _buf.ReadInt();
         PostInit();
     }
 
@@ -58,6 +59,10 @@ public sealed partial class DRInitialLayoutConfig : Luban.BeanBase
     /// InitialItemDefinitionId
     /// </summary>
     public readonly int InitialItemDefinitionId;
+    /// <summary>
+    /// MenuVariant
+    /// </summary>
+    public readonly int MenuVariant;
     public const int __ID__ = 1618505986;
     public override int GetTypeId() => __ID__;
 
@@ -76,6 +81,7 @@ public sealed partial class DRInitialLayoutConfig : Luban.BeanBase
         + "Orientation:" + Orientation + ","
         + "Name:" + Name + ","
         + "InitialItemDefinitionId:" + InitialItemDefinitionId + ","
+        + "MenuVariant:" + MenuVariant + ","
         + "}";
     }
 

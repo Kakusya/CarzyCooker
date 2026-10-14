@@ -87,6 +87,14 @@ public sealed class DRSupplyConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["MenuVariant"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  MenuVariant = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -116,6 +124,9 @@ public sealed class DRSupplyConfig :  Luban.EditorBeanBase
         }
         {
             _json["ReceivingLayoutId"] = new JSONNumber(ReceivingLayoutId);
+        }
+        {
+            _json["MenuVariant"] = new JSONNumber(MenuVariant);
         }
     }
 
@@ -170,6 +181,11 @@ public sealed class DRSupplyConfig :  Luban.EditorBeanBase
     /// ReceivingLayoutId
     /// </summary>
     public int ReceivingLayoutId;
+
+    /// <summary>
+    /// MenuVariant
+    /// </summary>
+    public int MenuVariant;
 
 }
 }

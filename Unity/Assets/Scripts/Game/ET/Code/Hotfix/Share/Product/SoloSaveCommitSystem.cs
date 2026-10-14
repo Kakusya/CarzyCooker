@@ -64,6 +64,7 @@ namespace ET
             Match match = self.Match; var binding = match.GetComponent<SoloSaveBinding>();
             if (binding == null) return "SaveModeRequired";
             if (level.Phase != LevelPhase.Completed) return "SuccessRequired";
+            if ((control.Intent.Action == LevelControlAction.FinishChapter) != level.IsChapterTerminal) return "WrongPhase";
             if (control.Intent.NextLevelConfigId != level.NextLevelConfigId) return "NextLevelChanged";
             var repository = self.Root().GetComponent<SoloSaveRepository>();
             if (repository == null || repository.SaveProfile() != binding.ProfileId) return "SaveRepositoryUnavailable";
@@ -77,7 +78,11 @@ namespace ET
                 {
                     SlotId = Guid.NewGuid().ToString("N"), ProfileId = binding.ProfileId, ResultId = Guid.NewGuid().ToString("N"),
                     SourceSlotId = binding.SourceSlotId, SourceRevision = binding.SourceRevision, CompletedLevelId = level.ConfigId,
-                    NextLevelId = level.NextLevelConfigId, Score = level.Score, Stars = level.Stars, SavedUtcTicks = DateTime.UtcNow.Ticks
+                    NextLevelId = level.NextLevelConfigId, Score = level.Score, Stars = level.Stars, SavedUtcTicks = DateTime.UtcNow.Ticks,
+                    RecordKind = level.IsChapterTerminal ? SoloSaveRecordKind.ChapterCompleted : SoloSaveRecordKind.Continue,
+                    ChapterId = Tables.Instance.DTLevelConfig.Get(level.ConfigId).ChapterId,
+                    ChapterStage = Tables.Instance.DTLevelConfig.Get(level.ConfigId).ChapterStage,
+                    ServedOrders = level.ServedOrders, UnfulfilledOrders = level.UnfulfilledOrders
                 };
                 try
                 {
@@ -90,7 +95,7 @@ namespace ET
             }
             result.Waiter = control.Peer; result.Command = control.Context;
             if (result.State == SoloSaveState.Committed)
-                return self.ApplyLevelControl(level, new LevelControlIntent(LevelControlAction.Continue, level.NextLevelConfigId));
+                return self.ApplyLevelControl(level, new LevelControlIntent(level.IsChapterTerminal ? LevelControlAction.FinishChapter : LevelControlAction.Continue, level.NextLevelConfigId));
             if (result.State != SoloSaveState.Writing)
             {
                 HostPeer peer = control.Peer; HostSessionComponent authority = peer.Authority;
@@ -123,7 +128,7 @@ namespace ET
                 HostPeer peer = result.Waiter; kitchen.Dirty = true;
                 if (peer == null || !kitchen.HasBinding(peer.MemberId, result.Command.BindingGeneration)) continue;
                 if (completion.Committed)
-                    self.Controls.Enqueue(new LevelControlEnvelope(result.Command, new LevelControlIntent(LevelControlAction.Continue, level.NextLevelConfigId), peer));
+                    self.Controls.Enqueue(new LevelControlEnvelope(result.Command, new LevelControlIntent(level.IsChapterTerminal ? LevelControlAction.FinishChapter : LevelControlAction.Continue, level.NextLevelConfigId), peer));
                 else peer.RecordProductResult(result.Command, ProductCommandKind.Level, GridResultStatus.Rejected, "SaveFailed");
             }
         }

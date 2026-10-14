@@ -123,6 +123,7 @@ namespace ET
                 self.AutoProcesses.Remove(batch.Id); batch.Dispose();
             }
             foreach (var item in contents) { self.Items.Remove(item.Id); item.Dispose(); }
+            self.ProductLevel()?.DrinkBindings.Remove(source.Id);
             source.Contents.Clear();
             var definition = Tables.Instance.DTGridItemConfig.Get(source.DefinitionId);
             if (definition.Kind == 1 || contents.Length == 0 && batch == null && definition.Discardable)

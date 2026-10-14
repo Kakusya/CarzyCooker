@@ -22,6 +22,9 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
         {int n0 = _buf.ReadSize(); AcceptedDefinitionIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); AcceptedDefinitionIds.Add(_e0);}}
         Form = _buf.ReadInt();
         Discardable = _buf.ReadBool();
+        AllowsEmptyContainers = _buf.ReadBool();
+        Disposable = _buf.ReadBool();
+        MenuVariant = _buf.ReadInt();
         PostInit();
     }
 
@@ -58,6 +61,18 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
     /// Discardable
     /// </summary>
     public readonly bool Discardable;
+    /// <summary>
+    /// AllowsEmptyContainers
+    /// </summary>
+    public readonly bool AllowsEmptyContainers;
+    /// <summary>
+    /// Disposable
+    /// </summary>
+    public readonly bool Disposable;
+    /// <summary>
+    /// MenuVariant
+    /// </summary>
+    public readonly int MenuVariant;
     public const int __ID__ = -1316266935;
     public override int GetTypeId() => __ID__;
 
@@ -76,6 +91,9 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
         + "AcceptedDefinitionIds:" + Luban.StringUtil.CollectionToString(AcceptedDefinitionIds) + ","
         + "Form:" + Form + ","
         + "Discardable:" + Discardable + ","
+        + "AllowsEmptyContainers:" + AllowsEmptyContainers + ","
+        + "Disposable:" + Disposable + ","
+        + "MenuVariant:" + MenuVariant + ","
         + "}";
     }
 

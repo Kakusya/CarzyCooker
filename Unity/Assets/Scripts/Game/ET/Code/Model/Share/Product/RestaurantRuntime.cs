@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace ET
 {
     public enum LevelPhase { Preparing = 1, Operating = 2, Draining = 3, Completed = 4 }
-    public enum LevelControlAction { Start = 1, Pause = 2, Resume = 3, Continue = 4, SaveAndContinue = 5 }
+    public enum LevelControlAction { Start = 1, Pause = 2, Resume = 3, Continue = 4, SaveAndContinue = 5, FinishChapter = 6 }
 
     public readonly struct LevelControlIntent : IEquatable<LevelControlIntent>
     {
@@ -39,6 +39,7 @@ namespace ET
         public long LastFrameTime;
         public long Accumulator;
         public bool Stopped;
+        public int MenuVariant;
         public readonly Queue<LevelControlEnvelope> Controls = new();
         public readonly Queue<LevelTransitionValue> Transitions = new();
         public readonly Queue<ProductTransitionIdentity> FinishedTransitions = new();
@@ -57,10 +58,14 @@ namespace ET
         public int ElapsedOperatingTicks;
         public int Score;
         public int Stars;
+        public int ServedOrders, UnfulfilledOrders;
+        public bool IsChapterTerminal;
         public int[] StarThresholds;
         public int[] AllowedDishIds;
         public int[] AllowedRenovationIds;
+        public int MenuVariant;
         public GridCell SpawnCell;
+        public readonly Dictionary<long, long> DrinkBindings = new();
         public long DrainingStartedTick;
         public long CompletionSerial;
         public long TransitionSerial;

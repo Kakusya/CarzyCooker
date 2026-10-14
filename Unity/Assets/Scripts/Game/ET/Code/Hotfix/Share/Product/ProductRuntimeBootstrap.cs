@@ -1,6 +1,7 @@
 #if !DOTNET
 using System;
 using System.Net;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Game;
 
@@ -11,14 +12,15 @@ namespace ET
     [FriendOf(typeof(Match))]
     public static class ProductRuntimeBootstrap
     {
-        public static void InitializeProduct(this ProductRuntimeComponent self, bool joinLocal = true) => self.InitializeProductCore(joinLocal, null, null, null);
+        public static void InitializeProduct(this ProductRuntimeComponent self, bool joinLocal = true, int menuVariant = 0) => self.InitializeProductCore(joinLocal, null, null, null, menuVariant);
 
-        public static void InitializeSavedProduct(this ProductRuntimeComponent self, string profile, SoloSaveHeader header = null, SoloSavePayload payload = null, bool joinLocal = true)
+        public static void InitializeSavedProduct(this ProductRuntimeComponent self, string profile, SoloSaveHeader header = null, SoloSavePayload payload = null, bool joinLocal = true, int menuVariant = 0)
         {
             if (self.Config.Role != RuntimeInstanceRole.Solo || !SoloSaveValidation.IsIdentifier(profile)) throw new InvalidOperationException("SoloSaveOnly");
             if (header != null) SoloSaveValidation.Payload(header, payload, profile);
             else if (payload != null) throw new InvalidOperationException("MissingSaveHeader");
-            self.InitializeProductCore(joinLocal, profile, header, payload);
+            if (header?.RecordKind == SoloSaveRecordKind.ChapterCompleted) throw new InvalidOperationException("ChapterCompleted");
+            self.InitializeProductCore(joinLocal, profile, header, payload, menuVariant);
         }
 
         public static void RegisterProductEntry(this ProductRuntimeComponent self)
@@ -32,7 +34,7 @@ namespace ET
             });
         }
 
-        private static void InitializeProductCore(this ProductRuntimeComponent self, bool joinLocal, string profile, SoloSaveHeader header, SoloSavePayload payload)
+        private static void InitializeProductCore(this ProductRuntimeComponent self, bool joinLocal, string profile, SoloSaveHeader header, SoloSavePayload payload, int menuVariant)
         {
             if ((Scene)self.HostScene != null || (Scene)self.ClientScene != null || self.Stage is ProductStage.Stopping or ProductStage.Stopped)
                 throw new InvalidOperationException("ProductAlreadyStarted");
@@ -55,11 +57,14 @@ namespace ET
                         BuffConfig.ValidateAll();
                         RenovationConfig.ValidateAll();
                     }
+                    var firstDefinition = header != null ? Tables.Instance.DTLevelConfig.Get(header.NextLevelId)
+                        : self.Config.Role == RuntimeInstanceRole.Solo ? Tables.Instance.DTLevelConfig.DataList.Single(row => row.ChapterId == 1 && row.ChapterStage == 1 && row.MenuVariant == menuVariant)
+                        : Tables.Instance.DTLevelConfig.Get(1);
                     Scene host = EntitySceneFactory.CreateScene(root, IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(), SceneType.ProductHost, "ProductHost");
                     self.HostScene = host;
                     Match match = host.AddChild<Match>();
                     if (profile != null) match.BindSoloSave(profile, header, payload);
-                    match.Restaurant = match.AddChild<RestaurantRuntime, DRLevelConfig>(Tables.Instance.DTLevelConfig.Get(header?.NextLevelId ?? 1));
+                    match.Restaurant = match.AddChild<RestaurantRuntime, DRLevelConfig>(firstDefinition);
                     HostSessionComponent authority = host.AddComponent<HostSessionComponent, Match, ProductRuntimeComponent>(match, self);
                     authority.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
                     self.Authority = authority;

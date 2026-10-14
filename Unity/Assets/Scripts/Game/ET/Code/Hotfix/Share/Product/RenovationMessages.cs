@@ -19,6 +19,7 @@ namespace ET
                 value.WorldGeneration = request.WorldGeneration; value.BindingGeneration = request.BindingGeneration;
                 value.LevelId = request.LevelId; value.LevelGeneration = request.LevelGeneration; value.CommandId = request.CommandId;
                 value.ChoiceVersion = request.ChoiceVersion; value.DefinitionId = request.DefinitionId;
+                value.TargetStationId = request.TargetStationId; value.ExpectedUpgradeLevel = request.ExpectedUpgradeLevel;
             });
             HostSessionComponent authority = peer.Authority;
             using var reply = (ChooseRenovationSubmitResponse)await peer.Root().GetComponent<ProcessInnerSender>().Call(authority.GetActorId(), inner, false);
@@ -48,7 +49,7 @@ namespace ET
                 : restaurant.QueueRenovationChoice(peer,
                     new ProductCommandContext(request.MatchId, request.WorldId, request.WorldGeneration, request.LevelId,
                         request.LevelGeneration, request.BindingGeneration, request.CommandId),
-                    new RenovationChoiceIntent(request.ChoiceVersion, request.DefinitionId));
+                    new RenovationChoiceIntent(request.ChoiceVersion, request.DefinitionId, request.TargetStationId, request.ExpectedUpgradeLevel));
             response.Error = error == null ? 0 : ProductError.InvalidRequest; response.Message = error ?? peer?.LastCommandReason;
             response.Status = (int)(error == null ? peer.LastCommandStatus : GridResultStatus.Rejected);
             return UniTask.CompletedTask;
@@ -58,7 +59,7 @@ namespace ET
     [FriendOf(typeof(GridClientComponent))]
     public static class RenovationClientCommands
     {
-        public static ChooseRenovationRequest CreateRenovationChoice(this GridClientComponent self, int definition, long version)
+        public static ChooseRenovationRequest CreateRenovationChoice(this GridClientComponent self, int definition, long version, long station = 0, int expectedLevel = 0)
         {
             if (!self.Confirmed) throw new InvalidOperationException("Grid projection is not ready");
             ClientSessionComponent client = self.GetParent<ClientSessionComponent>();
@@ -71,6 +72,7 @@ namespace ET
                 value.WorldGeneration = context.WorldGeneration; value.BindingGeneration = context.BindingGeneration;
                 value.LevelId = context.LevelId; value.LevelGeneration = context.LevelGeneration; value.CommandId = context.CommandId;
                 value.DefinitionId = definition; value.ChoiceVersion = version;
+                value.TargetStationId = station; value.ExpectedUpgradeLevel = expectedLevel;
             });
         }
     }

@@ -17,6 +17,8 @@ namespace ET
             int[] ids=pool??source.AllowedBuffIds.ToArray();buffer.WriteSize(ids.Length);foreach(int id in ids)buffer.WriteInt(id);
             buffer.WriteInt(count??source.CandidateCount);buffer.WriteBool(required??source.RequireBuffChoice);
             buffer.WriteSize(source.AllowedRenovationIds.Count);foreach(int id in source.AllowedRenovationIds)buffer.WriteInt(id);
+            buffer.WriteInt(source.ChapterId); buffer.WriteInt(source.ChapterStage); buffer.WriteBool(source.IsChapterTerminal);
+            buffer.WriteInt(source.MenuVariant); buffer.WriteSize(source.AllowedDrinkIds.Count); foreach (int drink in source.AllowedDrinkIds) buffer.WriteInt(drink);
             return new DRLevelConfig(buffer);
         }
         private void InstallBuffLevel(DRLevelConfig definition)
@@ -41,17 +43,17 @@ namespace ET
         private DRBuffConfig BuffDefinition(int id,int numerator=1,int denominator=2,int kind=1,int recipe=1)
         {
             var buffer=new Luban.ByteBuf();buffer.WriteInt(id);buffer.WriteString("测试加成");buffer.WriteInt(kind);
-            buffer.WriteInt(numerator);buffer.WriteInt(denominator);buffer.WriteInt(recipe);return new DRBuffConfig(buffer);
+            buffer.WriteInt(numerator);buffer.WriteInt(denominator);buffer.WriteInt(recipe);buffer.WriteInt(0);buffer.WriteInt(0);return new DRBuffConfig(buffer);
         }
 
         [Test]
         public void SoloBuffConfigActualSourceHasThreeCookingVariantsAndRequiredTwoCandidates()
         {
-            BuffConfig.ValidateAll();Assert.That(Tables.Instance.DTBuffConfig.DataList.Count,Is.EqualTo(3));
-            foreach(DRBuffConfig row in Tables.Instance.DTBuffConfig.DataList)
+            BuffConfig.ValidateAll();Assert.That(Tables.Instance.DTBuffConfig.DataList.Count,Is.EqualTo(5));
+            foreach(DRBuffConfig row in Tables.Instance.DTBuffConfig.DataList.Where(row => row.Id <= 3))
             {Assert.That(row.EffectKind,Is.EqualTo(1));Assert.That(row.BatchRecipeId,Is.EqualTo(1));Assert.That(row.DurationNumerator,Is.LessThan(row.DurationDenominator));}
             foreach(DRLevelConfig row in Tables.Instance.DTLevelConfig.DataList)
-            {Assert.That(row.RequireBuffChoice,Is.True);Assert.That(row.CandidateCount,Is.EqualTo(2));Assert.That(row.AllowedBuffIds,Is.EqualTo(new[]{1,2,3}));}
+            {Assert.That(row.RequireBuffChoice,Is.True);Assert.That(row.CandidateCount,Is.EqualTo(2));Assert.That(row.AllowedBuffIds,Is.EqualTo(new[]{1,2,3,4,5}));}
             StartSolo(liveBuff:true);Assert.That(Buff.Parent,Is.SameAs(CurrentLevel));Assert.That(Buff.SelectedId,Is.Zero);
         }
         [TestCase("numerator")]
@@ -68,14 +70,14 @@ namespace ET
         [Test]
         public void SoloBuffConfigRequiredEmptyPoolRejectsBeforeHostCreation()
         {
-            InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(1),pool:Array.Empty<int>()));
+            InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(101),pool:Array.Empty<int>()));
             Assert.Throws<InvalidOperationException>(()=>StartSolo(liveBuff:true));
             Assert.That((Scene)host.HostScene,Is.Null);Assert.That((HostSessionComponent)host.Authority,Is.Null);
         }
         [Test]
         public void SoloBuffConfigOptionalEmptyPoolCanActuallyStartWithoutChoice()
         {
-            InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(1),required:false,pool:Array.Empty<int>()));
+            InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(101),required:false,pool:Array.Empty<int>()));
             StartSolo(liveBuff:true);Assert.That(Buff.Candidates,Is.Empty);LevelDo(LevelControlAction.Start);
             Assert.That(CurrentLevel.Phase,Is.EqualTo(LevelPhase.Operating));Assert.That(Buff.SelectedId,Is.Zero);
         }
@@ -170,6 +172,7 @@ namespace ET
         [Test]
         public void SoloBuffCookingNewRealSoupFreezesSelectedDurationAndPausesNormally()
         {
+            InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(101), pool: new[] { 1, 2, 3 }));
             StartSolo(liveBuff:true);BuffDo(Buff.Candidates[0]);DRBuffConfig definition=Tables.Instance.DTBuffConfig.Get(Buff.SelectedId);
             long pot=SoupFillPot(host.Client);GridAutoProcess batch=SoupBegin(host.Client,pot);
             int expected=BuffConfig.ScaleTicks(Tables.Instance.DTGridAutoRecipeConfig.Get(batch.RecipeId).RequiredTicks,definition.DurationNumerator,definition.DurationDenominator);
@@ -187,7 +190,7 @@ namespace ET
         [Test]
         public void SoloBuffCookingCarryKeepsOldBatchAndRejectsOldLevelChoiceWithoutInheritance()
         {
-            InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(1),duration:20));StartSolo(liveBuff:true);
+            InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(101),duration:20,pool:new[]{1,2,3}));StartSolo(liveBuff:true);
             BuffDo(Buff.Candidates[0]);var projection=((ClientSessionComponent)host.Client).GetComponent<GridClientComponent>();
             long pot=SoupFillPot(host.Client);GridAutoProcess batch=SoupBegin(host.Client,pot);int required=batch.RequiredTicks;
             long level=CurrentLevel.Id,generation=CurrentLevel.Generation;int oldChoice=Buff.SelectedId;

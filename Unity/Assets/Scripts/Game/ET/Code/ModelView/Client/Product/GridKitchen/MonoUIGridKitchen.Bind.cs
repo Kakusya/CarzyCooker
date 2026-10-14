@@ -17,6 +17,10 @@ namespace ET.Client
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.RectTransform m_ControlPanelRectTransform;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.UI.Text m_DetailsText;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.RectTransform m_DetailsPanelRectTransform;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Text m_HandText;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Text m_HintText;
@@ -29,6 +33,8 @@ namespace ET.Client
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Text m_PhaseText;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.RectTransform m_PrimaryActionsRectTransform;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Text m_ScoreText;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Text m_SettlementText;
@@ -36,6 +42,8 @@ namespace ET.Client
         private UnityEngine.RectTransform m_SettlementPanelRectTransform;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Text m_StatusText;
+        [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
+        private UnityEngine.UI.Text m_TargetText;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
         private UnityEngine.UI.Button m_TargetTemplateButton;
         [UnityEngine.SerializeField, Sirenix.OdinInspector.FoldoutGroup("Binding Targets"), Sirenix.OdinInspector.ReadOnly]
@@ -49,16 +57,20 @@ namespace ET.Client
         public UnityEngine.RectTransform CameraDragAreaRectTransform => this.m_CameraDragAreaRectTransform;
         public UnityEngine.UI.Text ClockText => this.m_ClockText;
         public UnityEngine.RectTransform ControlPanelRectTransform => this.m_ControlPanelRectTransform;
+        public UnityEngine.UI.Text DetailsText => this.m_DetailsText;
+        public UnityEngine.RectTransform DetailsPanelRectTransform => this.m_DetailsPanelRectTransform;
         public UnityEngine.UI.Text HandText => this.m_HandText;
         public UnityEngine.UI.Text HintText => this.m_HintText;
         public UnityEngine.RectTransform OrderActionsRectTransform => this.m_OrderActionsRectTransform;
         public UnityEngine.RectTransform OrderPanelRectTransform => this.m_OrderPanelRectTransform;
         public UnityEngine.UI.Text OrdersText => this.m_OrdersText;
         public UnityEngine.UI.Text PhaseText => this.m_PhaseText;
+        public UnityEngine.RectTransform PrimaryActionsRectTransform => this.m_PrimaryActionsRectTransform;
         public UnityEngine.UI.Text ScoreText => this.m_ScoreText;
         public UnityEngine.UI.Text SettlementText => this.m_SettlementText;
         public UnityEngine.RectTransform SettlementPanelRectTransform => this.m_SettlementPanelRectTransform;
         public UnityEngine.UI.Text StatusText => this.m_StatusText;
+        public UnityEngine.UI.Text TargetText => this.m_TargetText;
         public UnityEngine.UI.Button TargetTemplateButton => this.m_TargetTemplateButton;
         public UnityEngine.RectTransform TargetsRectTransform => this.m_TargetsRectTransform;
         public UnityEngine.UI.Text WorkText => this.m_WorkText;
@@ -78,16 +90,20 @@ namespace ET.Client
             if (this.m_CameraDragAreaRectTransform == null) return true;
             if (this.m_ClockText == null) return true;
             if (this.m_ControlPanelRectTransform == null) return true;
+            if (this.m_DetailsText == null) return true;
+            if (this.m_DetailsPanelRectTransform == null) return true;
             if (this.m_HandText == null) return true;
             if (this.m_HintText == null) return true;
             if (this.m_OrderActionsRectTransform == null) return true;
             if (this.m_OrderPanelRectTransform == null) return true;
             if (this.m_OrdersText == null) return true;
             if (this.m_PhaseText == null) return true;
+            if (this.m_PrimaryActionsRectTransform == null) return true;
             if (this.m_ScoreText == null) return true;
             if (this.m_SettlementText == null) return true;
             if (this.m_SettlementPanelRectTransform == null) return true;
             if (this.m_StatusText == null) return true;
+            if (this.m_TargetText == null) return true;
             if (this.m_TargetTemplateButton == null) return true;
             if (this.m_TargetsRectTransform == null) return true;
             if (this.m_WorkText == null) return true;

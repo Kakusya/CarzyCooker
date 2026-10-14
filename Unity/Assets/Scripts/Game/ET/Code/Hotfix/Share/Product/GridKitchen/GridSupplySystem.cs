@@ -5,6 +5,8 @@ namespace ET
 {
     [EntitySystemOf(typeof(KitchenSupply))]
     [FriendOf(typeof(KitchenSupply))]
+    [FriendOf(typeof(GridKitchenComponent))]
+    [FriendOf(typeof(RestaurantRuntime))]
     public static partial class KitchenSupplySystem
     {
         [EntitySystem]
@@ -12,7 +14,9 @@ namespace ET
         {
             self.RemainingPackages.Clear(); self.Commands.Clear();
             self.Transitions.Clear(); self.Outcomes.Clear();
-            foreach (DRSupplyConfig source in Tables.Instance.DTSupplyConfig.DataList)
+            var kitchen = self.GetParent<GridKitchenComponent>(); RestaurantRuntime restaurant = kitchen.Restaurant;
+            int variant = restaurant?.MenuVariant ?? 0;
+            foreach (DRSupplyConfig source in Tables.Instance.DTSupplyConfig.DataList.Where(source => source.MenuVariant == 0 || source.MenuVariant == variant))
                 self.RemainingPackages.Add(source.Id, source.AvailablePackages);
         }
     }
@@ -73,7 +77,7 @@ namespace ET
                 {
                     DRSupplyConfig source = Tables.Instance.DTSupplyConfig.GetOrDefault(intent.SourceId);
                     GridStation receiving = kitchen.SupplyReceivingStation(intent.SourceId);
-                    error = level.Phase == LevelPhase.Draining ? "WrongPhase" : source == null || receiving == null ? "InvalidSupply"
+                    error = level.Phase == LevelPhase.Draining ? "WrongPhase" : source == null || receiving == null || !supply.RemainingPackages.ContainsKey(source.Id) ? "InvalidSupply"
                         : intent.Quantity <= 0 ? "InvalidQuantity" : supply.RemainingPackages[source.Id] < intent.Quantity ? "SupplyExhausted" : null;
                     if (error == null)
                     {

@@ -1,4 +1,5 @@
 #if !DOTNET
+using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 
@@ -20,6 +21,7 @@ namespace ET
                 message.CommandId = request.CommandId; message.Action = request.Action; message.X = request.X; message.Y = request.Y;
                 message.TargetId = request.TargetId; message.ExpectedItemId = request.ExpectedItemId;
                 message.ExpectedTargetItemId = request.ExpectedTargetItemId; message.ExpectedProcessId = request.ExpectedProcessId;
+                message.ExpectedOrderId = request.ExpectedOrderId;
                 message.LevelId = request.LevelId; message.LevelGeneration = request.LevelGeneration;
                 message.ExpectedContentIds.AddRange(request.ExpectedContentIds);
                 message.ExpectedRemainingPortions = request.ExpectedRemainingPortions; message.ExpectedLayoutVersion = request.ExpectedLayoutVersion;
@@ -52,7 +54,7 @@ namespace ET
                     .Validate(match.MatchId, grid.WorldId, grid.WorldGeneration, level?.Id ?? 0, level?.Generation ?? 0, peer.Generation)
                     ?? grid.SubmitGridIntent(peer.MemberId, peer.Generation, new GridIntent(request.CommandId, (GridAction)request.Action,
                         new GridCell(request.X, request.Y), request.TargetId, request.ExpectedItemId, request.ExpectedTargetItemId, request.ExpectedProcessId,
-                        request.ExpectedContentIds, request.ExpectedRemainingPortions, request.ExpectedLayoutVersion));
+                        request.ExpectedContentIds, request.ExpectedRemainingPortions, request.ExpectedLayoutVersion, expectedOrderId: request.ExpectedOrderId));
             response.CommandId = request.CommandId;
             response.Error = reason == null ? 0 : ProductError.InvalidRequest;
             response.Message = reason ?? peer.LastCommandReason;
@@ -94,6 +96,7 @@ namespace ET
                 value.LevelPhase = (int)(level?.Phase ?? default); value.LevelPaused = level?.Paused ?? false;
                 value.LevelOperatingTicks = level?.OperatingTicks ?? 0; value.LevelElapsedTicks = level?.ElapsedOperatingTicks ?? 0;
                 value.LevelScore = level?.Score ?? 0; value.LevelStars = level?.Stars ?? 0;
+                value.ServedOrders = level?.ServedOrders ?? 0; value.UnfulfilledOrders = level?.UnfulfilledOrders ?? 0;
                 value.LevelConfigId = level?.ConfigId ?? 0; value.NextLevelConfigId = level?.NextLevelConfigId ?? 0;
                 value.LastCommandId = peer.LastCommandContext.CommandId; value.LastCommandKind = (int)peer.LastCommandKind;
                 value.LastCommandStatus = (int)peer.LastCommandStatus; value.LastCommandReason = peer.LastCommandReason;
@@ -123,6 +126,7 @@ namespace ET
                     value.DefinitionId = station.DefinitionId; value.Orientation = station.Orientation;
                     value.Capabilities = (int)station.Capabilities; value.ItemSlotCapacity = station.ItemSlotCapacity;
                     value.BakeProcessId = station.BakeProcessId;
+                    value.UpgradeDefinitionId = station.UpgradeDefinitionId; value.UpgradeLevel = station.UpgradeLevel;
                     var definition = Tables.Instance.DTStationConfig.Get(station.DefinitionId);
                     value.WaterDefinitionId = definition.WaterDefinitionId; value.WaterUnits = definition.WaterUnits;
                 });
@@ -136,6 +140,7 @@ namespace ET
                 state.Contents.AddRange(item.Contents); snapshot.Items.Add(state);
                 var definition = Tables.Instance.DTGridItemConfig.Get(item.DefinitionId);
                 state.Form = definition.Form; state.Discardable = definition.Discardable;
+                state.BoundOrderId = world.ProductLevel()?.DrinkBindings.GetValueOrDefault(item.Id) ?? 0;
             }
             foreach (GridManualProcess p in world.Processes.Values.Select(value => (GridManualProcess)value))
                 snapshot.Processes.Add(ProductMessages.Create<GridManualProcessState>(value =>
@@ -152,6 +157,7 @@ namespace ET
                     value.StartedTick = process.StartedTick; value.RequiredTicks = process.RequiredTicks; value.ProgressTicks = process.ProgressTicks;
                     value.OutputDefinitionId = process.OutputDefinitionId; value.TotalPortions = process.TotalPortions; value.RemainingPortions = process.RemainingPortions;
                     value.ServingContainerDefinitionId = process.ServingContainerDefinitionId; value.State = (int)process.State;
+                    value.RequiredCapability = process.RequiredCapability; value.LockContainer = process.LockContainer;
                 });
                 state.InputItemIds.AddRange(process.InputItemIds); snapshot.AutoProcesses.Add(state);
             }
@@ -185,6 +191,11 @@ namespace ET
                 snapshot.RenovationCandidates.AddRange(renovation.Candidates); snapshot.SelectedRenovationId = renovation.SelectedDefinitionId;
                 snapshot.RenovationChoiceVersion = renovation.ChoiceVersion; snapshot.RenovationLevelId = renovation.ResultLevelId;
                 snapshot.RenovationLevelGeneration = renovation.ResultLevelGeneration;
+                snapshot.SelectedUpgradeStationId = ((GridStation)renovation.PendingUpgradeStation)?.Id ?? 0;
+                snapshot.PendingUpgradeExpectedLevel = renovation.PendingUpgradeExpectedLevel;
+                foreach (var target in renovation.UpgradeTargets)
+                    snapshot.UpgradeTargets.Add(ProductMessages.Create<GridRenovationUpgradeTarget>(value =>
+                    { value.DefinitionId = target.DefinitionId; value.StationId = target.StationId; value.ExpectedLevel = target.ExpectedLevel; }));
                 foreach (var applied in renovation.AppliedStations)
                 {
                     var state = ProductMessages.Create<GridRenovationAppliedState>(value => value.DefinitionId = applied.Key);

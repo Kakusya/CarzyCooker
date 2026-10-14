@@ -17,7 +17,8 @@ namespace ET.Client
         {
             CameraDragAreaRectTransform.gameObject.SetActive(true);
             if(font==null)font = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "Noto Sans CJK SC", "Arial" }, 34);
-            foreach(Text text in new[]{StatusText,HandText,HintText,PhaseText,ClockText,ScoreText,WorkText,OrdersText,BuffText,SettlementText})text.font=font;
+            foreach(Text text in new[]{StatusText,HandText,HintText,PhaseText,ClockText,ScoreText,WorkText,OrdersText,BuffText,SettlementText,TargetText,DetailsText})text.font=font;
+            DetailsPanelRectTransform.gameObject.SetActive(false);
             HintText.text = "点击地面行走 · 拖动查看餐厅 · 点击台面拿放";
         }
         public Rect MapViewport()
@@ -36,15 +37,29 @@ namespace ET.Client
         {
             foreach(Button button in buttons){button.onClick.RemoveAllListeners();button.gameObject.SetActive(false);Destroy(button.gameObject);}buttons.Clear();
         }
-        public void AddTarget(string label, Action action)
-            =>AddButton(TargetsRectTransform,label,action);
+        public void SetInformation(string target, string details, bool showDetails, bool showOrders)
+        {
+            TargetText.text=target;
+            DetailsText.text=details;
+            DetailsPanelRectTransform.gameObject.SetActive(showDetails);
+            if (!BuffPanelRectTransform.gameObject.activeSelf && !SettlementPanelRectTransform.gameObject.activeSelf)
+            {
+                OrderPanelRectTransform.gameObject.SetActive(showOrders);
+            }
+        }
+        public void AddTarget(string label, Action action, bool primary=false)
+            =>AddButton(primary?PrimaryActionsRectTransform:TargetsRectTransform,label,action,primary);
         public void AddControl(string label,Action action)=>AddButton(ControlPanelRectTransform,label,action);
         public void AddOrderAction(string label,Action action)=>AddButton(OrderActionsRectTransform,label,action);
         public void AddBuffAction(string label,Action action)=>AddButton(BuffActionsRectTransform,label,action);
-        private void AddButton(RectTransform parent,string label,Action action)
+        private void AddButton(RectTransform parent,string label,Action action,bool primary=false)
         {
             Button button=Instantiate(TargetTemplateButton,parent);button.gameObject.SetActive(true);
             Text caption=button.GetComponentInChildren<Text>();caption.font=font;caption.fontSize=24;caption.resizeTextForBestFit=true;caption.resizeTextMinSize=16;caption.resizeTextMaxSize=24;caption.text=label;
+            if(primary)
+            {
+                ColorBlock colors=button.colors;colors.normalColor=new Color(.58f,.85f,.76f);colors.highlightedColor=new Color(.72f,.96f,.86f);button.colors=colors;
+            }
             Func<bool> guard=inputGuard;
             button.onClick.AddListener(()=>{if(guard==null || guard())action();});buttons.Add(button);
             GridLayoutGroup layout=parent.GetComponent<GridLayoutGroup>();

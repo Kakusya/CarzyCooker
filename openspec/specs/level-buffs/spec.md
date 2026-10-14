@@ -2,7 +2,7 @@
 
 ## Purpose
 
-定义单机关卡准备阶段随机展示候选并由玩家选择一个的行为，使候选、选择和效果属于当前关卡，避免重开界面刷候选、重复选择叠加效果或换关后继承旧选择。
+定义 Solo／Host 关卡准备阶段随机展示候选并由玩家选择一个的行为，使候选、选择和效果属于当前关卡，避免重开界面刷候选、重复选择叠加效果或换关后继承旧选择。
 
 ## Requirements
 
@@ -42,7 +42,30 @@
 - **WHEN** 下一关准备阶段收到上一关的选择请求
 - **THEN** 明确拒绝，下一关候选和已选状态保持不变
 
+### Requirement: 切配与烘焙效果目标明确
+Buff SHALL 支持配置指定手工切配或烘焙配方的耗时改善，效果类型与目标配方必须匹配，比例必须有效；不匹配的配置不得进入候选。
+
+#### Scenario: 配方种类不匹配
+- **WHEN** 手工切配效果引用烘焙配方
+- **THEN** 配置验证失败，不在选 Buff 时静默忽略或影响其他作业
+
+### Requirement: 各类新作业冻结有效耗时
+切配和烘焙作业 MUST 在实际启动时依据当时选中效果确定耗时，向上取整且至少一个业务 Tick；已开始作业跨暂停、换关或 Buff 重置均保留原耗时。
+
+#### Scenario: 有效效果生效前后启动
+- **WHEN** 同配方分别在无效果和匹配效果下开始，随后换关
+- **THEN** 各作业保持自己启动时的耗时，旧作业不被新关再次缩短
+
+### Requirement: 合作效果选择与显示一致
+合作中的 Buff 选择 MUST 保持 Host 控制权限，双方只读相同已选效果及作业冻结耗时；远端不得通过直接请求越权选择。
+
+#### Scenario: 远端选择切配效果
+- **WHEN** 远端 Client 提交选择请求
+- **THEN** 明确拒绝且世界不变，Host 合法选择后双方显示相同结果
+
 ## Sources
+
+- [level-buff-variety 运行记录](../../changes/archive/2026-10-14-level-buff-variety/execution-notes.md)。
 
 - [当前实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/LevelBuffSystem.cs)。
 - [solo-random-level-buffs 执行与验收记录](../../changes/archive/2026-10-13-solo-random-level-buffs/execution-notes.md)。

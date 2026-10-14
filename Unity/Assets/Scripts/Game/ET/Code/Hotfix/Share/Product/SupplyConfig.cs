@@ -23,10 +23,12 @@ namespace ET
                 if (row.Id <= 0 || !sources.TryAdd(row.Id, row) || string.IsNullOrWhiteSpace(row.Name) || row.PackageUnits <= 0 ||
                     row.AvailablePackages <= 0 || row.TransitTicks <= 0 || (long)row.PackageUnits * row.AvailablePackages > int.MaxValue ||
                     !raw.Add(row.MaterialDefinitionId) || !packages.Add(row.PackageDefinitionId) ||
-                    !items.TryGetValue(row.MaterialDefinitionId, out var material) || material.Kind != 1 || material.Form != (int)GridMaterialForm.Solid ||
+                    row.MenuVariant is not (0 or 1) || !items.TryGetValue(row.MaterialDefinitionId, out var material) ||
+                    !(material.Kind == 1 && material.Form == (int)GridMaterialForm.Solid || material.Kind == 2 && material.Disposable && material.Form == (int)GridMaterialForm.Container) ||
                     produced.Contains(material.Id) || !items.TryGetValue(row.PackageDefinitionId, out var package) ||
                     package.Kind != 2 || package.Form != (int)GridMaterialForm.Container || !package.Discardable ||
                     package.ContainerCapacity < row.PackageUnits || !package.AcceptedDefinitionIds.SequenceEqual(new[] { material.Id }) ||
+                    package.MenuVariant != row.MenuVariant || material.MenuVariant != row.MenuVariant || material.Kind == 2 && !package.AllowsEmptyContainers ||
                     !layouts.TryGetValue(row.ReceivingLayoutId, out var receiving) ||
                     !stations.TryGetValue(receiving.StationDefinitionId, out var station) || station.Kind != (int)GridStationKind.Counter || station.ItemSlotCapacity != 1)
                     throw new InvalidOperationException($"Invalid supply / package / receiving reference {row.Id}");

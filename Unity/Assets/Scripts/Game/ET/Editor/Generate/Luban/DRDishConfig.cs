@@ -63,6 +63,14 @@ public sealed class DRDishConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["RequiresOrderBinding"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsBoolean) { throw new SerializationException(); }  RequiresOrderBinding = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -83,6 +91,9 @@ public sealed class DRDishConfig :  Luban.EditorBeanBase
         }
         {
             _json["FinalStageId"] = new JSONNumber(FinalStageId);
+        }
+        {
+            _json["RequiresOrderBinding"] = new JSONBool(RequiresOrderBinding);
         }
     }
 
@@ -122,6 +133,11 @@ public sealed class DRDishConfig :  Luban.EditorBeanBase
     /// FinalStageId
     /// </summary>
     public int FinalStageId;
+
+    /// <summary>
+    /// RequiresOrderBinding
+    /// </summary>
+    public bool RequiresOrderBinding;
 
 }
 }

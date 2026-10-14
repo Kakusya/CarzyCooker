@@ -16,6 +16,8 @@ namespace ET.Client
         private static void Awake(this SoloSavePresentation self)
         {
             self.Hud = default; self.Headers = Array.Empty<SoloSaveHeader>(); self.Failure = null; self.Epoch = 0;
+            self.ViewedResult = null;
+            self.NewMenuVariant = 1;
             self.LoadingHud = false; self.LoadingSelection = false; self.Started = false;
             self.OpenSoloSelection();
         }
@@ -104,6 +106,8 @@ namespace ET.Client
             view.StatusText.text = self.LoadingSelection ? "正在读取并校验检查点…" : "选择新开餐厅，或继续一份本机记录";
             view.HandText.text = "保存只新建，不覆盖原记录"; view.WorkText.text = ""; view.HintText.text = "本机 PC 单机 · 内存试玩退出后不保留";
             view.SettlementText.text = self.Failure == null ? "检查点恢复完整厨房，并进入下一关准备阶段" : "读取失败，尚未创建餐厅。可以重新选择或重试。";
+            if (self.ViewedResult != null)
+                view.SettlementText.text = $"大关 {self.ViewedResult.ChapterId} 已完成 · 第 {self.ViewedResult.ChapterStage} 关\n成功 {self.ViewedResult.ServedOrders} 单 · 未满足 {self.ViewedResult.UnfulfilledOrders} 单\n{self.ViewedResult.Score} 分 · {self.ViewedResult.Stars} 星\n此记录仅供查看，选择新开餐厅可开始独立的一轮";
             if (self.Failure != null) view.StatusText.text = self.Failure switch
             {
                 "UnsupportedVersion" => "此记录版本不受支持，请选择其他记录",
@@ -122,7 +126,7 @@ namespace ET.Client
             {
                 var header = self.Headers[index];
                 string slot = header.SlotId;
-                string label = $"继续 记录{index + 1} · 关{header.NextLevelId} · {header.Stars}星 · {new DateTime(header.SavedUtcTicks > 0 && header.SavedUtcTicks <= DateTime.MaxValue.Ticks ? header.SavedUtcTicks : 1).ToLocalTime():MM-dd HH:mm}";
+                string label = $"{(header.RecordKind == SoloSaveRecordKind.ChapterCompleted ? "查看完成" : "继续")} 记录{index + 1} · {(header.RecordKind == SoloSaveRecordKind.ChapterCompleted ? "大关已完成" : "关" + header.NextLevelId)} · {header.Stars}星 · {new DateTime(header.SavedUtcTicks > 0 && header.SavedUtcTicks <= DateTime.MaxValue.Ticks ? header.SavedUtcTicks : 1).ToLocalTime():MM-dd HH:mm}";
                 view.AddTarget(label, () => { SoloSavePresentation current = original; current?.ChooseSoloSave(slot); });
             }
             if (self.Headers.Length == 0) view.SettlementText.text += "\n当前没有可继续的记录";
@@ -136,7 +140,7 @@ namespace ET.Client
                 ProductRuntimeComponent runtime = self.Root().GetComponent<ProductRuntimeComponent>();
                 string profile = persistent ? self.Repository().SaveProfile() : null;
                 self.Started = true; self.CloseSoloSelection();
-                if (persistent) runtime.InitializeSavedProduct(profile); else runtime.InitializeProduct();
+                if (persistent) runtime.InitializeSavedProduct(profile, menuVariant: self.NewMenuVariant); else runtime.InitializeProduct(menuVariant: self.NewMenuVariant);
             }
             catch (Exception e) { self.Started = false; self.Failure = e.Message; self.OpenSoloSelection(); }
         }
@@ -161,6 +165,10 @@ namespace ET.Client
                     ProductRuntimeComponent runtime = self.Root().GetComponent<ProductRuntimeComponent>();
                     // Guard all value data again after await, before closing the selector or creating Host.
                     SoloSaveValidation.Payload(header, payload, repository.SaveProfile());
+                    if (header.RecordKind == SoloSaveRecordKind.ChapterCompleted)
+                    {
+                        self.ViewedResult = header; self.LoadingSelection = false; self.RenderSoloSelection(); return;
+                    }
                     self.Started = true; self.CloseSoloSelection(); runtime.InitializeSavedProduct(repository.SaveProfile(), header, payload);
                 }
                 catch (OperationCanceledException) { }
@@ -173,6 +181,6 @@ namespace ET.Client
     public sealed class SoloSaveSelectionView : AEvent<Scene, SoloSaveSelectionRequested>
     {
         protected override UniTask Run(Scene scene, SoloSaveSelectionRequested args)
-        { scene.AddComponent<SoloSavePresentation>(); return UniTask.CompletedTask; }
+        { scene.RemoveComponent<SoloSavePresentation>(); scene.AddComponent<SoloSavePresentation>(); return UniTask.CompletedTask; }
     }
 }

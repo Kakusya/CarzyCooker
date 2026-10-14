@@ -18,6 +18,7 @@ namespace ET.Client
             if (grid.RenovationApplied.Count > 0)
                 view.HintText.text += " · 已装修：" + string.Join("、",grid.RenovationApplied.Keys.OrderBy(value=>value).Select(id=>Tables.Instance.DTRenovationConfig.Get(id).Name));
             if (grid.LevelPhase != LevelPhase.Completed) return;
+            if (Tables.Instance.DTLevelConfig.Get(grid.LevelConfigId).IsChapterTerminal) return;
             if (!RenovationReadyForContinue(grid))
             {
                 view.SettlementText.text = $"本关完成\n{grid.LevelScore} 分 · {grid.LevelStars} 星\n正在准备装修候选";
@@ -42,11 +43,21 @@ namespace ET.Client
             foreach (int id in grid.RenovationCandidates)
             {
                 string name = Tables.Instance.DTRenovationConfig.Get(id).Name;
+                if (Tables.Instance.DTRenovationConfig.Get(id).RewardKind == 2)
+                {
+                    foreach (var target in grid.UpgradeTargets.Where(target => target.DefinitionId == id))
+                    {
+                        if (!grid.Stations.TryGetValue(target.StationId, out var station)) continue;
+                        view.AddTarget($"装修 {name} → {station.Name} ({station.Cell.X},{station.Cell.Y}) · 等级 {target.ExpectedLevel}→1",
+                            () => { GridPresentationComponent current = selfRef; current?.SendRenovationChoice(id, version, level, generation, target.StationId, target.ExpectedLevel); });
+                    }
+                    continue;
+                }
                 view.AddTarget("装修 " + name, () => { GridPresentationComponent current = selfRef; current?.SendRenovationChoice(id, version, level, generation); });
             }
         }
 
-        public static void SendRenovationChoice(this GridPresentationComponent self, int definition, long choiceVersion, long expectedLevel, long expectedGeneration)
+        public static void SendRenovationChoice(this GridPresentationComponent self, int definition, long choiceVersion, long expectedLevel, long expectedGeneration, long station = 0, int upgradeLevel = 0)
         {
             var owner = self.GridCommandOwner(); if (owner == null) return;
             EntityRef<GridPresentationComponent> selfRef = self;
@@ -56,7 +67,8 @@ namespace ET.Client
                 GridClientComponent grid = client.GetComponent<GridClientComponent>(); EntityRef<GridClientComponent> gridRef = grid;
                 if (grid.LevelId != expectedLevel || grid.LevelGeneration != expectedGeneration || grid.RenovationChoiceVersion != choiceVersion ||
                     grid.SelectedRenovationId != 0 || grid.LevelPhase != LevelPhase.Completed) return;
-                ChooseRenovationRequest request = grid.CreateRenovationChoice(definition, choiceVersion);
+                if (station != 0 && (!grid.Stations.TryGetValue(station, out var projected) || projected.UpgradeLevel != upgradeLevel)) return;
+                ChooseRenovationRequest request = grid.CreateRenovationChoice(definition, choiceVersion, station, upgradeLevel);
                 long command = request.CommandId, worldGeneration = grid.WorldGeneration;
                 try
                 {

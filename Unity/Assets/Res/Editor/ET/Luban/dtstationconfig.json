@@ -211,5 +211,51 @@
     "Capabilities": 512,
     "WaterDefinitionId": 0,
     "WaterUnits": 0
+  },
+  {
+    "Id": 10,
+    "Name": "榨汁机",
+    "Kind": 9,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 1024,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
+  },
+  {
+    "Id": 11,
+    "Name": "贴单台",
+    "Kind": 10,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 2048,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
   }
 ]

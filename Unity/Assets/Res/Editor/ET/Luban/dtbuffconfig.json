@@ -5,7 +5,9 @@
     "EffectKind": 1,
     "DurationNumerator": 3,
     "DurationDenominator": 4,
-    "BatchRecipeId": 1
+    "BatchRecipeId": 1,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 0
   },
   {
     "Id": 2,
@@ -13,7 +15,9 @@
     "EffectKind": 1,
     "DurationNumerator": 2,
     "DurationDenominator": 3,
-    "BatchRecipeId": 1
+    "BatchRecipeId": 1,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 0
   },
   {
     "Id": 3,
@@ -21,6 +25,28 @@
     "EffectKind": 1,
     "DurationNumerator": 1,
     "DurationDenominator": 2,
-    "BatchRecipeId": 1
+    "BatchRecipeId": 1,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 4,
+    "Name": "利落切配",
+    "EffectKind": 2,
+    "DurationNumerator": 1,
+    "DurationDenominator": 2,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 1,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 5,
+    "Name": "均匀烘焙",
+    "EffectKind": 3,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 1
   }
 ]

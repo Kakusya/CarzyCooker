@@ -17,14 +17,21 @@
     "AllowedBuffIds": [
       1,
       2,
-      3
+      3,
+      4,
+      5
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
       1,
       2
-    ]
+    ],
+    "ChapterId": 0,
+    "ChapterStage": 0,
+    "IsChapterTerminal": false,
+    "MenuVariant": 0,
+    "AllowedDrinkIds": []
   },
   {
     "Id": 2,
@@ -44,13 +51,232 @@
     "AllowedBuffIds": [
       1,
       2,
-      3
+      3,
+      4,
+      5
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
       1,
       2
+    ],
+    "ChapterId": 0,
+    "ChapterStage": 0,
+    "IsChapterTerminal": false,
+    "MenuVariant": 0,
+    "AllowedDrinkIds": []
+  },
+  {
+    "Id": 101,
+    "NextLevelConfigId": 102,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 0,
+    "AllowedDrinkIds": []
+  },
+  {
+    "Id": 102,
+    "NextLevelConfigId": 103,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 0,
+    "AllowedDrinkIds": []
+  },
+  {
+    "Id": 103,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 1,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 0,
+    "AllowedDrinkIds": []
+  },
+  {
+    "Id": 201,
+    "NextLevelConfigId": 202,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 1,
+    "AllowedDrinkIds": [
+      3
+    ]
+  },
+  {
+    "Id": 202,
+    "NextLevelConfigId": 203,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 1,
+    "AllowedDrinkIds": [
+      3
+    ]
+  },
+  {
+    "Id": 203,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 1,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 1,
+    "AllowedDrinkIds": [
+      3
     ]
   }
 ]

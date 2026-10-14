@@ -29,7 +29,7 @@ namespace ET
             foreach (DRCustomerFlowConfig flow in flows)
                 if (flow.Id <= 0 || !levels.TryGetValue(flow.LevelConfigId, out var level) || flow.FirstArrivalTicks <= 0 ||
                     flow.ArrivalIntervalTicks <= 0 || flow.QueueCapacity <= 0 || flow.OrderWaitTicks <= 0 || flow.EatTicks <= 0 ||
-                    flow.OrderConfigIds.Count == 0 || flow.OrderConfigIds.Any(id => !orderMap.ContainsKey(id) || !level.AllowedDishIds.Contains(orderMap[id].DishId)) ||
+                    flow.OrderConfigIds.Count == 0 || flow.OrderConfigIds.Any(id => !orderMap.ContainsKey(id) || !level.AllowedDishIds.Concat(level.AllowedDrinkIds).Contains(orderMap[id].DishId)) ||
                     new GridCell(flow.EntranceX, flow.EntranceY) != GridStationConfig.Entrance() || !reachable.Contains(new GridCell(flow.QueueX, flow.QueueY)))
                     throw new InvalidOperationException($"Invalid customer flow definition {flow.Id}");
             var tableLayouts = layouts.Values.Where(row => stations[row.StationDefinitionId].Kind == (int)GridStationKind.Table).ToArray();
@@ -46,7 +46,7 @@ namespace ET
             }
             if (!layouts.Values.Any(row => stations[row.StationDefinitionId].Kind == (int)GridStationKind.Wash))
                 throw new InvalidOperationException("Missing wash station");
-            var utensilDefinitions = dishes.Values.Select(row => row.ContainerDefinitionId).ToHashSet();
+            var utensilDefinitions = dishes.Values.Where(row => !Tables.Instance.DTGridItemConfig.Get(row.ContainerDefinitionId).Disposable).Select(row => row.ContainerDefinitionId).ToHashSet();
             int utensils = layouts.Values.Count(row => utensilDefinitions.Contains(row.InitialItemDefinitionId));
             foreach (GridStationKind kind in new[] { GridStationKind.DirtyPool, GridStationKind.CleanPool })
             {

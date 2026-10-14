@@ -111,5 +111,61 @@
       10,
       11
     ]
+  },
+  {
+    "Id": 13,
+    "Kind": 0,
+    "RecipeId": 0,
+    "OutputDefinitionId": 15,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": []
+  },
+  {
+    "Id": 14,
+    "Kind": 1,
+    "RecipeId": 3,
+    "OutputDefinitionId": 16,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": [
+      13
+    ]
+  },
+  {
+    "Id": 15,
+    "Kind": 0,
+    "RecipeId": 0,
+    "OutputDefinitionId": 17,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": []
+  },
+  {
+    "Id": 16,
+    "Kind": 2,
+    "RecipeId": 2,
+    "OutputDefinitionId": 18,
+    "ContainerDefinitionId": 17,
+    "DependencyIds": [
+      14,
+      15
+    ]
+  },
+  {
+    "Id": 17,
+    "Kind": 0,
+    "RecipeId": 0,
+    "OutputDefinitionId": 19,
+    "ContainerDefinitionId": 0,
+    "DependencyIds": []
+  },
+  {
+    "Id": 18,
+    "Kind": 4,
+    "RecipeId": 0,
+    "OutputDefinitionId": 18,
+    "ContainerDefinitionId": 19,
+    "DependencyIds": [
+      16,
+      17
+    ]
   }
 ]

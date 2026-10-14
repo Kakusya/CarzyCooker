@@ -6,6 +6,17 @@ namespace ET.Client
     [FriendOf(typeof(GridClientComponent))]
     public static partial class GridPresentationSystem
     {
+        private static string BuffEffectDescription(DRBuffConfig definition)
+        {
+            string target = definition.EffectKind switch
+            {
+                1 => "煮汤",
+                2 => "切配 " + Tables.Instance.DTGridItemConfig.Get(Tables.Instance.DTGridManualRecipeConfig.Get(definition.ManualRecipeId).InputDefinitionId).Name,
+                3 => "烘焙 " + Tables.Instance.DTGridItemConfig.Get(Tables.Instance.DTGridBakeRecipeConfig.Get(definition.BakeRecipeId).InputDefinitionId).Name,
+                _ => "未知效果"
+            };
+            return target + "耗时 " + definition.DurationNumerator + "/" + definition.DurationDenominator;
+        }
         private static void RefreshRestaurantPanels(this GridPresentationComponent self,MonoUIGridKitchen view,GridClientComponent grid)
         {
             view.ShowPanels(grid.LevelPhase==LevelPhase.Preparing,grid.LevelPhase==LevelPhase.Completed);
@@ -44,9 +55,11 @@ namespace ET.Client
                 int customer=grid.Customers.TryGetValue(order.CustomerId,out GridCustomerProjection guest)?guest.ArrivalSequence:0;
                 return $"顾客 {customer} · {table} · {Tables.Instance.DTDishConfig.Get(order.DishId).Name} · {Math.Max(0,order.DeadlineTick-grid.Tick)*grid.TickMilliseconds/1000f:0.0} 秒";
             }));
-            view.BuffText.text=grid.SelectedBuffId!=0?"本关加成："+Tables.Instance.DTBuffConfig.Get(grid.SelectedBuffId).Name
+            view.BuffText.text=grid.SelectedBuffId!=0?"本关加成："+Tables.Instance.DTBuffConfig.Get(grid.SelectedBuffId).Name+" · "+BuffEffectDescription(Tables.Instance.DTBuffConfig.Get(grid.SelectedBuffId))
                 :grid.BuffDrawVersion==0?"本关加成准备中":grid.BuffCandidates.Count==0?"本关没有加成":self.BuffCandidatesVisible?"选择一个本关加成":"候选已隐藏，可再次查看";
-            view.SettlementText.text=$"本关完成\n{grid.LevelScore} 分 · {grid.LevelStars} 星\n点击「下一关」继续";
+            var definition = Tables.Instance.DTLevelConfig.GetOrDefault(grid.LevelConfigId);
+            if (definition?.ChapterId > 0) view.PhaseText.text += $" · 第 {definition.ChapterStage}/3 关";
+            view.SettlementText.text=$"{(definition?.IsChapterTerminal == true ? "大关完成" : "本关完成")}\n成功 {grid.ServedOrders} 单 · 未满足 {grid.UnfulfilledOrders} 单\n{grid.LevelScore} 分 · {grid.LevelStars} 星\n{(definition?.IsChapterTerminal == true ? grid.SaveEnabled ? "保存完成记录后返回选档" : "内存试玩完成，返回选档" : "点击继续进入下一关")}";
         }
     }
 }

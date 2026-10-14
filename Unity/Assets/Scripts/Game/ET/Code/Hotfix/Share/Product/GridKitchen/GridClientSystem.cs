@@ -33,6 +33,7 @@ namespace ET
             self.AllowedDishIds = Array.Empty<int>();
             self.LevelPhase = default; self.LevelPaused = false; self.LevelOperatingTicks = 0; self.LevelElapsedTicks = 0;
             self.LevelScore = 0; self.LevelStars = 0; self.LevelConfigId = 0; self.NextLevelConfigId = 0; self.LastCommandKind = default;
+            self.ServedOrders = self.UnfulfilledOrders = 0;
             self.Actors.Clear(); self.Stations.Clear(); self.Items.Clear(); self.Processes.Clear(); self.AutoProcesses.Clear();
             self.BakeProcesses.Clear();
             self.Companions.Clear(); self.FrontWorks.Clear(); self.Customers.Clear(); self.Orders.Clear(); self.Tables.Clear();
@@ -40,6 +41,7 @@ namespace ET
             self.BuffSeed=0;self.BuffDrawVersion=0;self.SelectedBuffId=0;self.RequireBuffChoice=false;self.BuffCandidates=Array.Empty<int>();
             self.SupplySources.Clear(); self.SupplyShipments.Clear();
             self.RenovationCandidates = Array.Empty<int>(); self.SelectedRenovationId = 0;
+            self.SelectedUpgradeStationId = 0; self.PendingUpgradeExpectedLevel = 0; self.UpgradeTargets = Array.Empty<RenovationUpgradeTarget>();
             self.RenovationChoiceVersion = 0; self.RenovationLevelId = 0; self.RenovationLevelGeneration = 0; self.RenovationApplied.Clear();
             self.SaveEnabled = false; self.SaveResultId = null; self.SaveFailure = null; self.LastSavedSlotId = null; self.SaveState = default;
             self.CanControlRestaurant = false;
@@ -73,13 +75,13 @@ namespace ET
                 new GridCell(value.X, value.Y), value.Name, value.ItemId, (GridStationKind)value.Kind, value.AutoProcessId,
                 value.DefinitionId, value.Orientation, value.ItemSlotCapacity, (GridStationCapability)value.Capabilities,
                 Array.AsReadOnly(value.Footprint.Select(cell => new GridCell(cell.X, cell.Y)).ToArray()),
-                Array.AsReadOnly(value.Approaches.Select(cell => new GridCell(cell.X, cell.Y)).ToArray()), value.BakeProcessId, Array.AsReadOnly(value.PoolItemIds.ToArray()), value.WaterDefinitionId, value.WaterUnits));
+                Array.AsReadOnly(value.Approaches.Select(cell => new GridCell(cell.X, cell.Y)).ToArray()), value.BakeProcessId, Array.AsReadOnly(value.PoolItemIds.ToArray()), value.WaterDefinitionId, value.WaterUnits, value.UpgradeDefinitionId, value.UpgradeLevel));
             var items = snapshot.Items.ToDictionary(value => value.ItemId, value => new GridItemProjection(value.ItemId, value.Name, (GridItemLocation)value.Location,
-                value.HolderId, new GridCell(value.X, value.Y), Array.AsReadOnly(value.Contents.ToArray()), value.DefinitionId, value.AutoProcessId, value.BakeProcessId, (ItemHygiene)value.Hygiene, (GridMaterialForm)value.Form, value.Discardable));
+                value.HolderId, new GridCell(value.X, value.Y), Array.AsReadOnly(value.Contents.ToArray()), value.DefinitionId, value.AutoProcessId, value.BakeProcessId, (ItemHygiene)value.Hygiene, (GridMaterialForm)value.Form, value.Discardable, value.BoundOrderId));
             var processes = snapshot.Processes.ToDictionary(v => v.ProcessId, v => new GridProcessProjection(v.ProcessId, v.RecipeId, v.InputItemId, v.TargetItemId, v.StationId, v.RequiredTicks, v.ProgressTicks, (GridWorkState)v.State, v.WorkerMemberId, v.WorkerGeneration, v.OutputItemId));
             var automatic = snapshot.AutoProcesses.ToDictionary(value => value.ProcessId, value => new GridAutoProcessProjection(value.ProcessId, value.RecipeId,
                 value.PotItemId, value.StartStationId, value.StartedTick, value.RequiredTicks, value.ProgressTicks, value.OutputDefinitionId,
-                value.TotalPortions, value.RemainingPortions, value.ServingContainerDefinitionId, (GridAutoState)value.State, Array.AsReadOnly(value.InputItemIds.ToArray())));
+                value.TotalPortions, value.RemainingPortions, value.ServingContainerDefinitionId, (GridAutoState)value.State, Array.AsReadOnly(value.InputItemIds.ToArray()), value.RequiredCapability, value.LockContainer));
             var baking = snapshot.BakeProcesses.ToDictionary(value => value.ProcessId, value => new GridBakeProjection(value.ProcessId, value.RecipeId,
                 value.StationId, value.InputItemId, value.OutputDefinitionId, value.RequiredTicks, value.ProgressTicks, value.OutputItemId, (GridBakeState)value.State, value.StartedTick));
             var companions = snapshot.Companions.ToDictionary(value => value.RoleId, value => new GridCompanionProjection(value));
@@ -103,6 +105,7 @@ namespace ET
             self.LevelPhase = (LevelPhase)snapshot.LevelPhase; self.LevelPaused = snapshot.LevelPaused;
             self.LevelOperatingTicks = snapshot.LevelOperatingTicks; self.LevelElapsedTicks = snapshot.LevelElapsedTicks;
             self.LevelScore = snapshot.LevelScore; self.LevelStars = snapshot.LevelStars;
+            self.ServedOrders = snapshot.ServedOrders; self.UnfulfilledOrders = snapshot.UnfulfilledOrders;
             self.LevelConfigId = snapshot.LevelConfigId; self.NextLevelConfigId = snapshot.NextLevelConfigId;
             self.Tick = snapshot.Tick; self.Width = snapshot.Width; self.Height = snapshot.Height; self.KitchenBottom = snapshot.KitchenBottom;
             self.TickMilliseconds = snapshot.TickMilliseconds; self.StepTicks = snapshot.StepTicks; self.ReceivedFrameTime = TimeInfo.Instance.FrameTime;
@@ -123,6 +126,8 @@ namespace ET
             self.SupplySources.Clear(); foreach (var value in supplySources) self.SupplySources.Add(value.Key, value.Value);
             self.SupplyShipments.Clear(); foreach (var value in supplyShipments) self.SupplyShipments.Add(value.Key, value.Value);
             self.RenovationCandidates = renovationCandidates; self.SelectedRenovationId = snapshot.SelectedRenovationId;
+            self.SelectedUpgradeStationId = snapshot.SelectedUpgradeStationId; self.PendingUpgradeExpectedLevel = snapshot.PendingUpgradeExpectedLevel;
+            self.UpgradeTargets = Array.AsReadOnly(snapshot.UpgradeTargets.Select(target => new RenovationUpgradeTarget(target.DefinitionId, target.StationId, target.ExpectedLevel)).ToArray());
             self.RenovationChoiceVersion = snapshot.RenovationChoiceVersion; self.RenovationLevelId = snapshot.RenovationLevelId;
             self.RenovationLevelGeneration = snapshot.RenovationLevelGeneration;
             self.RenovationApplied.Clear(); foreach (var value in renovationApplied) self.RenovationApplied.Add(value.Key, value.Value);
@@ -159,10 +164,10 @@ namespace ET
 
         public static GridCommandRequest CreateGridCommand(this GridClientComponent self, GridIntent intent) => self.CreateGridCommand(
             intent.Action, intent.Cell, intent.TargetId, intent.ExpectedItemId, intent.ExpectedTargetItemId, intent.ExpectedProcessId,
-            intent.ExpectedContentIds, intent.ExpectedRemainingPortions, intent.ExpectedLayoutVersion);
+            intent.ExpectedContentIds, intent.ExpectedRemainingPortions, intent.ExpectedLayoutVersion, intent.ExpectedOrderId);
 
         public static GridCommandRequest CreateGridCommand(this GridClientComponent self, GridAction action, GridCell cell = default, long target = 0, long expected = 0, long expectedTarget = 0, long process = 0,
-            IEnumerable<long> expectedContents = null, int expectedRemainingPortions = 0, long expectedLayoutVersion = 0)
+            IEnumerable<long> expectedContents = null, int expectedRemainingPortions = 0, long expectedLayoutVersion = 0, long expectedOrderId = 0)
         {
             if (!self.Confirmed) throw new InvalidOperationException("Grid projection is not ready");
             ClientSessionComponent client = self.GetParent<ClientSessionComponent>();
@@ -179,6 +184,7 @@ namespace ET
                 value.LevelId = context.LevelId; value.LevelGeneration = context.LevelGeneration;
                 if (expectedContents != null) value.ExpectedContentIds.AddRange(expectedContents);
                 value.ExpectedRemainingPortions = expectedRemainingPortions; value.ExpectedLayoutVersion = expectedLayoutVersion;
+                value.ExpectedOrderId = expectedOrderId;
             });
         }
 
@@ -215,6 +221,9 @@ namespace ET
                 return new GridIntent(0, GridAction.StopWork, station.Cell, target, process.InputItemId, process.TargetItemId, process.Id);
             if (actor.HandItemId != 0)
             {
+                if (self.Items.TryGetValue(station.ItemId, out var jug) && jug.DefinitionId == GridKitchenRules.JuiceJug &&
+                    self.Items.TryGetValue(actor.HandItemId, out var cup) && cup.DefinitionId == GridKitchenRules.DisposableCup && cup.Contents.Count == 0)
+                    return new GridIntent(0, GridAction.PortionJuice, station.Cell, target, cup.Id, jug.Id, jug.AutoProcessId);
                 if (self.Items.TryGetValue(station.ItemId, out GridItemProjection pot) && pot.DefinitionId == GridKitchenRules.Pot && self.Items.TryGetValue(actor.HandItemId, out GridItemProjection held) && held.DefinitionId == GridKitchenRules.Bowl)
                 {
                     if (held.Contents.Count == 0)
@@ -226,6 +235,8 @@ namespace ET
             }
             if (station.Kind == GridStationKind.Stove && self.Items.TryGetValue(station.ItemId, out GridItemProjection unstarted) && unstarted.DefinitionId == GridKitchenRules.Pot && unstarted.AutoProcessId == 0)
                 return new GridIntent(0, GridAction.StartAutoWork, station.Cell, target, unstarted.Id, unstarted.Id);
+            if (station.Kind == GridStationKind.Juicer && self.Items.TryGetValue(station.ItemId, out var juiceInput) && juiceInput.DefinitionId == GridKitchenRules.JuiceJug && juiceInput.AutoProcessId == 0)
+                return new GridIntent(0, GridAction.StartJuice, station.Cell, target, juiceInput.Id, juiceInput.Id);
             if (station.Kind == GridStationKind.Chopping && self.Items.TryGetValue(station.ItemId, out GridItemProjection input) &&
                 Tables.Instance.DTGridManualRecipeConfig.DataList.Any(r => r.Mode == 1 && r.InputDefinitionId == input.DefinitionId))
                 return new GridIntent(0, GridAction.StartStationWork, station.Cell, target, input.Id, input.Id, process.Id);
@@ -237,13 +248,14 @@ namespace ET
             if (!self.Items.TryGetValue(id, out GridItemProjection item)) return "空";
             string description = item.Name + (Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Kind == 2 ? "（" + (item.Contents.Count == 0 ? "空" : string.Join("、", item.Contents.Select(value => self.Items.TryGetValue(value, out GridItemProjection material) ? material.Name : "?"))) + "）" : "");
             if(item.Hygiene==ItemHygiene.Dirty)description+=" · 脏";
+            if (item.BoundOrderId != 0) description += " · 已贴单";
             if (self.AutoProcesses.TryGetValue(item.AutoProcessId, out GridAutoProcessProjection automatic)) description += " · " + AutoWorkDescription(automatic);
             if (self.BakeProcesses.TryGetValue(item.BakeProcessId, out GridBakeProjection baking)) description += " · " + BakeWorkDescription(baking);
             return description;
         }
 
         public static string AutoWorkDescription(GridAutoProcessProjection process)
-            => process.State == GridAutoState.Cooking ? $"煮制 {process.ProgressTicks}/{process.RequiredTicks}" : $"已熟 · 剩 {process.RemainingPortions} 份";
+            => process.State == GridAutoState.Cooking ? $"{(process.LockContainer ? "榨汁（锁壶）" : "煮制")} {process.ProgressTicks}/{process.RequiredTicks}" : $"完成 · 剩 {process.RemainingPortions} 份";
 
         public static string BakeWorkDescription(GridBakeProjection process) => process.State == GridBakeState.Baking
             ? $"烘烤 {process.ProgressTicks}/{process.RequiredTicks}" : "烘烤完成";

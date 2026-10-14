@@ -12,5 +12,12 @@
     "InputDefinitionId": 3,
     "OutputDefinitionId": 4,
     "RequiredTicks": 60
+  },
+  {
+    "Id": 3,
+    "Mode": 1,
+    "InputDefinitionId": 15,
+    "OutputDefinitionId": 16,
+    "RequiredTicks": 60
   }
 ]

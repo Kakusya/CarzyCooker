@@ -5,12 +5,13 @@ using MemoryPack;
 namespace ET
 {
     public struct SoloSaveSelectionRequested { }
+    public enum SoloSaveRecordKind { Continue = 0, ChapterCompleted = 1 }
 
     // 产品文件只存值和本文件内的引用键；不存 Entity、ActorId 或网络快照。
     [MemoryPackable]
     public sealed partial class SoloSaveHeader : Object
     {
-        public int Version { get; set; } = 1;
+        public int Version { get; set; } = 4;
         public string Platform { get; set; } = "PC";
         public string SlotId { get; set; }
         public string ProfileId { get; set; }
@@ -23,6 +24,12 @@ namespace ET
         public int Score { get; set; }
         public int Stars { get; set; }
         public long SavedUtcTicks { get; set; }
+        // Append-only layout: original v1 records have the first thirteen members and default to Continue.
+        public SoloSaveRecordKind RecordKind { get; set; }
+        public int ChapterId { get; set; }
+        public int ChapterStage { get; set; }
+        public int ServedOrders { get; set; }
+        public int UnfulfilledOrders { get; set; }
     }
 
     [MemoryPackable]
@@ -37,6 +44,8 @@ namespace ET
         public SoloSavedShipment[] Shipments { get; set; } = Array.Empty<SoloSavedShipment>();
         public SoloSavedRenovation[] Renovations { get; set; } = Array.Empty<SoloSavedRenovation>();
         public int PendingRenovationId { get; set; }
+        public int PendingUpgradeStationKey { get; set; }
+        public int PendingUpgradeExpectedLevel { get; set; }
     }
 
     [MemoryPackable]
@@ -52,6 +61,8 @@ namespace ET
         public int[] PoolItemKeys { get; set; } = Array.Empty<int>();
         public int TableDefinitionId { get; set; }
         public bool TableDirty { get; set; }
+        public int UpgradeDefinitionId { get; set; }
+        public int UpgradeLevel { get; set; }
     }
 
     [MemoryPackable]
@@ -96,6 +107,8 @@ namespace ET
         public int RemainingPortions { get; set; }
         public int ServingContainerDefinitionId { get; set; }
         public int[] InputKeys { get; set; } = Array.Empty<int>();
+        public int RequiredCapability { get; set; }
+        public bool LockContainer { get; set; }
     }
 
     [MemoryPackable]

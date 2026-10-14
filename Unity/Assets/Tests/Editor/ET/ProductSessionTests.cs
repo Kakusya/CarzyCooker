@@ -152,14 +152,14 @@ namespace ET
             return host;
         }
 
-        private ProductRuntimeComponent StartSolo(bool join = true, bool liveFront = false, bool liveBuff = false)
+        private ProductRuntimeComponent StartSolo(bool join = true, bool liveFront = false, bool liveBuff = false, bool liveDrinks = false)
         {
             RuntimeInstanceConfig config = RuntimeInstanceConfig.Create("product-solo-test", "test", "solo", null);
             RuntimeInstanceContext.Prepare(config);
             Fiber fiber = CreateFiber();
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
             if(!liveBuff)UseOptionalBuffFixture();
-            host.InitializeProduct(join);
+            host.InitializeProduct(join, menuVariant: liveDrinks ? 1 : 0);
             if (!liveFront)
             {
                 RestaurantRuntime restaurant = ((Match)((HostSessionComponent)host.Authority).Match).Restaurant;

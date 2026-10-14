@@ -18,6 +18,12 @@ namespace ET.Client
         // 短寿命界面选择；位置和朝向仍从已提交投影读取。
         public long LayoutStationId, LayoutLevelId, LayoutLevelGeneration;
         public bool BuffCandidatesVisible;
+        // 仅保存界面选择；内容与作业进度仍从当前关的独立投影读取。
+        public long SelectedStationId, SelectedLevelId, SelectedLevelGeneration;
+        public bool DetailsVisible, OrdersVisible;
+        // 菜谱选择与首单说明只属于本轮视图，不保存任务进度或业务状态。
+        public int RecipeDishId;
+        public bool RecipeVisible, FirstOrderGuideVisible;
         public bool HudLoading;
         public long HudLoadEpoch;
     }

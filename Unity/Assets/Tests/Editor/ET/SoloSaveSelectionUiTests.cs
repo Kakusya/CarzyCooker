@@ -28,14 +28,14 @@ namespace ET
             var tables = Tables.Instance;
             return new SoloSavePayload
             {
-                Stations = tables.DTInitialLayoutConfig.DataList.Select(row => new SoloSavedStation
+                Stations = tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == 0).Select(row => new SoloSavedStation
                 {
                     Key = row.Id, InitialLayoutId = row.Id, DefinitionId = row.StationDefinitionId, X = row.X, Y = row.Y, Orientation = row.Orientation,
                     ItemKey = row.InitialItemDefinitionId == 0 ? 0 : row.Id, TableDefinitionId = tables.DTTableConfig.DataList.FirstOrDefault(t => t.InitialLayoutId == row.Id)?.Id ?? 0
                 }).ToArray(),
-                Items = tables.DTInitialLayoutConfig.DataList.Where(row => row.InitialItemDefinitionId != 0).Select(row => new SoloSavedItem
+                Items = tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == 0 && row.InitialItemDefinitionId != 0).Select(row => new SoloSavedItem
                     { Key = row.Id, DefinitionId = row.InitialItemDefinitionId, X = row.X, Y = row.Y, Location = (int)GridItemLocation.Counter, HolderKey = row.Id }).ToArray(),
-                Supply = tables.DTSupplyConfig.DataList.Select(row => new SoloSavedSupplyBalance { SourceId = row.Id, RemainingPackages = row.AvailablePackages }).ToArray()
+                Supply = tables.DTSupplyConfig.DataList.Where(row => row.MenuVariant == 0).Select(row => new SoloSavedSupplyBalance { SourceId = row.Id, RemainingPackages = row.AvailablePackages }).ToArray()
             };
         }
 

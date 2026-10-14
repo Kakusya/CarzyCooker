@@ -56,10 +56,18 @@ namespace ET
             if(station.ItemId!=0 || table.State!=FrontTableState.Occupied)return "TableBusy";
             if(self.IdentifyDish(item.Id)!=order.DishId)return "WrongDish";
             if(!level.AllowedDishIds.Contains(order.DishId))return "OrderUnavailable";
+            bool drink = Tables.Instance.DTDishConfig.Get(order.DishId).RequiresOrderBinding;
+            if (drink && (!level.DrinkBindings.TryGetValue(item.Id, out long boundOrder) || boundOrder != order.Id)) return "DrinkNotBound";
+            bool disposable = Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Disposable;
+            if (drink && !disposable) return "IncompatibleContainer";
             GridItem food=self.Item(item.Contents.Single());
             item.Contents.Clear();self.Items.Remove(food.Id);food.Dispose();
-            actor.HandItemId=0;item.Location=GridItemLocation.Table;item.HolderId=station.Id;item.Cell=station.Cell;station.ItemId=item.Id;
-            order.State=OrderState.Served;order.ServedItemId=item.Id;order.ServedTick=self.Tick;level.Score+=order.Score;
+            long servedItemId = item.Id;
+            self.ReleaseDrinkOrder(level, order.Id);
+            actor.HandItemId=0;
+            if (disposable) { self.Items.Remove(item.Id); item.Dispose(); }
+            else { item.Location=GridItemLocation.Table;item.HolderId=station.Id;item.Cell=station.Cell;station.ItemId=item.Id; }
+            order.State=OrderState.Served;order.ServedItemId=servedItemId;order.ServedTick=self.Tick;level.Score+=order.Score; ++level.ServedOrders;
             customer.Phase=CustomerPhase.Eating;customer.PhaseEnteredTick=self.Tick;
             ++customer.TransitionSerial; customer.TransitionQueued = false;
             ++order.TransitionSerial; order.TransitionQueued = false;

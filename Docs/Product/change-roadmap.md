@@ -4,6 +4,8 @@
 
 本页是依赖与阅读入口，不复制运行进度台账。最新状态查 `openspec list`、各案 tasks 和 execution-notes；当前能力查[根进度](../../CarzyCooker当前进度.md)，有冲突以源码/表和原运行证据为准。
 
+2026-10-14：UI 信息分层、菜谱引导、Solo 三关、Buff 扩展、原工位升级、首饮贴单和试玩调校七案已完成并归档。下文“未执行／未归档”描述的是创建规划时的历史状态。用户随后明确豁免菜谱与调校的真人观察；相关任务按该例外闭环，工程复玩已有运行证据，真人理解效果仍未验证，未据此调整平衡数值。
+
 ## 方向与使用方式
 
 保留现有 ET / GF / HybridCLR / Luban 底座，把投入逐步移向“看懂操作、完整经营、有意义的内容选择、合作可持续”。工程整理围绕具体重复和错误展开，不为理论完整性再造框架、消息总线、测试平台或资产安全系统。
@@ -25,8 +27,8 @@
 
 | Change | 解决的问题 | 可观察交付 |
 | --- | --- | --- |
-| [restaurant-ui-information-hierarchy](../../openspec/changes/restaurant-ui-information-hierarchy/proposal.md) | 信息密集、标签与动作难辨 | 阶段/手持物/目标/动作/详情分层；状态与拒绝可读，原操作仍能到达 |
-| [kitchen-recipe-guide](../../openspec/changes/kitchen-recipe-guide/proposal.md) | 新玩家不知从何下手 | 真实两菜步骤与缺口提示，可跳过/重看首单引导，联机只读菜谱 |
+| [restaurant-ui-information-hierarchy](../../openspec/changes/archive/2026-10-14-restaurant-ui-information-hierarchy/proposal.md) | 信息密集、标签与动作难辨 | 阶段/手持物/目标/动作/详情分层；状态与拒绝可读，原操作仍能到达 |
+| [kitchen-recipe-guide](../../openspec/changes/archive/2026-10-14-kitchen-recipe-guide/proposal.md) | 新玩家不知从何下手 | 真实两菜步骤与缺口提示，可跳过/重看首单引导，联机只读菜谱 |
 
 先整理实际 UI 结构，再在保留区域接入内容。沿现有受管 UI/Entity 和本地消息，不创建第二份业务状态。声音、美术方向后续可据实际资源另提，不在本轮凭空引入资产管线。
 
@@ -34,19 +36,19 @@
 
 | Change | 解决的问题 | 可观察交付 |
 | --- | --- | --- |
-| [solo-first-chapter](../../openspec/changes/solo-first-chapter/proposal.md) | 下一关链没有清楚终点 | 三关经营、结果解释、终关完成记录与返回选档，旧有效档可读 |
-| [solo-playability-tuning](../../openspec/changes/solo-playability-tuning/proposal.md) | 规则可跑不等于新玩家理解 | 实际新玩家 Editor 试玩记录，针对卡点调少量已有参数并复玩 |
+| [solo-first-chapter](../../openspec/changes/archive/2026-10-14-solo-first-chapter/proposal.md) | 下一关链没有清楚终点 | 三关经营、结果解释、终关完成记录与返回选档，旧有效档可读 |
+| [solo-playability-tuning](../../openspec/changes/archive/2026-10-14-solo-playability-tuning/proposal.md) | 规则可跑不等于新玩家理解 | 实际新玩家 Editor 试玩记录，针对卡点调少量已有参数并复玩 |
 
-三关依赖已有供应、装修和成功检查点。调校只改现有规则内参数和文案，因此也使用 `skip_specs: true`；新规则回对应案。没有真实试玩者时保留未完成，不把脚本结果写成“玩家已经懂了”。
+三关依赖已有供应、装修和成功检查点。调校只改现有规则内参数和文案，因此也使用 `skip_specs: true`；新规则回对应案。真人观察默认须实际执行，本次按用户明确豁免记 Skipped；不把工程复玩结果写成“玩家已经懂了”。
 
 ## 第四层：消息衔接与内容选择
 
 | Change | 归属 | 可观察交付 |
 | --- | --- | --- |
 | [product-local-message-boundaries](../../openspec/changes/archive/2026-10-13-product-local-message-boundaries/proposal.md) | 复用已有案 | 入口、终态和功能衔接可从发送端追到接收端；保持唯一时钟、原 owner 与原子效果 |
-| [level-buff-variety](../../openspec/changes/level-buff-variety/proposal.md) | 新案 | 切配/烘焙加速，旧作业不重算，Solo 与已交付合作核心分模式验收 |
-| [interlevel-station-upgrade](../../openspec/changes/interlevel-station-upgrade/proposal.md) | 新案 | Solo 原工位单级升级，保留身份/内容/旧作业并保存 |
-| [first-drink-order-binding](../../openspec/changes/first-drink-order-binding/proposal.md) | 新案 | Solo 鲜榨橙汁、杯子供应、锁壶/分装、贴单、交付与清理 |
+| [level-buff-variety](../../openspec/changes/archive/2026-10-14-level-buff-variety/proposal.md) | 新案 | 切配/烘焙加速，旧作业不重算，Solo 与已交付合作核心分模式验收 |
+| [interlevel-station-upgrade](../../openspec/changes/archive/2026-10-14-interlevel-station-upgrade/proposal.md) | 新案 | Solo 原工位单级升级，保留身份/内容/旧作业并保存 |
+| [first-drink-order-binding](../../openspec/changes/archive/2026-10-14-first-drink-order-binding/proposal.md) | 新案 | Solo 鲜榨橙汁、杯子供应、锁壶/分装、贴单、交付与清理 |
 
 内容案依赖相关消息合同；不用完整迁移每个无关模块来阻挡已经稳定的独立任务组，但开始前应明确与原消息案的任务交接。工位升级依赖 Buff 时间算法及已有保存/装修，不能在恢复时重复乘加成。
 

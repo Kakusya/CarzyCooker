@@ -6,7 +6,10 @@
     "ContainerCapacity": 0,
     "AcceptedDefinitionIds": [],
     "Form": 1,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 2,
@@ -15,7 +18,10 @@
     "ContainerCapacity": 0,
     "AcceptedDefinitionIds": [],
     "Form": 1,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 3,
@@ -24,7 +30,10 @@
     "ContainerCapacity": 0,
     "AcceptedDefinitionIds": [],
     "Form": 1,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 4,
@@ -33,7 +42,10 @@
     "ContainerCapacity": 0,
     "AcceptedDefinitionIds": [],
     "Form": 2,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 5,
@@ -47,7 +59,10 @@
       11
     ],
     "Form": 3,
-    "Discardable": false
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 6,
@@ -59,7 +74,10 @@
       4
     ],
     "Form": 3,
-    "Discardable": false
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 7,
@@ -68,7 +86,10 @@
     "ContainerCapacity": 0,
     "AcceptedDefinitionIds": [],
     "Form": 2,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 8,
@@ -77,7 +98,10 @@
     "ContainerCapacity": 0,
     "AcceptedDefinitionIds": [],
     "Form": 1,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 9,
@@ -86,7 +110,10 @@
     "ContainerCapacity": 0,
     "AcceptedDefinitionIds": [],
     "Form": 1,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 10,
@@ -97,7 +124,10 @@
       9
     ],
     "Form": 3,
-    "Discardable": false
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 11,
@@ -106,7 +136,10 @@
     "ContainerCapacity": 0,
     "AcceptedDefinitionIds": [],
     "Form": 2,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 12,
@@ -117,7 +150,10 @@
       1
     ],
     "Form": 3,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 13,
@@ -128,7 +164,10 @@
       3
     ],
     "Form": 3,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
   },
   {
     "Id": 14,
@@ -139,6 +178,101 @@
       8
     ],
     "Form": 3,
-    "Discardable": true
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 0
+  },
+  {
+    "Id": 15,
+    "Name": "橙子",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 1
+  },
+  {
+    "Id": 16,
+    "Name": "橙块",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 1
+  },
+  {
+    "Id": 17,
+    "Name": "果汁壶",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      16
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 1
+  },
+  {
+    "Id": 18,
+    "Name": "鲜榨橙汁",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 1
+  },
+  {
+    "Id": 19,
+    "Name": "一次性杯",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      18
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": true,
+    "MenuVariant": 1
+  },
+  {
+    "Id": 20,
+    "Name": "橙子补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      15
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 1
+  },
+  {
+    "Id": 21,
+    "Name": "空杯补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      19
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": true,
+    "Disposable": false,
+    "MenuVariant": 1
   }
 ]

@@ -15,6 +15,8 @@ message ChooseRenovationRequest // IRequest
     int64 CommandId = 9;
     int64 ChoiceVersion = 10;
     int32 DefinitionId = 11;
+    int64 TargetStationId = 12;
+    int32 ExpectedUpgradeLevel = 13;
 }
 
 message ChooseRenovationResponse // IResponse
@@ -44,6 +46,8 @@ message ChooseRenovationSubmitRequest // IRequest
     int64 CommandId = 12;
     int64 ChoiceVersion = 13;
     int32 DefinitionId = 14;
+    int64 TargetStationId = 15;
+    int32 ExpectedUpgradeLevel = 16;
 }
 
 message ChooseRenovationSubmitResponse // IResponse
@@ -59,4 +63,11 @@ message GridRenovationAppliedState
 {
     int32 DefinitionId = 1;
     repeated int64 StationIds = 2;
+}
+
+message GridRenovationUpgradeTarget
+{
+    int32 DefinitionId = 1;
+    int64 StationId = 2;
+    int32 ExpectedLevel = 3;
 }

@@ -8,8 +8,19 @@ namespace ET
     {
         public readonly long ChoiceVersion;
         public readonly int DefinitionId;
-        public RenovationChoiceIntent(long version, int definition) { ChoiceVersion = version; DefinitionId = definition; }
-        public bool Equals(RenovationChoiceIntent other) => ChoiceVersion == other.ChoiceVersion && DefinitionId == other.DefinitionId;
+        public readonly long TargetStationId;
+        public readonly int ExpectedUpgradeLevel;
+        public RenovationChoiceIntent(long version, int definition, long station = 0, int expectedLevel = 0)
+        { ChoiceVersion = version; DefinitionId = definition; TargetStationId = station; ExpectedUpgradeLevel = expectedLevel; }
+        public bool Equals(RenovationChoiceIntent other) => ChoiceVersion == other.ChoiceVersion && DefinitionId == other.DefinitionId &&
+            TargetStationId == other.TargetStationId && ExpectedUpgradeLevel == other.ExpectedUpgradeLevel;
+    }
+
+    public readonly struct RenovationUpgradeTarget
+    {
+        public readonly int DefinitionId, ExpectedLevel;
+        public readonly long StationId;
+        public RenovationUpgradeTarget(int definition, long station, int level) { DefinitionId = definition; StationId = station; ExpectedLevel = level; }
     }
 
     public readonly struct RenovationChoiceEnvelope
@@ -31,6 +42,9 @@ namespace ET
         public string SelectedName;
         public IReadOnlyList<int> Candidates;
         public IReadOnlyList<GridStationPlacement> PendingPlacements;
+        public EntityRef<GridStation> PendingUpgradeStation;
+        public int PendingUpgradeExpectedLevel;
+        public readonly List<RenovationUpgradeTarget> UpgradeTargets = new();
         // 已获得奖励的唯一应用记录；实体/布局仍由持续 Kitchen 持有。
         public readonly Dictionary<int, IReadOnlyList<long>> AppliedStations = new();
         public readonly Queue<RenovationChoiceEnvelope> Choices = new();

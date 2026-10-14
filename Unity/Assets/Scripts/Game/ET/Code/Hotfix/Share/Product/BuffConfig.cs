@@ -17,10 +17,17 @@ namespace ET
             if(definitions.Select(value=>value.Id).Distinct().Count()!=definitions.Count)throw new InvalidOperationException("Duplicate buff");
             foreach(DRBuffConfig row in definitions)
             {
-                DRGridAutoRecipeConfig recipe=Tables.Instance.DTGridAutoRecipeConfig.GetOrDefault(row.BatchRecipeId);
-                if(row.Id<=0 || string.IsNullOrWhiteSpace(row.Name) || row.EffectKind!=1 || row.DurationNumerator<=0 || row.DurationDenominator<=0 || recipe==null)
+                int ticks = row.EffectKind switch
+                {
+                    1 when row.ManualRecipeId == 0 && row.BakeRecipeId == 0 => Tables.Instance.DTGridAutoRecipeConfig.GetOrDefault(row.BatchRecipeId)?.RequiredTicks ?? 0,
+                    2 when row.BatchRecipeId == 0 && row.BakeRecipeId == 0 && Tables.Instance.DTGridManualRecipeConfig.GetOrDefault(row.ManualRecipeId)?.Mode == 1
+                        => Tables.Instance.DTGridManualRecipeConfig.Get(row.ManualRecipeId).RequiredTicks,
+                    3 when row.BatchRecipeId == 0 && row.ManualRecipeId == 0 => Tables.Instance.DTGridBakeRecipeConfig.GetOrDefault(row.BakeRecipeId)?.RequiredTicks ?? 0,
+                    _ => 0
+                };
+                if(row.Id<=0 || string.IsNullOrWhiteSpace(row.Name) || row.DurationNumerator<=0 || row.DurationDenominator<=0 || ticks <= 0)
                     throw new InvalidOperationException("Invalid buff definition: "+row.Id);
-                ScaleTicks(recipe.RequiredTicks,row.DurationNumerator,row.DurationDenominator);
+                ScaleTicks(ticks,row.DurationNumerator,row.DurationDenominator);
             }
             foreach(DRLevelConfig level in Tables.Instance.DTLevelConfig.DataList)ValidateLevel(level);
         }

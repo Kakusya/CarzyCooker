@@ -41,7 +41,7 @@ namespace ET
         public void SoloRenovationChoiceZeroStarsLatestReplayLockAndOldLevelUseRealMailboxes()
         {
             StartSolo(); RenovationComplete(); long oldLevel = CurrentLevel.Id;
-            Assert.That(Renovation.Candidates, Is.EqualTo(new[] { 1, 2 })); Assert.That(Renovation.ResultLevelId, Is.EqualTo(oldLevel));
+            Assert.That(Renovation.Candidates, Is.EqualTo(new[] { 1, 2, 3, 4 })); Assert.That(Renovation.ResultLevelId, Is.EqualTo(oldLevel));
             var request = RenovationView.CreateRenovationChoice(1, RenovationView.RenovationChoiceVersion);
             var pendingReplay = CopyReplayRequest(request); var finalReplay = CopyReplayRequest(request);
             var oldLevelReplay = CopyReplayRequest(request); var conflict = CopyReplayRequest(request); conflict.DefinitionId = 2;
@@ -77,9 +77,11 @@ namespace ET
             long[] items = Grid.Items.Keys.OrderBy(id => id).ToArray();
             RenovationComplete(); RenovationChoose(1); LevelDo(LevelControlAction.Continue);
             Assert.That(Grid.Stations.Count, Is.EqualTo(17)); RenovationComplete();
-            Assert.That(Renovation.Candidates, Is.EqualTo(new[] { 2 })); RenovationChoose(2); LevelDo(LevelControlAction.Continue);
-            Assert.That(Grid.Stations.Count, Is.EqualTo(18)); RenovationComplete();
-            Assert.That(Renovation.Candidates, Is.Empty); LevelDo(LevelControlAction.Continue);
+            Assert.That(Renovation.Candidates, Is.EqualTo(new[] { 2, 3, 4 })); RenovationChoose(2); LevelDo(LevelControlAction.Continue);
+            Assert.That(Grid.Stations.Count, Is.EqualTo(18)); ChapterNaturalComplete();
+            Assert.That(Renovation.Candidates, Is.Empty);
+            using (var rejected = LevelReply(host.Client, RenovationView.CreateLevelCommand(LevelControlAction.Continue)))
+                Assert.That(rejected.Message, Is.EqualTo("ChapterCompleted"));
             Assert.That(Grid.Stations.Count, Is.EqualTo(18)); Assert.That(Renovation.AppliedStations.Count, Is.EqualTo(2));
             Assert.That(Grid.Items.Keys.OrderBy(id => id), Is.EqualTo(items));
             foreach (long id in Renovation.AppliedStations.Values.SelectMany(value => value))
@@ -87,12 +89,12 @@ namespace ET
         }
 
         [Test]
-        public void SoloRenovationChoiceNoLegalSpaceProducesEmptyPoolAndAllowsContinue()
+        public void SoloRenovationChoiceNoAdditionSpaceKeepsUpgradePoolAndAllowsMemoryContinue()
         {
             StartSolo(); LayoutDo(PrepStation("切配台"), new GridCell(2, 13));
             LayoutDo(PrepStation("交接台"), new GridCell(4, 12));
             long[] items = Grid.Items.Keys.OrderBy(id => id).ToArray(); RenovationComplete();
-            Assert.That(Renovation.Candidates, Is.Empty); LevelDo(LevelControlAction.Continue);
+            Assert.That(Renovation.Candidates, Is.EqualTo(new[] { 3, 4 })); LevelDo(LevelControlAction.Continue);
             Assert.That(Grid.Stations.Count, Is.EqualTo(16)); Assert.That(Renovation.AppliedStations, Is.Empty);
             Assert.That(Grid.Items.Keys.OrderBy(id => id), Is.EqualTo(items));
         }

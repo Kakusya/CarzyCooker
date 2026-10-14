@@ -279,11 +279,17 @@ Solo 提供“开始营业／暂停／恢复”，读取同版厨房／关卡快
 
 ## 本轮所属异步
 
-餐厅完整HUD（协议12）仍使用UI1101、原WorldSpace Canvas／GraphicRaycaster／模板按钮，CodeBind通过安全Prefab编辑和正常菜单生成19字段。顶栏显示阶段／时钟／分星／工作，下面显示订单或准备候选，中间为地图，下方控制和手持／目标滚动区，Completed显示结算。CameraDragArea由实际Canvas相机换算成屏幕范围，厨房初始完整适配；在该区纵向拖动查看前厅，拖动不发命令，HUD不穿透，释放点用当前Board相机换算。
+菜谱与首单引导（`kitchen-recipe-guide`）：原操作区的两道“菜谱”按钮在详情区显示生效原料／设备／容器／工序及当前缺口；“关闭菜谱”或“收起详情”关闭说明。Solo 可查看、跳过和重看首单步骤，已备好成品无需重做；Host/Client 可读菜谱，阅读不授予共享控制。说明不提交命令或保存任务进度，旧关／旧 owner callback 无效。UTF 与导表已验收，真人理解观察按用户豁免记 Skipped，效果未验证，见[菜谱记录](../openspec/changes/archive/2026-10-14-kitchen-recipe-guide/execution-notes.md)。
+
+餐厅信息分层（`restaurant-ui-information-hierarchy`）：原 UI1101 与受管 owner 保持，CodeBind 正常生成 23 字段。手持物、选中工位与主要动作在底区分别显示，其他合法操作仍在原滚动区；地图点击继续执行原 CounterIntent，选中的操作在主要动作区突出。原阶段／时间／得分在顶区，订单可折叠；“查看详情”只读取当前内容、加工与餐具，关闭不提交业务命令。详情和订单开关由 GridPresentation 持有，旧 owner／关卡回调仍由原 inputGuard 拒绝。相关 UI 小集与普通 540×960 Launcher 两菜／前厅输入均已通过，实际运行范围见[执行记录](../openspec/changes/archive/2026-10-14-restaurant-ui-information-hierarchy/execution-notes.md)。
+
+餐厅完整HUD仍使用UI1101、原WorldSpace Canvas／GraphicRaycaster／模板按钮，绑定通过安全Prefab编辑和正常菜单生成。顶栏显示阶段／时钟／分星／工作，下面显示订单或准备候选，中间为地图，下方控制和手持／目标滚动区，Completed显示结算。CameraDragArea由实际Canvas相机换算成屏幕范围，厨房初始完整适配；在该区纵向拖动查看前厅，拖动不发命令，HUD不穿透，释放点用当前Board相机换算。
 
 HUD打开／加载等待归GridPresentation.AsyncOwner，轮次由HudLoadEpoch核对；具体操作等待归当前UIGridKitchen.AsyncOwner。关闭使用UIComponent.RemoveComponent，不SetActive受管根；OnClose停止该scope并解绑、禁用／销毁自己创建的按钮，原物理Call继续由原helper收尾，不停共享sender或营业。OpenGridHud重开新ET owner并复用GF Mono；旧EntityRef／世界／关按钮不能写新轮。五项真实资源／Launcher行为UTF和普通Launcher两关均已通过，实际540×960画面已查看，详见[UI记录](../openspec/changes/archive/2026-10-13-solo-restaurant-ui/execution-notes.md)。
 
 `UIGridKitchen` 复用原注册 1101、Prefab 与 CodeBind 引用，由 ProductClient 的 UIComponent 持有；地图由同 Scene 的 GFEntityComponent 持有。动态按钮沿 TargetTemplateButton 创建并在 Close 清除订阅，GridPresentation Dispose 移除所属 HUD／Board，不直接显隐受管根。
+
+Solo 首饮入口（协议21）沿上述受管 owner：新游戏／内存试玩201起步，菜谱读取真实切橙、榨汁、盛杯和贴单步骤；加工中提示锁壶。成品杯放贴单台后显示有效匹配订单的“贴单／换绑”与“解绑饮品”，GridIntent 的 ExpectedOrderId 必须经 SendGridIntent→SendGridAction→CreateGridCommand 完整转交。交付仍用原对应餐桌按钮，一次性杯被消费，顾客离席后空手领取实际清桌。v4保存保留壶中份数及冻结加工，旧 v1–v3 恢复原菜单；具体功能状态见[首饮记录](../openspec/changes/archive/2026-10-14-first-drink-order-binding/execution-notes.md)。
 
 备料样机的场景与 HUD 台面入口均取 GridClient.CounterIntent；目标、源物品、目标物品及已有作业身份在意图内固定。兼容碗执行添加，空手切配台执行开始／继续／本人停止；暂停材料提供直接拿取按钮，手持鸡蛋碗提供开始／继续／停止打蛋。按钮仅随物品关系或作业状态变化重建，进度文字随快照刷新。Hint 区分切配／打蛋的加工、暂停和完成，Hand 显示真实碗内容。真实按钮、场景坐标、重开和输入防穿透证据见 [备料验收](../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。
 
@@ -301,3 +307,11 @@ Solo装修在原结算文字显示固定候选、已选或无候选反馈，原�
 Solo有限供应沿同一个受管目标模板显示三种“采购 原料补货 · 余N包”、Ready时的“接收”和空手时的“拆一份”。运输／待收货来自当前Snapshot，接收满槽显示拒绝并保留货物；包装逐份拆出的原材料可照常制作。空包装持物到垃圾桶后显示投垃圾，不能随身删除。SupplyCommandRequest使用原UIGridKitchen所属等待及两段本地有序MailBox，按钮固定世界／关／绑定和货物／材料身份，重开及旧关callback无效；未新增Prefab或CodeBind字段。实际UTF、普通Launcher耗尽再补货制作及在途换关见[供应记录](../openspec/changes/solo-supply-delivery/execution-notes.md)。
 
 Solo 水池接水／排液和垃圾桶固体倾倒使用原 UIGridKitchen 的受管目标模板及同一地图输入，没有新增 Prefab、CodeBind 字段或 UI owner。设施按钮在目标列表前列，仍捕获当前 UI／投影／世界／关卡／绑定的 inputGuard；关闭重开不复用旧 callback。到位前显示已接收／接近，成功只跟随已提交结果；垃圾桶不能销毁液体，水池不洗净容器。真实输入及普通入口结果见[设施记录](../openspec/changes/solo-kitchen-clear-and-discard/execution-notes.md)。
+
+### 三关结算与完成记录
+
+既有 UIGridKitchen 仍由原 owner 管理。Solo 标明第几关／三关，结算显示本关成功和未满足订单数。普通关使用保存并继续；显式终关使用保存完成并返回选档，内存试玩标明不保存。选择器的“查看完成”只读结果，不初始化 Host；新开使用独立三关链。回选择器只释放本轮 Host/Client，根 Repository／ProcessInnerSender 保留，避免停止整个入口后无法再次新开。行为与验收见 [三关记录](../openspec/changes/archive/2026-10-14-solo-first-chapter/execution-notes.md)。
+
+### 原工位升级提示
+
+原装修入口显示具体工位、位置和预期等级，选择经原请求传目标。当前详情从独立工位投影读等级；确认继续前仍显示未安装。关闭视图不取消 Match-owned 保存，重开和换关旧回调受原 epoch／Level guard 保护。所有加工显示读取作业冻结 RequiredTicks，不在 UI 连乘 Buff 和升级比例。行为见 [升级运行记录](../openspec/changes/archive/2026-10-14-interlevel-station-upgrade/execution-notes.md)。

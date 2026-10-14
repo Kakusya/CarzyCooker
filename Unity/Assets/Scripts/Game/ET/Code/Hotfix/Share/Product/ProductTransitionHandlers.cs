@@ -62,7 +62,7 @@ namespace ET
             Entity source = kind switch
             {
                 KitchenProcessKind.Manual => kitchen.GetChild<GridManualProcess>(identity.SourceId),
-                KitchenProcessKind.Soup => kitchen.GetChild<GridAutoProcess>(identity.SourceId),
+                KitchenProcessKind.Soup or KitchenProcessKind.Juice => kitchen.GetChild<GridAutoProcess>(identity.SourceId),
                 KitchenProcessKind.Bake => kitchen.GetChild<GridBakeProcess>(identity.SourceId),
                 _ => null
             };

@@ -22,6 +22,8 @@ public sealed partial class DRRenovationConfig : Luban.BeanBase
         InstallX = _buf.ReadInt();
         InstallY = _buf.ReadInt();
         Orientation = _buf.ReadInt();
+        RewardKind = _buf.ReadInt();
+        UpgradeDefinitionId = _buf.ReadInt();
         PostInit();
     }
 
@@ -58,6 +60,14 @@ public sealed partial class DRRenovationConfig : Luban.BeanBase
     /// Orientation
     /// </summary>
     public readonly int Orientation;
+    /// <summary>
+    /// RewardKind
+    /// </summary>
+    public readonly int RewardKind;
+    /// <summary>
+    /// UpgradeDefinitionId
+    /// </summary>
+    public readonly int UpgradeDefinitionId;
     public const int __ID__ = -274287037;
     public override int GetTypeId() => __ID__;
 
@@ -76,6 +86,8 @@ public sealed partial class DRRenovationConfig : Luban.BeanBase
         + "InstallX:" + InstallX + ","
         + "InstallY:" + InstallY + ","
         + "Orientation:" + Orientation + ","
+        + "RewardKind:" + RewardKind + ","
+        + "UpgradeDefinitionId:" + UpgradeDefinitionId + ","
         + "}";
     }
 

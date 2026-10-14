@@ -12,7 +12,7 @@
 
 | 交付线 | 当前可确认的阶段 | 主要缺口 |
 | --- | --- | --- |
-| 单机 Solo | 九案66/66已归档；两菜、顾客餐具、伙伴、Buff、布局、暂停、自然换关和受管UI已验收；清理／供应／检查点各7/7、装修6/6已验收 | 三关终点、饮品、设备升级已有规划但未实施；Player/AOT未验收 |
+| 单机 Solo | 九案66/66已归档；两菜、顾客餐具、伙伴、Buff、布局、暂停、自然换关和受管UI已验收；清理／供应／检查点各7/7、装修6/6已验收 | Solo 三关终点和原工位升级已验收；鲜榨橙汁已验收；Player/AOT未验收 |
 | 联机 Host/Client | 核心7/7、前厅5/5、清理供应5/5、集成3/3；普通双Editor两种排列均真实合作交付20分2星、补货清理、原餐具回收和自然换关；Client失联后Host收货与退出新轮隔离通过 | 联机装修、存档与原成员恢复仍未实现 |
 | 设备与网络范围 | Solo普通Launcher及联机普通双Editor本机loopback已实跑；相关真实KCP／受管UI UTF结果复用 | 独立Player、物理两机LAN、Android真机／AOT、公网未验收 |
 
@@ -29,12 +29,18 @@
 | 顾客、订单、交付、清桌与洗碗 | 已实现、已验收 | 有限池、原碗回收、超时离店与自然排空；见[前厅记录](openspec/changes/archive/2026-10-13-solo-customer-order-service/execution-notes.md) |
 | 固定伙伴、工作接续与关内成长 | 已实现、已验收 | 玩家停手后伙伴认领、暂停冻结、洗碗及换关成长清理；见[伙伴记录](openspec/changes/archive/2026-10-13-solo-fixed-companion-work/execution-notes.md) |
 | 本关随机 Buff | 已实现、已验收 | 固定候选、一次选择、新批次冻结耗时及换关重选；现有效果范围以煮汤为主；见[Buff 记录](openspec/changes/archive/2026-10-13-solo-random-level-buffs/execution-notes.md) |
-| 受管餐厅 UI | 已实现、已验收 | 真 Prefab、生命周期、指针／HUD 和 540×960 GameView；不是手机触控或 Player 证据；见[UI 记录](openspec/changes/archive/2026-10-13-solo-restaurant-ui/execution-notes.md) |
+| 受管餐厅 UI 与信息分层 | 已实现、已验收；信息分层 4/4 | 原 owner／资源 ID、23 字段 CodeBind、主要动作与只读详情；最终 Solo UI 6/6、远端与设施各 1/1，普通 540×960 两菜制作／分别交付／前厅／拖动通过；不是手机或 Player 证据；见[信息分层记录](openspec/changes/archive/2026-10-14-restaurant-ui-information-hierarchy/execution-notes.md)与[原 UI 记录](openspec/changes/archive/2026-10-13-solo-restaurant-ui/execution-notes.md) |
 | 水池接水／排液、垃圾桶固体处理 | 已实现、已验收，7/7 | 设施到位、分类、加工锁定、引用收尾及原容器卫生；原汤仍默认供水；见[清理记录](openspec/changes/solo-kitchen-clear-and-discard/execution-notes.md) |
 | 有限供应、运输、收货与拆份 | 已实现、已验收，7/7 | 16项供应配置／业务及2项真实HUD的最新有效结果Passed；普通Launcher耗尽面包后采购、满槽保留、原身份拆份制作与代表性长运输在途跨关通过，默认参数已恢复并实际读取40；见[供应记录](openspec/changes/solo-supply-delivery/execution-notes.md) |
-| 关间装修奖励与下一关安装 | 已实现、已验收，6/6 | 14项配置／业务及2项实际UI最新有效结果Passed；普通Launcher零星选择、一次安装、移动新工位和再次跨关通过；当前仅内存Solo，见[装修记录](openspec/changes/solo-interlevel-renovation/execution-notes.md) |
+| 关间装修奖励与下一关安装 | 已实现、已验收，6/6 | 14项配置／业务及2项实际UI最新有效结果Passed；普通Launcher零星选择、一次安装、移动新工位和再次跨关通过；初期为内存Solo，后续检查点及原工位升级已接入保存，见[装修记录](openspec/changes/solo-interlevel-renovation/execution-notes.md) |
 | 选档、新档、成功检查点与恢复 | PC Solo已实现并验收，7/7 | 本机稳定身份、轻量选档／取消／拒绝、实际文件不覆盖提交、失败重试和新身份恢复通过；普通Launcher半锅汤／3/60暂停加工／在途货保存后Stop/Play选档恢复11物品17工位，库存不补满；见[检查点记录](openspec/changes/solo-success-checkpoint/execution-notes.md) |
-| 三关终点、菜谱引导、更多 Buff、升级、橙汁 | 已有 change 规划，未实施 | 依赖与交付边界见[change 路线](Docs/Product/change-roadmap.md)；用户已确认三关后返回选档／新开，以及首饮为鲜榨橙汁，规划不代表功能交付 |
+| 原工位单级升级 | 已验收，4/4 | Solo 原位升级，不换身份／占地／实物；新作业与 Buff 一次取整，v1/v2 默认零等级、v3 冻结恢复；十六项新例及相关回归通过，见[升级记录](openspec/changes/archive/2026-10-14-interlevel-station-upgrade/execution-notes.md) |
+| 首饮与独立贴单 | 已验收，5/5 | Solo 真实切橙、锁壶榨汁、搬壶分杯、有效订单贴单与一次性杯清桌；15核心＋1UI新UTF及18相关回归Passed，普通201→202→203整链／清理／返回选档通过；v4保存，旧v1–v3只读兼容；见[首饮记录](openspec/changes/archive/2026-10-14-first-drink-order-binding/execution-notes.md) |
+| 试玩调校 | 工程复玩完成，3/3；真人观察Skipped（用户豁免） | 无依据调整平衡，保留现有数值；首单、有限补货和三关收口有对应实际结果，不宣称理解或留存；见[试玩记录](openspec/changes/archive/2026-10-14-solo-playability-tuning/execution-notes.md) |
+| 切配／烘焙 Buff | 已验收，4/4，Solo／真实 KCP | 原三汤效果加指定切配／烘焙，启动冻结／暂停跨关不重算；新增十项及原二十项通过，普通 HUD 30/60 Tick 已核实，见[加成记录](openspec/changes/archive/2026-10-14-level-buff-variety/execution-notes.md) |
+| Solo 首个三关大关 | 已验收，5/5 | 新开独立三关，终关无装修／第四关；完成记录只读、失败重试返回选档、v1 原 Next 兼容，新增消息／文件 4 项与 UI 1 项通过，见[三关记录](openspec/changes/archive/2026-10-14-solo-first-chapter/execution-notes.md) |
+| 菜谱与首单引导 | 代码与自动验收完成；玩家理解按用户要求跳过 | 两菜配方图、当前缺口、预制菜／拒绝／暂停／池复用／旧关与 KCP 只读，3 项 UTF 通过；新玩家首单／另一单观察 Skipped（用户豁免），效果未验证，见[菜谱记录](openspec/changes/archive/2026-10-14-kitchen-recipe-guide/execution-notes.md) |
+| 三关终点、更多 Buff、升级、橙汁 | 本轮已授权实施，尚未完成 | 依赖与交付边界见[change 路线](Docs/Product/change-roadmap.md)；当前以各案 tasks 和 execution-notes 为准 |
 
 ## 联网游戏进度
 
@@ -58,7 +64,7 @@
 ### 联机交付基线与后续边界
 
 - [ProductRuntimeBootstrap](Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductRuntimeBootstrap.cs)：Host与Solo均建Restaurant；核心／前厅／物流及普通双Editor两种角色排列均已运行，Client只有独立投影。
-- [ProductWire](Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)：协议18保持Grid1–17、Level／Layout／Buff、ServeOrder／FrontWork与SupplyCommand；内部Submit／伙伴消息仍关闭，未知动作仍拒绝。
+- [ProductWire](Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)：协议21远端保持Grid1–17及Level／Layout／Buff、ServeOrder／FrontWork与SupplyCommand；Solo本地追加首饮18–21，内部Submit／伙伴消息仍关闭，未知动作仍拒绝。
 - [会话主规格](openspec/specs/product-session/spec.md)区分会话／格子基础和新增单机合同；[批次规格](openspec/changes/archive/2026-10-13-grid-kitchen-soup-batch-cooking/specs/kitchen-batch-cooking/spec.md)不承诺网络接入。
 - 原联机餐厅大案已按用户要求拆出三个前置，三案已实际交付；原案普通独立Host／Client就绪与双Editor整体验收3/3通过，具体环境和每项运行结果见下表。
 
@@ -80,7 +86,7 @@
 | 两个独立 Editor | 完整餐厅两种角色排列、两菜真实交付、补货清理、暂停恢复、原餐具循环、自然换关、Client失联后Host收货及退出新轮 | Player、跨设备LAN、公网与原成员恢复 |
 | 独立 Player、两台物理 PC LAN、Android 真机 | 本次未找到对应玩法交付证据，NotRun | 用 Editor 截图或配置代替运行 |
 
-当前协议为 **17**，含Host可信控制资格与已开放的前厅／物流动作。PC Solo检查点交付为 **16**，含绑定存档控制与独立保存状态投影；装修为 **15**，供应为 **14**，清理为 **13**，早期备料为 **3**。协议数字表示兼容边界，不表示双端已经验收，历史记录保留当时语义。
+当前协议为 **21**，含Host可信控制资格与已开放的前厅／物流动作。PC Solo检查点交付为 **16**，含绑定存档控制与独立保存状态投影；装修为 **15**，供应为 **14**，清理为 **13**，早期备料为 **3**。协议数字表示兼容边界，不表示双端已经验收，历史记录保留当时语义。
 
 ## 维护规则
 

@@ -23,6 +23,9 @@ public sealed partial class DRGridAutoRecipeConfig : Luban.BeanBase
         OutputDefinitionId = _buf.ReadInt();
         OutputPortions = _buf.ReadInt();
         ServingContainerDefinitionId = _buf.ReadInt();
+        StationCapability = _buf.ReadInt();
+        LockContainer = _buf.ReadBool();
+        MenuVariant = _buf.ReadInt();
         PostInit();
     }
 
@@ -63,6 +66,18 @@ public sealed partial class DRGridAutoRecipeConfig : Luban.BeanBase
     /// ServingContainerDefinitionId
     /// </summary>
     public readonly int ServingContainerDefinitionId;
+    /// <summary>
+    /// StationCapability
+    /// </summary>
+    public readonly int StationCapability;
+    /// <summary>
+    /// LockContainer
+    /// </summary>
+    public readonly bool LockContainer;
+    /// <summary>
+    /// MenuVariant
+    /// </summary>
+    public readonly int MenuVariant;
     public const int __ID__ = 481161939;
     public override int GetTypeId() => __ID__;
 
@@ -82,6 +97,9 @@ public sealed partial class DRGridAutoRecipeConfig : Luban.BeanBase
         + "OutputDefinitionId:" + OutputDefinitionId + ","
         + "OutputPortions:" + OutputPortions + ","
         + "ServingContainerDefinitionId:" + ServingContainerDefinitionId + ","
+        + "StationCapability:" + StationCapability + ","
+        + "LockContainer:" + LockContainer + ","
+        + "MenuVariant:" + MenuVariant + ","
         + "}";
     }
 

@@ -23,6 +23,7 @@ message GridCommandRequest // IRequest
     repeated int64 ExpectedContentIds = 17;
     int32 ExpectedRemainingPortions = 18;
     int64 ExpectedLayoutVersion = 19;
+    int64 ExpectedOrderId = 20;
 }
 
 message GridCommandResponse // IResponse
@@ -60,6 +61,7 @@ message GridSubmitRequest // IRequest
     repeated int64 ExpectedContentIds = 20;
     int32 ExpectedRemainingPortions = 21;
     int64 ExpectedLayoutVersion = 22;
+    int64 ExpectedOrderId = 23;
 }
 
 message GridSubmitResponse // IResponse
@@ -119,6 +121,8 @@ message GridStationState
     repeated int64 PoolItemIds = 15;
     int32 WaterDefinitionId = 16;
     int32 WaterUnits = 17;
+    int32 UpgradeDefinitionId = 18;
+    int32 UpgradeLevel = 19;
 }
 
 message GridItemState
@@ -136,6 +140,7 @@ message GridItemState
     int32 Hygiene = 11;
     int32 Form = 12;
     bool Discardable = 13;
+    int64 BoundOrderId = 14;
 }
 
 message GridWorldSnapshot // IMessage
@@ -200,6 +205,11 @@ message GridWorldSnapshot // IMessage
     string SaveFailure = 58;
     string LastSavedSlotId = 59;
     bool CanControlRestaurant = 60;
+    int32 ServedOrders = 61;
+    int32 UnfulfilledOrders = 62;
+    int64 SelectedUpgradeStationId = 63;
+    int32 PendingUpgradeExpectedLevel = 64;
+    repeated GridRenovationUpgradeTarget UpgradeTargets = 65;
 }
 
 message GridCommandResult // IMessage
@@ -246,4 +256,6 @@ message GridAutoProcessState
     int32 ServingContainerDefinitionId = 11;
     int32 State = 12;
     repeated int64 InputItemIds = 13;
+    int32 RequiredCapability = 14;
+    bool LockContainer = 15;
 }
