@@ -86,7 +86,7 @@ namespace ET.Client
             board.View.SetHudViewport(hud.View.MapViewport());
             float tick=grid.Tick+Mathf.Clamp(TimeInfo.Instance.FrameTime-grid.ReceivedFrameTime,0,grid.TickMilliseconds*grid.StepTicks)/(float)grid.TickMilliseconds;
             if (grid.LevelPaused || grid.LevelPhase == LevelPhase.Completed) tick = grid.Tick;
-            board.View.Render(grid.Actors,grid.Stations,grid.Items,grid.AutoProcesses,grid.BakeProcesses,grid.Companions,grid.Customers,grid.FrontWorks,grid.MemberId,tick,grid.StepTicks,self.Highlight);
+            board.View.Render(grid.Actors,grid.Stations,grid.Items,grid.AutoProcesses,grid.BakeProcesses,grid.Companions,grid.Customers,grid.FrontWorks,grid.MemberId,tick,grid.StepTicks,self.Highlight,grid.Processes,grid.Tables);
             if(grid.LastCommandId>=self.HighlightCommand && grid.LastStatus is GridResultStatus.Rejected or GridResultStatus.Cancelled)self.Highlight=null;
             if (grid.LastCommandKind == ProductCommandKind.Level) self.Highlight = null;
             if(self.HudVersion!=grid.Version){self.RefreshGridHud();}
@@ -290,6 +290,7 @@ namespace ET.Client
                 view.StatusText.text=$"玩家 {grid.MemberId} · {state} {reason}";
                 string hand=own.HandItemId!=0 ? grid.ItemDescription(own.HandItemId):"空手";
                 view.HandText.text=$"手持：{hand}";
+                view.SetHandItemIcon(own.HandItemId!=0 && grid.Items.TryGetValue(own.HandItemId,out GridItemProjection handItem)?handItem.DefinitionId:0);
                 view.HintText.text=string.Join(" · ",grid.Processes.Values.Select(GridClientSystem.WorkDescription).Concat(grid.AutoProcesses.Values.Select(GridClientSystem.AutoWorkDescription)).Concat(grid.BakeProcesses.Values.Select(GridClientSystem.BakeWorkDescription)));
                 if(view.HintText.text.Length==0)view.HintText.text="点击目标拿放／切配 · 拖动查看餐厅";
                 if (grid.LevelId != 0) view.HintText.text += grid.SaveEnabled ? " · 成功结算后可新建检查点" : " · 试玩进度仅保留本次运行";

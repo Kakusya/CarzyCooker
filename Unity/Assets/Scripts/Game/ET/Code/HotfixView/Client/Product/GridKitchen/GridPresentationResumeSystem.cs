@@ -41,6 +41,7 @@ namespace ET.Client
             view.StatusText.text = runtime.Stage == ProductStage.Disconnected ? "连接失联" : "恢复中";
             view.HintText.text = intent.Feedback;
             view.HandText.text = "恢复后空手；断线实物由 Host 保留";
+            view.SetHandItemIcon(0);
             view.SettlementText.text = ""; view.ClearTargets();
             EntityRef<ProductRuntimeComponent> runtimeRef = runtime; EntityRef<ClientSessionComponent> clientRef = client;
             EntityRef<UIGridKitchen> hudRef = hud;

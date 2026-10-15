@@ -56,6 +56,7 @@ namespace ET
             Assert.That(presentation.HudVersion,Is.EqualTo(Grid.Version));
         }
         [UnityTest]
+        [Category("RestaurantArtRegression")]
         public IEnumerator PerFrameBoardStableProjectionInterpolationChangesAndRemovals()
         {
             yield return StartLauncher();
@@ -113,7 +114,7 @@ namespace ET
             objects.Remove(8001);objects[8002]=new GridItemProjection(8002,"移入落物",GridItemLocation.Ground,0,new GridCell(3,12),Array.Empty<long>());
             Render(102,null);
             Assert.That(itemViews[8002].transform.localPosition.x,Is.EqualTo(2.8f).Within(.001f),"Changed ground membership and cell recompute ordinal");
-            Assert.That(tiles[path[0]].color,Is.EqualTo(new Color(.7f,.77f,.71f)),"Retired route restores floor");
+            Assert.That(tiles[path[0]].color,Is.EqualTo(Color.white),"Retired route restores the authored floor without tint");
             counters.Clear();Render(102,null);Assert.That(labels.ContainsKey(7001),Is.False);
             yield return null;
         }

@@ -11,6 +11,7 @@ namespace ET
     public sealed partial class SoloRestaurantUiTests
     {
         [UnityTest]
+        [Category("RestaurantArtRegression")]
         public IEnumerator StationUpgradeUiManagedTargetReopenSavedContinueAndRetiredCallbackPreserveStation()
         {
             yield return StartLauncher(false, false);

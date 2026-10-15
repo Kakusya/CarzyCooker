@@ -15,13 +15,27 @@ namespace ET.Client
         // 本轮 HUD 的视口工作区；每次重新计算角点，布局变化无需另建事件来源。
         private readonly Vector3[] viewportCorners = new Vector3[4];
         private Canvas hudCanvas;
+        [SerializeField] private Texture2D m_ArtAtlas;
+        [SerializeField] private Image m_HandIcon;
+        private Sprite[] handArt;
         public void SetInputGuard(Func<bool> guard)=>inputGuard=guard;
         public void ConfigureHud()
         {
             hudCanvas=GetComponent<Canvas>();
             CameraDragAreaRectTransform.gameObject.SetActive(true);
+            if(m_ArtAtlas==null)
+            {
+                throw new InvalidOperationException("Restaurant HUD art atlas is missing.");
+            }
             if(font==null)font = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "Noto Sans CJK SC", "Arial" }, 34);
             foreach(Text text in new[]{StatusText,HandText,HintText,PhaseText,ClockText,ScoreText,WorkText,OrdersText,BuffText,SettlementText,TargetText,DetailsText})text.font=font;
+            foreach(Text text in new[]{StatusText,HandText,HintText,PhaseText,ClockText,ScoreText,WorkText,OrdersText,BuffText,SettlementText,TargetText,DetailsText})text.color=new Color(.15f,.26f,.23f);
+            handArt=new Sprite[21];
+            for(int i=0;i<handArt.Length;++i)
+            {
+                handArt[i]=MonoGridKitchenBoard.CreateItemArtSlice(m_ArtAtlas,i+1);
+            }
+            SetHandItemIcon(0);
             DetailsPanelRectTransform.gameObject.SetActive(false);
             HintText.text = "点击地面行走 · 拖动查看餐厅 · 点击台面拿放";
         }
@@ -60,10 +74,20 @@ namespace ET.Client
         public void AddControl(string label,Action action)=>AddButton(ControlPanelRectTransform,label,action);
         public void AddOrderAction(string label,Action action)=>AddButton(OrderActionsRectTransform,label,action);
         public void AddBuffAction(string label,Action action)=>AddButton(BuffActionsRectTransform,label,action);
+        public void SetHandItemIcon(int definition)
+        {
+            if(m_HandIcon==null)
+            {
+                throw new InvalidOperationException("Restaurant hand icon binding is missing.");
+            }
+            m_HandIcon.enabled=definition>=1 && definition<=21;
+            m_HandIcon.sprite=m_HandIcon.enabled?handArt[definition-1]:null;
+        }
         private void AddButton(RectTransform parent,string label,Action action,bool primary=false)
         {
             Button button=Instantiate(TargetTemplateButton,parent);button.gameObject.SetActive(true);
             Text caption=button.GetComponentInChildren<Text>();caption.font=font;caption.fontSize=24;caption.resizeTextForBestFit=true;caption.resizeTextMinSize=16;caption.resizeTextMaxSize=24;caption.text=label;
+            caption.color=new Color(.99f,.96f,.86f);
             if(primary)
             {
                 ColorBlock colors=button.colors;colors.normalColor=new Color(.58f,.85f,.76f);colors.highlightedColor=new Color(.72f,.96f,.86f);button.colors=colors;
@@ -76,6 +100,12 @@ namespace ET.Client
         public void ReleaseHud()
         {
             ClearTargets();inputGuard=null;hudCanvas=null; if(font!=null)Destroy(font);font=null;
+            if(m_HandIcon!=null)m_HandIcon.sprite=null;
+            if(handArt!=null)
+            {
+                foreach(Sprite sprite in handArt)Destroy(sprite);
+                handArt=null;
+            }
         }
     }
 }

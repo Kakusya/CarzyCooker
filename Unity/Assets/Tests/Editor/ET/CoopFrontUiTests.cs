@@ -25,6 +25,7 @@ namespace ET
         }
 
         [UnityTest]
+        [Category("RestaurantArtFinal")]
         public IEnumerator CoopFrontProjectionUiRemoteServeAndClearSurviveManagedReopenWithoutRetiredCallbacks()
         {
             yield return StartCoopHostLauncher(); yield return CoopFrontUiPrepareSoup();

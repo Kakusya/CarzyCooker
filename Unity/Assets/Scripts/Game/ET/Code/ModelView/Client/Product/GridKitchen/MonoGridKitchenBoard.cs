@@ -43,7 +43,7 @@ namespace ET.Client
             go.transform.SetParent(RenderRootTransform, false); go.transform.localPosition = position;
             go.transform.localScale = Vector3.one * .018f;
             Canvas canvas = go.GetComponent<Canvas>(); canvas.renderMode = RenderMode.WorldSpace; canvas.worldCamera = boardCamera;
-            canvas.sortingOrder = 600;
+            canvas.sortingOrder = 6000;
             var caption = new GameObject("Caption", typeof(RectTransform), typeof(Text)); caption.layer = RenderLayer;
             caption.transform.SetParent(go.transform, false);
             Text text = caption.GetComponent<Text>(); text.font = labelFont; text.fontSize = 18;
@@ -86,6 +86,7 @@ namespace ET.Client
         public void Configure(int width, int height, int bottom)
         {
             if (configured) return;
+            InitializeArt();
             configured = true; mapWidth = width; mapHeight = height; kitchenBottom = bottom;
             inputViewport=new Rect(0,0,1,1);hudViewportConfigured=false;viewportAspect=0;
             boardCamera = ViewportTransform.GetComponent<Camera>();
@@ -96,10 +97,17 @@ namespace ET.Client
             {
                 GridCell cell = new(x, y);
                 bool wall = x == 0 || x == width - 1 || y == 0 || y == height - 1;
-                Color color = wall ? new Color(.21f,.28f,.31f) : y >= bottom ? new Color(.7f,.77f,.71f) : new Color(.68f,.59f,.46f);
+                Color color = Color.white;
                 // 小间距形成常驻淡格线，图形和点击使用相同投影。
-                tiles.Add(cell, CreateSprite($"Cell {x},{y}", CellToWorld(cell), new Vector3(.97f, .97f * GroundY, 1), color, -1000));
+                SpriteRenderer tile = CreateSprite($"Cell {x},{y}", CellToWorld(cell), new Vector3(.645f, .645f, 1), color, -1000);
+                tile.sprite = artSprites[wall ? 2 : y >= bottom ? 0 : 1];
+                tiles.Add(cell, tile);
             }
+            // 边缘饰物不参与占地或点击；只在地图配置时创建。
+            SpriteRenderer plant = CreateSprite("Restaurant plant", CellToWorld(new GridCell(0, bottom)), new Vector3(.65f,.65f,1), Color.white, 2000);
+            plant.sprite = artSprites[3];
+            SpriteRenderer window = CreateSprite("Restaurant window", CellToWorld(new GridCell(width/2,height-1))+new Vector3(0,.2f,0), new Vector3(.8f,.8f,1), Color.white, 2000);
+            window.sprite = artSprites[4];
             // 保留完整相机 viewport，让既有 URP UI overlay 正常绘制；上下 HUD 遮住对应区域。
             boardCamera.rect = new Rect(0, 0, 1, 1);
             boardCamera.orthographicSize = Mathf.Max((width + .4f) / (2 * boardCamera.aspect), (height - bottom + .7f) * GroundY / 1.4f);
@@ -126,7 +134,8 @@ namespace ET.Client
             Dictionary<long,GridItemProjection> objects, Dictionary<long,GridAutoProcessProjection> automatic,
             Dictionary<long,GridBakeProjection> baking, Dictionary<long,GridCompanionProjection> companions,
             Dictionary<long,GridCustomerProjection> customers, Dictionary<long,GridFrontWorkProjection> frontWorks,
-            int ownMember, float tick, int stepTicks, GridCell? highlight)
+            int ownMember, float tick, int stepTicks, GridCell? highlight, Dictionary<long,GridProcessProjection> manual = null,
+            Dictionary<long,GridTableProjection> tables = null)
         {
             // 客户端投影在这段同步渲染中不变；直接遍历具体字典，不经 IEnumerable 装箱或复制。
             nextTints.Clear();
@@ -157,10 +166,14 @@ namespace ET.Client
                 {
                     foot.x += person.MemberId % 2 == 0 ? .13f : -.13f;
                 }
-                renderer.transform.localPosition = foot + new Vector3(0,.25f,0); renderer.sortingOrder = 200 - Mathf.RoundToInt(foot.y * 10);
+                renderer.transform.localPosition = foot; renderer.sortingOrder = 1000 - Mathf.RoundToInt(foot.y * 100);
+                bool working = person.WorkId != 0 && manual != null && manual.TryGetValue(person.WorkId, out GridProcessProjection process) && process.State == GridWorkState.Working;
+                working |= person.FrontWorkId != 0 && frontWorks.TryGetValue(person.FrontWorkId, out GridFrontWorkProjection frontWork) && frontWork.State == FrontWorkState.Working;
+                ApplyCharacterArt(renderer, person.MemberId == ownMember ? 0 : 1, person.Facing, person.Motion, person.HandItemId != 0, working, tick);
                 Vector3 facing = person.Facing == 0 ? Vector3.up : person.Facing == 1 ? Vector3.right : person.Facing == 2 ? Vector3.down : Vector3.left;
                 directions[person.MemberId].transform.localPosition = renderer.transform.localPosition + facing * .2f;
                 directions[person.MemberId].sortingOrder = renderer.sortingOrder + 1;
+                directions[person.MemberId].enabled = person.MemberId == ownMember;
             }
             removedMembers.Clear();
             foreach(int member in actors.Keys)
@@ -178,6 +191,7 @@ namespace ET.Client
                 frontWorks.TryGetValue(companion.WorkId,out GridFrontWorkProjection work);
                 RenderFrontPerson(companion.Id, companion.Cell, companion.NextCell, companion.Motion, companion.StepStartTick,
                     tick, stepTicks, new Color(.69f,.43f,.89f));
+                ApplyCharacterArt(frontPeople[companion.Id], 1, FacingFromMotion(companion.Cell,companion.NextCell), companion.Motion, false, work.State == FrontWorkState.Working, tick);
                 var state=(companion.Name,work.Id==0?-1:(int)work.Kind,(int)Math.Round(work.Progress*100),companion.CompletedCount,0);
                 if(LabelChanged(companion.Id,state))
                 {
@@ -190,6 +204,7 @@ namespace ET.Client
             {
                 RenderFrontPerson(customer.Id, customer.Cell, customer.NextCell, customer.Motion, customer.StepStartTick,
                     tick, stepTicks, new Color(.93f,.67f,.33f));
+                ApplyCharacterArt(frontPeople[customer.Id], 2 + (customer.ArrivalSequence & 1), FacingFromMotion(customer.Cell,customer.NextCell), customer.Motion, false, false, tick);
                 if(LabelChanged(customer.Id,(null,(int)customer.Phase,0,customer.ArrivalSequence,1)))
                 {
                     string phase=customer.Phase switch{CustomerPhase.WaitingAsk=>"等询问",CustomerPhase.Ordered=>"等餐",CustomerPhase.Eating=>"用餐",CustomerPhase.Leaving=>"离店",CustomerPhase.Queued=>"排队",_=>"走位"};
@@ -213,7 +228,14 @@ namespace ET.Client
                     removedIds.Add(id);
                 }
             }
-            foreach(long id in removedIds){Destroy(stations[id].gameObject);stations.Remove(id);stationGeometry.Remove(id);RemoveLabel(id);}
+            foreach(long id in removedIds)
+            {
+                Destroy(stations[id].gameObject);stations.Remove(id);stationGeometry.Remove(id);steam.Remove(id);upgrades.Remove(id);RemoveLabel(id);
+                if(chairs.TryGetValue(id,out SpriteRenderer chair))
+                {
+                    Destroy(chair.gameObject);chairs.Remove(id);
+                }
+            }
             foreach (GridStationProjection counter in counters.Values)
             {
                 if (!stations.TryGetValue(counter.Id,out SpriteRenderer renderer))
@@ -239,6 +261,7 @@ namespace ET.Client
                 objects.TryGetValue(counter.ItemId,out GridItemProjection item);
                 automatic.TryGetValue(item.AutoProcessId,out GridAutoProcessProjection batch);
                 baking.TryGetValue(counter.BakeProcessId,out GridBakeProjection bake);
+                ApplyStationArt(counter, renderer, batch, bake, tick);
                 int batchProgress=batch.Id==0?0:batch.State==GridAutoState.Cooking?batch.ProgressTicks*100/batch.RequiredTicks:batch.RemainingPortions;
                 int bakeProgress=bake.Id==0?0:bake.State==GridBakeState.Baking?bake.ProgressTicks*100/bake.RequiredTicks:100;
                 Text caption = Label(counter.Id,CellToWorld(counter.Cell)+new Vector3(0,-.32f,0));
@@ -255,7 +278,12 @@ namespace ET.Client
                     {
                         progress+=bake.State==GridBakeState.Baking?$"\n烘烤 {bakeProgress}%":"\n烘烤完成";
                     }
-                    caption.text=counter.Name+progress;
+                    caption.text=progress.Length>0?counter.Name+progress:"";
+                }
+                caption.enabled = selected || batch.Id != 0 || bake.Id != 0;
+                if(selected && caption.text.Length==0)
+                {
+                    caption.text=counter.Name;
                 }
                 int fontSize=selected?18:16;
                 if(caption.fontSize!=fontSize)
@@ -263,6 +291,7 @@ namespace ET.Client
                     caption.fontSize=fontSize;
                 }
             }
+            RenderChairs(tables);
             removedIds.Clear();
             foreach(long id in items.Keys)
             {
@@ -272,7 +301,7 @@ namespace ET.Client
                 }
             }
             foreach (long id in removedIds)
-            { Destroy(items[id].gameObject); items.Remove(id); }
+            { Destroy(items[id].gameObject); items.Remove(id); RemoveItemArt(id); }
             bool groundChanged=false;int groundCount=0;
             foreach(GridItemProjection item in objects.Values)
             {
@@ -323,6 +352,23 @@ namespace ET.Client
                 {
                     position+=new Vector3(0,.26f,0);
                 }
+                else if(item.Location==GridItemLocation.Table)
+                {
+                    position+=new Vector3(0,.30f,0);
+                }
+                else if(item.Location is GridItemLocation.DirtyPool or GridItemLocation.CleanPool && counters.TryGetValue(item.HolderId,out GridStationProjection pool))
+                {
+                    int ordinal=0;
+                    for(int i=0;i<pool.PoolItemIds.Count;++i)
+                    {
+                        if(pool.PoolItemIds[i]==item.Id)
+                        {
+                            ordinal=i;
+                            break;
+                        }
+                    }
+                    position=CellToWorld(pool.Cell)+new Vector3((ordinal%2-.5f)*.20f,.26f+ordinal/2*.07f,0);
+                }
                 else
                 {
                     int ordinal=groundPositions.TryGetValue(item.Id,out var ground)?ground.Ordinal:0;
@@ -332,16 +378,14 @@ namespace ET.Client
                 {
                     renderer.transform.localPosition=position;
                 }
-                int order=400-Mathf.RoundToInt(position.y*10);
+                int order = item.Location == GridItemLocation.Hand && actors.TryGetValue((int)item.HolderId,out SpriteRenderer carrier)
+                    ? carrier.sortingOrder + 5 : item.Location is GridItemLocation.Counter or GridItemLocation.Table or GridItemLocation.DirtyPool or GridItemLocation.CleanPool && stations.TryGetValue(item.HolderId,out SpriteRenderer surface)
+                    ? surface.sortingOrder + 5 : 1000 - Mathf.RoundToInt((position.y-.05f)*100);
                 if(renderer.sortingOrder!=order)
                 {
                     renderer.sortingOrder=order;
                 }
-                Color color=item.Contents.Count>0?new Color(.94f,.91f,.78f):new Color(.94f,.73f,.22f);
-                if(renderer.color!=color)
-                {
-                    renderer.color=color;
-                }
+                ApplyItemArt(item, renderer, objects, automatic);
             }
             if(highlight.HasValue)
             {
@@ -351,7 +395,7 @@ namespace ET.Client
             {
                 if(!nextTints.ContainsKey(cell) && tiles.TryGetValue(cell,out SpriteRenderer tile))
                 {
-                    tile.color=cell.X==0 || cell.X==mapWidth-1 || cell.Y==0 || cell.Y==mapHeight-1?new Color(.21f,.28f,.31f):cell.Y>=kitchenBottom?new Color(.7f,.77f,.71f):new Color(.68f,.59f,.46f);
+                    tile.color=Color.white;
                 }
             }
             foreach(var tint in nextTints)
@@ -414,6 +458,7 @@ namespace ET.Client
             tiles.Clear();stations.Clear();actors.Clear();directions.Clear();items.Clear();labels.Clear();frontPeople.Clear();
             labelStates.Clear();removedIds.Clear();removedMembers.Clear();previousTints.Clear();nextTints.Clear();
             stationGeometry.Clear();groundPositions.Clear();
+            ReleaseArt();
             if(labelFont!=null)Destroy(labelFont);labelFont=null;
             originalCamera=null;
         }
@@ -425,7 +470,7 @@ namespace ET.Client
             { renderer = CreateSprite($"Front {id}", Vector3.zero, new Vector3(.42f,.6f,1), color, 200); frontPeople.Add(id, renderer); }
             float progress = motion == GridMotion.Transit ? Mathf.Clamp01((tick - start) / stepTicks) : 0;
             Vector3 foot = Vector3.Lerp(CellToWorld(cell), CellToWorld(next), progress);
-            renderer.transform.localPosition = foot + new Vector3(0,.25f,0); renderer.sortingOrder = 200 - Mathf.RoundToInt(foot.y * 10);
+            renderer.transform.localPosition = foot; renderer.sortingOrder = 1000 - Mathf.RoundToInt(foot.y * 100);
             Text label = Label(id, foot + new Vector3(0,.75f,0)); label.transform.parent.localPosition = foot + new Vector3(0,.75f,0);
         }
     }

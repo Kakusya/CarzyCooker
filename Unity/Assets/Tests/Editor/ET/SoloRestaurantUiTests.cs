@@ -346,6 +346,7 @@ namespace ET
 
         [UnityTest]
         [NUnit.Framework.Category("PerFrameIntegration")]
+        [Category("RestaurantArtRegression")]
         public IEnumerator SoloRestaurantUiLifecycleInputAndProjectionWithSoloBuffDrawReopen()
         {
             yield return StartLauncher();GridPresentationComponent presentation=Presentation;
@@ -420,6 +421,7 @@ namespace ET
         }
 
         [UnityTest]
+        [Category("RestaurantArtRegression")]
         public IEnumerator SoloRestaurantUiInformationHierarchyTargetDetailsAndPrimaryActionUseCurrentProjection()
         {
             yield return StartLauncher();
@@ -454,6 +456,7 @@ namespace ET
 
         [UnityTest]
         [NUnit.Framework.Category("PerFrameIntegration")]
+        [Category("RestaurantArtRegression")]
         public IEnumerator SoloRestaurantUiProjectionActualBakingSeparatesReceiptProgressAndCompletion()
         {
             yield return StartLauncher();yield return Command("拿 面包台 ·",true);yield return Command("放 烤箱 ·",true);

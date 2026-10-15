@@ -1,5 +1,7 @@
 # UI 开发
 
+当前 Product HUD 保留原 CodeBind 与按钮 owner，图集和手持 Image 使用直接序列化美术引用；关闭释放本轮图标切片，重开恢复当前投影。面板／按钮使用九宫格 Sprite，装饰 Image 不接收射线；制作和接入见 [餐厅美术约定](../references/restaurant-art.md)。
+
 > **ET 底座适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。
 
 GDK 的 UI 配置统一由 GF UIComponent 管理。业务层可选择 GameHot 的 MonoBehaviour 工作流，或 ETUI 的 Entity/System 工作流；两者共享 UI 表、资源路径、UIGroup 和 GF 生命周期。

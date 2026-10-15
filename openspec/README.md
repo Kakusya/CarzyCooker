@@ -32,6 +32,7 @@
 | [kitchen-recipe-guide](specs/kitchen-recipe-guide/spec.md) | 实际配方、当前缺口及只读首单提示；玩家理解已豁免 |
 | [restaurant-chapters](specs/restaurant-chapters/spec.md) | Solo 三关、明确终关、完成记录与旧档兼容 |
 | [restaurant-ui](specs/restaurant-ui/spec.md) | 同版显示、真实输入、前厅拖动和受管关闭重开 |
+| [restaurant-art](specs/restaurant-art/spec.md) | 统一斜俯视美术、当前资源、方向／内容图层、竖屏可读性与本轮回收 |
 | [kitchen-supply](specs/kitchen-supply/spec.md) | 有限采购、业务运输、满槽待收货、真实包装拆份及跨关保留 |
 | [restaurant-renovation](specs/restaurant-renovation/spec.md) | 成功固定候选、下一关一次安装、整体布局预检及持续装修归属 |
 | [solo-save-progress](specs/solo-save-progress/spec.md) | 本机选档、成功结果新建提交、最多一次保存及完整载荷恢复 |

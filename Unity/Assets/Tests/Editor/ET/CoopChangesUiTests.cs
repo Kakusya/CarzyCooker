@@ -12,6 +12,7 @@ namespace ET
     {
         [UnityTest]
         [NUnit.Framework.Category("PerFrameIntegration")]
+        [Category("RestaurantArtRegression")]
         public IEnumerator CoopMemberResumeUiRealDisconnectManualButtonReopenAndRetiredInput()
         {
             yield return StartCoopHostLauncher(); ((Scene)Client.IScene).RemoveComponent<GridPresentationComponent>(); yield return null;

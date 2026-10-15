@@ -1,5 +1,7 @@
 # Entity 开发
 
+当前 Product Board 的美术图集通过原 Entity Prefab 引用；动态 Sprite 切片归实际 Mono 本轮 view，在 ReleaseBoard 释放。工位、手持物、容器图层与座位表现只消费投影，不另建 Entity 权威或资源池；具体做法见 [餐厅美术约定](../references/restaurant-art.md)。
+
 > **ET 底座适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。
 
 GDK 使用 GF EntityComponent 负责资源加载、实例池和显示生命周期。GameHot 直接编写 EntityLogic；ETEntity 则让 ET 实体拥有一个 GF Entity 视图，并在 ET System 中接收 GF 生命周期。
