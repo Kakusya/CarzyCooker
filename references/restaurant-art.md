@@ -11,7 +11,7 @@
 ## 已有 owner 接入
 
 - Board 仍是原 `GridKitchenBoard` GF 托管 Entity；图集纹理通过 Prefab 的 `m_ArtAtlas` 引用，由原 GF 资源链持有。
-- 每轮 Configure 创建并缓存本轮 Sprite 切片；ReleaseBoard 清表现节点并释放切片。子图层均归该 view，不建立业务状态或私有池。
+- 本轮第一次 Configure 创建并缓存 Sprite 切片；同一世界几何变化复用切片/已有地砖，更新边界、窗位与镜头；尺寸不变立即返回。ReleaseBoard 清表现节点并释放切片。子图层均归该 view，不建立业务状态或私有池。
 - HUD 的 `m_ArtAtlas`／`m_HandIcon` 是直接序列化美术引用，原 CodeBind 字段保持；关闭释放本轮手持图标切片，重开重新创建，原输入 guard 和按钮 owner 保持。
 - 手持、工位方向、容器内容、卫生、批次份数与贴单均来自当前投影。镜头、图片或动画不修改厨房、角色、工作与订单。
 
@@ -26,3 +26,13 @@
 Unity 导入参数与 Prefab 引用通过已接入 Pipeline 的 Editor API 保存，保留未保存场景。图集需保留原尺寸、不启用 mipmap；HUD 面板和按钮使用九宫格边框。资源集合刷新继续用现有 With Optimize 菜单，不手改 XML。
 
 本轮资产／姿态／分层／回收 UTF 位于 `RestaurantArtUiTests.cs`；最小集类别为 `RestaurantArtRegression`，后续局部变更只选择受影响部分。真实制作、服务、布局和竖屏图也要对应运行证据，不能只看清单数量。具体已运行范围见 [change 执行说明](../openspec/changes/archive/2026-10-15-restaurant-art-production/execution-notes.md)。
+
+沙拉批次从同一模型源扩展到31个物品、214切片。物品范围用生成的ArtItemCount，新增物品会移动后续人物/效果起点；必须图集与布局同次生成。对应验证见[多输入组装记录](../openspec/changes/archive/2026-10-15-kitchen-multi-input-assembly/execution-notes.md)，不重跑未变全套美术测试。
+
+有限扩建沿同一Board及已提交Snapshot.Width/Height重配，不重复注册场景相机；原厨房仍在有效竖屏区域，前厅可纵向拖看。实际点击与新桌服务验收见[扩建记录](../openspec/changes/archive/2026-10-15-restaurant-space-expansion/execution-notes.md)。
+
+热餐增量沿同一源增加煎台四向和32–42物品，当前229切片/15行/42物品，后续人物与效果起点由生成布局持有。42物品及48工位方向的实际受管渲染通过；原图集/布局同次导出，见[热餐运行](../openspec/changes/archive/2026-10-15-kitchen-hot-food-batch/execution-notes.md)。
+
+甜品增量沿同一源增加搅拌机四向和43–51物品，图集242切片/16行/51物品；甜品盘与原盘采用低位内容叠加，模具内容独立于外壳，后续人物和效果起点继续由生成器持有。实际加工、保存与普通Solo/KCP运行见[甜品记录](../openspec/changes/archive/2026-10-15-kitchen-dessert-batch/execution-notes.md)。
+
+咖啡增量沿同一源增加磨豆/萃取/蒸汽设备四向及52–63物品，图集266切片/17行/63物品。热饮杯为带袖套纸杯，内容层按原有序Contents及自动批次投影，最终卡布有明确奶泡顶。三款制作、贴单、半杯/模式保存及全定义受管渲染范围见[咖啡记录](../openspec/changes/archive/2026-10-15-kitchen-beverage-batch/execution-notes.md)，数量和文件存在不替代实际验收。

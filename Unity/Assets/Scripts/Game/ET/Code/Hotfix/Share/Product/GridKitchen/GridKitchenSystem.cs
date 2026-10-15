@@ -29,6 +29,7 @@ namespace ET
             self.Tick = 0;
             self.Version = 0;
             self.LayoutVersion = 1;
+            self.Width = GridKitchenRules.Width; self.Height = GridKitchenRules.Height;
             self.LastFrameTime = TimeInfo.Instance.FrameTime;
             self.Accumulator = 0;
             self.Stopped = false;
@@ -47,7 +48,7 @@ namespace ET
             if (!self.RestoreKitchenBaseline())
             {
                 int variant = restaurant?.MenuVariant ?? 0;
-                var layout = Tables.Instance.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == 0 || row.MenuVariant == variant).ToArray();
+                var layout = Tables.Instance.DTInitialLayoutConfig.DataList.Where(row => ProductMenuCatalog.Includes(variant, row.MenuVariant)).ToArray();
                 self.Blocked.UnionWith(GridStationConfig.ValidateInitialLayout(Tables.Instance.DTStationConfig.DataList, layout,
                     Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTLevelConfig.DataList.Where(row => row.MenuVariant == variant).Select(row => new GridCell(row.SpawnX, row.SpawnY))));
                 foreach (var initial in layout) self.AddConfiguredStation(initial);
@@ -114,7 +115,7 @@ namespace ET
         }
 
         public static bool IsWalkable(this GridKitchenComponent self, GridCell cell) =>
-            cell.X > 0 && cell.X < GridKitchenRules.Width - 1 && cell.Y > 0 && cell.Y < GridKitchenRules.Height - 1 && !self.Blocked.Contains(cell);
+            cell.X > 0 && cell.X < self.Width - 1 && cell.Y > 0 && cell.Y < self.Height - 1 && !self.Blocked.Contains(cell);
 
         public static GridActor Actor(this GridKitchenComponent self, int memberId) => self.Actors.TryGetValue(memberId, out EntityRef<GridActor> value) ? value : null;
         public static GridStation Station(this GridKitchenComponent self, long id) => self.Stations.TryGetValue(id, out EntityRef<GridStation> value) ? value : null;
@@ -159,7 +160,7 @@ namespace ET
                 bool spawned = false;
                 Level level = self.ProductLevel();
                 for (int y = level?.SpawnCell.Y ?? 10; y > 0 && !spawned; --y)
-                for (int x = 1; x < GridKitchenRules.Width - 1 && !spawned; ++x)
+                for (int x = 1; x < self.Width - 1 && !spawned; ++x)
                 {
                     GridCell cell = new(x, y);
                     if (level != null && y == level.SpawnCell.Y && x < level.SpawnCell.X) continue;
@@ -179,8 +180,8 @@ namespace ET
         {
             GridActor actor = self.Actor(memberId);
             if (self.Stopped || !self.HasBinding(memberId, generation) || actor == null || actor.Generation != generation) return "EntryClosed";
-            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.UnbindDrink) return "InvalidCommand";
-            if (intent.Action >= GridAction.StartJuice && ((RestaurantRuntime)self.Restaurant)?.MenuVariant != 1) return "DrinkMenuRequired";
+            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.PortionDrinkBase) return "InvalidCommand";
+            if (IsDrinkAction(intent.Action) && !ProductMenuCatalog.Includes(((RestaurantRuntime)self.Restaurant)?.MenuVariant ?? 0, (int)ProductMenuVariant.Drink)) return "DrinkMenuRequired";
             Match match = self.Match;
             Participant member = match.GetChild<Participant>(memberId);
             HostPeer peer = member.BoundPeer;
@@ -191,7 +192,7 @@ namespace ET
             if (level != null && level.Paused) return "Paused";
             if (level != null && level.Phase == LevelPhase.Completed) return "LevelCompleted";
             if (intent.Action == GridAction.Move && !self.IsWalkable(intent.Cell)) return "BlockedCell";
-            if ((intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake || intent.Action >= GridAction.StartJuice || IsCleanupAction(intent.Action) || IsSupplyInteraction(intent.Action)) && self.Station(intent.TargetId) == null) return "UnknownCounter";
+            if (RequiresGridStation(intent.Action) && self.Station(intent.TargetId) == null) return "UnknownCounter";
             if (intent.Action == GridAction.PickupDrop && self.Item(intent.TargetId) == null) return "UnknownItem";
             // 接收元数据不移动角色/物品；世界修改留给固定 Tick。
             actor.LastReceivedCommandId = intent.CommandId; actor.LastReceivedIntent = intent;
@@ -273,6 +274,15 @@ namespace ET
 
         private static void InstallIntent(this GridKitchenComponent self, GridActor actor, GridIntent intent)
         {
+            if (intent.Action == GridAction.TakeContainerContent)
+            {
+                string error = self.CheckContainerExtraction(actor, self.Station(intent.TargetId), intent, out _, out _);
+                if (error != null)
+                {
+                    self.Result(actor, intent.CommandId, GridResultStatus.Rejected, error, intent.OriginKind);
+                    return;
+                }
+            }
             if (IsCleanupAction(intent.Action))
             {
                 // 不让自动接近先暂停正在参与的输入，再把它当成合法垃圾。
@@ -280,10 +290,10 @@ namespace ET
                 if (error != null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, error, intent.OriginKind); return; }
             }
             // 冲突开始在改路线前拒绝，避免先移动再因依赖失效暂停原工作。
-            if (intent.Action is GridAction.StartStationWork or GridAction.StartHeldWork && actor.WorkId != 0)
+            if (intent.Action is GridAction.StartStationWork or GridAction.StartHeldWork or GridAction.StartAssembly && actor.WorkId != 0)
             { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "WorkBusy", intent.OriginKind); return; }
             GridCell goal = intent.Cell;
-            if (intent.Action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake || intent.Action >= GridAction.StartJuice || IsCleanupAction(intent.Action) || IsSupplyInteraction(intent.Action))
+            if (RequiresGridStation(intent.Action))
             {
                 GridStation station = self.Station(intent.TargetId);
                 if (station == null) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "UnknownCounter", intent.OriginKind); return; }
@@ -298,7 +308,7 @@ namespace ET
                 }
                 if (shortest == int.MaxValue) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable", intent.OriginKind); return; }
             }
-            if (intent.Action is GridAction.PickupDrop or GridAction.StartHeldWork or GridAction.StopWork) goal = actor.Cell;
+            if (intent.Action is GridAction.PickupDrop or GridAction.StartHeldWork or GridAction.StartAssembly or GridAction.StopWork) goal = actor.Cell;
             if (!self.PlanRoute(actor, goal)) { self.Result(actor, intent.CommandId, GridResultStatus.Rejected, "Unreachable", intent.OriginKind); return; }
             self.ReleaseActorFrontWork(actor, false);
             if (intent.Action == GridAction.Move) self.PauseWork(actor);
@@ -386,7 +396,7 @@ namespace ET
 
         private static int SearchResultLength(this GridKitchenComponent self,GridCell from,GridCell to)
         {
-            int first=from.Y*GridKitchenRules.Width+from.X,current=to.Y*GridKitchenRules.Width+to.X,length=1;
+            int first=from.Y*self.Width+from.X,current=to.Y*self.Width+to.X,length=1;
             while(current!=first)
             {
                 current=self.SearchPrevious[current];++length;
@@ -397,11 +407,11 @@ namespace ET
         private static void CopySearchPath(this GridKitchenComponent self,GridCell from,GridCell to,List<GridCell> destination)
         {
             // 搜索和复制之间没有 await、消息分发或观察事件；调用者只得到自己的路径。
-            int first=from.Y*GridKitchenRules.Width+from.X,current=to.Y*GridKitchenRules.Width+to.X;
+            int first=from.Y*self.Width+from.X,current=to.Y*self.Width+to.X;
             destination.Clear();
             while(true)
             {
-                destination.Add(new GridCell(current%GridKitchenRules.Width,current/GridKitchenRules.Width));
+                destination.Add(new GridCell(current%self.Width,current/self.Width));
                 if(current==first)
                 {
                     break;
@@ -418,7 +428,7 @@ namespace ET
                 return false;
             }
             Array.Fill(self.SearchPrevious,-1);
-            int head=0,tail=0,first=from.Y*GridKitchenRules.Width+from.X,target=to.Y*GridKitchenRules.Width+to.X;
+            int head=0,tail=0,first=from.Y*self.Width+from.X,target=to.Y*self.Width+to.X;
             self.SearchQueue[tail++]=first;self.SearchPrevious[first]=first;
             while(head<tail)
             {
@@ -427,7 +437,7 @@ namespace ET
                 {
                     return true;
                 }
-                int x=current%GridKitchenRules.Width,y=current/GridKitchenRules.Width;
+                int x=current%self.Width,y=current/self.Width;
                 for(int direction=0;direction<4;direction++)
                 {
                     // 保留上、右、下、左的确定顺序；GridCell 是值类型，不申请邻格数组。
@@ -436,7 +446,7 @@ namespace ET
                     {
                         continue;
                     }
-                    int nextIndex=next.Y*GridKitchenRules.Width+next.X;
+                    int nextIndex=next.Y*self.Width+next.X;
                     if(self.SearchPrevious[nextIndex]!=-1)
                     {
                         continue;
@@ -451,7 +461,11 @@ namespace ET
         {
             GridIntent intent = actor.ActiveIntent;
             string error = null;
-            if (intent.Action == GridAction.StartHeldWork) error = self.StartWork(actor, null, intent);
+            if (intent.Action == GridAction.StartAssembly)
+            {
+                error = self.StartAssembly(actor, intent);
+            }
+            else if (intent.Action == GridAction.StartHeldWork) error = self.StartWork(actor, null, intent);
             else if (intent.Action == GridAction.StopWork) error = self.StopWork(actor, intent);
             else if (intent.Action == GridAction.PickupDrop)
             {
@@ -480,12 +494,14 @@ namespace ET
                         else { self.PauseWork(actor); station.ItemId = 0; actor.HandItemId = item.Id; item.Location = GridItemLocation.Hand; item.HolderId = actor.MemberId; }
                     }
                     else if (intent.Action == GridAction.AddToContainer) error = self.AddToContainer(actor, station, intent);
+                    else if (intent.Action == GridAction.TakeContainerContent) error = self.TakeContainerContent(actor, station, intent);
                     else if (intent.Action == GridAction.StartStationWork) error = self.StartWork(actor, station, intent);
                     else if (intent.Action == GridAction.PourContents) error = self.PourContents(actor, station, intent);
-                    else if (intent.Action is GridAction.StartAutoWork or GridAction.StartJuice) error = self.StartAutoWork(actor, station, intent);
-                    else if (intent.Action is GridAction.PortionSoup or GridAction.PortionJuice) error = self.PortionSoup(actor, station, intent);
+                    else if (intent.Action is GridAction.StartAutoWork or GridAction.StartJuice or GridAction.StartMix or GridAction.StartExtract or GridAction.HeatMilk or GridAction.FoamMilk) error = self.StartAutoWork(actor, station, intent);
+                    else if (intent.Action is GridAction.PortionSoup or GridAction.PortionJuice or GridAction.PortionBatter or GridAction.PortionDrinkBase) error = self.PortionSoup(actor, station, intent);
                     else if (intent.Action is GridAction.BindDrink or GridAction.UnbindDrink) error = self.BindDrink(actor, station, intent);
-                    else if (intent.Action == GridAction.StartBake) error = self.StartBake(actor, station, intent);
+                    else if (intent.Action == GridAction.Unmold) error = self.Unmold(actor, station, intent);
+                    else if (intent.Action is GridAction.StartBake or GridAction.StartFry or GridAction.StartGrind) error = self.StartBake(actor, station, intent);
                     else
                     {
                         GridItem item = self.Item(actor.HandItemId);

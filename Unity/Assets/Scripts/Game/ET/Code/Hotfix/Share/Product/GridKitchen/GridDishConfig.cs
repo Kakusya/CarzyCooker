@@ -14,8 +14,8 @@ namespace ET
                 ValidateMenu(level.AllowedDishIds.Concat(level.AllowedDrinkIds), tables.DTDishConfig.DataList, tables.DTDishStageConfig.DataList,
                     tables.DTGridItemConfig.DataList, tables.DTGridManualRecipeConfig.DataList, tables.DTGridAutoRecipeConfig.DataList,
                     tables.DTGridBakeRecipeConfig.DataList, tables.DTStationConfig.DataList,
-                    tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == 0 || row.MenuVariant == level.MenuVariant),
-                    tables.DTSupplyConfig.DataList.Where(row => row.MenuVariant == 0 || row.MenuVariant == level.MenuVariant));
+                    tables.DTInitialLayoutConfig.DataList.Where(row => ProductMenuCatalog.Includes(level.MenuVariant, row.MenuVariant)),
+                    tables.DTSupplyConfig.DataList.Where(row => ProductMenuCatalog.Includes(level.MenuVariant, row.MenuVariant)));
         }
 
         public static void ValidateMenu(IEnumerable<int> menuIds, IEnumerable<DRDishConfig> dishRows,
@@ -56,7 +56,7 @@ namespace ET
             {
                 var value = stages[stageId];
                 return value.Kind == (int)DishStageKind.Raw && items[value.OutputDefinitionId].Kind == 1 ||
-                    value.Kind == (int)DishStageKind.Bake || value.Kind == (int)DishStageKind.Manual && manuals[value.RecipeId].Mode == 1;
+                    value.Kind is (int)DishStageKind.Bake or (int)DishStageKind.Fry or (int)DishStageKind.Grind || value.Kind == (int)DishStageKind.Manual && manuals[value.RecipeId].Mode == GridManualMode.Chop;
             }
             void NeedWhole(DRDishStageConfig stage, int definition)
             { if (!Whole(stage.DependencyIds.Single(id => stages[id].OutputDefinitionId == definition))) throw new InvalidOperationException("Stage requires an actual whole material"); }
@@ -77,14 +77,14 @@ namespace ET
                     case DishStageKind.Manual:
                         if (!manuals.TryGetValue(stage.RecipeId, out var manual) || manual.RequiredTicks <= 0 || manual.OutputDefinitionId != output.Id || output.Kind != 1)
                             throw new InvalidOperationException("Invalid manual stage recipe");
-                        if (manual.Mode == 1)
+                        if (manual.Mode == GridManualMode.Chop)
                         { NeedInputs(stage, manual.InputDefinitionId); NeedCapability((int)GridStationCapability.Chop); if (stage.ContainerDefinitionId != 0) throw new InvalidOperationException("Unexpected manual container"); }
-                        else if (manual.Mode == 2 && stage.ContainerDefinitionId == GridKitchenRules.Bowl && Compatible(stage.ContainerDefinitionId, manual.InputDefinitionId) && Compatible(stage.ContainerDefinitionId, output.Id))
+                        else if (manual.Mode == GridManualMode.Beat && stage.ContainerDefinitionId == GridKitchenRules.Bowl && Compatible(stage.ContainerDefinitionId, manual.InputDefinitionId) && Compatible(stage.ContainerDefinitionId, output.Id))
                             NeedInputs(stage, manual.InputDefinitionId, stage.ContainerDefinitionId);
                         else throw new InvalidOperationException("Invalid held manual stage container");
                         NeedWhole(stage, manual.InputDefinitionId);
                         units = UnitsFor(stage, manual.InputDefinitionId);
-                        if (manual.Mode == 2) units = Math.Min(units, UnitsFor(stage, stage.ContainerDefinitionId));
+                        if (manual.Mode == GridManualMode.Beat) units = Math.Min(units, UnitsFor(stage, stage.ContainerDefinitionId));
                         break;
                     case DishStageKind.Batch:
                         if (!batches.TryGetValue(stage.RecipeId, out var batch) || batch.OutputDefinitionId != output.Id || batch.ContainerDefinitionId != stage.ContainerDefinitionId ||
@@ -96,12 +96,50 @@ namespace ET
                         for (int i = 0; i < batch.InputDefinitionIds.Count; ++i) batchCount = Math.Min(batchCount, UnitsFor(stage, batch.InputDefinitionIds[i]) / batch.InputCounts[i]);
                         units = checked(batchCount * batch.OutputPortions);
                         break;
+                    case DishStageKind.Grind:
                     case DishStageKind.Bake:
+                    case DishStageKind.Fry:
+                    case DishStageKind.BakeInCarrier:
                         if (!bakes.TryGetValue(stage.RecipeId, out var bake) || bake.OutputDefinitionId != output.Id || output.Kind != 1 || bake.RequiredTicks <= 0 ||
                             bake.InputDefinitionId == bake.OutputDefinitionId || !items.TryGetValue(bake.InputDefinitionId, out var raw) || raw.Kind != 1 ||
-                            bake.StationCapability != (int)GridStationCapability.Bake || stage.ContainerDefinitionId != 0)
+                            bake.StationCapability != (int)(stage.Kind == (int)DishStageKind.Grind ? GridStationCapability.Grind : stage.Kind == (int)DishStageKind.Fry ? GridStationCapability.Fry : GridStationCapability.Bake))
+                        {
                             throw new InvalidOperationException("Invalid bake stage recipe");
-                        NeedInputs(stage, bake.InputDefinitionId); NeedWhole(stage, bake.InputDefinitionId); NeedCapability(bake.StationCapability); units = UnitsFor(stage, bake.InputDefinitionId);
+                        }
+                        NeedInputs(stage, bake.InputDefinitionId);
+                        NeedCapability(bake.StationCapability);
+                        if ((DishStageKind)stage.Kind == DishStageKind.BakeInCarrier)
+                        {
+                            var sourceStage = stages[stage.DependencyIds.Single()];
+                            if (bake.CarrierDefinitionId != GridKitchenRules.BakingMold || stage.ContainerDefinitionId != bake.CarrierDefinitionId ||
+                                sourceStage.Kind != (int)DishStageKind.Portion || sourceStage.ContainerDefinitionId != bake.CarrierDefinitionId ||
+                                !Compatible(bake.CarrierDefinitionId, raw.Id) || !Compatible(bake.CarrierDefinitionId, output.Id))
+                            {
+                                throw new InvalidOperationException("Invalid carrier bake stage");
+                            }
+                        }
+                        else
+                        {
+                            if (bake.CarrierDefinitionId != 0 || stage.ContainerDefinitionId != 0)
+                            {
+                                throw new InvalidOperationException("Unexpected baking carrier");
+                            }
+                            NeedWhole(stage, bake.InputDefinitionId);
+                        }
+                        units = UnitsFor(stage, bake.InputDefinitionId);
+                        break;
+                    case DishStageKind.Unmold:
+                        if (stage.RecipeId != 0 || stage.ContainerDefinitionId != GridKitchenRules.DessertPlate || !Compatible(stage.ContainerDefinitionId, output.Id))
+                        {
+                            throw new InvalidOperationException("Invalid unmold target");
+                        }
+                        NeedInputs(stage, output.Id, stage.ContainerDefinitionId);
+                        var bakedStage = stages[stage.DependencyIds.Single(id => stages[id].OutputDefinitionId == output.Id)];
+                        if (bakedStage.Kind != (int)DishStageKind.BakeInCarrier || bakedStage.ContainerDefinitionId != GridKitchenRules.BakingMold)
+                        {
+                            throw new InvalidOperationException("Unmold requires actual baked carrier content");
+                        }
+                        units = Math.Min(UnitsFor(stage, output.Id), UnitsFor(stage, stage.ContainerDefinitionId));
                         break;
                     case DishStageKind.Portion:
                         if (stage.RecipeId != 0 || !Compatible(stage.ContainerDefinitionId, output.Id)) throw new InvalidOperationException("Invalid portion stage container");
@@ -112,9 +150,40 @@ namespace ET
                         units = Math.Min(UnitsFor(stage, output.Id), UnitsFor(stage, stage.ContainerDefinitionId));
                         break;
                     case DishStageKind.AddToContainer:
-                        if (stage.RecipeId != 0 || !Compatible(stage.ContainerDefinitionId, output.Id) || items[stage.ContainerDefinitionId].ContainerCapacity != 1)
+                        if (stage.RecipeId != 0 || !Compatible(stage.ContainerDefinitionId, output.Id))
                             throw new InvalidOperationException("Invalid plate stage container");
                         NeedInputs(stage, output.Id, stage.ContainerDefinitionId); NeedWhole(stage, output.Id); units = Math.Min(UnitsFor(stage, output.Id), UnitsFor(stage, stage.ContainerDefinitionId));
+                        break;
+                    case DishStageKind.Blend:
+                    case DishStageKind.Assembly:
+                        if (!manuals.TryGetValue(stage.RecipeId, out var assembly))
+                        {
+                            throw new InvalidOperationException("Missing assembly recipe");
+                        }
+                        GridAssemblyConfig.Validate(assembly, items);
+                        if (assembly.OutputDefinitionId != output.Id || assembly.ContainerDefinitionId != stage.ContainerDefinitionId)
+                        {
+                            throw new InvalidOperationException("Invalid assembly stage output / carrier");
+                        }
+                        NeedInputs(stage, assembly.InputDefinitionIds.Concat(new[] { assembly.ContainerDefinitionId }).ToArray());
+                        int assemblyCount = UnitsFor(stage, assembly.ContainerDefinitionId);
+                        for (int index = 0; index < assembly.InputDefinitionIds.Count; ++index)
+                        {
+                            if ((DishStageKind)stage.Kind == DishStageKind.Assembly)
+                            {
+                                NeedWhole(stage, assembly.InputDefinitionIds[index]);
+                            }
+                            else
+                            {
+                                var portion = stages[stage.DependencyIds.Single(key => stages[key].OutputDefinitionId == assembly.InputDefinitionIds[index])];
+                                if (assembly.ContainerDefinitionId != GridKitchenRules.HotDrinkCup || portion.Kind != (int)DishStageKind.Portion || items[portion.OutputDefinitionId].Form != (int)GridMaterialForm.Liquid)
+                                {
+                                    throw new InvalidOperationException("Blend requires actual compatible liquid portions");
+                                }
+                            }
+                            assemblyCount = Math.Min(assemblyCount, UnitsFor(stage, assembly.InputDefinitionIds[index]) / assembly.InputCounts[index]);
+                        }
+                        units = assemblyCount;
                         break;
                     default: throw new InvalidOperationException("Unknown dish stage kind");
                 }
@@ -128,7 +197,7 @@ namespace ET
                     throw new InvalidOperationException("Invalid menu dish / container");
                 if (dish.RequiresOrderBinding) NeedCapability((int)GridStationCapability.LabelDrink);
                 Visit(dish.FinalStageId); var final = stages[dish.FinalStageId];
-                if (final.Kind is not ((int)DishStageKind.Portion or (int)DishStageKind.AddToContainer) ||
+                if (final.Kind is not ((int)DishStageKind.Portion or (int)DishStageKind.AddToContainer or (int)DishStageKind.Assembly or (int)DishStageKind.Unmold or (int)DishStageKind.Blend) ||
                     final.OutputDefinitionId != dish.ContentDefinitionId || final.ContainerDefinitionId != dish.ContainerDefinitionId)
                     throw new InvalidOperationException("Dish requires its actual final container stage");
             }

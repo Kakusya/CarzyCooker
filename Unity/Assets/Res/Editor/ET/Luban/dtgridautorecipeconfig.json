@@ -34,5 +34,77 @@
     "StationCapability": 1024,
     "LockContainer": true,
     "MenuVariant": 1
+  },
+  {
+    "Id": 3,
+    "ContainerDefinitionId": 45,
+    "InputDefinitionIds": [
+      43,
+      3,
+      44
+    ],
+    "InputCounts": [
+      1,
+      1,
+      1
+    ],
+    "RequiredTicks": 80,
+    "OutputDefinitionId": 46,
+    "OutputPortions": 2,
+    "ServingContainerDefinitionId": 47,
+    "StationCapability": 8192,
+    "LockContainer": true,
+    "MenuVariant": 5
+  },
+  {
+    "Id": 4,
+    "ContainerDefinitionId": 54,
+    "InputDefinitionIds": [
+      53
+    ],
+    "InputCounts": [
+      1
+    ],
+    "RequiredTicks": 80,
+    "OutputDefinitionId": 56,
+    "OutputPortions": 4,
+    "ServingContainerDefinitionId": 59,
+    "StationCapability": 32768,
+    "LockContainer": true,
+    "MenuVariant": 6
+  },
+  {
+    "Id": 5,
+    "ContainerDefinitionId": 55,
+    "InputDefinitionIds": [
+      44
+    ],
+    "InputCounts": [
+      1
+    ],
+    "RequiredTicks": 60,
+    "OutputDefinitionId": 57,
+    "OutputPortions": 4,
+    "ServingContainerDefinitionId": 59,
+    "StationCapability": 65536,
+    "LockContainer": true,
+    "MenuVariant": 6
+  },
+  {
+    "Id": 6,
+    "ContainerDefinitionId": 55,
+    "InputDefinitionIds": [
+      44
+    ],
+    "InputCounts": [
+      1
+    ],
+    "RequiredTicks": 60,
+    "OutputDefinitionId": 58,
+    "OutputPortions": 2,
+    "ServingContainerDefinitionId": 59,
+    "StationCapability": 131072,
+    "LockContainer": true,
+    "MenuVariant": 6
   }
 ]

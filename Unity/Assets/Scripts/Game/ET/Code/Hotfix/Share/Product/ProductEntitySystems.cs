@@ -15,6 +15,8 @@ namespace ET
             self.RosterVersion = 0;
             self.NextMemberId = 0;
             self.Restaurant = default;
+            self.RoomVersion = 1;
+            self.RoomMenuVariant = 0;
         }
     }
 
@@ -31,6 +33,7 @@ namespace ET
             self.BindingGeneration = 0;
             self.ResumeCredential = null;
             self.LastResumeAttempt = 0;
+            self.ProfileId = self.ProfileKeyId = null;
         }
     }
 
@@ -80,6 +83,11 @@ namespace ET
             self.LastBuffCommand = default;
             self.LastSupplyCommand = default;
             self.LastRenovationCommand = default;
+            self.LastRoomCommand = default;
+            self.ProfileChallenge = null;
+            self.ProfileProved = false;
+            self.LastBaselineSignature = null;
+            self.LastBaselineRoomVersion = 0;
             self.LastCommandStatus = default;
             self.LastCommandReason = null;
         }

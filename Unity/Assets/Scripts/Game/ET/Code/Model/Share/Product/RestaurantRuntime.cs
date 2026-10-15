@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace ET
 {
     public enum LevelPhase { Preparing = 1, Operating = 2, Draining = 3, Completed = 4 }
-    public enum LevelControlAction { Start = 1, Pause = 2, Resume = 3, Continue = 4, SaveAndContinue = 5, FinishChapter = 6 }
+    public enum LevelControlAction { Start = 1, Pause = 2, Resume = 3, Continue = 4, SaveAndContinue = 5, FinishChapter = 6, SkipRenovation = 7 }
 
     public readonly struct LevelControlIntent : IEquatable<LevelControlIntent>
     {
@@ -62,6 +62,7 @@ namespace ET
         public bool IsChapterTerminal;
         public int[] StarThresholds;
         public int[] AllowedDishIds;
+        public readonly ProductionPermit ProductionPermit = new();
         public int[] AllowedRenovationIds;
         public int MenuVariant;
         public GridCell SpawnCell;
@@ -71,6 +72,8 @@ namespace ET
         public long TransitionSerial;
         public bool TransitionQueued;
         public LevelControlEnvelope? PreparationControl;
+        public readonly Dictionary<string, string> EligibleProfiles = new();
+        public EntityRef<CooperativeSaveResult> ClaimResult;
     }
 }
 #endif

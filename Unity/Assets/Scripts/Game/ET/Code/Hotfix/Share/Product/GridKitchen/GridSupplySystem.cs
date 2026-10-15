@@ -16,7 +16,7 @@ namespace ET
             self.Transitions.Clear(); self.Outcomes.Clear();
             var kitchen = self.GetParent<GridKitchenComponent>(); RestaurantRuntime restaurant = kitchen.Restaurant;
             int variant = restaurant?.MenuVariant ?? 0;
-            foreach (DRSupplyConfig source in Tables.Instance.DTSupplyConfig.DataList.Where(source => source.MenuVariant == 0 || source.MenuVariant == variant))
+            foreach (DRSupplyConfig source in Tables.Instance.DTSupplyConfig.DataList.Where(source => ProductMenuCatalog.Includes(variant, source.MenuVariant)))
                 self.RemainingPackages.Add(source.Id, source.AvailablePackages);
         }
     }
@@ -79,6 +79,13 @@ namespace ET
                     GridStation receiving = kitchen.SupplyReceivingStation(intent.SourceId);
                     error = level.Phase == LevelPhase.Draining ? "WrongPhase" : source == null || receiving == null || !supply.RemainingPackages.ContainsKey(source.Id) ? "InvalidSupply"
                         : intent.Quantity <= 0 ? "InvalidQuantity" : supply.RemainingPackages[source.Id] < intent.Quantity ? "SupplyExhausted" : null;
+                    if (error == null)
+                    {
+                        if (!level.ProductionPermit.ItemDefinitions.Contains(source.MaterialDefinitionId))
+                        {
+                            error = ProductionPermissionRules.Rejection(ProductionPermissionDecision.MenuRestricted);
+                        }
+                    }
                     if (error == null)
                     {
                         supply.RemainingPackages[source.Id] -= intent.Quantity;

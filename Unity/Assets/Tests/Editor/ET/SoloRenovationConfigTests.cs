@@ -12,7 +12,18 @@ namespace ET
             var buffer = new Luban.ByteBuf(); buffer.WriteInt(source.Id); buffer.WriteString(source.Name);
             buffer.WriteInt(station ?? source.StationDefinitionId); buffer.WriteInt(quantity ?? source.Quantity);
             buffer.WriteInt(x ?? source.InstallX); buffer.WriteInt(y ?? source.InstallY); buffer.WriteInt(orientation ?? source.Orientation);
-            buffer.WriteInt(source.RewardKind); buffer.WriteInt(source.UpgradeDefinitionId);
+            buffer.WriteInt((int)source.RewardKind); buffer.WriteInt(source.UpgradeDefinitionId);
+            buffer.WriteSize(source.UnlockDishIds.Count);
+            foreach (int id in source.UnlockDishIds)
+            {
+                buffer.WriteInt(id);
+            }
+            buffer.WriteSize(source.UnlockStationIds.Count);
+            foreach (int id in source.UnlockStationIds)
+            {
+                buffer.WriteInt(id);
+            }
+            buffer.WriteInt(source.ExpansionWidth); buffer.WriteInt(source.ExpansionHeight); buffer.WriteInt(source.TableDefinitionId);
             return new DRRenovationConfig(buffer);
         }
 
@@ -20,10 +31,10 @@ namespace ET
         public void SoloRenovationConfigActualFiniteCounterAndChoppingRewardsCreateNoExtraInitialItems()
         {
             RenovationConfig.ValidateAll(); var definitions = Tables.Instance.DTRenovationConfig.DataList;
-            Assert.That(definitions.Count, Is.EqualTo(6)); Assert.That(definitions.Where(row => row.RewardKind == 1).Select(row => row.Quantity), Is.All.EqualTo(1));
-            Assert.That(definitions.Where(row => row.RewardKind == 1).Select(row => Tables.Instance.DTStationConfig.Get(row.StationDefinitionId).Kind), Is.EqualTo(new[] { 0, 1, 0, 1 }));
-            Assert.That(Tables.Instance.DTLevelConfig.DataList.Where(row => row.ChapterId == 0 && row.MenuVariant == 0).All(row => row.AllowedRenovationIds.SequenceEqual(new[] { 1, 2 })), Is.True);
-            Assert.That(Tables.Instance.DTLevelConfig.DataList.Where(row => row.ChapterId == 0 && row.MenuVariant == 1).All(row => row.AllowedRenovationIds.SequenceEqual(new[] { 5, 6 })), Is.True);
+            Assert.That(definitions.Count, Is.EqualTo(8)); Assert.That(definitions.Where(row => row.RewardKind == RenovationRewardKind.InstallStation).Select(row => row.Quantity), Is.All.EqualTo(1));
+            Assert.That(definitions.Where(row => row.RewardKind == RenovationRewardKind.InstallStation).Select(row => Tables.Instance.DTStationConfig.Get(row.StationDefinitionId).Kind), Is.EqualTo(new[] { 0, 1, 0, 1 }));
+            Assert.That(Tables.Instance.DTLevelConfig.DataList.Where(row => row.ChapterId == 0 && row.MenuVariant == 0).All(row => row.AllowedRenovationIds.SequenceEqual(new[] { 1, 2, 3, 4 })), Is.True);
+            Assert.That(Tables.Instance.DTLevelConfig.DataList.Where(row => row.ChapterId == 0 && row.MenuVariant == 1).All(row => row.AllowedRenovationIds.SequenceEqual(new[] { 3, 4, 5, 6 })), Is.True);
             StartSolo(); Assert.That(Grid.Items.Count, Is.EqualTo(7)); Assert.That(Grid.Stations.Count, Is.EqualTo(16));
             Assert.That(CurrentLevel.AllowedRenovationIds, Is.EqualTo(new[] { 1, 2, 3, 4 }));
         }

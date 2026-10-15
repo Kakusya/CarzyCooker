@@ -127,6 +127,7 @@ namespace ET
                 Install(self, self.CandidateVersion, self.CandidateRoster);
             }
             self.CandidateRoster.Clear(); self.CandidateMatchId = null; self.Stage = ProductClientStage.Joined;
+            self.ApplyCandidateRoom();
             self.GetComponent<GridClientComponent>().ConfirmGridProjection();
             self.HeartbeatStarted = true; HeartbeatLoop(self).Forget();
         }

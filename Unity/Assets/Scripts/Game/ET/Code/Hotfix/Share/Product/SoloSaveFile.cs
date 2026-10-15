@@ -11,7 +11,7 @@ namespace ET
     public static class SoloSaveFile
     {
         private const string Magic = "CCSOLO01";
-        public const int MaxHeaderBytes = 4096;
+        public const int MaxHeaderBytes = 128 * 1024;
         public const int MaxPayloadBytes = 4 * 1024 * 1024;
 
         public static byte[] Encode(SoloSaveHeader header, SoloSavePayload payload)
@@ -33,7 +33,21 @@ namespace ET
                 stream.Length != Magic.Length + 8L + headLength + bodyLength) throw new InvalidOperationException("InvalidSaveLength");
             byte[] bytes = reader.ReadBytes(headLength);
             if (bytes.Length != headLength) throw new InvalidOperationException("TruncatedSaveHeader");
-            return (SoloSaveHeader)MemoryPackHelper.Deserialize(typeof(SoloSaveHeader), bytes, 0, bytes.Length);
+            var header = (SoloSaveHeader)MemoryPackHelper.Deserialize(typeof(SoloSaveHeader), bytes, 0, bytes.Length);
+            if (header != null && header.Version is >= 1 and <= 4)
+            {
+                // MemoryPack对旧成员表补default值，不执行新字段的属性初始化。
+                // 只做读取适配，不发布或改写原文件，也不把旧档当成已领取。
+                header.SourceProfileId = header.SourceSlotId == "" ? "" : header.ProfileId;
+                header.RootProfileId = header.ProfileId; header.RootSlotId = header.SlotId; header.RootRevision = header.Revision;
+                header.SourceResultId = header.AuthorizationId = "";
+                header.ClaimedResults = Array.Empty<string>(); header.ClaimSlots = Array.Empty<string>(); header.ClaimRevisions = Array.Empty<int>();
+            }
+            if (header != null && header.Version is >= 1 and <= 5)
+            {
+                header.Receipts = ProgressReceiptValues.FromLegacy(header);
+            }
+            return header;
         }
 
         public static SoloSavePayload ReadPayload(Stream stream, string profile, out SoloSaveHeader header)
@@ -48,6 +62,8 @@ namespace ET
                 offset += read;
             }
             var payload = (SoloSavePayload)MemoryPackHelper.Deserialize(typeof(SoloSavePayload), bytes, 0, bytes.Length);
+            RestaurantUnlockValues.AdaptLegacy(header, payload);
+            KitchenGeometryConfig.AdaptLegacy(header, payload);
             SoloSaveValidation.Payload(header, payload, profile); return payload;
         }
     }
@@ -120,6 +136,27 @@ namespace ET
             // Rebuild from committed headers, so response loss and reopening share the same fact.
             var existing = self.Browse().FirstOrDefault(h => h.ResultId == header.ResultId && h.ProfileId == header.ProfileId);
             if (existing != null) { self.Select(existing.SlotId, out var committed); return committed; }
+            return self.WriteNewRecord(header, payload);
+        }
+
+        public static SoloSaveHeader CommitWithReceipt(this SoloSaveRepository self, SoloSaveHeader header, SoloSavePayload payload)
+        {
+            SoloSaveValidation.Payload(header, payload, self.ProfileId);
+            RequireReceiptForRecord(header);
+            return self.WriteNewRecord(header, payload);
+        }
+
+        private static void RequireReceiptForRecord(SoloSaveHeader header)
+        {
+            if (header.Version < 6 || !header.Receipts.Any(receipt => receipt.ResultId == header.ResultId && receipt.ProfileId == header.ProfileId &&
+                receipt.SlotId == header.SlotId && receipt.Revision == header.Revision))
+            {
+                throw new InvalidOperationException("CommitReceiptRequired");
+            }
+        }
+
+        private static SoloSaveHeader WriteNewRecord(this SoloSaveRepository self, SoloSaveHeader header, SoloSavePayload payload)
+        {
             string target = self.SlotPath(header.SlotId);
             if (File.Exists(target)) throw new IOException("SaveSlotConflict");
             byte[] bytes = SoloSaveFile.Encode(header, payload);
@@ -137,6 +174,73 @@ namespace ET
                 return header;
             }
             finally { if (File.Exists(temp)) File.Delete(temp); }
+        }
+
+        public static string OwnerSlotPath(this SoloSaveRepository self, string owner, string slot)
+        {
+            if (!SoloSaveValidation.IsIdentifier(owner) || !SoloSaveValidation.IsIdentifier(slot))
+            {
+                throw new InvalidOperationException("InvalidSlotId");
+            }
+            string pcDirectory = Path.GetDirectoryName(self.DirectoryPath);
+            string ownerDirectory = Path.GetFullPath(Path.Combine(pcDirectory, owner));
+            string path = Path.GetFullPath(Path.Combine(ownerDirectory, slot + ".ccsave"));
+            if (!string.Equals(Path.GetDirectoryName(path), ownerDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("SavePathOutsideRepository");
+            }
+            return path;
+        }
+
+        public static SoloSavePayload SelectOwnerRecord(this SoloSaveRepository self, string owner, string slot, out SoloSaveHeader header)
+        {
+            string path = self.OwnerSlotPath(owner, slot);
+            if (!File.Exists(path))
+            {
+                throw new InvalidOperationException("TargetMissing");
+            }
+            using var stream = File.OpenRead(path);
+            var payload = SoloSaveFile.ReadPayload(stream, owner, out header);
+            if (header.SlotId != slot)
+            {
+                throw new InvalidOperationException("SlotIdentityMismatch");
+            }
+            return payload;
+        }
+
+        public static void ReplaceWithReceipt(this SoloSaveRepository self, SoloSaveHeader header, SoloSavePayload payload, int expectedRevision)
+        {
+            SoloSaveValidation.Payload(header, payload, header.ProfileId);
+            RequireReceiptForRecord(header);
+            self.SelectOwnerRecord(header.ProfileId, header.SlotId, out var current);
+            if (current.Revision != expectedRevision || header.Revision != checked(expectedRevision + 1))
+            {
+                throw new InvalidOperationException("RevisionConflict");
+            }
+            foreach (var prior in current.Receipts)
+            {
+                string key = ProgressReceiptValues.Key(prior);
+                var retained = header.Receipts.FirstOrDefault(receipt => ProgressReceiptValues.Key(receipt) == key);
+                if (retained == null || retained.ProfileId != prior.ProfileId || retained.SlotId != prior.SlotId || retained.Revision != prior.Revision)
+                {
+                    throw new InvalidOperationException("CommitReceiptMissing");
+                }
+            }
+            string target = self.OwnerSlotPath(header.ProfileId, header.SlotId);
+            string temporary = Path.Combine(Path.GetDirectoryName(target), ".replace-" + Guid.NewGuid().ToString("N") + ".tmp");
+            try
+            {
+                WriteTemporary(temporary, SoloSaveFile.Encode(header, payload));
+                // 同目录替换为唯一发布点；null备份参数，不生成可恢复旧载荷。
+                File.Replace(temporary, target, null);
+            }
+            finally
+            {
+                if (File.Exists(temporary))
+                {
+                    File.Delete(temporary);
+                }
+            }
         }
 
         private static void WriteTemporary(string path, byte[] bytes)

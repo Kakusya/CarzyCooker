@@ -4,20 +4,166 @@
     "Mode": 1,
     "InputDefinitionId": 1,
     "OutputDefinitionId": 2,
-    "RequiredTicks": 60
+    "RequiredTicks": 60,
+    "InputDefinitionIds": [],
+    "InputCounts": [],
+    "ContainerDefinitionId": 0,
+    "LastInputDefinitionId": 0
   },
   {
     "Id": 2,
     "Mode": 2,
     "InputDefinitionId": 3,
     "OutputDefinitionId": 4,
-    "RequiredTicks": 60
+    "RequiredTicks": 60,
+    "InputDefinitionIds": [],
+    "InputCounts": [],
+    "ContainerDefinitionId": 0,
+    "LastInputDefinitionId": 0
   },
   {
     "Id": 3,
     "Mode": 1,
     "InputDefinitionId": 15,
     "OutputDefinitionId": 16,
-    "RequiredTicks": 60
+    "RequiredTicks": 60,
+    "InputDefinitionIds": [],
+    "InputCounts": [],
+    "ContainerDefinitionId": 0,
+    "LastInputDefinitionId": 0
+  },
+  {
+    "Id": 4,
+    "Mode": 1,
+    "InputDefinitionId": 22,
+    "OutputDefinitionId": 23,
+    "RequiredTicks": 60,
+    "InputDefinitionIds": [],
+    "InputCounts": [],
+    "ContainerDefinitionId": 0,
+    "LastInputDefinitionId": 0
+  },
+  {
+    "Id": 5,
+    "Mode": 1,
+    "InputDefinitionId": 24,
+    "OutputDefinitionId": 25,
+    "RequiredTicks": 60,
+    "InputDefinitionIds": [],
+    "InputCounts": [],
+    "ContainerDefinitionId": 0,
+    "LastInputDefinitionId": 0
+  },
+  {
+    "Id": 6,
+    "Mode": 3,
+    "InputDefinitionId": 0,
+    "OutputDefinitionId": 27,
+    "RequiredTicks": 40,
+    "InputDefinitionIds": [
+      2,
+      23,
+      25
+    ],
+    "InputCounts": [
+      1,
+      1,
+      1
+    ],
+    "ContainerDefinitionId": 10,
+    "LastInputDefinitionId": 0
+  },
+  {
+    "Id": 7,
+    "Mode": 3,
+    "InputDefinitionId": 0,
+    "OutputDefinitionId": 28,
+    "RequiredTicks": 40,
+    "InputDefinitionIds": [
+      2,
+      23,
+      25,
+      26
+    ],
+    "InputCounts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "ContainerDefinitionId": 10,
+    "LastInputDefinitionId": 0
+  },
+  {
+    "Id": 8,
+    "Mode": 3,
+    "InputDefinitionId": 0,
+    "OutputDefinitionId": 38,
+    "RequiredTicks": 40,
+    "InputDefinitionIds": [
+      32,
+      34
+    ],
+    "InputCounts": [
+      1,
+      1
+    ],
+    "ContainerDefinitionId": 10,
+    "LastInputDefinitionId": 0
+  },
+  {
+    "Id": 9,
+    "Mode": 3,
+    "InputDefinitionId": 0,
+    "OutputDefinitionId": 39,
+    "RequiredTicks": 40,
+    "InputDefinitionIds": [
+      36,
+      37,
+      9
+    ],
+    "InputCounts": [
+      1,
+      1,
+      1
+    ],
+    "ContainerDefinitionId": 10,
+    "LastInputDefinitionId": 0
+  },
+  {
+    "Id": 10,
+    "Mode": 3,
+    "InputDefinitionId": 0,
+    "OutputDefinitionId": 60,
+    "RequiredTicks": 40,
+    "InputDefinitionIds": [
+      56,
+      57
+    ],
+    "InputCounts": [
+      1,
+      2
+    ],
+    "ContainerDefinitionId": 59,
+    "LastInputDefinitionId": 0
+  },
+  {
+    "Id": 11,
+    "Mode": 3,
+    "InputDefinitionId": 0,
+    "OutputDefinitionId": 61,
+    "RequiredTicks": 40,
+    "InputDefinitionIds": [
+      56,
+      57,
+      58
+    ],
+    "InputCounts": [
+      1,
+      1,
+      1
+    ],
+    "ContainerDefinitionId": 59,
+    "LastInputDefinitionId": 58
   }
 ]

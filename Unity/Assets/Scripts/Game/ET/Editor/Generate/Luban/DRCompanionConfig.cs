@@ -19,6 +19,11 @@ public sealed class DRCompanionConfig :  Luban.EditorBeanBase
     public DRCompanionConfig()
     {
             Name = "";
+            PreparationChat = "";
+            CooperationChat = "";
+            ClosingChat = "";
+            WorkFeedback = "";
+            GrowthFeedback = "";
     }
 
     public override void LoadJson(JSONObject _json)
@@ -87,6 +92,46 @@ public sealed class DRCompanionConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["PreparationChat"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsString) { throw new SerializationException(); }  PreparationChat = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["CooperationChat"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsString) { throw new SerializationException(); }  CooperationChat = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["ClosingChat"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsString) { throw new SerializationException(); }  ClosingChat = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["WorkFeedback"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsString) { throw new SerializationException(); }  WorkFeedback = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["GrowthFeedback"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsString) { throw new SerializationException(); }  GrowthFeedback = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -116,6 +161,31 @@ public sealed class DRCompanionConfig :  Luban.EditorBeanBase
         }
         {
             _json["WashTicks"] = new JSONNumber(WashTicks);
+        }
+        {
+
+            if (PreparationChat == null) { throw new System.ArgumentNullException(); }
+            _json["PreparationChat"] = new JSONString(PreparationChat);
+        }
+        {
+
+            if (CooperationChat == null) { throw new System.ArgumentNullException(); }
+            _json["CooperationChat"] = new JSONString(CooperationChat);
+        }
+        {
+
+            if (ClosingChat == null) { throw new System.ArgumentNullException(); }
+            _json["ClosingChat"] = new JSONString(ClosingChat);
+        }
+        {
+
+            if (WorkFeedback == null) { throw new System.ArgumentNullException(); }
+            _json["WorkFeedback"] = new JSONString(WorkFeedback);
+        }
+        {
+
+            if (GrowthFeedback == null) { throw new System.ArgumentNullException(); }
+            _json["GrowthFeedback"] = new JSONString(GrowthFeedback);
         }
     }
 
@@ -170,6 +240,31 @@ public sealed class DRCompanionConfig :  Luban.EditorBeanBase
     /// WashTicks
     /// </summary>
     public int WashTicks;
+
+    /// <summary>
+    /// 准备态备菜聊天
+    /// </summary>
+    public string PreparationChat;
+
+    /// <summary>
+    /// 准备态合作聊天
+    /// </summary>
+    public string CooperationChat;
+
+    /// <summary>
+    /// 准备态收店聊天
+    /// </summary>
+    public string ClosingChat;
+
+    /// <summary>
+    /// 真实伙伴完成反馈
+    /// </summary>
+    public string WorkFeedback;
+
+    /// <summary>
+    /// 本关第三次成长反馈
+    /// </summary>
+    public string GrowthFeedback;
 
 }
 }

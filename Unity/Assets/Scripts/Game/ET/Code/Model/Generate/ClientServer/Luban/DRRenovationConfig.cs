@@ -22,8 +22,13 @@ public sealed partial class DRRenovationConfig : Luban.BeanBase
         InstallX = _buf.ReadInt();
         InstallY = _buf.ReadInt();
         Orientation = _buf.ReadInt();
-        RewardKind = _buf.ReadInt();
+        RewardKind = (RenovationRewardKind)_buf.ReadInt();
         UpgradeDefinitionId = _buf.ReadInt();
+        {int n0 = _buf.ReadSize(); UnlockDishIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); UnlockDishIds.Add(_e0);}}
+        {int n0 = _buf.ReadSize(); UnlockStationIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); UnlockStationIds.Add(_e0);}}
+        ExpansionWidth = _buf.ReadInt();
+        ExpansionHeight = _buf.ReadInt();
+        TableDefinitionId = _buf.ReadInt();
         PostInit();
     }
 
@@ -63,11 +68,31 @@ public sealed partial class DRRenovationConfig : Luban.BeanBase
     /// <summary>
     /// RewardKind
     /// </summary>
-    public readonly int RewardKind;
+    public readonly RenovationRewardKind RewardKind;
     /// <summary>
     /// UpgradeDefinitionId
     /// </summary>
     public readonly int UpgradeDefinitionId;
+    /// <summary>
+    /// 解锁菜品定义
+    /// </summary>
+    public readonly System.Collections.Generic.List<int> UnlockDishIds;
+    /// <summary>
+    /// 解锁设备定义
+    /// </summary>
+    public readonly System.Collections.Generic.List<int> UnlockStationIds;
+    /// <summary>
+    /// 扩建后宽度
+    /// </summary>
+    public readonly int ExpansionWidth;
+    /// <summary>
+    /// 扩建后高度
+    /// </summary>
+    public readonly int ExpansionHeight;
+    /// <summary>
+    /// 扩建单客桌定义
+    /// </summary>
+    public readonly int TableDefinitionId;
     public const int __ID__ = -274287037;
     public override int GetTypeId() => __ID__;
 
@@ -88,6 +113,11 @@ public sealed partial class DRRenovationConfig : Luban.BeanBase
         + "Orientation:" + Orientation + ","
         + "RewardKind:" + RewardKind + ","
         + "UpgradeDefinitionId:" + UpgradeDefinitionId + ","
+        + "UnlockDishIds:" + Luban.StringUtil.CollectionToString(UnlockDishIds) + ","
+        + "UnlockStationIds:" + Luban.StringUtil.CollectionToString(UnlockStationIds) + ","
+        + "ExpansionWidth:" + ExpansionWidth + ","
+        + "ExpansionHeight:" + ExpansionHeight + ","
+        + "TableDefinitionId:" + TableDefinitionId + ","
         + "}";
     }
 

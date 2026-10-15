@@ -42,10 +42,12 @@ namespace ET
                         break;
                     case KitchenProcessKind.Soup:
                     case KitchenProcessKind.Juice:
+                    case KitchenProcessKind.Mix:
+                    case KitchenProcessKind.Beverage:
                         GridAutoProcess soup = self.AutoProcess(identity.SourceId);
                         if (soup != null && soup.InstanceId == identity.SourceInstanceId && soup.TransitionSerial == identity.Serial &&
                             soup.State == GridAutoState.Cooking && soup.CompletionQueued && soup.ProgressTicks >= soup.RequiredTicks &&
-                            soup.LockContainer == (value.Kind == KitchenProcessKind.Juice))
+                            AutoWorkKind(soup.RequiredCapability) == value.Kind)
                         {
                             soup.CompletionReceived = true;
                         }

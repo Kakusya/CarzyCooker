@@ -36,6 +36,10 @@ public partial class Tables
     public DTSupplyConfig DTSupplyConfig { private set; get; }
     public DTRenovationConfig DTRenovationConfig { private set; get; }
     public DTStationUpgradeConfig DTStationUpgradeConfig { private set; get; }
+    /// <summary>
+    /// 有限内容章与模式入口
+    /// </summary>
+    public DTRestaurantChapterConfig DTRestaurantChapterConfig { private set; get; }
     private System.Collections.Generic.Dictionary<string, IDataTable> _tables;
     public System.Collections.Generic.IEnumerable<IDataTable> DataTables => _tables.Values;
     public IDataTable GetDataTable(string tableName) => _tables.TryGetValue(tableName, out var v) ? v : null;
@@ -116,6 +120,9 @@ public partial class Tables
         DTStationUpgradeConfig = new DTStationUpgradeConfig(() => loader("dtstationupgradeconfig"));
         loadTasks.Add(DTStationUpgradeConfig.LoadAsync());
         _tables.Add("DTStationUpgradeConfig", DTStationUpgradeConfig);
+        DTRestaurantChapterConfig = new DTRestaurantChapterConfig(() => loader("dtrestaurantchapterconfig"));
+        loadTasks.Add(DTRestaurantChapterConfig.LoadAsync());
+        _tables.Add("DTRestaurantChapterConfig", DTRestaurantChapterConfig);
 
         await Cysharp.Threading.Tasks.UniTask.WhenAll(loadTasks);
 
@@ -149,6 +156,7 @@ public partial class Tables
         DTSupplyConfig.ResolveRef(this);
         DTRenovationConfig.ResolveRef(this);
         DTStationUpgradeConfig.ResolveRef(this);
+        DTRestaurantChapterConfig.ResolveRef(this);
         PostResolveRef();
     }
 

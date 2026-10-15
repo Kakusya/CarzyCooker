@@ -68,14 +68,15 @@ namespace ET
         }
 
         [UnityTest]
+        [Category("CooperativeUpgrade")]
         public IEnumerator CoopRenovationUiOrdinaryHostChoiceClientReadOnlyAndManagedContinue()
         {
             yield return StartCoopHostLauncher();
             string buff = Hud.GetComponentsInChildren<Button>(false).First(button => button.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
             yield return Command(buff); yield return Command("开始营业");
             yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed && Grid.RenovationChoiceVersion > 0, "Ordinary Host settlement prepares renovations", 90);
-            Assert.That(Grid.RenovationCandidates, Is.EqualTo(new[] { 5, 6 }));
-            string choice = Hud.GetComponentsInChildren<Button>(false).First(button => button.GetComponentInChildren<Text>().text.StartsWith("装修 ")).GetComponentInChildren<Text>().text;
+            Assert.That(Grid.RenovationCandidates, Is.EqualTo(new[] { 3, 4, 5, 6 }));
+            string choice = Hud.GetComponentsInChildren<Button>(false).Single(button => button.GetComponentInChildren<Text>().text == "装修 新增台面").GetComponentInChildren<Text>().text;
             var choose = CaptureButtonCallback(Button(choice));
             yield return Command(choice);
             int selected = Grid.SelectedRenovationId; long level = Grid.LevelId;
@@ -116,7 +117,7 @@ namespace ET
         public IEnumerator CoopDrinkUiOrdinaryPurchaseSplitPreparationBindingDeliveryAndClear()
         {
             yield return StartCoopHostLauncher();
-            Assert.That(Grid.LevelConfigId, Is.EqualTo(3));
+            Assert.That(Grid.LevelConfigId, Is.EqualTo(401));
             string buff = Hud.GetComponentsInChildren<Button>(false).First(button => button.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
             yield return Command(buff);
             ((Scene)Client.IScene).RemoveComponent<GridPresentationComponent>(); yield return null;

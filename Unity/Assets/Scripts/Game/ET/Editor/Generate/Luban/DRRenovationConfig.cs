@@ -19,6 +19,9 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
     public DRRenovationConfig()
     {
             Name = "";
+            RewardKind = RenovationRewardKind.InstallStation;
+            UnlockDishIds = new System.Collections.Generic.List<int>();
+            UnlockStationIds = new System.Collections.Generic.List<int>();
     }
 
     public override void LoadJson(JSONObject _json)
@@ -83,7 +86,7 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["RewardKind"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  RewardKind = _fieldJson;
+                if(_fieldJson.IsString) { RewardKind = (RenovationRewardKind)System.Enum.Parse(typeof(RenovationRewardKind), _fieldJson); } else if(_fieldJson.IsNumber) { RewardKind = (RenovationRewardKind)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -92,6 +95,46 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
             if (_fieldJson != null)
             {
                 if(!_fieldJson.IsNumber) { throw new SerializationException(); }  UpgradeDefinitionId = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["UnlockDishIds"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsArray) { throw new SerializationException(); } UnlockDishIds = new System.Collections.Generic.List<int>(); foreach(JSONNode __e0 in _fieldJson.Children) { int __v0;  if(!__e0.IsNumber) { throw new SerializationException(); }  __v0 = __e0;  UnlockDishIds.Add(__v0); }  
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["UnlockStationIds"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsArray) { throw new SerializationException(); } UnlockStationIds = new System.Collections.Generic.List<int>(); foreach(JSONNode __e0 in _fieldJson.Children) { int __v0;  if(!__e0.IsNumber) { throw new SerializationException(); }  __v0 = __e0;  UnlockStationIds.Add(__v0); }  
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["ExpansionWidth"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  ExpansionWidth = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["ExpansionHeight"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  ExpansionHeight = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["TableDefinitionId"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  TableDefinitionId = _fieldJson;
             }
         }
         
@@ -123,10 +166,29 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
             _json["Orientation"] = new JSONNumber(Orientation);
         }
         {
-            _json["RewardKind"] = new JSONNumber(RewardKind);
+            _json["RewardKind"] = new JSONNumber((int)RewardKind);
         }
         {
             _json["UpgradeDefinitionId"] = new JSONNumber(UpgradeDefinitionId);
+        }
+        {
+
+            if (UnlockDishIds == null) { throw new System.ArgumentNullException(); }
+            { var __cjson0 = new JSONArray(); _json["UnlockDishIds"] = __cjson0; foreach(var _e0 in UnlockDishIds) { JSONNode __v0; __v0 = new JSONNumber(_e0); __cjson0.Add(__v0); } }
+        }
+        {
+
+            if (UnlockStationIds == null) { throw new System.ArgumentNullException(); }
+            { var __cjson0 = new JSONArray(); _json["UnlockStationIds"] = __cjson0; foreach(var _e0 in UnlockStationIds) { JSONNode __v0; __v0 = new JSONNumber(_e0); __cjson0.Add(__v0); } }
+        }
+        {
+            _json["ExpansionWidth"] = new JSONNumber(ExpansionWidth);
+        }
+        {
+            _json["ExpansionHeight"] = new JSONNumber(ExpansionHeight);
+        }
+        {
+            _json["TableDefinitionId"] = new JSONNumber(TableDefinitionId);
         }
     }
 
@@ -180,12 +242,37 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
     /// <summary>
     /// RewardKind
     /// </summary>
-    public int RewardKind;
+    public RenovationRewardKind RewardKind;
 
     /// <summary>
     /// UpgradeDefinitionId
     /// </summary>
     public int UpgradeDefinitionId;
+
+    /// <summary>
+    /// 解锁菜品定义
+    /// </summary>
+    public System.Collections.Generic.List<int> UnlockDishIds;
+
+    /// <summary>
+    /// 解锁设备定义
+    /// </summary>
+    public System.Collections.Generic.List<int> UnlockStationIds;
+
+    /// <summary>
+    /// 扩建后宽度
+    /// </summary>
+    public int ExpansionWidth;
+
+    /// <summary>
+    /// 扩建后高度
+    /// </summary>
+    public int ExpansionHeight;
+
+    /// <summary>
+    /// 扩建单客桌定义
+    /// </summary>
+    public int TableDefinitionId;
 
 }
 }

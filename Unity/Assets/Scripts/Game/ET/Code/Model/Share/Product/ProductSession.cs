@@ -41,7 +41,7 @@ namespace ET
 
     public static class ProductSessionRules
     {
-        public const int ProtocolVersion = 22;
+        public const int ProtocolVersion = 34;
         public const int MaxPayloadBytes = 1024;
         public const int RequestTimeout = 4000;
         public const int HeartbeatInterval = 2000;
@@ -98,6 +98,8 @@ namespace ET
         // 仅由 HostSession 有序入口分配；本 Match 内不回绕或复用。
         public int NextMemberId;
         public EntityRef<RestaurantRuntime> Restaurant;
+        public long RoomVersion;
+        public int RoomMenuVariant;
     }
 
     [ChildOf(typeof(Match))]
@@ -110,6 +112,8 @@ namespace ET
         // 本 Match 内能力凭证，仅由 Join 创建，Leave/Match 释放撤销。
         public string ResumeCredential;
         public long LastResumeAttempt;
+        public string ProfileId;
+        public string ProfileKeyId;
     }
 
     [ComponentOf(typeof(Scene))]
@@ -144,6 +148,11 @@ namespace ET
         public BuffChoiceIntent LastBuffCommand;
         public SupplyIntent LastSupplyCommand;
         public RenovationChoiceIntent LastRenovationCommand;
+        public ProductRoomIntent LastRoomCommand;
+        public string ProfileChallenge;
+        public bool ProfileProved;
+        public byte[] LastBaselineSignature;
+        public long LastBaselineRoomVersion;
         public GridResultStatus LastCommandStatus;
         public string LastCommandReason;
     }
@@ -237,5 +246,7 @@ namespace ET
     public struct ProductClientLeft
     {
     }
+
+    public struct ProductEntryRequested { }
 }
 #endif

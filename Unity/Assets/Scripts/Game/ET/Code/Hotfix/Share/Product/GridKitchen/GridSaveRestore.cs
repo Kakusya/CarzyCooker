@@ -6,6 +6,7 @@ using System.Linq;
 namespace ET
 {
     [FriendOf(typeof(SoloSaveBinding))]
+    [FriendOf(typeof(CooperativeSaveBinding))]
     [FriendOf(typeof(SelectedSaveBaseline))]
     [FriendOf(typeof(RestaurantRenovation))]
     [FriendOf(typeof(KitchenSupply))]
@@ -17,8 +18,16 @@ namespace ET
         {
             Match match = self.Match;
             SelectedSaveBaseline baseline = match.GetComponent<SoloSaveBinding>()?.Baseline ?? default;
+            if (baseline == null)
+            {
+                baseline = match.GetComponent<CooperativeSaveBinding>()?.Baseline ?? default;
+            }
             if (baseline == null) return false;
             SoloSavePayload payload = baseline.Payload;
+            RestaurantUnlockValues.AdaptLegacy(baseline.Header, payload);
+            KitchenGeometryConfig.AdaptLegacy(baseline.Header, payload);
+            self.ResizeGridGeometry(payload.Geometry.Width, payload.Geometry.Height);
+            self.GetParent<RestaurantRuntime>().GetComponent<RestaurantUnlocks>().RestoreRestaurantUnlocks(payload.Unlocks);
             // All values were validated before ProductHost was created. No initial item path runs here.
             var stations = new Dictionary<int, GridStation>(); var items = new Dictionary<int, GridItem>();
             foreach (var saved in payload.Stations)
@@ -30,6 +39,11 @@ namespace ET
                 {
                     var table = station.AddComponent<FrontTable, DRTableConfig>(Tables.Instance.DTTableConfig.Get(saved.TableDefinitionId));
                     table.State = saved.TableDirty ? FrontTableState.Dirty : FrontTableState.Free; table.CustomerId = 0;
+                    if (saved.InitialLayoutId == 0)
+                    {
+                        station.Name = Tables.Instance.DTRenovationConfig.DataList.Single(reward => reward.RewardKind == RenovationRewardKind.ExpandSpace &&
+                            reward.TableDefinitionId == saved.TableDefinitionId).Name;
+                    }
                 }
             }
             foreach (var saved in payload.Items)
@@ -72,6 +86,11 @@ namespace ET
                 process.RecipeId = saved.RecipeId; process.RequiredTicks = saved.RequiredTicks; process.ProgressTicks = saved.ProgressTicks;
                 process.StationId = station.Id; process.InputItemId = input.Id; process.OutputDefinitionId = saved.OutputDefinitionId;
                 process.State = GridBakeState.Baking; process.StartedTick = -1; input.BakeProcessId = process.Id; station.BakeProcessId = process.Id;
+                process.CarrierItemId = saved.CarrierKey == 0 ? 0 : items[saved.CarrierKey].Id;
+                if (process.CarrierItemId != 0)
+                {
+                    items[saved.CarrierKey].BakeProcessId = process.Id;
+                }
                 self.BakeProcesses.Add(process.Id, process);
             }
             var supply = self.AddComponent<KitchenSupply>(); supply.RemainingPackages.Clear();
@@ -90,12 +109,22 @@ namespace ET
             if (payload.PendingRenovationId != 0)
             {
                 var definition = Tables.Instance.DTRenovationConfig.Get(payload.PendingRenovationId);
-                if (definition.RewardKind == 2)
+                if (definition.RewardKind == RenovationRewardKind.UpgradeStation)
                 {
                     var target = stations[payload.PendingUpgradeStationKey]; var upgrade = Tables.Instance.DTStationUpgradeConfig.Get(definition.UpgradeDefinitionId);
                     target.UpgradeDefinitionId = upgrade.Id; target.UpgradeLevel = upgrade.TargetLevel;
                     renovation.AppliedStations.TryGetValue(definition.Id, out var previous);
                     renovation.AppliedStations[definition.Id] = Array.AsReadOnly((previous ?? Array.Empty<long>()).Append(target.Id).Distinct().ToArray());
+                }
+                else if (definition.RewardKind == RenovationRewardKind.ExpandSpace)
+                {
+                    string error = self.CheckSpaceExpansion(definition, out var terrain);
+                    if (error != null)
+                    {
+                        throw new InvalidOperationException(error);
+                    }
+                    var table = self.InstallSpaceExpansion(definition, terrain);
+                    renovation.AppliedStations.Add(definition.Id, Array.AsReadOnly(new[] { table.Id }));
                 }
                 else
                 {
@@ -105,7 +134,7 @@ namespace ET
             }
             self.Blocked.UnionWith(GridStationConfig.ValidateTerrain(GridStationConfig.ValidateDefinitions(Tables.Instance.DTStationConfig.DataList),
                 self.Stations.Values.Select(value => (GridStation)value).Select(s => new GridStationPlacement(s.DefinitionId, s.Cell, s.Orientation)),
-                Tables.Instance.DTLevelConfig.DataList.Select(row => new GridCell(row.SpawnX, row.SpawnY))));
+                Tables.Instance.DTLevelConfig.DataList.Select(row => new GridCell(row.SpawnX, row.SpawnY)), self.Width, self.Height));
             return true;
         }
 

@@ -220,6 +220,6 @@ Join生成Participant所属32字节随机恢复凭证；Client将本轮凭证／
 
 ### 固定步与搜索工作区复用
 
-GridKitchen 持角色／手工作业 EntityRef 快照和固定 7×18 BFS 队列／前驱工作区；FrontLevelState 持顾客及稳定餐桌顺序，FrontWorkCommands 分开持原批次命令、角色移动、工作推进和伙伴调度候选。同步阶段填充后按原 MemberId／ID／优先级排序，使用前重新解引用，阶段末及 Awake／Destroy 清有效引用；CanStop 仅直接计数，不覆盖角色步缓冲。原 Stop→创建／转换→角色移动→工作推进→Claim 次序不变。
+GridKitchen 持角色／手工作业 EntityRef 快照和按已提交几何（初始7×18、有限扩建9×18）扩容复用的 BFS 队列／前驱工作区；FrontLevelState 持顾客及稳定餐桌顺序，FrontWorkCommands 分开持原批次命令、角色移动、工作推进和伙伴调度候选。同步阶段填充后按原 MemberId／ID／优先级排序，使用前重新解引用，阶段末及 Awake／Destroy 清有效引用；CanStop 仅直接计数，不覆盖角色步缓冲。原 Stop→创建／转换→角色移动→工作推进→Claim 次序不变。
 
 搜索保持上右下左；内部长度／可达性查询不创建结果列表，玩家借厨房临时路线后复制至自身 Path，伙伴和顾客直接填充自身 Path。搜索与消费之间没有 await／通知；公开 FindGridPath 每次返回独立列表，后续搜索或调用者修改互不影响。保留工位几何、公开 Neighbours、消息和完整投影的独立值边界，不宣称固定步零 GC。行为、真实入口和性能采样限制见 [执行记录](../openspec/changes/archive/2026-10-14-reduce-per-frame-allocations/execution-notes.md)。

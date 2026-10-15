@@ -17,8 +17,52 @@ namespace ET
         private static World s_InitializationWorld;
         [StaticField]
         private static Action s_StopInitialization;
+        [StaticField]
+        private static bool s_SwitchPending;
 
         public static World CurrentWorld => s_InitializationWorld;
+
+        public static bool ReturnToModeMenu(RuntimeInstanceConfig owner, string feedback = null)
+            => SwitchInitialization(owner, RuntimeInstanceConfig.Create(Guid.NewGuid().ToString("N"), "launcher", "solo",
+                showModeMenu: true, entryFeedback: feedback));
+
+        public static bool SwitchInitialization(RuntimeInstanceConfig owner, RuntimeInstanceConfig next)
+        {
+            World world = s_InitializationWorld;
+            if (s_SwitchPending || next == null || world == null || !ReferenceEquals(owner, RuntimeInstanceContext.Config))
+            {
+                return false;
+            }
+            s_SwitchPending = true;
+            SwitchAfterFiberFrame(owner, world, next).Forget();
+            return true;
+        }
+
+        private static async UniTaskVoid SwitchAfterFiberFrame(RuntimeInstanceConfig owner, World world, RuntimeInstanceConfig next)
+        {
+            try
+            {
+                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                if (!ReferenceEquals(owner, RuntimeInstanceContext.Config) || !IsCurrentInitialization(world))
+                {
+                    return;
+                }
+                // 退出捕获的完整 ET 运行后，才建立新的不可变启动上下文。
+                GameEntry.CodeRunner.StopRun();
+                RuntimeInstanceContext.Reset();
+                RuntimeInstanceContext.Prepare(next);
+                GameEntry.CodeRunner.StartRun("ET.Init");
+            }
+            catch (Exception exception)
+            {
+                RuntimeInstanceContext.Fail(next, "ProductModeSwitchFailed: " + exception.Message);
+                UnityEngine.Debug.LogException(exception);
+            }
+            finally
+            {
+                s_SwitchPending = false;
+            }
+        }
 
         public static void RegisterInitialization(World world, Action stop)
         {

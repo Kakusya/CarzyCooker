@@ -14,4 +14,5 @@ message GridBakeProcessState
     int64 OutputItemId = 8;
     int32 State = 9;
     int64 StartedTick = 10;
+    int64 CarrierItemId = 11;
 }

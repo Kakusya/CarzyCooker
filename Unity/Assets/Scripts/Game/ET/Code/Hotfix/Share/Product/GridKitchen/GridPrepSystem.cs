@@ -22,19 +22,30 @@ namespace ET
                 if (string.IsNullOrWhiteSpace(item.Name) || item.Kind is not (1 or 2) ||
                     (item.Kind == 1 && (item.ContainerCapacity != 0 || item.AcceptedDefinitionIds.Count != 0)) ||
                     (item.Kind == 2 && (item.ContainerCapacity <= 0 || item.AcceptedDefinitionIds.Count == 0)) ||
-                    item.MenuVariant is not (0 or 1) || item.Disposable && (item.Kind != 2 || item.ContainerCapacity != 1) ||
+                    !ProductMenuCatalog.IsValid(item.MenuVariant) || item.Disposable && (item.Kind != 2 || item.ContainerCapacity != (item.Id == GridKitchenRules.HotDrinkCup ? 3 : 1)) ||
                     item.AllowsEmptyContainers && (item.Kind != 2 || !item.Discardable) ||
                     item.AcceptedDefinitionIds.Any(id => !items.ContainsKey(id) || items[id].Kind != 1 &&
-                        !(item.AllowsEmptyContainers && items[id].Kind == 2 && items[id].Disposable)))
+                        !(item.AllowsEmptyContainers && items[id].Kind == 2 && items[id].Disposable)) ||
+                    item.ExclusiveDefinitionIds.Any(id => item.Kind != 2 || !item.AcceptedDefinitionIds.Contains(id)))
                     throw new InvalidOperationException($"Invalid grid item definition {item.Id}");
             foreach (DRGridManualRecipeConfig recipe in recipes)
-                if (recipe.RequiredTicks <= 0 || recipe.Mode is not (1 or 2) ||
+            {
+                if (recipe.Mode == GridManualMode.Assembly)
+                {
+                    GridAssemblyConfig.Validate(recipe, items);
+                    continue;
+                }
+                if (recipe.RequiredTicks <= 0 || recipe.Mode is not (GridManualMode.Chop or GridManualMode.Beat) ||
                     !items.ContainsKey(recipe.InputDefinitionId) || !items.ContainsKey(recipe.OutputDefinitionId) ||
                     items[recipe.InputDefinitionId].Kind != 1 || items[recipe.OutputDefinitionId].Kind != 1 ||
-                    recipe.InputDefinitionId == recipe.OutputDefinitionId)
+                    recipe.InputDefinitionId == recipe.OutputDefinitionId || recipe.InputDefinitionIds.Count != 0 ||
+                    recipe.InputCounts.Count != 0 || recipe.ContainerDefinitionId != 0 || recipe.LastInputDefinitionId != 0)
+                {
                     throw new InvalidOperationException($"Invalid grid recipe {recipe.Id}");
-            if (recipes.Count(r => r.Mode == 1 && r.InputDefinitionId == GridKitchenRules.Tomato && r.OutputDefinitionId == GridKitchenRules.TomatoChunks) != 1 ||
-                recipes.Count(r => r.Mode == 2 && r.InputDefinitionId == GridKitchenRules.Egg && r.OutputDefinitionId == GridKitchenRules.EggLiquid) != 1 ||
+                }
+            }
+            if (recipes.Count(r => r.Mode == GridManualMode.Chop && r.InputDefinitionId == GridKitchenRules.Tomato && r.OutputDefinitionId == GridKitchenRules.TomatoChunks) != 1 ||
+                recipes.Count(r => r.Mode == GridManualMode.Beat && r.InputDefinitionId == GridKitchenRules.Egg && r.OutputDefinitionId == GridKitchenRules.EggLiquid) != 1 ||
                 items[GridKitchenRules.Bowl].Kind != 2 || !items[GridKitchenRules.Bowl].AcceptedDefinitionIds.Contains(GridKitchenRules.Egg) ||
                 !items[GridKitchenRules.Bowl].AcceptedDefinitionIds.Contains(GridKitchenRules.EggLiquid))
                 throw new InvalidOperationException("Missing or incompatible grid prep recipes / bowl");
@@ -72,16 +83,38 @@ namespace ET
             if (input == null || input.Id != intent.ExpectedItemId || input.Location != GridItemLocation.Hand || input.HolderId != actor.MemberId ||
                 target == null || target.Id != intent.ExpectedTargetItemId || target.Location != GridItemLocation.Counter || target.HolderId != station.Id) return "TargetChanged";
             if (self.ItemWorking(target.Id) || self.ItemWorking(input.Id)) return "WorkBusy";
+            if (self.InputProcess(target.Id) is { } reserved && Tables.Instance.DTGridManualRecipeConfig.Get(reserved.RecipeId).Mode == GridManualMode.Assembly)
+            {
+                return "ProcessLocked";
+            }
             if (target.Hygiene != ItemHygiene.Clean || input.Hygiene != ItemHygiene.Clean) return "DirtyUtensil";
             if (target.AutoProcessId != 0) return "ProcessLocked";
             DRGridItemConfig source = Tables.Instance.DTGridItemConfig.Get(input.DefinitionId), bowl = Tables.Instance.DTGridItemConfig.Get(target.DefinitionId);
             if (source.Kind == 2) return "NestedContainer";
             if (bowl.Kind != 2 || !bowl.AcceptedDefinitionIds.Contains(input.DefinitionId)) return "IncompatibleMaterial";
+            if (!GridAssemblyConfig.AllowsContainerContents(target.DefinitionId,
+                target.Contents.Select(id => self.Item(id).DefinitionId).Append(input.DefinitionId).ToArray()))
+            {
+                return "ContainerFull";
+            }
             if (target.Contents.Count >= bowl.ContainerCapacity) return "ContainerFull";
-            if (target.DefinitionId is GridKitchenRules.Pot or GridKitchenRules.JuiceJug)
+            if (target.DefinitionId is GridKitchenRules.Pot or GridKitchenRules.JuiceJug or GridKitchenRules.MixingBowl or GridKitchenRules.CoffeeReceiver or GridKitchenRules.MilkPitcher)
             {
                 string error = self.CheckPotAddition(target, input.DefinitionId);
                 if (error != null) return error;
+            }
+            string permission = self.CheckProductionInput(target.DefinitionId, input.DefinitionId);
+            if (permission != null)
+            {
+                return permission;
+            }
+            if (target.DefinitionId == GridKitchenRules.HotDrinkCup)
+            {
+                string addition = self.CheckDrinkBaseAddition(target, input.DefinitionId);
+                if (addition != null)
+                {
+                    return addition;
+                }
             }
             self.PauseWork(actor);
             actor.HandItemId = 0; input.Location = GridItemLocation.Container; input.HolderId = target.Id; target.Contents.Add(input.Id);
@@ -90,12 +123,12 @@ namespace ET
 
         private static string StartWork(this GridKitchenComponent self, GridActor actor, GridStation station, GridIntent intent)
         {
-            int mode = intent.Action == GridAction.StartStationWork ? 1 : 2;
-            GridItem target = self.Item(mode == 1 ? station?.ItemId ?? 0 : actor.HandItemId);
+            GridManualMode mode = intent.Action == GridAction.StartStationWork ? GridManualMode.Chop : GridManualMode.Beat;
+            GridItem target = self.Item(mode == GridManualMode.Chop ? station?.ItemId ?? 0 : actor.HandItemId);
             if (target == null || target.Id != intent.ExpectedTargetItemId) return "TargetChanged";
             if (target.Hygiene != ItemHygiene.Clean) return "DirtyUtensil";
             GridItem input;
-            if (mode == 1)
+            if (mode == GridManualMode.Chop)
             {
                 if ((station.Capabilities & GridStationCapability.Chop) == 0) return "RequiresChoppingStation";
                 if (actor.HandItemId != 0) return "HandFull";
@@ -111,20 +144,29 @@ namespace ET
             if (input == null || input.Id != intent.ExpectedItemId) return "TargetChanged";
             DRGridManualRecipeConfig recipe = Tables.Instance.DTGridManualRecipeConfig.DataList.FirstOrDefault(r => r.Mode == mode && r.InputDefinitionId == input.DefinitionId);
             if (recipe == null) return "NoRecipe";
-            if (mode == 2 && !Tables.Instance.DTGridItemConfig.Get(target.DefinitionId).AcceptedDefinitionIds.Contains(recipe.OutputDefinitionId)) return "IncompatibleMaterial";
+            if (mode == GridManualMode.Beat && !Tables.Instance.DTGridItemConfig.Get(target.DefinitionId).AcceptedDefinitionIds.Contains(recipe.OutputDefinitionId)) return "IncompatibleMaterial";
             GridManualProcess process = self.InputProcess(input.Id);
             bool continuing = process != null;
+            if (!continuing)
+            {
+                string permission = self.CheckNewRecipePermission(self.ProductLevel()?.ProductionPermit.ManualRecipes.Contains(recipe.Id) ?? true,
+                    mode == GridManualMode.Chop ? station : null);
+                if (permission != null)
+                {
+                    return permission;
+                }
+            }
             if ((process?.Id ?? 0) != intent.ExpectedProcessId) return "ProcessChanged";
-            if (actor.WorkId != 0 || process?.State == GridWorkState.Working || (mode == 1 && self.ItemWorking(target.Id))) return "WorkBusy";
+            if (actor.WorkId != 0 || process?.State == GridWorkState.Working || (mode == GridManualMode.Chop && self.ItemWorking(target.Id))) return "WorkBusy";
             if (process == null)
             {
                 process = self.AddChild<GridManualProcess>();
                 process.RecipeId = recipe.Id; process.InputItemId = input.Id; process.TargetItemId = target.Id;
-                process.RequiredTicks = self.FrozenManualTicks(recipe, mode == 1 ? station : null); process.ProgressTicks = 0; process.OutputItemId = 0;
+                process.RequiredTicks = self.FrozenManualTicks(recipe, mode == GridManualMode.Chop ? station : null); process.ProgressTicks = 0; process.OutputItemId = 0;
                 self.Processes.Add(process.Id, process);
             }
             if (process.RecipeId != recipe.Id || process.TargetItemId != target.Id) return "ProcessChanged";
-            process.StationId = mode == 1 ? station.Id : 0;
+            process.StationId = mode == GridManualMode.Chop ? station.Id : 0;
             process.WorkerMemberId = actor.MemberId; process.WorkerGeneration = actor.Generation;
             process.State = GridWorkState.Working; process.StartedTick = self.Tick; actor.WorkId = process.Id;
             process.CompletionQueued = false; process.CompletionReceived = false;
@@ -155,9 +197,15 @@ namespace ET
                 GridActor actor = self.Actor(process.WorkerMemberId);
                 GridItem input = self.Item(process.InputItemId), target = self.Item(process.TargetItemId);
                 GridStation station = self.Station(process.StationId);
+                DRGridManualRecipeConfig recipe = Tables.Instance.DTGridManualRecipeConfig.Get(process.RecipeId);
                 bool valid = actor != null && actor.Generation == process.WorkerGeneration && actor.WorkId == process.Id &&
                     self.HasBinding(actor.MemberId, actor.Generation) && actor.Motion == GridMotion.Standing && input != null && target != null;
-                if (process.StationId != 0)
+                if (recipe.Mode == GridManualMode.Assembly)
+                {
+                    valid &= target != null && target.Id == input?.Id && actor?.HandItemId == target.Id &&
+                        target.Location == GridItemLocation.Hand && target.HolderId == actor?.MemberId && self.AssemblyContentsMatch(target, recipe);
+                }
+                else if (process.StationId != 0)
                     valid &= actor != null && station != null && (station.Capabilities & GridStationCapability.Chop) != 0 && station.ItemId == process.InputItemId &&
                         input?.Location == GridItemLocation.Counter && input?.HolderId == station.Id && actor?.HandItemId == 0 && self.AtStation(actor, station);
                 else valid &= actor?.HandItemId == process.TargetItemId && target?.Location == GridItemLocation.Hand && target?.HolderId == actor?.MemberId &&
@@ -181,7 +229,11 @@ namespace ET
                     }
                     continue;
                 }
-                DRGridManualRecipeConfig recipe = Tables.Instance.DTGridManualRecipeConfig.Get(process.RecipeId);
+                if (recipe.Mode == GridManualMode.Assembly)
+                {
+                    self.CompleteAssembly(process, actor, target, recipe);
+                    continue;
+                }
                 GridItem output = self.CreateGridItem(recipe.OutputDefinitionId, input.Location, input.HolderId, input.Cell);
                 if (station != null) station.ItemId = output.Id;
                 else { target.Contents.Clear(); target.Contents.Add(output.Id); }

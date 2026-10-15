@@ -37,7 +37,7 @@ namespace ET
             var customers=new Dictionary<long,GridCustomerProjection>();
             var works=new Dictionary<long,GridFrontWorkProjection>();
             var cell=new GridCell(3,12);
-            for(int definition=1;definition<=21;++definition)
+            for(int definition=1;definition<=Tables.Instance.DTGridItemConfig.DataList.Count;++definition)
             {
                 objects[8100+definition]=new GridItemProjection(8100+definition,Tables.Instance.DTGridItemConfig.Get(definition).Name,
                     GridItemLocation.Ground,0,cell,Array.Empty<long>(),definition);
@@ -64,7 +64,7 @@ namespace ET
                     Assert.That(stationRects.Add(ArtMap<long>("stations")[7001].sprite.rect),Is.True,"Each station direction uses its own view");
                 }
             }
-            Assert.That(stationRects.Count,Is.EqualTo(44));
+            Assert.That(stationRects.Count,Is.EqualTo(64));
             counters[7001]=new GridStationProjection(7001,cell,"美术灶台",8106,GridStationKind.Stove,orientation:1,
                 footprint:new[]{cell,new GridCell(4,12)},upgradeLevel:1);
             objects[8105]=new GridItemProjection(8105,"碗",GridItemLocation.Hand,1,cell,new long[]{8104},5);

@@ -11,8 +11,6 @@ namespace ET.Client
             if (self.SelectedLevelId != grid.LevelId || self.SelectedLevelGeneration != grid.LevelGeneration ||
                 !grid.Stations.TryGetValue(self.SelectedStationId, out GridStationProjection station))
             {
-                self.SelectedStationId = 0;
-                self.DetailsVisible = false;
                 return "目标：点击地图工位，或选择下方操作";
             }
             return $"目标：{station.Name} · {grid.ItemDescription(station.ItemId)}";

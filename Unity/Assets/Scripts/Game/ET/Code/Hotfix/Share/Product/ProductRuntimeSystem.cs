@@ -36,7 +36,14 @@ namespace ET
             RestaurantRuntime restaurant = self.FinishingRestaurant;
             if (restaurant == null) return;
             self.FinishingRestaurant = default;
-            self.ReturnToSoloSelection(restaurant);
+            if (self.Config.Role == RuntimeInstanceRole.Host)
+            {
+                ((HostSessionComponent)self.Authority)?.FinishCooperativeChapter(restaurant);
+            }
+            else
+            {
+                self.ReturnToSoloSelection(restaurant);
+            }
         }
 
         [EntitySystem]
@@ -69,6 +76,11 @@ namespace ET
             self.Stage = ProductStage.Failed;
             RuntimeInstanceContext.Fail(self.Config, reason);
             Log.Warning(reason);
+            if (self.Config.StartInRoom && self.Config.Role == RuntimeInstanceRole.Client)
+            {
+                ProductBootstrapBridge.ReturnToModeMenu(self.Config, reason);
+                return;
+            }
             EntityRef<ProductRuntimeComponent> selfRef = self;
             self.Fiber().ThreadSynchronizationContext.Post(() =>
             {
@@ -171,12 +183,31 @@ namespace ET
             ProductRuntimeComponent runtime = root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(RuntimeInstanceContext.Config);
             try
             {
-                if (RuntimeInstanceContext.Config.Role == RuntimeInstanceRole.Solo)
+                if (RuntimeInstanceContext.Config.ShowModeMenu)
+                {
+                    runtime.RegisterProductEntry();
+                    EventSystem.Instance.Publish(root, new ProductEntryRequested());
+                }
+                else if (RuntimeInstanceContext.Config.Role == RuntimeInstanceRole.Solo)
                 {
                     runtime.RegisterProductEntry();
                     EventSystem.Instance.Publish(root, new SoloSaveSelectionRequested());
                 }
-                else runtime.InitializeProduct(menuVariant: 1);
+                else
+                {
+                    if (RuntimeInstanceContext.Config.Role == RuntimeInstanceRole.Host && RuntimeInstanceContext.Config.StartInRoom)
+                    {
+                        runtime.InitializeProductRoom();
+                    }
+                    else
+                    {
+                        runtime.InitializeProduct(menuVariant: 1);
+                    }
+                    if (RuntimeInstanceContext.Config.StartInRoom)
+                    {
+                        EventSystem.Instance.Publish(root, new ProductEntryRequested());
+                    }
+                }
             }
             catch (Exception e)
             {

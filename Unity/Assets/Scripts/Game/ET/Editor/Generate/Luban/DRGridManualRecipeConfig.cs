@@ -18,6 +18,9 @@ public sealed class DRGridManualRecipeConfig :  Luban.EditorBeanBase
 {
     public DRGridManualRecipeConfig()
     {
+            Mode = GridManualMode.Chop;
+            InputDefinitionIds = new System.Collections.Generic.List<int>();
+            InputCounts = new System.Collections.Generic.List<int>();
     }
 
     public override void LoadJson(JSONObject _json)
@@ -34,7 +37,7 @@ public sealed class DRGridManualRecipeConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["Mode"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  Mode = _fieldJson;
+                if(_fieldJson.IsString) { Mode = (GridManualMode)System.Enum.Parse(typeof(GridManualMode), _fieldJson); } else if(_fieldJson.IsNumber) { Mode = (GridManualMode)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -62,6 +65,38 @@ public sealed class DRGridManualRecipeConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["InputDefinitionIds"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsArray) { throw new SerializationException(); } InputDefinitionIds = new System.Collections.Generic.List<int>(); foreach(JSONNode __e0 in _fieldJson.Children) { int __v0;  if(!__e0.IsNumber) { throw new SerializationException(); }  __v0 = __e0;  InputDefinitionIds.Add(__v0); }  
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["InputCounts"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsArray) { throw new SerializationException(); } InputCounts = new System.Collections.Generic.List<int>(); foreach(JSONNode __e0 in _fieldJson.Children) { int __v0;  if(!__e0.IsNumber) { throw new SerializationException(); }  __v0 = __e0;  InputCounts.Add(__v0); }  
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["ContainerDefinitionId"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  ContainerDefinitionId = _fieldJson;
+            }
+        }
+        
+        { 
+            var _fieldJson = _json["LastInputDefinitionId"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  LastInputDefinitionId = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -70,7 +105,7 @@ public sealed class DRGridManualRecipeConfig :  Luban.EditorBeanBase
             _json["Id"] = new JSONNumber(Id);
         }
         {
-            _json["Mode"] = new JSONNumber(Mode);
+            _json["Mode"] = new JSONNumber((int)Mode);
         }
         {
             _json["InputDefinitionId"] = new JSONNumber(InputDefinitionId);
@@ -80,6 +115,22 @@ public sealed class DRGridManualRecipeConfig :  Luban.EditorBeanBase
         }
         {
             _json["RequiredTicks"] = new JSONNumber(RequiredTicks);
+        }
+        {
+
+            if (InputDefinitionIds == null) { throw new System.ArgumentNullException(); }
+            { var __cjson0 = new JSONArray(); _json["InputDefinitionIds"] = __cjson0; foreach(var _e0 in InputDefinitionIds) { JSONNode __v0; __v0 = new JSONNumber(_e0); __cjson0.Add(__v0); } }
+        }
+        {
+
+            if (InputCounts == null) { throw new System.ArgumentNullException(); }
+            { var __cjson0 = new JSONArray(); _json["InputCounts"] = __cjson0; foreach(var _e0 in InputCounts) { JSONNode __v0; __v0 = new JSONNumber(_e0); __cjson0.Add(__v0); } }
+        }
+        {
+            _json["ContainerDefinitionId"] = new JSONNumber(ContainerDefinitionId);
+        }
+        {
+            _json["LastInputDefinitionId"] = new JSONNumber(LastInputDefinitionId);
         }
     }
 
@@ -103,7 +154,7 @@ public sealed class DRGridManualRecipeConfig :  Luban.EditorBeanBase
     /// <summary>
     /// Mode
     /// </summary>
-    public int Mode;
+    public GridManualMode Mode;
 
     /// <summary>
     /// InputDefinitionId
@@ -119,6 +170,26 @@ public sealed class DRGridManualRecipeConfig :  Luban.EditorBeanBase
     /// RequiredTicks
     /// </summary>
     public int RequiredTicks;
+
+    /// <summary>
+    /// 精确组装投入
+    /// </summary>
+    public System.Collections.Generic.List<int> InputDefinitionIds;
+
+    /// <summary>
+    /// 精确组装份数
+    /// </summary>
+    public System.Collections.Generic.List<int> InputCounts;
+
+    /// <summary>
+    /// 组装载具
+    /// </summary>
+    public int ContainerDefinitionId;
+
+    /// <summary>
+    /// 最后投入的定义（0为不限顺序）
+    /// </summary>
+    public int LastInputDefinitionId;
 
 }
 }

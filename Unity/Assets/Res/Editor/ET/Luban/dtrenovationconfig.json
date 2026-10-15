@@ -8,7 +8,12 @@
     "InstallY": 13,
     "Orientation": 0,
     "RewardKind": 1,
-    "UpgradeDefinitionId": 0
+    "UpgradeDefinitionId": 0,
+    "UnlockDishIds": [],
+    "UnlockStationIds": [],
+    "ExpansionWidth": 0,
+    "ExpansionHeight": 0,
+    "TableDefinitionId": 0
   },
   {
     "Id": 2,
@@ -19,7 +24,12 @@
     "InstallY": 12,
     "Orientation": 0,
     "RewardKind": 1,
-    "UpgradeDefinitionId": 0
+    "UpgradeDefinitionId": 0,
+    "UnlockDishIds": [],
+    "UnlockStationIds": [],
+    "ExpansionWidth": 0,
+    "ExpansionHeight": 0,
+    "TableDefinitionId": 0
   },
   {
     "Id": 3,
@@ -30,7 +40,12 @@
     "InstallY": 0,
     "Orientation": 0,
     "RewardKind": 2,
-    "UpgradeDefinitionId": 1
+    "UpgradeDefinitionId": 1,
+    "UnlockDishIds": [],
+    "UnlockStationIds": [],
+    "ExpansionWidth": 0,
+    "ExpansionHeight": 0,
+    "TableDefinitionId": 0
   },
   {
     "Id": 4,
@@ -41,7 +56,12 @@
     "InstallY": 0,
     "Orientation": 0,
     "RewardKind": 2,
-    "UpgradeDefinitionId": 2
+    "UpgradeDefinitionId": 2,
+    "UnlockDishIds": [],
+    "UnlockStationIds": [],
+    "ExpansionWidth": 0,
+    "ExpansionHeight": 0,
+    "TableDefinitionId": 0
   },
   {
     "Id": 5,
@@ -52,7 +72,12 @@
     "InstallY": 16,
     "Orientation": 0,
     "RewardKind": 1,
-    "UpgradeDefinitionId": 0
+    "UpgradeDefinitionId": 0,
+    "UnlockDishIds": [],
+    "UnlockStationIds": [],
+    "ExpansionWidth": 0,
+    "ExpansionHeight": 0,
+    "TableDefinitionId": 0
   },
   {
     "Id": 6,
@@ -63,6 +88,47 @@
     "InstallY": 16,
     "Orientation": 0,
     "RewardKind": 1,
-    "UpgradeDefinitionId": 0
+    "UpgradeDefinitionId": 0,
+    "UnlockDishIds": [],
+    "UnlockStationIds": [],
+    "ExpansionWidth": 0,
+    "ExpansionHeight": 0,
+    "TableDefinitionId": 0
+  },
+  {
+    "Id": 7,
+    "Name": "解锁现榨菜单",
+    "StationDefinitionId": 0,
+    "Quantity": 0,
+    "InstallX": 0,
+    "InstallY": 0,
+    "Orientation": 0,
+    "RewardKind": 3,
+    "UpgradeDefinitionId": 0,
+    "UnlockDishIds": [
+      3
+    ],
+    "UnlockStationIds": [
+      10
+    ],
+    "ExpansionWidth": 0,
+    "ExpansionHeight": 0,
+    "TableDefinitionId": 0
+  },
+  {
+    "Id": 8,
+    "Name": "扩建单客桌",
+    "StationDefinitionId": 5,
+    "Quantity": 1,
+    "InstallX": 7,
+    "InstallY": 3,
+    "Orientation": 0,
+    "RewardKind": 4,
+    "UpgradeDefinitionId": 0,
+    "UnlockDishIds": [],
+    "UnlockStationIds": [],
+    "ExpansionWidth": 9,
+    "ExpansionHeight": 18,
+    "TableDefinitionId": 3
   }
 ]

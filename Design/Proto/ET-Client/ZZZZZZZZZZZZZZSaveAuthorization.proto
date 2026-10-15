@@ -1,0 +1,26 @@
+syntax = "proto3";
+package ET;
+
+// 仅ProductRoot本地repository；不得加入远端ProductWire白名单。
+// ResponseType SaveAuthorizationResponse
+message SaveAuthorizationRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 Action = 2;
+    string SlotId = 3;
+    bytes Document = 4;
+    bytes RecipientIdentity = 5;
+    string TicketId = 6;
+    bytes Confirmation = 7;
+}
+
+message SaveAuthorizationResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    string OutputPath = 4;
+    bytes Document = 5;
+    bytes Receipt = 6;
+    bytes Preview = 7;
+}

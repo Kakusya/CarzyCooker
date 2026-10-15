@@ -29,6 +29,7 @@ PALETTE = {
     "pink": (0.80, 0.27, 0.39), "purple": (0.41, 0.29, 0.58),
     "water": (0.32, 0.72, 0.85), "soup": (0.87, 0.30, 0.10),
     "tile": (0.52, 0.68, 0.60),
+    "coffee": (0.20, 0.075, 0.025), "latte": (0.67, 0.39, 0.19),
 }
 bpy.ops.object.select_all(action="SELECT")
 bpy.ops.object.delete(use_global=False)
@@ -160,6 +161,39 @@ def cabinet(kind):
         cylinder("Juicer chamber", (0, 0, 1.04), .18, .20, "ivory")
         cylinder("Juicer lid", (0, 0, 1.17), .21, .05, "tealdark")
         box("Power button", (0, -.236, .89), (.10, .03, .08), "yellow", .02)
+    elif kind == 13:
+        box("Grinder body", (0, .04, .98), (.40, .40, .42), "tealdark", .05)
+        cylinder("Bean hopper", (0, .04, 1.27), .23, .22, "cream")
+        cylinder("Hopper lid", (0, .04, 1.40), .25, .035, "coffee")
+        box("Ground coffee outlet", (0, -.19, .96), (.19, .22, .10), "metal", .02)
+        sphere("Grind switch", (.15, -.17, 1.10), (.035, .025, .035), "orange")
+    elif kind == 14:
+        box("Coffee machine body", (0, .15, 1.00), (.71, .42, .48), "tealdark", .06)
+        box("Coffee machine face", (0, -.08, 1.05), (.63, .035, .28), "metal", .025)
+        cylinder("Group head", (0, -.17, .96), .10, .15, "dark")
+        box("Drip tray", (0, -.20, .77), (.58, .42, .035), "metal", .02)
+        for x in [-.17, 0, .17]:
+            sphere("Coffee controls", (x, -.105, 1.11), (.035, .02, .035), "cream")
+    elif kind == 15:
+        box("Steam boiler", (-.14, .17, 1.02), (.39, .42, .53), "tealdark", .05)
+        cylinder("Steam dial", (-.14, -.054, 1.15), .11, .025, "cream").rotation_euler.x = math.pi / 2
+        box("Steam wand arm", (.12, .11, 1.20), (.29, .06, .055), "metal", .015)
+        cylinder("Steam wand", (.24, .11, 1.04), .028, .30, "metal")
+        sphere("Mode switch", (-.14, -.055, .95), (.05, .025, .04), "orange")
+    elif kind == 12:
+        box("Mixer motor", (0, .19, .96), (.49, .32, .43), "tealdark", .08)
+        box("Mixer arm", (0, .01, 1.12), (.49, .45, .13), "cream", .045)
+        cylinder("Whisk shaft", (0, -.10, .94), .026, .25, "metal")
+        for angle in [0, math.pi / 3, -math.pi / 3]:
+            ring("Whisk wire", (0, -.10, .86), .10, .013, "metal", (math.pi / 2, 0, angle))
+        sphere("Mixer switch", (.20, .02, 1.03), (.04, .03, .04), "orange")
+    elif kind == 11:
+        box("Griddle rim", (0, 0, .75), (.86, .78, .08), "metal", .04)
+        box("Hot flat surface", (0, 0, .80), (.74, .65, .03), "dark", .025)
+        for x in [-.22, 0, .22]:
+            sphere("Heat indicator", (x, -.46, .57), (.038, .025, .035), "orange")
+        box("Spatula blade", (.25, .08, .84), (.18, .21, .018), "metal", .018)
+        box("Spatula handle", (.25, -.10, .85), (.06, .20, .045), "wood", .015)
     elif kind == 10:
         box("Label roll", (0, .11, .83), (.32, .28, .23), "cream")
         box("Ticket", (.08, -.19, .75), (.35, .30, .025), "ivory", .01)
@@ -167,6 +201,36 @@ def cabinet(kind):
             box("Print", (.08, y, .77), (.23, .016, .008), "tealdark", 0)
 
 def vessel(kind):
+    if kind in [54, 55]:
+        cylinder("Coffee receiver" if kind == 54 else "Milk pitcher", (0, 0, .20), .25, .36, "teal" if kind == 54 else "metal")
+        cylinder("Jug interior", (0, 0, .39), .21, .012, "cream")
+        ring("Jug rim", (0, 0, .40), .235, .02, "ivory")
+        ring("Jug handle", (.29, 0, .23), .11, .027, "tealdark", (math.pi / 2, 0, 0))
+        box("Jug spout", (-.23, 0, .37), (.10, .12, .04), "teal" if kind == 54 else "metal", .015)
+        return
+    if kind == 59:
+        cylinder("Hot drink cup", (0, 0, .19), .26, .35, "ivory")
+        cylinder("Hot cup interior", (0, 0, .377), .22, .012, "cream")
+        ring("Hot cup rim", (0, 0, .39), .245, .017, "teal")
+        cylinder("Hot cup sleeve", (0, 0, .16), .268, .11, "teal")
+        return
+    if kind == 45:
+        cylinder("Mixing bowl", (0, 0, .14), .37, .25, "teal")
+        cylinder("Mixing bowl interior", (0, 0, .272), .32, .014, "cream")
+        ring("Mixing bowl lip", (0, 0, .285), .35, .025, "ivory")
+        return
+    if kind == 47:
+        cylinder("Reusable cake mold", (0, 0, .09), .28, .17, "metal")
+        cylinder("Mold interior", (0, 0, .182), .235, .012, "tealdark")
+        ring("Mold rim", (0, 0, .192), .265, .017, "metal")
+        for i in range(10):
+            angle = i * math.tau / 10
+            box("Mold flute", (.273 * math.cos(angle), .273 * math.sin(angle), .095), (.018, .04, .13), "ivory", .006).rotation_euler.z = angle
+        return
+    if kind == 49:
+        cylinder("Dessert plate", (0, 0, .06), .34, .055, "ivory")
+        ring("Dessert plate rim", (0, 0, .097), .30, .017, "teal")
+        return
     if kind == 10:
         cylinder("Plate", (0, 0, .08), .42, .07, "ivory")
         ring("Plate rim", (0, 0, .12), .37, .025, "cream")
@@ -185,7 +249,7 @@ def vessel(kind):
             box("Cup stripe", (x, -.218, .23), (.035, .015, .22), "orange", .006)
 
 def food(kind):
-    if kind in [5, 6, 10, 17, 19]:
+    if kind in [5, 6, 10, 17, 19, 45, 47, 49, 54, 55, 59]:
         vessel(kind)
     elif kind in [1, 15]:
         sphere("Fruit", (0, 0, .27), (.31, .31, .27), "red" if kind == 1 else "orange")
@@ -212,10 +276,114 @@ def food(kind):
         if kind == 9:
             for x in [-.14, 0, .14]:
                 box("Toast line", (x, 0, .207), (.02, .29, .008), "woodlight", .008)
+    elif kind == 22:
+        for i in range(7):
+            a = i * math.tau / 7
+            leaf = sphere("Lettuce leaf", (.13 * math.cos(a), .13 * math.sin(a), .17), (.19, .26, .14), "green")
+            leaf.rotation_euler.z = a
+            box("Leaf vein", (.13 * math.cos(a), .13 * math.sin(a), .29), (.025, .22, .012), "cream", .006).rotation_euler.z = a
+    elif kind == 23:
+        for x, y, a in [(-.17, -.09, -.4), (.13, -.08, .5), (.03, .15, -.2)]:
+            sphere("Cut lettuce", (x, y, .09), (.19, .11, .065), "green").rotation_euler.z = a
+            box("Lettuce rib", (x, y, .145), (.035, .14, .014), "cream", .007).rotation_euler.z = a
+    elif kind == 24:
+        sphere("Whole cucumber", (0, 0, .16), (.14, .43, .14), "green").rotation_euler.z = -.5
+        for x, y in [(-.13, .30), (.13, -.30)]:
+            sphere("Cucumber end", (x, y, .16), (.075, .055, .075), "cream")
+    elif kind == 25:
+        for x, y in [(-.17, -.07), (.15, -.06), (0, .15)]:
+            cylinder("Cucumber skin", (x, y, .07), .145, .075, "green")
+            cylinder("Cucumber flesh", (x, y, .111), .119, .012, "ivory")
+            for dx in [-.035, .035]:
+                sphere("Cucumber seed", (x + dx, y, .124), (.014, .04, .008), "cream")
+    elif kind == 26:
+        box("Cheese slice", (0, 0, .08), (.56, .48, .07), "yellow", .04)
+        for x, y, radius in [(-.13, -.09, .055), (.13, .10, .035), (-.10, .12, .028)]:
+            cylinder("Cheese dimples", (x, y, .12), radius, .008, "cream")
+    elif kind in [27, 28]:
+        for x, y, a in [(-.18, -.07, -.4), (.14, -.10, .5), (-.07, .17, .2), (.17, .15, -.6)]:
+            sphere("Salad lettuce", (x, y, .09), (.19, .14, .06), "green").rotation_euler.z = a
+        for x, y in [(-.15, -.07), (.13, .10)]:
+            box("Salad tomato", (x, y, .17), (.15, .13, .11), "red", .03)
+        for x, y in [(.16, -.11), (-.13, .16)]:
+            cylinder("Salad cucumber skin", (x, y, .15), .095, .045, "green")
+            cylinder("Salad cucumber flesh", (x, y, .177), .075, .008, "ivory")
+        if kind == 28:
+            for x, y, a in [(-.04, -.12, .3), (.09, .05, -.5), (-.12, .11, .4)]:
+                box("Salad cheese", (x, y, .23), (.22, .085, .025), "yellow", .012).rotation_euler.z = a
+    elif kind == 32:
+        cylinder("Bun lower half", (-.04, -.02, .10), .30, .10, "woodlight")
+        sphere("Bun crown", (.06, .07, .23), (.31, .28, .14), "woodlight")
+        for x, y in [(-.10, .05), (.07, -.04), (.15, .12), (-.04, .17)]:
+            sphere("Sesame", (x, y, .35), (.035, .015, .009), "ivory")
+    elif kind in [33, 34]:
+        cylinder("Beef patty", (0, 0, .08), .30, .12, "pink" if kind == 33 else "wood")
+        if kind == 34:
+            for x in [-.15, 0, .15]:
+                box("Patty grill mark", (x, 0, .146), (.025, .38, .008), "dark", .006)
+        else:
+            for x, y in [(-.13, .10), (.10, -.09), (.13, .12)]:
+                sphere("Raw marbling", (x, y, .146), (.035, .055, .007), "ivory")
+    elif kind in [35, 36]:
+        sphere("Sausage", (0, 0, .13), (.14, .38, .13), "pink" if kind == 35 else "woodlight")
+        for y in [-.20, 0, .20]:
+            box("Sausage score", (0, y, .247), (.18, .025, .013), "red" if kind == 35 else "wood", .008).rotation_euler.z = .4
+    elif kind == 37:
+        sphere("Fried egg white", (0, 0, .045), (.34, .28, .04), "ivory")
+        sphere("Sunny yolk", (.04, .01, .11), (.13, .12, .075), "yellow")
+    elif kind == 38:
+        cylinder("Burger bun base", (0, 0, .08), .31, .10, "woodlight")
+        cylinder("Burger cooked beef", (0, 0, .17), .30, .08, "wood")
+        sphere("Burger bun crown", (0, 0, .29), (.33, .30, .13), "woodlight")
+        for x, y in [(-.13, .04), (.10, -.06), (.14, .11), (-.05, .17)]:
+            sphere("Burger sesame", (x, y, .40), (.035, .016, .010), "ivory")
+    elif kind == 39:
+        box("Breakfast toast crust", (-.16, .12, .07), (.33, .28, .09), "wood", .055)
+        box("Breakfast toast crumb", (-.16, .12, .12), (.27, .23, .018), "yellow", .035)
+        for x in [-.23, -.16, -.09]:
+            box("Breakfast toast line", (x, .12, .135), (.012, .16, .008), "woodlight", .004)
+        sphere("Breakfast sausage", (.19, .06, .10), (.085, .28, .08), "woodlight").rotation_euler.z = -.25
+        for y in [-.08, .05, .18]:
+            box("Breakfast sausage score", (.19, y, .175), (.12, .018, .008), "wood", .005)
+        sphere("Breakfast egg white", (-.09, -.18, .045), (.22, .16, .03), "ivory")
+        sphere("Breakfast yolk", (-.07, -.17, .09), (.085, .08, .05), "yellow")
+    elif kind == 52:
+        for x, y, angle in [(-.15, -.10, -.5), (.13, -.07, .5), (0, .14, -.2)]:
+            sphere("Coffee bean", (x, y, .10), (.13, .085, .065), "coffee").rotation_euler.z = angle
+            box("Bean crease", (x, y, .162), (.13, .014, .01), "wood", .004).rotation_euler.z = angle
+    elif kind == 53:
+        sphere("Coffee grounds", (0, 0, .075), (.29, .25, .07), "coffee")
+        for x, y in [(-.17, .04), (.11, -.10), (.14, .08)]:
+            sphere("Ground grain", (x, y, .14), (.023, .021, .012), "wood")
+    elif kind in [56, 57, 58, 60, 61]:
+        color = {56: "coffee", 57: "ivory", 58: "cream", 60: "latte", 61: "latte"}[kind]
+        cylinder("Drink surface", (0, 0, .035), .29, .055, color)
+        if kind == 56:
+            ring("Espresso crema", (0, 0, .066), .245, .017, "woodlight")
+        if kind in [58, 61]:
+            for x, y in [(-.13, -.05), (.12, -.06), (0, .12), (0, 0)]:
+                sphere("Milk foam cap", (x, y, .09), (.14, .13, .045), "ivory")
+    elif kind == 43:
+        sphere("Premix powder portion", (0, 0, .08), (.31, .25, .08), "cream")
+        for x, y in [(-.15, .06), (.12, -.07), (.10, .11)]:
+            sphere("Powder grain", (x, y, .15), (.045, .04, .012), "ivory")
+    elif kind == 44:
+        box("Milk carton", (0, 0, .23), (.34, .28, .44), "ivory", .035)
+        box("Milk carton stripe", (0, -.149, .20), (.29, .015, .16), "blue", .008)
+        box("Milk carton top", (0, 0, .47), (.37, .14, .09), "blue", .02)
+        cylinder("Milk cap", (.09, -.04, .53), .04, .035, "ivory")
+    elif kind == 46:
+        cylinder("Sweet batter surface", (0, 0, .035), .29, .055, "cream")
+        sphere("Batter swirl", (.04, 0, .07), (.16, .12, .02), "yellow")
+    elif kind == 48:
+        cylinder("Plain cake base", (0, 0, .12), .25, .20, "woodlight")
+        sphere("Plain cake crown", (0, 0, .245), (.27, .25, .13), "yellow")
+        for x, y in [(-.11, .04), (.10, .06), (.03, -.10)]:
+            sphere("Baked cake crumb", (x, y, .355), (.016, .015, .008), "woodlight")
     else:
         box("Supply bag", (0, 0, .22), (.54, .38, .45), "woodlight", .06)
         box("Folded bag top", (0, 0, .45), (.57, .12, .08), "wood", .02)
-        color = {12: "red", 13: "ivory", 14: "yellow", 20: "orange", 21: "teal"}[kind]
+        color = {12: "red", 13: "ivory", 14: "yellow", 20: "orange", 21: "teal", 29: "green", 30: "green", 31: "yellow", 40: "cream", 41: "pink", 42: "woodlight", 50: "cream", 51: "blue", 62: "coffee", 63: "tealdark"}[kind]
         box("Contents label", (0, -.202, .23), (.30, .012, .25), "ivory", .02)
         sphere("Contents symbol", (0, -.215, .25), (.083, .015, .083), color)
 
@@ -300,11 +468,11 @@ records = []
 for i, name in enumerate(["kitchen_floor", "dining_floor", "low_wall", "plant", "window", "chair"]):
     records.append((name, "environment", i, 0, 0))
 station_start = len(records)
-for kind in range(11):
+for kind in range(16):
     for facing in range(4):
         records.append((f"station_{kind}_{facing}", "station", kind, facing, 0))
 item_start = len(records)
-for kind in range(1, 22):
+for kind in range(1, 64):
     records.append((f"item_{kind}", "item", kind, 2, 0))
 character_start = len(records)
 for skin in range(4):
@@ -376,6 +544,7 @@ if not SAMPLE:
         "namespace ET.Client\n{\n    public partial class MonoGridKitchenBoard\n    {\n"
         f"        private const int ArtCell = {CELL}, ArtColumns = {COLS}, ArtRows = {rows}, ArtCount = {len(records)};\n"
         "        private const int ArtPoseCount = 8;\n"
+        f"        private const int ArtItemCount = {character_start - item_start};\n"
         f"        private const int ArtStationStart = {station_start}, ArtItemStart = {item_start}, ArtCharacterStart = {character_start}, ArtEffectStart = {effect_start};\n"
         "    }\n}\n", encoding="utf-8")
     bpy.context.preferences.filepaths.save_version = 0

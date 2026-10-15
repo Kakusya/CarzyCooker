@@ -21,7 +21,7 @@ namespace ET
                 message.CommandId = request.CommandId; message.Action = request.Action; message.X = request.X; message.Y = request.Y;
                 message.TargetId = request.TargetId; message.ExpectedItemId = request.ExpectedItemId;
                 message.ExpectedTargetItemId = request.ExpectedTargetItemId; message.ExpectedProcessId = request.ExpectedProcessId;
-                message.ExpectedOrderId = request.ExpectedOrderId;
+                message.ExpectedOrderId = request.ExpectedOrderId; message.RecipeId = request.RecipeId;
                 message.LevelId = request.LevelId; message.LevelGeneration = request.LevelGeneration;
                 message.ExpectedContentIds.AddRange(request.ExpectedContentIds);
                 message.ExpectedRemainingPortions = request.ExpectedRemainingPortions; message.ExpectedLayoutVersion = request.ExpectedLayoutVersion;
@@ -49,12 +49,13 @@ namespace ET
             string reason = request.ProtocolVersion != ProductSessionRules.ProtocolVersion ? "IncompatibleProtocol"
                 : peer == null || peer.InstanceId != request.PeerInstanceId || peer.Generation != request.PeerGeneration ||
                   peer.Generation != request.BindingGeneration || !peer.EntryOpen || peer.Closing ? "EntryClosed"
+                : grid == null ? "RestaurantUnavailable"
                 : new ProductCommandContext(request.MatchId, request.WorldId, request.WorldGeneration, request.LevelId,
                     request.LevelGeneration, request.BindingGeneration, request.CommandId)
                     .Validate(match.MatchId, grid.WorldId, grid.WorldGeneration, level?.Id ?? 0, level?.Generation ?? 0, peer.Generation)
                     ?? grid.SubmitGridIntent(peer.MemberId, peer.Generation, new GridIntent(request.CommandId, (GridAction)request.Action,
                         new GridCell(request.X, request.Y), request.TargetId, request.ExpectedItemId, request.ExpectedTargetItemId, request.ExpectedProcessId,
-                        request.ExpectedContentIds, request.ExpectedRemainingPortions, request.ExpectedLayoutVersion, expectedOrderId: request.ExpectedOrderId));
+                        request.ExpectedContentIds, request.ExpectedRemainingPortions, request.ExpectedLayoutVersion, expectedOrderId: request.ExpectedOrderId, recipeId: request.RecipeId));
             response.CommandId = request.CommandId;
             response.Error = reason == null ? 0 : ProductError.InvalidRequest;
             response.Message = reason ?? peer.LastCommandReason;
@@ -78,9 +79,11 @@ namespace ET
     [FriendOf(typeof(RestaurantRenovation))]
     [FriendOf(typeof(SoloSaveBinding))]
     [FriendOf(typeof(SoloSaveResult))]
+    [FriendOf(typeof(CooperativeSaveResult))]
     [FriendOf(typeof(FrontWorkCommands))]
     [FriendOf(typeof(LevelBuff))]
     [FriendOf(typeof(RestaurantRuntime))]
+    [FriendOf(typeof(RestaurantUnlocks))]
     public static partial class GridBroadcast
     {
         public static GridWorldSnapshot CreateSnapshot(GridKitchenComponent world, HostPeer peer)
@@ -89,7 +92,7 @@ namespace ET
             {
                 value.MatchId = ((Match)world.Match).MatchId; value.WorldId = world.WorldId; value.WorldGeneration = world.WorldGeneration;
                 value.MemberId = peer.MemberId; value.BindingGeneration = peer.Generation; value.Version = world.Version; value.Tick = world.Tick;
-                value.Width = GridKitchenRules.Width; value.Height = GridKitchenRules.Height; value.KitchenBottom = GridKitchenRules.KitchenBottom;
+                value.Width = world.Width; value.Height = world.Height; value.KitchenBottom = GridKitchenRules.KitchenBottom;
                 value.TickMilliseconds = GridKitchenRules.TickMilliseconds; value.StepTicks = GridKitchenRules.StepTicks;
                 Level level = world.ProductLevel();
                 value.LevelId = level?.Id ?? 0; value.LevelGeneration = level?.Generation ?? 0;
@@ -102,6 +105,13 @@ namespace ET
                 value.LastCommandStatus = (int)peer.LastCommandStatus; value.LastCommandReason = peer.LastCommandReason;
                 value.LayoutVersion = world.LayoutVersion;
                 if (level != null) value.AllowedDishIds.AddRange(level.AllowedDishIds);
+                var unlocked = ((RestaurantRuntime)world.Restaurant)?.GetComponent<RestaurantUnlocks>();
+                if (unlocked != null)
+                {
+                    value.PermissionVersion = unlocked.PermissionVersion;
+                    value.UnlockedDishIds.AddRange(unlocked.DishIds);
+                    value.UnlockedStationIds.AddRange(unlocked.StationIds);
+                }
             });
             foreach (GridActor actor in world.Actors.OrderBy(pair => pair.Key).Select(pair => (GridActor)pair.Value))
             {
@@ -167,6 +177,7 @@ namespace ET
                     value.ProcessId=process.Id;value.RecipeId=process.RecipeId;value.StationId=process.StationId;value.InputItemId=process.InputItemId;
                     value.OutputDefinitionId=process.OutputDefinitionId;value.RequiredTicks=process.RequiredTicks;value.ProgressTicks=process.ProgressTicks;
                     value.OutputItemId=process.OutputItemId;value.State=(int)process.State;value.StartedTick=process.StartedTick;
+                    value.CarrierItemId=process.CarrierItemId;
                 }));
             CopyFrontState(world, snapshot);
             KitchenSupply supply = world.GetComponent<KitchenSupply>();
@@ -192,6 +203,7 @@ namespace ET
                 snapshot.RenovationChoiceVersion = renovation.ChoiceVersion; snapshot.RenovationLevelId = renovation.ResultLevelId;
                 snapshot.RenovationLevelGeneration = renovation.ResultLevelGeneration;
                 snapshot.RenovationFailure = renovation.Failure;
+                snapshot.RenovationSelectionFinalized = renovation.SelectionFinalized;
                 snapshot.SelectedUpgradeStationId = ((GridStation)renovation.PendingUpgradeStation)?.Id ?? 0;
                 snapshot.PendingUpgradeExpectedLevel = renovation.PendingUpgradeExpectedLevel;
                 foreach (var target in renovation.UpgradeTargets)
@@ -211,6 +223,17 @@ namespace ET
                 snapshot.SaveResultId = saveResult.ResultId; snapshot.SaveState = (int)saveResult.State; snapshot.SaveFailure = saveResult.Failure;
             }
             snapshot.CanControlRestaurant = peer.CanControlRestaurant();
+            Level current = world.ProductLevel();
+            snapshot.CooperativeSave = current?.EligibleProfiles.Count > 0;
+            if (snapshot.CooperativeSave && snapshot.CanControlRestaurant)
+            {
+                snapshot.SaveEnabled = true;
+                CooperativeSaveResult result = current.ClaimResult;
+                snapshot.SaveResultId = result?.ResultId;
+                snapshot.SaveState = (int)(result?.State ?? SoloSaveState.Ready);
+                snapshot.SaveFailure = result?.Failure;
+                snapshot.LastSavedSlotId = result?.HostSavedReceipt?.SlotId ?? "";
+            }
             return snapshot;
         }
 

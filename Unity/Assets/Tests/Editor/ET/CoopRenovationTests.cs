@@ -15,10 +15,11 @@ namespace ET
             RenovationComplete();
         }
         [Test]
+        [Category("CooperativeUpgrade")]
         public void CoopRenovationDrinkLayoutInstallsSupportedAdditionWithoutMintingItems()
         {
             StartHost(liveDrinks: true); var remote = CoopRemote(); CoopRenovationComplete();
-            Assert.That(Renovation.Candidates, Is.EqualTo(new[] { 5, 6 }));
+            Assert.That(Renovation.Candidates, Is.EqualTo(new[] { 3, 4, 5, 6 }));
             long[] items = Grid.Items.Keys.OrderBy(id => id).ToArray(); RenovationChoose(5); LevelDo(LevelControlAction.Continue); Pump(30);
             long station = Renovation.AppliedStations[5].Single();
             Assert.That(Grid.Stations.Count, Is.EqualTo(22)); Assert.That(Grid.Items.Keys.OrderBy(id => id), Is.EqualTo(items));
@@ -29,13 +30,14 @@ namespace ET
         }
 
         [Test]
+        [Category("CooperativeUpgrade")]
         public void CoopRenovationHostChoosesRemoteReadsLateJoinAndInstallsExactlyOnce()
         {
             StartHost(); var remote = CoopRemote(); CoopRenovationComplete(); Pump(30);
             var view = remote.GetComponent<GridClientComponent>();
-            Assert.That(Renovation.Candidates, Is.EqualTo(new[] { 1, 2 }));
+            Assert.That(Renovation.Candidates, Is.EqualTo(new[] { 1, 2, 3, 4 }));
             Assert.That(view.RenovationCandidates, Is.EqualTo(Renovation.Candidates));
-            Assert.That(view.UpgradeTargets, Is.Empty); Assert.That(view.SaveEnabled, Is.False);
+            Assert.That(view.UpgradeTargets.Count, Is.EqualTo(2)); Assert.That(view.SaveEnabled, Is.False);
             using (var reply = (ChooseRenovationResponse)Finish(remote.CallProduct(view.CreateRenovationChoice(1, view.RenovationChoiceVersion)), 500))
                 Assert.That(reply.Message, Is.EqualTo("HostControlOnly"));
             Assert.That(Renovation.SelectedDefinitionId, Is.Zero);
@@ -57,6 +59,7 @@ namespace ET
         }
 
         [Test]
+        [Category("CooperativeUpgrade")]
         public void CoopRenovationLateGroundConflictRejectsContinueWithoutPartialInstallation()
         {
             StartHost(); var remote = CoopRemote(); CoopRenovationComplete(); RenovationChoose(1);
@@ -75,6 +78,7 @@ namespace ET
         }
 
         [Test]
+        [Category("CooperativeUpgrade")]
         public void CoopRenovationOldLevelAndOldBindingCannotChangeNewChoice()
         {
             StartHost(); var remote = CoopRemote(); CoopRenovationComplete();

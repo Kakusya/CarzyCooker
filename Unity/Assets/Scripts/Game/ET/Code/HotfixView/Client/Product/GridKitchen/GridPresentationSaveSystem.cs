@@ -10,7 +10,7 @@ namespace ET.Client
             {
                 SoloSaveState.Writing => completed ? "\n正在保存大关完成记录…" : "\n正在保存检查点…",
                 SoloSaveState.Failed => "\n保存失败，本次结算保留，请重试",
-                SoloSaveState.Committed => completed ? "\n完成记录已保存，正在返回选档" : "\n检查点已保存，可重试继续下一关",
+                SoloSaveState.Committed => completed ? grid.CooperativeSave ? "\n完成记录已保存，正在返回房间" : "\n完成记录已保存，正在返回选档" : "\n检查点已保存，可重试继续下一关",
                 _ => completed ? "\n只新建完成记录，不覆盖已有记录" : "\n只新建检查点，不覆盖已有记录"
             };
         }

@@ -14,6 +14,10 @@ namespace ET
         {
             foreach (DRTableConfig definition in Tables.Instance.DTTableConfig.DataList)
             {
+                if (definition.InitialLayoutId == 0)
+                {
+                    continue;
+                }
                 GridStation station = self.Stations.Values.Select(value => (GridStation)value).Single(value => value.InitialLayoutId == definition.InitialLayoutId);
                 if (station.GetComponent<FrontTable>() == null) station.AddComponent<FrontTable, DRTableConfig>(definition);
             }

@@ -15,7 +15,7 @@ namespace ET
         public override void Handle(NetComponentOnRead args)
         {
             Session session = args.Session;
-            if (args.Message is not (ProductJoinRequest or ProductResumeRequest or ProductProbeRequest or ProductLeaveRequest or ProductHeartbeatRequest or GridCommandRequest or LevelCommandRequest or StationLayoutRequest or ChooseBuffRequest or ChooseRenovationRequest or ServeOrderRequest or FrontWorkRequest or SupplyCommandRequest))
+            if (args.Message is not (ProductJoinRequest or ProductResumeRequest or ProductProbeRequest or ProductLeaveRequest or ProductHeartbeatRequest or GridCommandRequest or LevelCommandRequest or StationLayoutRequest or ChooseBuffRequest or ChooseRenovationRequest or ServeOrderRequest or FrontWorkRequest or SupplyCommandRequest or ProductRoomControlRequest or ProductProfileRequest or CooperativeBaselineRequest or ProgressAckRequest or ProgressCloseMatchRequest))
             {
                 (args.Message as MessageObject)?.Dispose();
                 session.Error = ProductError.InvalidRequest;
@@ -90,6 +90,44 @@ namespace ET
                         }),
                         ProductProbeRequest probe => ProductMessages.Create<ProductProbeRequest>(message => { message.MatchId = probe.MatchId; message.Sequence = probe.Sequence; message.Payload = probe.Payload; }),
                         ProductLeaveRequest leave => ProductMessages.Create<ProductLeaveRequest>(message => { message.MatchId = leave.MatchId; }),
+                        ProductRoomControlRequest room => ProductMessages.Create<ProductRoomControlRequest>(message =>
+                        {
+                            message.ProtocolVersion = room.ProtocolVersion;
+                            message.MatchId = room.MatchId;
+                            message.BindingGeneration = room.BindingGeneration;
+                            message.CommandId = room.CommandId;
+                            message.ExpectedRoomVersion = room.ExpectedRoomVersion;
+                            message.Action = room.Action;
+                            message.MenuVariant = room.MenuVariant;
+                            message.ContentChapterId = room.ContentChapterId;
+                        }),
+                        ProductProfileRequest profile => ProductMessages.Create<ProductProfileRequest>(message =>
+                        {
+                            message.ProtocolVersion = profile.ProtocolVersion;
+                            message.MatchId = profile.MatchId;
+                            message.BindingGeneration = profile.BindingGeneration;
+                            message.Action = profile.Action;
+                            message.Proof = profile.Proof == null ? null : (byte[])profile.Proof.Clone();
+                        }),
+                        CooperativeBaselineRequest baseline => ProductMessages.Create<CooperativeBaselineRequest>(message =>
+                        {
+                            message.ProtocolVersion = baseline.ProtocolVersion;
+                            message.MatchId = baseline.MatchId;
+                            message.BindingGeneration = baseline.BindingGeneration;
+                            message.CommandId = baseline.CommandId;
+                            message.ExpectedRoomVersion = baseline.ExpectedRoomVersion;
+                            message.Authorization = baseline.Authorization == null ? null : (byte[])baseline.Authorization.Clone();
+                        }),
+                        ProgressAckRequest ack => ProductMessages.Create<ProgressAckRequest>(message =>
+                        {
+                            message.ProtocolVersion = ack.ProtocolVersion; message.MatchId = ack.MatchId; message.BindingGeneration = ack.BindingGeneration;
+                            message.Kind = ack.Kind; message.Id = ack.Id;
+                        }),
+                        ProgressCloseMatchRequest close => ProductMessages.Create<ProgressCloseMatchRequest>(message =>
+                        {
+                            message.ProtocolVersion = close.ProtocolVersion; message.MatchId = close.MatchId; message.BindingGeneration = close.BindingGeneration;
+                            message.ExpectedRoomVersion = close.ExpectedRoomVersion;
+                        }),
                         GridCommandRequest grid => ProductMessages.Create<GridCommandRequest>(message =>
                         {
                             message.ProtocolVersion = grid.ProtocolVersion; message.MatchId = grid.MatchId; message.WorldId = grid.WorldId;
@@ -97,7 +135,7 @@ namespace ET
                             message.CommandId = grid.CommandId; message.Action = grid.Action; message.X = grid.X; message.Y = grid.Y;
                             message.TargetId = grid.TargetId; message.ExpectedItemId = grid.ExpectedItemId;
                             message.ExpectedTargetItemId = grid.ExpectedTargetItemId; message.ExpectedProcessId = grid.ExpectedProcessId;
-                            message.ExpectedOrderId = grid.ExpectedOrderId;
+                            message.ExpectedOrderId = grid.ExpectedOrderId; message.RecipeId = grid.RecipeId;
                             message.LevelId = grid.LevelId; message.LevelGeneration = grid.LevelGeneration;
                             message.ExpectedContentIds.AddRange(grid.ExpectedContentIds);
                             message.ExpectedRemainingPortions = grid.ExpectedRemainingPortions; message.ExpectedLayoutVersion = grid.ExpectedLayoutVersion;
@@ -215,9 +253,11 @@ namespace ET
         private static bool IsKitchenGridAction(int action) => action is (int)GridAction.Move or (int)GridAction.TakeCounter or
             (int)GridAction.PlaceCounter or (int)GridAction.PickupDrop or (int)GridAction.AddToContainer or
             (int)GridAction.StartStationWork or (int)GridAction.StartHeldWork or (int)GridAction.StopWork or
-            (int)GridAction.PourContents or (int)GridAction.StartAutoWork or (int)GridAction.PortionSoup or (int)GridAction.StartBake or
+            (int)GridAction.PourContents or (int)GridAction.StartAutoWork or (int)GridAction.PortionSoup or (int)GridAction.StartBake or (int)GridAction.StartFry or
             (int)GridAction.FillWater or (int)GridAction.DrainLiquid or (int)GridAction.DiscardSolid or (int)GridAction.ReceiveSupply or (int)GridAction.TakeSupplyPortion or
-            (int)GridAction.StartJuice or (int)GridAction.PortionJuice or (int)GridAction.BindDrink or (int)GridAction.UnbindDrink;
+            (int)GridAction.StartJuice or (int)GridAction.PortionJuice or (int)GridAction.BindDrink or (int)GridAction.UnbindDrink or (int)GridAction.TakeContainerContent or (int)GridAction.StartAssembly or (int)GridAction.StartMix or
+            (int)GridAction.PortionBatter or (int)GridAction.Unmold or (int)GridAction.StartGrind or (int)GridAction.StartExtract or
+            (int)GridAction.HeatMilk or (int)GridAction.FoamMilk or (int)GridAction.PortionDrinkBase;
 
         private static MessageObject CopyResponse(MessageObject result)
         {
@@ -246,6 +286,34 @@ namespace ET
                     return ProductMessages.Create<ProductProbeResponse>(message => { message.Error = probe.Error; message.Message = probe.Message; message.MemberId = probe.MemberId; message.Sequence = probe.Sequence; message.Payload = probe.Payload; });
                 case ProductLeaveResponse leave:
                     return ProductMessages.Create<ProductLeaveResponse>(message => { message.Error = leave.Error; message.Message = leave.Message; message.Committed = leave.Committed; });
+                case ProductRoomControlResponse room:
+                    return ProductMessages.Create<ProductRoomControlResponse>(message =>
+                    {
+                        message.Error = room.Error;
+                        message.Message = room.Message;
+                        message.CommandId = room.CommandId;
+                        message.Status = room.Status;
+                    });
+                case ProductProfileResponse profile:
+                    return ProductMessages.Create<ProductProfileResponse>(message =>
+                    {
+                        message.Error = profile.Error;
+                        message.Message = profile.Message;
+                        message.Challenge = profile.Challenge;
+                        message.ProfileId = profile.ProfileId;
+                    });
+                case CooperativeBaselineResponse baseline:
+                    return ProductMessages.Create<CooperativeBaselineResponse>(message =>
+                    {
+                        message.Error = baseline.Error;
+                        message.Message = baseline.Message;
+                        message.CommandId = baseline.CommandId;
+                        message.Status = baseline.Status;
+                    });
+                case ProgressAckResponse ack:
+                    return ProductMessages.Create<ProgressAckResponse>(message => { message.Error = ack.Error; message.Message = ack.Message; });
+                case ProgressCloseMatchResponse close:
+                    return ProductMessages.Create<ProgressCloseMatchResponse>(message => { message.Error = close.Error; message.Message = close.Message; message.Status = close.Status; });
                 case GridCommandResponse grid:
                     return ProductMessages.Create<GridCommandResponse>(message => { message.Error = grid.Error; message.Message = grid.Message; message.CommandId = grid.CommandId; message.Status = grid.Status; });
                 case LevelCommandResponse level:
@@ -284,7 +352,7 @@ namespace ET
                 message?.Dispose();
                 return;
             }
-            if (message is ProductJoinResponse or ProductResumeResponse or ProductProbeResponse or ProductLeaveResponse or ProductHeartbeatResponse or GridCommandResponse or LevelCommandResponse or StationLayoutResponse or ChooseBuffResponse or ChooseRenovationResponse or ServeOrderResponse or FrontWorkResponse or SupplyCommandResponse)
+            if (message is ProductJoinResponse or ProductResumeResponse or ProductProbeResponse or ProductLeaveResponse or ProductHeartbeatResponse or GridCommandResponse or LevelCommandResponse or StationLayoutResponse or ChooseBuffResponse or ChooseRenovationResponse or ServeOrderResponse or FrontWorkResponse or SupplyCommandResponse or ProductRoomControlResponse or ProductProfileResponse or CooperativeBaselineResponse or ProgressAckResponse or ProgressCloseMatchResponse)
             {
                 IResponse response = (IResponse)message;
                 if (!session.requestCallbacks.TryGetValue(response.RpcId, out RpcInfo pending))
@@ -302,7 +370,7 @@ namespace ET
                 session.OnResponse(response);
                 return; // 有效响应交调用者消费。
             }
-            if (message is ProductRosterSnapshot or ProductMatchClosed or GridWorldSnapshot or GridCommandResult or ProductCommandOutcome or KitchenWorkOutcome or ShipmentOutcome or FrontWorkOutcome or BuffPrepared or RenovationPrepared or LevelPhaseChanged)
+            if (message is ProductRosterSnapshot or ProductMatchClosed or GridWorldSnapshot or GridCommandResult or ProductCommandOutcome or KitchenWorkOutcome or ShipmentOutcome or FrontWorkOutcome or BuffPrepared or RenovationPrepared or LevelPhaseChanged or ProductRoomSnapshot or ProgressDelivery)
             {
                 session.Root().GetComponent<ProcessInnerSender>().Send(client.GetActorId(), (IMessage)message);
                 return;

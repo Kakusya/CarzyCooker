@@ -25,13 +25,18 @@
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
       1,
-      2
+      2,
+      3,
+      4
     ],
     "ChapterId": 0,
     "ChapterStage": 0,
     "IsChapterTerminal": false,
     "MenuVariant": 0,
-    "AllowedDrinkIds": []
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
   },
   {
     "Id": 2,
@@ -59,13 +64,18 @@
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
       1,
-      2
+      2,
+      3,
+      4
     ],
     "ChapterId": 0,
     "ChapterStage": 0,
     "IsChapterTerminal": false,
     "MenuVariant": 0,
-    "AllowedDrinkIds": []
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
   },
   {
     "Id": 101,
@@ -101,7 +111,10 @@
     "ChapterStage": 1,
     "IsChapterTerminal": false,
     "MenuVariant": 0,
-    "AllowedDrinkIds": []
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
   },
   {
     "Id": 102,
@@ -137,7 +150,10 @@
     "ChapterStage": 2,
     "IsChapterTerminal": false,
     "MenuVariant": 0,
-    "AllowedDrinkIds": []
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
   },
   {
     "Id": 103,
@@ -168,7 +184,10 @@
     "ChapterStage": 3,
     "IsChapterTerminal": true,
     "MenuVariant": 0,
-    "AllowedDrinkIds": []
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
   },
   {
     "Id": 201,
@@ -206,7 +225,10 @@
     "MenuVariant": 1,
     "AllowedDrinkIds": [
       3
-    ]
+    ],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
   },
   {
     "Id": 202,
@@ -244,7 +266,10 @@
     "MenuVariant": 1,
     "AllowedDrinkIds": [
       3
-    ]
+    ],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
   },
   {
     "Id": 203,
@@ -277,7 +302,10 @@
     "MenuVariant": 1,
     "AllowedDrinkIds": [
       3
-    ]
+    ],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
   },
   {
     "Id": 3,
@@ -304,6 +332,8 @@
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
+      3,
+      4,
       5,
       6
     ],
@@ -313,7 +343,10 @@
     "MenuVariant": 1,
     "AllowedDrinkIds": [
       3
-    ]
+    ],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
   },
   {
     "Id": 4,
@@ -340,6 +373,8 @@
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
+      3,
+      4,
       5,
       6
     ],
@@ -349,6 +384,2819 @@
     "MenuVariant": 1,
     "AllowedDrinkIds": [
       3
+    ],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 301,
+    "NextLevelConfigId": 302,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 0,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 302,
+    "NextLevelConfigId": 303,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 0,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 303,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 2,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 0,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 401,
+    "NextLevelConfigId": 402,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 1,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 402,
+    "NextLevelConfigId": 403,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 1,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 403,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 2,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 1,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 501,
+    "NextLevelConfigId": 502,
+    "OperatingTicks": 1200,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 2,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 502,
+    "NextLevelConfigId": 503,
+    "OperatingTicks": 1200,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 2,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 503,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 1200,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 1,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 2,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 601,
+    "NextLevelConfigId": 602,
+    "OperatingTicks": 1200,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 2,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 602,
+    "NextLevelConfigId": 603,
+    "OperatingTicks": 1200,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 2,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 603,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 1200,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 2,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 2,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": false,
+    "InitialUnlockedDishIds": [],
+    "InitialUnlockedStationIds": []
+  },
+  {
+    "Id": 701,
+    "NextLevelConfigId": 702,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      7,
+      8
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 702,
+    "NextLevelConfigId": 703,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      7,
+      8
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 703,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 1,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 801,
+    "NextLevelConfigId": 802,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      7,
+      8
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 802,
+    "NextLevelConfigId": 803,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      7,
+      8
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 803,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 400,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 2,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 1101,
+    "NextLevelConfigId": 1102,
+    "OperatingTicks": 500,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 11,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 1102,
+    "NextLevelConfigId": 1103,
+    "OperatingTicks": 650,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 11,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 1103,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 800,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2,
+      4
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 11,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 2101,
+    "NextLevelConfigId": 2102,
+    "OperatingTicks": 500,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 21,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 2102,
+    "NextLevelConfigId": 2103,
+    "OperatingTicks": 650,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 21,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 2103,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 800,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2,
+      4
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 21,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      4
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ]
+  },
+  {
+    "Id": 1201,
+    "NextLevelConfigId": 1202,
+    "OperatingTicks": 600,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 12,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "Id": 1202,
+    "NextLevelConfigId": 1203,
+    "OperatingTicks": 750,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 12,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "Id": 1203,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 900,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 12,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "Id": 2201,
+    "NextLevelConfigId": 2202,
+    "OperatingTicks": 600,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 22,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "Id": 2202,
+    "NextLevelConfigId": 2203,
+    "OperatingTicks": 750,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 22,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "Id": 2203,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 900,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 22,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 3,
+    "AllowedDrinkIds": [
+      3
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "Id": 901,
+    "NextLevelConfigId": 902,
+    "OperatingTicks": 900,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      6,
+      7
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 4,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      6,
+      7
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ]
+  },
+  {
+    "Id": 902,
+    "NextLevelConfigId": 903,
+    "OperatingTicks": 1000,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      6,
+      7
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 1,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 4,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      6,
+      7
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ]
+  },
+  {
+    "Id": 903,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 1100,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      6,
+      7
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 1,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 4,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      6,
+      7
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ]
+  },
+  {
+    "Id": 1001,
+    "NextLevelConfigId": 1002,
+    "OperatingTicks": 900,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      6,
+      7
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 4,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      6,
+      7
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ]
+  },
+  {
+    "Id": 1002,
+    "NextLevelConfigId": 1003,
+    "OperatingTicks": 1000,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      6,
+      7
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 2,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 4,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      6,
+      7
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ]
+  },
+  {
+    "Id": 1003,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 1100,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      6,
+      7
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 2,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 4,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      6,
+      7
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ]
+  },
+  {
+    "Id": 1301,
+    "NextLevelConfigId": 1302,
+    "OperatingTicks": 900,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      8
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 5,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      8
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      13
+    ]
+  },
+  {
+    "Id": 1302,
+    "NextLevelConfigId": 1303,
+    "OperatingTicks": 1000,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      8
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 1,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 5,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      8
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      13
+    ]
+  },
+  {
+    "Id": 1303,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 1100,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      8
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 1,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 5,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      8
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      13
+    ]
+  },
+  {
+    "Id": 2301,
+    "NextLevelConfigId": 2302,
+    "OperatingTicks": 900,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      8
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 5,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      8
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      13
+    ]
+  },
+  {
+    "Id": 2302,
+    "NextLevelConfigId": 2303,
+    "OperatingTicks": 1000,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      8
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 2,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 5,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      8
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      13
+    ]
+  },
+  {
+    "Id": 2303,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 1100,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      8
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 2,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 5,
+    "AllowedDrinkIds": [],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      8
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      13
+    ]
+  },
+  {
+    "Id": 1401,
+    "NextLevelConfigId": 1402,
+    "OperatingTicks": 900,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 1,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      9,
+      10,
+      11
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 1402,
+    "NextLevelConfigId": 1403,
+    "OperatingTicks": 1000,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 1,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      9,
+      10,
+      11
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 1403,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 1100,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 1,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      9,
+      10,
+      11
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 2401,
+    "NextLevelConfigId": 2402,
+    "OperatingTicks": 900,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 2,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      9,
+      10,
+      11
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 2402,
+    "NextLevelConfigId": 2403,
+    "OperatingTicks": 1000,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 2,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      9,
+      10,
+      11
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 2403,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 1100,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 2,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      9,
+      10,
+      11
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 1501,
+    "NextLevelConfigId": 1502,
+    "OperatingTicks": 600,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4,
+      5,
+      6
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 12,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      3,
+      9
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 1502,
+    "NextLevelConfigId": 1503,
+    "OperatingTicks": 750,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 12,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      3,
+      9,
+      10
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 1503,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 900,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 12,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      3,
+      9,
+      10,
+      11
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 2501,
+    "NextLevelConfigId": 2502,
+    "OperatingTicks": 600,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      4,
+      5,
+      6
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [
+      8
+    ],
+    "ChapterId": 22,
+    "ChapterStage": 1,
+    "IsChapterTerminal": false,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      3,
+      9
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 2502,
+    "NextLevelConfigId": 2503,
+    "OperatingTicks": 750,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 22,
+    "ChapterStage": 2,
+    "IsChapterTerminal": false,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      3,
+      9,
+      10
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  {
+    "Id": 2503,
+    "NextLevelConfigId": 0,
+    "OperatingTicks": 900,
+    "StarThresholds": [
+      10,
+      20,
+      30
+    ],
+    "SpawnX": 1,
+    "SpawnY": 10,
+    "AllowedDishIds": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "AllowedBuffIds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "CandidateCount": 2,
+    "RequireBuffChoice": true,
+    "AllowedRenovationIds": [],
+    "ChapterId": 22,
+    "ChapterStage": 3,
+    "IsChapterTerminal": true,
+    "MenuVariant": 6,
+    "AllowedDrinkIds": [
+      3,
+      9,
+      10,
+      11
+    ],
+    "UseInitialUnlockSet": true,
+    "InitialUnlockedDishIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "InitialUnlockedStationIds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
     ]
   }
 ]

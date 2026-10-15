@@ -1,0 +1,37 @@
+# Spec Delta
+
+## Purpose
+
+从普通 Launcher 在游戏内选择单机、创建合作或加入，合作成员可先集合，再由 Host 开启内存餐厅；关闭餐厅可以回同一房间。游戏内模式选择、房间停留、创建和退役餐厅。本能力区分已提交世界事实、持久记录和玩家操作，保证拒绝或中断有明确边界，并为后续有限内容扩展提供可观察的合同。
+
+## ADDED Requirements
+
+### Requirement: 游戏内选择与失败可返回
+
+系统 SHALL 从普通 Launcher 提供单机、创建合作及显式目标加入入口；失败或取消回到可操作选择页，已有启动参数入口仍可使用。
+
+#### Scenario: 加入失败再选择单机
+- **WHEN** 显式加入目标拒绝或超时，玩家随后选择单机
+- **THEN** 显示真实失败并收尾原连接，单机通过无监听本地入口进入，不被旧加入答复覆盖
+
+### Requirement: 房间可以没有餐厅
+
+合作 Match MUST 能在没有 RestaurantRuntime 时保留成员及有效连接；只有 Host 的合法开局提交才创建唯一餐厅。
+
+#### Scenario: 先加入后开局
+- **WHEN** 两端已经加入同一房间但尚未开局
+- **THEN** 只显示房间和成员，不实例化厨房或开放地图动作；开局后按真实投影及本人角色就绪开放输入
+
+### Requirement: 退役餐厅保留房间
+
+关闭餐厅 MUST 使其旧动作与投影失效，并在完成业务收尾后释放餐厅和所属视图；Match、成员及通信仍可用于下一次开局。
+
+#### Scenario: 返回房间后重开
+- **WHEN** Host 关闭当前内存餐厅并再次开局
+- **THEN** 新世界身份独立，旧消息无效，成员与连接不被重复创建或整体停止
+
+## Sources
+
+- [提案](../../proposal.md)、[设计](../../design.md)、[验收取舍](../../execution-notes.md)。
+- [本轮业务扫描与优先级](../../../../../../Docs/Product/full-version-roadmap.md)。
+- [Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductRuntimeBootstrap.cs](../../../../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductRuntimeBootstrap.cs)。

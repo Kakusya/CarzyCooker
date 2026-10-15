@@ -29,7 +29,8 @@ namespace ET
             var renovation = restaurant.GetComponent<RestaurantRenovation>();
             if (!level.IsChapterTerminal && (!renovation.Prepared || renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation))
                 throw new InvalidOperationException("RenovationNotReady");
-            if (!level.IsChapterTerminal && renovation.Candidates.Count > 0 && renovation.SelectedDefinitionId == 0)
+            if (!level.IsChapterTerminal && renovation.Candidates.Count > 0 && renovation.SelectedDefinitionId == 0 &&
+                !(level.EligibleProfiles.Count > 0 && renovation.SelectionFinalized))
                 throw new InvalidOperationException("RenovationRequired");
             var stationKeys = kitchen.Stations.Keys.OrderBy(id => id).Select((id, index) => (id, key: index + 1)).ToDictionary(p => p.id, p => p.key);
             var itemKeys = kitchen.Items.Keys.OrderBy(id => id).Select((id, index) => (id, key: index + 1)).ToDictionary(p => p.id, p => p.key);
@@ -38,6 +39,8 @@ namespace ET
             var supply = kitchen.GetComponent<KitchenSupply>();
             return new SoloSavePayload
             {
+                Unlocks = restaurant.GetComponent<RestaurantUnlocks>().CaptureRestaurantUnlocks(),
+                Geometry = new SavedKitchenGeometry { Width = kitchen.Width, Height = kitchen.Height },
                 Stations = kitchen.Stations.Values.Select(value => (GridStation)value).OrderBy(s => s.Id).Select(station =>
                 {
                     var table = station.GetComponent<FrontTable>();
@@ -83,7 +86,8 @@ namespace ET
                     .OrderBy(p => p.Id).Select((p, index) => new SoloSavedBake
                     {
                         Key = index + 1, RecipeId = p.RecipeId, RequiredTicks = p.RequiredTicks, ProgressTicks = p.ProgressTicks,
-                        StationKey = StationKey(p.StationId), InputKey = ItemKey(p.InputItemId), OutputDefinitionId = p.OutputDefinitionId
+                        StationKey = StationKey(p.StationId), InputKey = ItemKey(p.InputItemId), OutputDefinitionId = p.OutputDefinitionId,
+                        CarrierKey = ItemKey(p.CarrierItemId)
                     }).ToArray(),
                 Supply = supply.RemainingPackages.OrderBy(pair => pair.Key).Select(pair => new SoloSavedSupplyBalance
                     { SourceId = pair.Key, RemainingPackages = pair.Value }).ToArray(),

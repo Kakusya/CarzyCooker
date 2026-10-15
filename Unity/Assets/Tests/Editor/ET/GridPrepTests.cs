@@ -62,7 +62,7 @@ namespace ET
         {
             GridKitchenSystem.ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList,Tables.Instance.DTGridManualRecipeConfig.DataList);
             Assert.Throws<InvalidOperationException>(()=>GridKitchenSystem.ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList.Where(v=>v.Id!=GridKitchenRules.Egg),Tables.Instance.DTGridManualRecipeConfig.DataList));
-            Assert.Throws<InvalidOperationException>(()=>GridKitchenSystem.ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList,Tables.Instance.DTGridManualRecipeConfig.DataList.Where(v=>v.Mode!=2)));
+            Assert.Throws<InvalidOperationException>(()=>GridKitchenSystem.ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList,Tables.Instance.DTGridManualRecipeConfig.DataList.Where(v=>v.Mode!=GridManualMode.Beat)));
             StartHost();
             ClientSessionComponent client=host.Client, other=GridJoin();
             GridStation bowl=PrepStation("碗台"), handoff=PrepStation("交接台");

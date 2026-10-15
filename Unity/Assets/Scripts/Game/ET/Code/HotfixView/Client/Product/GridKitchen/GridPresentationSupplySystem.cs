@@ -16,7 +16,8 @@ namespace ET.Client
                 {
                     int id = source.Id;
                     string name = Tables.Instance.DTSupplyConfig.Get(id).Name;
-                    view.AddTarget($"采购 {name} · 余 {source.RemainingPackages} 包", () =>
+                    bool permitted = grid.ProductionPermit.ItemDefinitions.Contains(Tables.Instance.DTSupplyConfig.Get(id).MaterialDefinitionId);
+                    view.AddTarget($"{(permitted ? "采购" : "受限采购")} {name} · 余 {source.RemainingPackages} 包", () =>
                     {
                         GridPresentationComponent current = selfRef;
                         current?.SendSupplyCommand(new SupplyIntent(SupplyAction.Purchase, source: id), level, generation);

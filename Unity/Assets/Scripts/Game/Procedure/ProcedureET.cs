@@ -23,7 +23,7 @@ namespace Game
                 if (RuntimeInstanceContext.State == RuntimeInstanceState.NotRequested)
                 {
                     RuntimeInstanceContext.Prepare(RuntimeInstanceConfig.Create(
-                        System.Guid.NewGuid().ToString("N"), "launcher", "solo"));
+                        System.Guid.NewGuid().ToString("N"), "launcher", "solo", showModeMenu: true));
                 }
                 GameEntry.CodeRunner.StartRun("ET.Init");
                 m_Started = true;

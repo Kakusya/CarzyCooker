@@ -208,5 +208,145 @@
     "Name": "杯台",
     "InitialItemDefinitionId": 19,
     "MenuVariant": 1
+  },
+  {
+    "Id": 22,
+    "StationDefinitionId": 1,
+    "X": 1,
+    "Y": 15,
+    "Orientation": 0,
+    "Name": "生菜台",
+    "InitialItemDefinitionId": 22,
+    "MenuVariant": 2
+  },
+  {
+    "Id": 23,
+    "StationDefinitionId": 1,
+    "X": 5,
+    "Y": 16,
+    "Orientation": 0,
+    "Name": "黄瓜台",
+    "InitialItemDefinitionId": 24,
+    "MenuVariant": 2
+  },
+  {
+    "Id": 24,
+    "StationDefinitionId": 1,
+    "X": 3,
+    "Y": 13,
+    "Orientation": 0,
+    "Name": "芝士台",
+    "InitialItemDefinitionId": 26,
+    "MenuVariant": 2
+  },
+  {
+    "Id": 25,
+    "StationDefinitionId": 12,
+    "X": 2,
+    "Y": 16,
+    "Orientation": 0,
+    "Name": "煎台",
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 4
+  },
+  {
+    "Id": 26,
+    "StationDefinitionId": 1,
+    "X": 5,
+    "Y": 7,
+    "Orientation": 0,
+    "Name": "牛肉饼台",
+    "InitialItemDefinitionId": 33,
+    "MenuVariant": 4
+  },
+  {
+    "Id": 27,
+    "StationDefinitionId": 13,
+    "X": 1,
+    "Y": 7,
+    "Orientation": 0,
+    "Name": "搅拌机",
+    "InitialItemDefinitionId": 45,
+    "MenuVariant": 5
+  },
+  {
+    "Id": 28,
+    "StationDefinitionId": 1,
+    "X": 5,
+    "Y": 9,
+    "Orientation": 0,
+    "Name": "模具台",
+    "InitialItemDefinitionId": 47,
+    "MenuVariant": 5
+  },
+  {
+    "Id": 29,
+    "StationDefinitionId": 1,
+    "X": 2,
+    "Y": 11,
+    "Orientation": 0,
+    "Name": "甜品盘台",
+    "InitialItemDefinitionId": 49,
+    "MenuVariant": 5
+  },
+  {
+    "Id": 30,
+    "StationDefinitionId": 1,
+    "X": 4,
+    "Y": 6,
+    "Orientation": 0,
+    "Name": "第二模具台",
+    "InitialItemDefinitionId": 47,
+    "MenuVariant": 5
+  },
+  {
+    "Id": 31,
+    "StationDefinitionId": 14,
+    "X": 4,
+    "Y": 5,
+    "Orientation": 0,
+    "Name": "磨豆机",
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 6
+  },
+  {
+    "Id": 32,
+    "StationDefinitionId": 15,
+    "X": 3,
+    "Y": 9,
+    "Orientation": 0,
+    "Name": "咖啡机",
+    "InitialItemDefinitionId": 54,
+    "MenuVariant": 6
+  },
+  {
+    "Id": 33,
+    "StationDefinitionId": 16,
+    "X": 5,
+    "Y": 13,
+    "Orientation": 0,
+    "Name": "蒸汽机",
+    "InitialItemDefinitionId": 55,
+    "MenuVariant": 6
+  },
+  {
+    "Id": 34,
+    "StationDefinitionId": 1,
+    "X": 3,
+    "Y": 4,
+    "Orientation": 0,
+    "Name": "热饮杯台",
+    "InitialItemDefinitionId": 59,
+    "MenuVariant": 6
+  },
+  {
+    "Id": 35,
+    "StationDefinitionId": 1,
+    "X": 2,
+    "Y": 7,
+    "Orientation": 0,
+    "Name": "第二奶缸台",
+    "InitialItemDefinitionId": 55,
+    "MenuVariant": 6
   }
 ]

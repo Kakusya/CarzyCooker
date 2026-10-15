@@ -22,5 +22,69 @@
     "ContainerDefinitionId": 19,
     "FinalStageId": 18,
     "RequiresOrderBinding": true
+  },
+  {
+    "Id": 4,
+    "Name": "田园沙拉",
+    "ContentDefinitionId": 27,
+    "ContainerDefinitionId": 10,
+    "FinalStageId": 24,
+    "RequiresOrderBinding": false
+  },
+  {
+    "Id": 5,
+    "Name": "芝士蔬菜沙拉",
+    "ContentDefinitionId": 28,
+    "ContainerDefinitionId": 10,
+    "FinalStageId": 25,
+    "RequiresOrderBinding": false
+  },
+  {
+    "Id": 6,
+    "Name": "经典牛肉汉堡",
+    "ContentDefinitionId": 38,
+    "ContainerDefinitionId": 10,
+    "FinalStageId": 29,
+    "RequiresOrderBinding": false
+  },
+  {
+    "Id": 7,
+    "Name": "香肠鸡蛋早餐",
+    "ContentDefinitionId": 39,
+    "ContainerDefinitionId": 10,
+    "FinalStageId": 33,
+    "RequiresOrderBinding": false
+  },
+  {
+    "Id": 8,
+    "Name": "原味小蛋糕",
+    "ContentDefinitionId": 48,
+    "ContainerDefinitionId": 49,
+    "FinalStageId": 43,
+    "RequiresOrderBinding": false
+  },
+  {
+    "Id": 9,
+    "Name": "浓缩咖啡",
+    "ContentDefinitionId": 56,
+    "ContainerDefinitionId": 59,
+    "FinalStageId": 49,
+    "RequiresOrderBinding": true
+  },
+  {
+    "Id": 10,
+    "Name": "热拿铁",
+    "ContentDefinitionId": 60,
+    "ContainerDefinitionId": 59,
+    "FinalStageId": 53,
+    "RequiresOrderBinding": true
+  },
+  {
+    "Id": 11,
+    "Name": "卡布奇诺",
+    "ContentDefinitionId": 61,
+    "ContainerDefinitionId": 59,
+    "FinalStageId": 56,
+    "RequiresOrderBinding": true
   }
 ]

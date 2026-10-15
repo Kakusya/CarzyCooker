@@ -16,6 +16,11 @@ namespace ET
             buffer.WriteSize(values.Length); foreach (int value in values) buffer.WriteInt(value);
             buffer.WriteInt(form ?? source.Form); buffer.WriteBool(discardable ?? source.Discardable);
             buffer.WriteBool(source.AllowsEmptyContainers); buffer.WriteBool(source.Disposable); buffer.WriteInt(source.MenuVariant);
+            buffer.WriteSize(source.ExclusiveDefinitionIds.Count);
+            foreach (int definition in source.ExclusiveDefinitionIds)
+            {
+                buffer.WriteInt(definition);
+            }
             return new DRGridItemConfig(buffer);
         }
 

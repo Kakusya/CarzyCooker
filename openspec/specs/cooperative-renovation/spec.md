@@ -21,7 +21,7 @@
 - **THEN** 新成员看到同一已选结果，不另生成一组奖励
 
 ### Requirement: 新增工位一次安装
-合法 Continue MUST 在布局及奖励预检通过后一次安装新增工位；失败零改动，重复或旧请求不能多造工位。联机首版候选排除尚未支持的工位升级。
+合法 Continue MUST 在布局及奖励预检通过后一次安装新增工位或合法原工位单级升级；失败零改动，重复或旧请求不能多造工位或升级。升级保留原身份、占地、内容和已开始作业参数；候选只含可兑现的目标及预期等级。
 
 #### Scenario: 安装失败后重复请求
 - **WHEN** 布局不满足安装条件，随后相同请求再次到达
@@ -36,5 +36,6 @@
 
 ## Sources
 
+- [合作原工位升级增量](../../changes/archive/2026-10-15-cooperative-station-upgrades/execution-notes.md)。
 - [本轮实施与逐项运行记录](../../changes/archive/2026-10-14-cooperative-renovation-choice/execution-notes.md)
 - [共同网络入口](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductWire.cs)

@@ -4,6 +4,7 @@ namespace ET.Client
 {
     [FriendOf(typeof(GridPresentationComponent))]
     [FriendOf(typeof(GridClientComponent))]
+    [FriendOf(typeof(ProductRuntimeComponent))]
     public static partial class GridPresentationSystem
     {
         private static string BuffEffectDescription(DRBuffConfig definition)
@@ -34,6 +35,10 @@ namespace ET.Client
                 return role.Name+"："+job+$" · 完成 {role.CompletedCount} 项";
             }));
             view.WorkText.text=partner;
+            if (!string.IsNullOrEmpty(self.CompanionFeedback))
+            {
+                view.WorkText.text += "\n" + self.CompanionFeedback;
+            }
             KitchenWorkOutcomeValue kitchen = grid.LastKitchenOutcome;
             if (kitchen.WorkId != 0 && (grid.Processes.ContainsKey(kitchen.WorkId) || grid.AutoProcesses.ContainsKey(kitchen.WorkId) || grid.BakeProcesses.ContainsKey(kitchen.WorkId)))
             {
@@ -58,8 +63,22 @@ namespace ET.Client
             view.BuffText.text=grid.SelectedBuffId!=0?"本关加成："+Tables.Instance.DTBuffConfig.Get(grid.SelectedBuffId).Name+" · "+BuffEffectDescription(Tables.Instance.DTBuffConfig.Get(grid.SelectedBuffId))
                 :grid.BuffDrawVersion==0?"本关加成准备中":grid.BuffCandidates.Count==0?"本关没有加成":self.BuffCandidatesVisible?"选择一个本关加成":"候选已隐藏，可再次查看";
             var definition = Tables.Instance.DTLevelConfig.GetOrDefault(grid.LevelConfigId);
-            if (definition?.ChapterId > 0) view.PhaseText.text += $" · 第 {definition.ChapterStage}/3 关";
-            view.SettlementText.text=$"{(definition?.IsChapterTerminal == true ? "大关完成" : "本关完成")}\n成功 {grid.ServedOrders} 单 · 未满足 {grid.UnfulfilledOrders} 单\n{grid.LevelScore} 分 · {grid.LevelStars} 星\n{(definition?.IsChapterTerminal == true ? grid.SaveEnabled ? "保存完成记录后返回选档" : "内存试玩完成，返回选档" : "点击继续进入下一关")}";
+            if (definition?.ChapterId > 0)
+            {
+                string name = RestaurantChapters.Find(definition)?.Name;
+                view.PhaseText.text += (name == null ? "" : " · " + name) + $" · 第 {definition.ChapterStage}/{RestaurantConfig.ChapterLevelCount(definition)} 关";
+            }
+            string next = definition?.IsChapterTerminal == true
+                ? IsCooperativeRestaurant(grid) ? grid.CanControlRestaurant ? "内存合作完成，确认后返回房间" : "内存合作完成，等待 Host 返回房间"
+                    : grid.SaveEnabled ? "保存完成记录后返回选档" : "内存试玩完成，返回选档"
+                : "点击继续进入下一关";
+            view.SettlementText.text=$"{(definition?.IsChapterTerminal == true ? "大关完成" : "本关完成")}\n成功 {grid.ServedOrders} 单 · 未满足 {grid.UnfulfilledOrders} 单\n{grid.LevelScore} 分 · {grid.LevelStars} 星\n{next}";
+        }
+
+        private static bool IsCooperativeRestaurant(GridClientComponent grid)
+        {
+            ProductRuntimeComponent runtime = grid.Root().GetComponent<ProductRuntimeComponent>();
+            return runtime != null && runtime.Config.Role != Game.RuntimeInstanceRole.Solo;
         }
     }
 }

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-定义单机厨房的菜品身份、阶段依赖和可生产菜单，让不同加工链共用已有物品、容器和显式操作规则。本轮覆盖已规划的番茄蛋花汤及新增盘装吐司，候选目录不因存在定义而全部成为可生产菜品。
+定义厨房菜品身份、阶段依赖及可生产菜单，使不同加工链共用实际物品、容器和显式操作规则。当前包括汤、吐司、橙汁、两种沙拉及首批汉堡、早餐、原味小蛋糕及浓缩/拿铁/卡布奇诺，支持已验收的Solo与本机合作；候选目录不因存在名称而自动成为可生产菜品。
 
 ## Requirements
 
@@ -32,11 +32,15 @@
 
 ### Requirement: 盘装是独立物品转移
 
-玩家 MUST 将真实烤面包放入兼容空盘才获得盘装吐司；原材料内容身份唯一，盘容量和位置遵守普通容器规则。失败不消费或交换；烘焙设备与烘焙载具不得直接充当出餐容器。
+玩家 MUST 将真实烤面包放入兼容空盘才获得盘装吐司；原材料身份唯一，盘容量和位置遵守普通容器规则。若另一条已交付配方明确把吐司作为组件，可继续加入该配方规定的其他组件和份数，部分组合不能冒充吐司或最终菜品。失败不消费或交换；设备不充当出餐容器。
 
 #### Scenario: 烤面包入盘及满盘拒绝
 - **WHEN** 玩家先将烤面包放进合法空盘，再尝试向已满盘加一份
 - **THEN** 第一次仅转移同一烤面包，第二次拒绝并保留两端物品，不出现第二份内容
+
+#### Scenario: 早餐中的真实吐司组件
+- **WHEN** 盘中已有一份真实吐司并加入早餐配方规定的煎蛋和熟香肠
+- **THEN** 仅允许该配方精确份数以内的部分组合，齐料后仍须显式组装；错料或第二份吐司拒绝且不消费
 
 ### Requirement: 汤与吐司使用相同物品和时间规则
 
@@ -46,7 +50,70 @@
 - **WHEN** 汤与吐司处于合法自动加工时暂停并恢复
 - **THEN** 暂停期间两者进度保持，恢复后各自只按统一业务步推进，使用各自的输出形态
 
+### Requirement: 多材料组装依据精确实物
+
+首批 F01田园沙拉/F02芝士蔬菜沙拉的多材料组装 MUST 按有效阶段核对实际输入定义和数量，完整通过后只生成一次结果；缺料、多料或错料不部分消费，显示名不参与裁决。
+
+#### Scenario: 两份同类投入不足
+- **WHEN** 某确认配方需要同类材料两份而仅有一份
+- **THEN** 拒绝开始且保留全部输入，不按总重量或一个定义存在视作满足数量
+
+### Requirement: 共享备料与合流
+
+独立准备分支 SHALL 可以分工并交接真实半成品，在合流阶段完整匹配后组装；同一输入不能同时消费于两份菜。
+
+#### Scenario: 两人争用同一份切配料
+- **WHEN** 两名成员将同一材料身份用于不同组装
+- **THEN** 仅首个合法提交消费，另一提交拒绝，不产生重复成品
+
+### Requirement: 热餐由共享熟料组装
+
+首批 F11经典牛肉汉堡/F43香肠鸡蛋早餐 MUST 按实际阶段由生料、熟料及既有备料合流，熟料可交接暂存，最终容器和精确份数齐全才可识别交付。
+
+#### Scenario: 一人煎制另一人装配
+- **WHEN** 甲制作熟料并交给乙，乙加入其他合法组件组装
+- **THEN** 只消费真实各份输入并形成一个成品，免费熟料和未熟输入均不能替代
+
+### Requirement: 新增热餐全链可达
+
+纳入首批的热餐 SHALL 具有正式源定义、有限供应、设备、容器、订单和菜谱路径，保存恢复保留未完成作业和真实物品，不只登记菜名。
+
+#### Scenario: 保存未完成煎制
+- **WHEN** 在合法成功检查点中存在暂停或跨关煎制
+- **THEN** 恢复保持输入、冻结参数及剩余进度，不提前完成或重发初始材料
+
+### Requirement: 甜品阶段不可跳过
+
+首批 S04原味小蛋糕 MUST 使用真实材料制作面糊，再经装模、合法烘烤及脱模入出餐容器，不能直接供应面糊成品或用模具冒充餐盘。
+
+#### Scenario: 未脱模请求交付
+- **WHEN** 蛋糕已烤好但仍在模具中
+- **THEN** 不能交付为盘装甜品，合法脱模后才识别最终菜品
+
+### Requirement: 面糊批次与恢复守恒
+
+面糊取用 MUST 每次扣除实际份数，跨关及成功档恢复不补满；未完模具加工保留冻结进度和载具关系。
+
+#### Scenario: 最后一份面糊争用
+- **WHEN** 两人请求同批最后一份用于不同模具
+- **THEN** 只一个成功装模，另一请求不生成额外面糊或空壳成品
+
+### Requirement: 调饮按份数与必要顺序
+
+首批 D15浓缩/D17热拿铁/D18卡布奇诺的调饮 MUST 消费各实际游戏份数，并完整验证必要前序；最后收尾未满足时不得识别成品，错误顺序拒绝且保留原杯内容。
+
+#### Scenario: 过早加入奶泡
+- **WHEN** 杯内前序咖啡/热奶尚未齐全而玩家加奶泡
+- **THEN** 拒绝该次加入，原杯及手持物不变，不自动补齐前序
+
 ## Sources
 
 - [当前实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridDishConfig.cs)。
 - [solo-dish-recipe-chain 执行与验收记录](../../changes/archive/2026-10-13-solo-dish-recipe-chain/execution-notes.md)。
+- [多输入组装与沙拉批次](../../changes/archive/2026-10-15-kitchen-multi-input-assembly/execution-notes.md)、[组装裁决](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridAssemblySystem.cs)。
+
+- [首批热餐的配置、合同与逐功能运行](../../changes/archive/2026-10-15-kitchen-hot-food-batch/execution-notes.md)。
+
+- [甜品载具与面糊验收](../../changes/archive/2026-10-15-kitchen-dessert-batch/execution-notes.md)、[搅拌和脱模裁决](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridDessertSystem.cs)。
+
+- [三款咖啡、模式与顺序运行](../../changes/archive/2026-10-15-kitchen-beverage-batch/execution-notes.md)、[基底添加预检](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridBeverageSystem.cs)、[份数与顺序定义](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridAssemblyConfig.cs)。

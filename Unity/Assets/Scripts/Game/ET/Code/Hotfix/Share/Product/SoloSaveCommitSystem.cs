@@ -84,6 +84,16 @@ namespace ET
                     ChapterStage = Tables.Instance.DTLevelConfig.Get(level.ConfigId).ChapterStage,
                     ServedOrders = level.ServedOrders, UnfulfilledOrders = level.UnfulfilledOrders
                 };
+                if (binding.SourceHeader is SoloSaveHeader source)
+                {
+                    header.SourceProfileId = source.ProfileId;
+                    header.RootProfileId = source.RootProfileId;
+                    header.RootSlotId = source.RootSlotId;
+                    header.RootRevision = source.RootRevision;
+                    header.SourceResultId = source.SourceResultId;
+                    header.AuthorizationId = source.AuthorizationId;
+                    header.Receipts = System.Array.ConvertAll(source.Receipts, ProgressReceiptValues.Copy);
+                }
                 try
                 {
                     SoloSaveValidation.Payload(header, payload, binding.ProfileId);
@@ -139,6 +149,8 @@ namespace ET
             SoloSaveResult result = binding?.CurrentResult ?? default;
             if (result?.State != SoloSaveState.Committed) return;
             binding.SourceSlotId = result.SlotId; binding.SourceRevision = 1;
+            using var memory = new System.IO.MemoryStream(result.Record, false);
+            binding.SourceHeader = SoloSaveFile.ReadHeader(memory);
         }
 
         private static void StopSoloSave(this RestaurantRuntime self)

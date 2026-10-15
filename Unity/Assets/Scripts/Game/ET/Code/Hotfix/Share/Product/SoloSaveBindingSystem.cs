@@ -18,6 +18,7 @@ namespace ET
 
     [EntitySystemOf(typeof(SoloSaveBinding))]
     [FriendOf(typeof(SoloSaveBinding))]
+    [FriendOf(typeof(SelectedSaveBaseline))]
     public static partial class SoloSaveBindingSystem
     {
         [EntitySystem]
@@ -25,6 +26,7 @@ namespace ET
         {
             self.ProfileId = profile; self.Baseline = default; self.CurrentResult = default;
             self.SourceSlotId = ""; self.SourceRevision = 0; self.Completions.Clear();
+            self.SourceHeader = null;
         }
 
         public static void BindSoloSave(this Match match, string profile, SoloSaveHeader header, SoloSavePayload payload)
@@ -35,6 +37,7 @@ namespace ET
             {
                 binding.Baseline = match.AddChild<SelectedSaveBaseline, SoloSaveHeader, SoloSavePayload>(header, payload);
                 binding.SourceSlotId = header.SlotId; binding.SourceRevision = header.Revision;
+                binding.SourceHeader = ((SelectedSaveBaseline)binding.Baseline).Header;
             }
         }
     }

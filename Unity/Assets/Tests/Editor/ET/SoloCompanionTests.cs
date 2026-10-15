@@ -15,8 +15,11 @@ namespace ET
         private DRCompanionConfig CompanionDefinition(int id = 1, int post = 1, int x = 2, int wash = 61)
         {
             var buffer = new Luban.ByteBuf();
-            buffer.WriteInt(id); buffer.WriteString("伙伴"); buffer.WriteInt(post); buffer.WriteInt(x); buffer.WriteInt(5);
+            buffer.WriteInt(id); buffer.WriteString("小麦"); buffer.WriteInt(post); buffer.WriteInt(x); buffer.WriteInt(5);
             buffer.WriteInt(30); buffer.WriteInt(20); buffer.WriteInt(wash);
+            var definition = Tables.Instance.DTCompanionConfig.Get(1);
+            buffer.WriteString(definition.PreparationChat); buffer.WriteString(definition.CooperationChat); buffer.WriteString(definition.ClosingChat);
+            buffer.WriteString(definition.WorkFeedback); buffer.WriteString(definition.GrowthFeedback);
             return new DRCompanionConfig(buffer);
         }
 

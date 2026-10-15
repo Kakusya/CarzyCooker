@@ -119,6 +119,7 @@ namespace ET
             buffer.WriteSize(0);
             buffer.WriteInt(0); buffer.WriteInt(0); buffer.WriteBool(false);
             buffer.WriteInt(0); buffer.WriteSize(0);
+            buffer.WriteBool(false); buffer.WriteSize(0); buffer.WriteSize(0);
             return new DRLevelConfig(buffer);
         }
 
@@ -136,7 +137,23 @@ namespace ET
                 buffer.WriteSize(row.AllowedRenovationIds.Count);foreach(int id in row.AllowedRenovationIds)buffer.WriteInt(id);
                 buffer.WriteInt(row.ChapterId); buffer.WriteInt(row.ChapterStage); buffer.WriteBool(row.IsChapterTerminal);
                 buffer.WriteInt(row.MenuVariant); buffer.WriteSize(row.AllowedDrinkIds.Count); foreach (int drink in row.AllowedDrinkIds) buffer.WriteInt(drink);
+                WriteLevelUnlockFixture(buffer, row);
                 rows[i]=new DRLevelConfig(buffer);map[row.Id]=rows[i];
+            }
+        }
+
+        private static void WriteLevelUnlockFixture(Luban.ByteBuf buffer, DRLevelConfig source)
+        {
+            buffer.WriteBool(source.UseInitialUnlockSet);
+            buffer.WriteSize(source.InitialUnlockedDishIds.Count);
+            foreach (int id in source.InitialUnlockedDishIds)
+            {
+                buffer.WriteInt(id);
+            }
+            buffer.WriteSize(source.InitialUnlockedStationIds.Count);
+            foreach (int id in source.InitialUnlockedStationIds)
+            {
+                buffer.WriteInt(id);
             }
         }
 

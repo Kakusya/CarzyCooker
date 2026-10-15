@@ -2,7 +2,7 @@
 
 ## Purpose
 
-定义单机餐厅固定伙伴的可见岗位执行、玩家可选接手和关内成长，让询问与洗碗遵守同一工作事实和统一业务时钟。本轮采用一位伙伴的可调样机内容，不确定最终伙伴人数、名字或长期角色剧情。
+定义单机餐厅固定伙伴的可见岗位执行、玩家可选接手和关内成长，让询问与洗碗遵守同一工作事实和统一业务时钟。本轮沿同一定义展示一位伙伴“小麦”，准备态提供备菜、合作、收店的只读聊天，实际工作后显示有限正面反馈；最终人数、更多能力和长期剧情仍属未来范围。
 
 ## Requirements
 
@@ -46,7 +46,33 @@
 - **WHEN** 当前关自然收口并继续下一关
 - **THEN** 伙伴身份和岗位保留，新关完成次数为零且旧加速失效，旧任务不再次完成
 
+### Requirement: 现有伙伴可稳定识别
+
+现有一位固定伙伴 SHALL 以原稳定定义、已确认称呼“小麦”和固定岗位展示，跨关或新运行不变成任意招募劳动力，最终人数不由当前一位配置推导。
+
+#### Scenario: 跨关再见伙伴
+- **WHEN** 玩家进入下一关或恢复合法成功档
+- **THEN** 仍能识别相同固定搭档，关内成长按既有合同重置
+
+### Requirement: 准备态聊天不改经营
+
+准备态聊天 MUST 为可选只读展示，不修改物品、订单、成长、时间或开店状态；关切换和视图重开不遗留旧动作回调。
+
+#### Scenario: 聊天后开店
+- **WHEN** 玩家打开并关闭伙伴聊天再点击开店
+- **THEN** 聊天期间业务无额外效果，开店只发送一次合法请求
+
+### Requirement: 工作反馈只观察提交
+
+伙伴完成和成长反馈 SHALL 只表现已提交事实，不重复提交工作或增加经验；旧关与重复消息不在当前关重复庆祝。
+
+#### Scenario: 完成通知重复
+- **WHEN** 同一伙伴完成通知被重复投递或视图重开
+- **THEN** 完成次数不增加，当前提示不把旧关当成新成长
+
 ## Sources
 
 - [当前实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/CompanionSystems.cs)。
 - [solo-fixed-companion-work 执行与验收记录](../../changes/archive/2026-10-13-solo-fixed-companion-work/execution-notes.md)。
+
+- [有限聊天与反馈](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationCompanion.cs)、[本次执行记录](../../changes/archive/2026-10-15-fixed-companion-presence/execution-notes.md)。

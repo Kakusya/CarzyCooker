@@ -13,5 +13,45 @@
     "Id": 3,
     "DishId": 3,
     "Score": 10
+  },
+  {
+    "Id": 4,
+    "DishId": 4,
+    "Score": 10
+  },
+  {
+    "Id": 5,
+    "DishId": 5,
+    "Score": 10
+  },
+  {
+    "Id": 6,
+    "DishId": 6,
+    "Score": 10
+  },
+  {
+    "Id": 7,
+    "DishId": 7,
+    "Score": 10
+  },
+  {
+    "Id": 8,
+    "DishId": 8,
+    "Score": 10
+  },
+  {
+    "Id": 9,
+    "DishId": 9,
+    "Score": 10
+  },
+  {
+    "Id": 10,
+    "DishId": 10,
+    "Score": 10
+  },
+  {
+    "Id": 11,
+    "DishId": 11,
+    "Score": 10
   }
 ]

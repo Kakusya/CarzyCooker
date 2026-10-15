@@ -1,0 +1,20 @@
+[
+  {
+    "Id": 1,
+    "Name": "家常开张",
+    "MenuVariant": 3,
+    "SoloChapterId": 11,
+    "CooperativeChapterId": 21,
+    "SoloFirstLevelId": 1101,
+    "CooperativeFirstLevelId": 2101
+  },
+  {
+    "Id": 2,
+    "Name": "进阶小馆",
+    "MenuVariant": 6,
+    "SoloChapterId": 12,
+    "CooperativeChapterId": 22,
+    "SoloFirstLevelId": 1501,
+    "CooperativeFirstLevelId": 2501
+  }
+]

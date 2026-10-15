@@ -8,11 +8,11 @@
 
 ### Requirement: ET 固定入口
 
-ProcedurePreset SHALL 直接进入 ProcedureET；在 UNITY_ET 编译条件成立时，由 CodeRunner.StartRun("ET.Init") 启动，离开时仅对本轮已启动入口 StopRun。普通 Launcher 无显式请求时 MUST 在启动 Loader 前建立本轮默认 Solo 配置，进入 ProductRoot 并加载临时地图与 HUD；显式 legacy 继续走旧 ET 示例路线，显式 Solo／Host／Client 使用其原配置。显式实例配置错误、交接失效或产品能力缺失时 MUST 明确失败，不回退到默认 Solo 或旧示例。不声明已删除的 GameHot／纯 GF 示例分支仍可切换，也不把进入 ProcedureET 等同于 ET 已成功初始化。
+ProcedurePreset SHALL 直接进入 ProcedureET；在 UNITY_ET 编译条件成立时，由 CodeRunner.StartRun("ET.Init") 启动，离开时仅对本轮已启动入口 StopRun。普通 Launcher 无显式请求时 MUST 在启动 Loader 前建立本轮默认 Solo 配置，进入 ProductRoot 并显示受管模式菜单，选择有效餐厅后再加载地图与 HUD；显式 legacy 继续走旧 ET 示例路线，显式 Solo／Host／Client 使用其原配置。显式实例配置错误、交接失效或产品能力缺失时 MUST 明确失败，不回退到默认 Solo 或旧示例。不声明已删除的 GameHot／纯 GF 示例分支仍可切换，也不把进入 ProcedureET 等同于 ET 已成功初始化。
 
 #### Scenario: ET 固定入口的适用行为
 - **WHEN** GF Procedure 进入 Preset，且本轮没有显式实例请求
-- **THEN** ProcedureET 建立新的 Solo 配置后启动 ET 路线，产品根加载 Board／HUD，不要求使用实例窗口
+- **THEN** ProcedureET 建立新的 Solo 配置后启动 ET 路线，产品根先显示模式菜单，选择前不建运行餐厅，不要求使用实例窗口
 
 #### Scenario: ET 编译条件成立时退出
 - **WHEN** 已编译 UNITY_ET 路线且 ProcedureET 离开
@@ -84,7 +84,7 @@ CodeLoader MUST 按热更与 CodeBytes 配置取得 Model/ModelView/Hotfix/Hotfi
 
 ### Requirement: 产品角色 ET 根入口分流
 
-产品启动能力实际接入后，普通 Launcher 默认 Solo 以及合法显式 Solo／Host／Client 请求 SHALL 经现有 ET 稳定装载入口创建独立产品根场景及适用角色子树；只有显式合法 legacy 保留旧 ET Main 路线。产品路径不得触发 Demo 根启动处理，不得用工作区职责或 CodeMode 替代运行角色。能力缺失、配置失效及初始化失败仍须明确拒绝，不回落 Demo。
+产品启动能力实际接入后，普通 Launcher 默认 Solo 以及合法显式 Solo／Host／Client 请求 SHALL 经现有 ET 稳定装载入口创建独立产品根场景；普通入口选择前只显示模式菜单，选择餐厅后才建立适用角色子树；只有显式合法 legacy 保留旧 ET Main 路线。产品路径不得触发 Demo 根启动处理，不得用工作区职责或 CodeMode 替代运行角色。能力缺失、配置失效及初始化失败仍须明确拒绝，不回落 Demo。
 
 #### Scenario: 显式产品角色启动
 - **WHEN** 合法 Solo／Host／Client 配置且适用产品能力已编译并装载
@@ -96,7 +96,7 @@ CodeLoader MUST 按热更与 CodeBytes 配置取得 Model/ModelView/Hotfix/Hotfi
 
 #### Scenario: 普通 Launcher 回归
 - **WHEN** 未提交显式实例请求而运行普通 Launcher
-- **THEN** 建立新的 Solo 配置并进入产品根，不继承上一轮产品角色与会话，不进入示例 Main
+- **THEN** 建立新的 Solo 配置并进入产品根模式菜单，不继承上一轮产品角色与会话，不进入示例 Main；选择合作经完整退出和新配置交接，不原地修改 Prepared 配置
 
 #### Scenario: 显式 legacy 回归
 - **WHEN** 明确选择合法 legacy 请求
@@ -135,3 +135,5 @@ CodeLoader MUST 按热更与 CodeBytes 配置取得 Model/ModelView/Hotfix/Hotfi
 - [版本检查](../../../Unity/Assets/Scripts/Game/Procedure/ProcedureCheckVersion.cs)
 
 - [格子样机与默认入口执行记录](../../changes/archive/2026-10-11-portrait-grid-kitchen-prototype/execution-notes.md)。
+
+- [游戏入口增量及验收](../../changes/archive/2026-10-15-product-mode-room-flow/execution-notes.md)。

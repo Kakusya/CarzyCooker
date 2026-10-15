@@ -2,7 +2,7 @@
 
 ## Purpose
 
-定义单机厨房及前厅所需的工位能力、初始布局和准备态设备调整，使设备、材料与加工使用清楚的运行关系。本能力保持共享格子地形和普通单槽，采用已有地图交互，不引入独立布局工具或全工位目录。
+定义Solo和合作共享厨房及前厅的工位能力、初始布局、几何与准备态设备调整，使设备、材料和加工维持明确的运行关系。当前包含已交付的切配、煮制、烘烤、榨汁和煎制能力，保留共享格子、普通单槽及已有地图交互，不承诺完整候选工位目录。
 
 ## Requirements
 
@@ -46,7 +46,27 @@
 - **WHEN** 玩家预览新工位位置后取消或提交失败
 - **THEN** 角色寻路仍使用原已提交地形，预览不使顾客或伙伴提前改走新布局
 
+### Requirement: 地图几何由同一配置持有
+
+厨房 MUST 以有界配置表达地图尺寸和可用区域，玩家、伙伴、顾客、工位验证、镜头及点击使用同一已提交几何；旧有效档保留原地图语义。
+
+#### Scenario: 扩建后寻路与点击
+- **WHEN** 扩建合法提交且玩家点击新增可用格
+- **THEN** 各端选择同一有效格，三类角色不会穿过未解锁区域，原布局关系不改变
+
+### Requirement: 煎制设备显式启动
+
+煎制 MUST 在合法设备使用真实生料显式启动，由统一业务 Tick 推进，设备同刻一个作业；未完成不能取得熟料或用显示动画提前完成。
+
+#### Scenario: 开始后暂停
+- **WHEN** 煎制启动后暂停再恢复
+- **THEN** 暂停不推进，恢复接续同一冻结耗时和输入，最终只产生一次熟料
+
 ## Sources
 
 - [当前实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridStationLayoutSystem.cs)。
 - [solo-workstation-layout 执行与验收记录](../../changes/archive/2026-10-13-solo-workstation-layout/execution-notes.md)。
+
+- [空间扩建逐功能记录](../../changes/archive/2026-10-15-restaurant-space-expansion/execution-notes.md)。
+
+- [首批热餐的配置、合同与逐功能运行](../../changes/archive/2026-10-15-kitchen-hot-food-batch/execution-notes.md)。

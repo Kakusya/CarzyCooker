@@ -31,6 +31,9 @@ public sealed partial class DRLevelConfig : Luban.BeanBase
         IsChapterTerminal = _buf.ReadBool();
         MenuVariant = _buf.ReadInt();
         {int n0 = _buf.ReadSize(); AllowedDrinkIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); AllowedDrinkIds.Add(_e0);}}
+        UseInitialUnlockSet = _buf.ReadBool();
+        {int n0 = _buf.ReadSize(); InitialUnlockedDishIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); InitialUnlockedDishIds.Add(_e0);}}
+        {int n0 = _buf.ReadSize(); InitialUnlockedStationIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); InitialUnlockedStationIds.Add(_e0);}}
         PostInit();
     }
 
@@ -103,6 +106,18 @@ public sealed partial class DRLevelConfig : Luban.BeanBase
     /// AllowedDrinkIds
     /// </summary>
     public readonly System.Collections.Generic.List<int> AllowedDrinkIds;
+    /// <summary>
+    /// 显式初始解锁
+    /// </summary>
+    public readonly bool UseInitialUnlockSet;
+    /// <summary>
+    /// 初始菜品定义
+    /// </summary>
+    public readonly System.Collections.Generic.List<int> InitialUnlockedDishIds;
+    /// <summary>
+    /// 初始设备定义
+    /// </summary>
+    public readonly System.Collections.Generic.List<int> InitialUnlockedStationIds;
     public const int __ID__ = -2084916616;
     public override int GetTypeId() => __ID__;
 
@@ -130,6 +145,9 @@ public sealed partial class DRLevelConfig : Luban.BeanBase
         + "IsChapterTerminal:" + IsChapterTerminal + ","
         + "MenuVariant:" + MenuVariant + ","
         + "AllowedDrinkIds:" + Luban.StringUtil.CollectionToString(AllowedDrinkIds) + ","
+        + "UseInitialUnlockSet:" + UseInitialUnlockSet + ","
+        + "InitialUnlockedDishIds:" + Luban.StringUtil.CollectionToString(InitialUnlockedDishIds) + ","
+        + "InitialUnlockedStationIds:" + Luban.StringUtil.CollectionToString(InitialUnlockedStationIds) + ","
         + "}";
     }
 

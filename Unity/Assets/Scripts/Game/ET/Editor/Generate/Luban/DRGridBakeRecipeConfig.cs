@@ -62,6 +62,14 @@ public sealed class DRGridBakeRecipeConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["CarrierDefinitionId"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  CarrierDefinitionId = _fieldJson;
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -80,6 +88,9 @@ public sealed class DRGridBakeRecipeConfig :  Luban.EditorBeanBase
         }
         {
             _json["RequiredTicks"] = new JSONNumber(RequiredTicks);
+        }
+        {
+            _json["CarrierDefinitionId"] = new JSONNumber(CarrierDefinitionId);
         }
     }
 
@@ -119,6 +130,11 @@ public sealed class DRGridBakeRecipeConfig :  Luban.EditorBeanBase
     /// RequiredTicks
     /// </summary>
     public int RequiredTicks;
+
+    /// <summary>
+    /// 烘焙载具定义（0为直接物件）
+    /// </summary>
+    public int CarrierDefinitionId;
 
 }
 }

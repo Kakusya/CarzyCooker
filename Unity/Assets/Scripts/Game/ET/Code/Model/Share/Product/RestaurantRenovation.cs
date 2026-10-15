@@ -36,6 +36,7 @@ namespace ET
     [ComponentOf(typeof(RestaurantRuntime))]
     public sealed class RestaurantRenovation : Entity, IAwake
     {
+        public bool SelectionFinalized;
         // 当前成功结果的固定候选与选择；只在下一次自然结算刷新。
         public long ResultLevelId, ResultLevelGeneration, ChoiceVersion;
         public int SelectedDefinitionId;

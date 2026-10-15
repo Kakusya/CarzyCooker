@@ -10,13 +10,16 @@ namespace ET
     [FriendOf(typeof(FrontTable))]
     public static partial class GridKitchenSystem
     {
-        public static string CheckRenovationInstallation(this GridKitchenComponent self, IReadOnlyList<GridStationPlacement> additions, out HashSet<GridCell> terrain)
+        public static string CheckRenovationInstallation(this GridKitchenComponent self, IReadOnlyList<GridStationPlacement> additions, out HashSet<GridCell> terrain,
+            int width = 0, int height = 0, bool allowTable = false)
         {
             terrain = null;
+            width = width == 0 ? self.Width : width; height = height == 0 ? self.Height : height;
             if (additions.Count == 0 || self.LayoutVersion == long.MaxValue) return "InvalidRenovationPlan";
             var definitions = GridStationConfig.ValidateDefinitions(Tables.Instance.DTStationConfig.DataList);
             if (additions.Any(value => !definitions.ContainsKey(value.DefinitionId) ||
-                definitions[value.DefinitionId].Kind is not ((int)GridStationKind.Counter or (int)GridStationKind.Chopping))) return "InvalidRenovationPlan";
+                definitions[value.DefinitionId].Kind is not ((int)GridStationKind.Counter or (int)GridStationKind.Chopping) &&
+                !(allowTable && definitions[value.DefinitionId].Kind == (int)GridStationKind.Table))) return "InvalidRenovationPlan";
             var footprint = additions.SelectMany(value => GridStationGeometry.Cells(definitions[value.DefinitionId].FootprintOffsets, value.Cell, value.Orientation)).ToHashSet();
             Level level = self.ProductLevel();
             CompanionRole[] roles = level?.Children.Values.OfType<CompanionRole>().ToArray() ?? Array.Empty<CompanionRole>();
@@ -54,7 +57,7 @@ namespace ET
             try
             {
                 terrain = GridStationConfig.ValidateTerrain(definitions,
-                    self.Stations.Values.Select(value => (GridStation)value).Select(value => new GridStationPlacement(value.DefinitionId, value.Cell, value.Orientation)).Concat(additions), required);
+                    self.Stations.Values.Select(value => (GridStation)value).Select(value => new GridStationPlacement(value.DefinitionId, value.Cell, value.Orientation)).Concat(additions), required, width, height);
             }
             catch (InvalidOperationException) { return "RenovationBlocked"; }
             return null;

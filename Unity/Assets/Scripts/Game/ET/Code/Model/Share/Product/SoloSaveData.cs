@@ -6,12 +6,13 @@ namespace ET
 {
     public struct SoloSaveSelectionRequested { }
     public enum SoloSaveRecordKind { Continue = 0, ChapterCompleted = 1 }
+    public static class SoloSaveFormat { public const int Current = 12; }
 
     // 产品文件只存值和本文件内的引用键；不存 Entity、ActorId 或网络快照。
     [MemoryPackable]
     public sealed partial class SoloSaveHeader : Object
     {
-        public int Version { get; set; } = 4;
+        public int Version { get; set; } = SoloSaveFormat.Current;
         public string Platform { get; set; } = "PC";
         public string SlotId { get; set; }
         public string ProfileId { get; set; }
@@ -30,6 +31,19 @@ namespace ET
         public int ChapterStage { get; set; }
         public int ServedOrders { get; set; }
         public int UnfulfilledOrders { get; set; }
+        // v5：个人文件内的谱系与本机领取事实；无来源的新档以自身为根。
+        private string sourceProfileId, rootProfileId, rootSlotId;
+        private int rootRevision;
+        public string SourceProfileId { get => sourceProfileId ?? (SourceSlotId == "" ? "" : ProfileId); set => sourceProfileId = value; }
+        public string RootProfileId { get => rootProfileId ?? ProfileId; set => rootProfileId = value; }
+        public string RootSlotId { get => rootSlotId ?? SlotId; set => rootSlotId = value; }
+        public int RootRevision { get => rootRevision == 0 ? Revision : rootRevision; set => rootRevision = value; }
+        public string SourceResultId { get; set; } = "";
+        public string AuthorizationId { get; set; } = "";
+        public string[] ClaimedResults { get; set; } = Array.Empty<string>();
+        public string[] ClaimSlots { get; set; } = Array.Empty<string>();
+        public int[] ClaimRevisions { get; set; } = Array.Empty<int>();
+        public ProgressCommitReceipt[] Receipts { get; set; } = Array.Empty<ProgressCommitReceipt>();
     }
 
     [MemoryPackable]
@@ -46,6 +60,15 @@ namespace ET
         public int PendingRenovationId { get; set; }
         public int PendingUpgradeStationKey { get; set; }
         public int PendingUpgradeExpectedLevel { get; set; }
+        public SavedRestaurantUnlocks Unlocks { get; set; }
+        public SavedKitchenGeometry Geometry { get; set; }
+    }
+
+    [MemoryPackable]
+    public sealed partial class SavedKitchenGeometry : Object
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
     }
 
     [MemoryPackable]
@@ -121,6 +144,7 @@ namespace ET
         public int StationKey { get; set; }
         public int InputKey { get; set; }
         public int OutputDefinitionId { get; set; }
+        public int CarrierKey { get; set; }
     }
 
     [MemoryPackable]
@@ -175,6 +199,7 @@ namespace ET
         public string SourceSlotId;
         public int SourceRevision;
         public EntityRef<SoloSaveResult> CurrentResult;
+        public SoloSaveHeader SourceHeader;
         public readonly System.Collections.Generic.Queue<SoloSaveCompletion> Completions = new();
     }
 

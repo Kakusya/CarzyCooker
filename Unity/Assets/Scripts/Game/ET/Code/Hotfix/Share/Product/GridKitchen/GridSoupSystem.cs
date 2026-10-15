@@ -26,9 +26,9 @@ namespace ET
                 if (!items.TryGetValue(recipe.ContainerDefinitionId, out var container) || container.Kind != 2 ||
                     recipe.RequiredTicks <= 0 || recipe.OutputPortions <= 0 || recipe.InputDefinitionIds.Count == 0 ||
                     recipe.InputDefinitionIds.Count != recipe.InputCounts.Count || recipe.InputCounts.Any(count => count <= 0) ||
-                    recipe.InputDefinitionIds.Distinct().Count() != recipe.InputDefinitionIds.Count || recipe.MenuVariant is not (0 or 1) ||
-                    recipe.StationCapability is not ((int)GridStationCapability.Cook or (int)GridStationCapability.Juice) ||
-                    recipe.LockContainer != (recipe.StationCapability == (int)GridStationCapability.Juice) ||
+                    recipe.InputDefinitionIds.Distinct().Count() != recipe.InputDefinitionIds.Count || !ProductMenuCatalog.IsValid(recipe.MenuVariant) ||
+                    recipe.StationCapability is not ((int)GridStationCapability.Cook or (int)GridStationCapability.Juice or (int)GridStationCapability.Mixing or (int)GridStationCapability.Extract or (int)GridStationCapability.HeatMilk or (int)GridStationCapability.FoamMilk) ||
+                    recipe.LockContainer != (recipe.StationCapability != (int)GridStationCapability.Cook) ||
                     recipe.InputCounts.Sum() > container.ContainerCapacity ||
                     recipe.InputDefinitionIds.Any(id => !items.TryGetValue(id, out var item) || item.Kind != 1 || !container.AcceptedDefinitionIds.Contains(id)) ||
                     !items.TryGetValue(recipe.OutputDefinitionId, out var output) || output.Kind != 1 ||
@@ -94,6 +94,11 @@ namespace ET
             if (pot.Contents.Count >= Tables.Instance.DTGridItemConfig.Get(pot.DefinitionId).ContainerCapacity) return "ContainerFull";
             string error = self.CheckPotAddition(pot, liquid.DefinitionId);
             if (error != null) return error;
+            string permission = self.CheckProductionInput(pot.DefinitionId, liquid.DefinitionId);
+            if (permission != null)
+            {
+                return permission;
+            }
             self.PauseWork(actor);
             bowl.Contents.Clear(); pot.Contents.Add(liquid.Id); liquid.HolderId = pot.Id;
             self.RetireCompletedPrep(bowl.Id);
@@ -103,40 +108,57 @@ namespace ET
         private static string StartAutoWork(this GridKitchenComponent self, GridActor actor, GridStation station, GridIntent intent)
         {
             bool juice = intent.Action == GridAction.StartJuice;
-            if (juice && ((RestaurantRuntime)self.Restaurant)?.MenuVariant != 1) return "DrinkMenuRequired";
+            bool mix = intent.Action == GridAction.StartMix;
+            GridStationCapability capability = AutoCapability(intent.Action);
+            if (juice && !ProductMenuCatalog.Includes(((RestaurantRuntime)self.Restaurant)?.MenuVariant ?? 0, (int)ProductMenuVariant.Drink)) return "DrinkMenuRequired";
             GridItem pot = self.Item(station.ItemId);
             if (actor.HandItemId != 0) return "HandFull";
-            if (pot == null || pot.Id != intent.ExpectedItemId || pot.Id != intent.ExpectedTargetItemId || pot.DefinitionId != (juice ? GridKitchenRules.JuiceJug : GridKitchenRules.Pot) || pot.Location != GridItemLocation.Counter || pot.HolderId != station.Id) return "TargetChanged";
+            if (pot == null || pot.Id != intent.ExpectedItemId || pot.Id != intent.ExpectedTargetItemId || pot.DefinitionId != AutoContainer(capability) || pot.Location != GridItemLocation.Counter || pot.HolderId != station.Id) return "TargetChanged";
             if (pot.Hygiene != ItemHygiene.Clean) return "DirtyUtensil";
             if (pot.AutoProcessId != intent.ExpectedProcessId) return "ProcessChanged";
             if (pot.AutoProcessId != 0) return "ProcessLocked";
-            var capability = juice ? GridStationCapability.Juice : GridStationCapability.Cook;
-            if ((station.Capabilities & capability) == 0) return juice ? "RequiresJuicer" : "RequiresStove";
+            if ((station.Capabilities & capability) == 0)
+            {
+                return capability switch
+                {
+                    GridStationCapability.Mixing => "RequiresMixer",
+                    GridStationCapability.Juice => "RequiresJuicer",
+                    GridStationCapability.Extract => "RequiresCoffeeMachine",
+                    GridStationCapability.HeatMilk or GridStationCapability.FoamMilk => "RequiresSteamMachine",
+                    _ => "RequiresStove"
+                };
+            }
             if (station.AutoProcessId != 0) return "StationBusy";
             var inputs = pot.Contents.Select(self.Item).ToArray();
             if (inputs.Any(item => item == null || item.Location != GridItemLocation.Container || item.HolderId != pot.Id)) return "TargetChanged";
             var definitions = inputs.Select(item => item.DefinitionId).ToArray();
-            var recipes = Tables.Instance.DTGridAutoRecipeConfig.DataList.Where(recipe => recipe.ContainerDefinitionId == pot.DefinitionId && RecipeMatches(recipe, definitions, true)).ToArray();
+            var recipes = Tables.Instance.DTGridAutoRecipeConfig.DataList.Where(recipe => recipe.ContainerDefinitionId == pot.DefinitionId && recipe.StationCapability == (int)capability && RecipeMatches(recipe, definitions, true)).ToArray();
             if (recipes.Length != 1) return "NoRecipe";
             DRGridAutoRecipeConfig recipe = recipes[0];
             if (recipe.StationCapability != (int)capability) return "NoRecipe";
+            string permission = self.CheckNewRecipePermission(self.ProductLevel()?.ProductionPermit.AutoRecipes.Contains(recipe.Id) ?? true, station);
+            if (permission != null)
+            {
+                return permission;
+            }
             self.PauseWork(actor);
             var process = self.AddChild<GridAutoProcess>();
             process.RecipeId = recipe.Id; process.PotItemId = pot.Id; process.StartStationId = station.Id; process.StartedTick = self.Tick;
             process.RequiredCapability = recipe.StationCapability; process.LockContainer = recipe.LockContainer;
-            process.RequiredTicks = juice ? recipe.RequiredTicks : self.FrozenCookingTicks(recipe, station); process.OutputDefinitionId = recipe.OutputDefinitionId;
+            process.RequiredTicks = capability != GridStationCapability.Cook ? recipe.RequiredTicks : self.FrozenCookingTicks(recipe, station); process.OutputDefinitionId = recipe.OutputDefinitionId;
             process.TotalPortions = recipe.OutputPortions; process.RemainingPortions = 0;
             process.ServingContainerDefinitionId = recipe.ServingContainerDefinitionId; process.State = GridAutoState.Cooking;
             process.InputItemIds.AddRange(pot.Contents);
             self.AutoProcesses.Add(process.Id, process); pot.AutoProcessId = process.Id; station.AutoProcessId = process.Id;
-            self.PublishKitchenStage(process, juice ? KitchenProcessKind.Juice : KitchenProcessKind.Soup, KitchenWorkStage.Started, ++process.TransitionSerial);
+            self.PublishKitchenStage(process, AutoWorkKind((int)capability), KitchenWorkStage.Started, ++process.TransitionSerial);
             return null;
         }
 
         private static void AdvanceAutoWork(this GridKitchenComponent self)
         {
-            foreach (var process in self.AutoProcesses.Values.Select(value => (GridAutoProcess)value))
+            foreach (var reference in self.AutoProcesses.Values)
             {
+                GridAutoProcess process = reference;
                 if (process.State != GridAutoState.Cooking || process.StartedTick == self.Tick) continue;
                 if (process.ProgressTicks < process.RequiredTicks) ++process.ProgressTicks;
                 self.Dirty = true;
@@ -145,7 +167,7 @@ namespace ET
                 {
                     if (!process.CompletionQueued)
                     {
-                        self.RequestKitchenCompletion(process, process.LockContainer ? KitchenProcessKind.Juice : KitchenProcessKind.Soup, process.TransitionSerial);
+                        self.RequestKitchenCompletion(process, AutoWorkKind(process.RequiredCapability), process.TransitionSerial);
                         process.CompletionQueued = true;
                     }
                     continue;
@@ -154,25 +176,53 @@ namespace ET
                 GridStation station = self.Station(process.StartStationId);
                 if (station != null && station.AutoProcessId == process.Id) station.AutoProcessId = 0;
                 process.CompletionQueued = false; process.CompletionReceived = false;
-                self.PublishKitchenStage(process, process.LockContainer ? KitchenProcessKind.Juice : KitchenProcessKind.Soup, KitchenWorkStage.Finished, ++process.TransitionSerial);
+                self.PublishKitchenStage(process, AutoWorkKind(process.RequiredCapability), KitchenWorkStage.Finished, ++process.TransitionSerial);
             }
         }
 
         private static string PortionSoup(this GridKitchenComponent self, GridActor actor, GridStation station, GridIntent intent)
         {
             bool juice = intent.Action == GridAction.PortionJuice;
-            if (juice && ((RestaurantRuntime)self.Restaurant)?.MenuVariant != 1) return "DrinkMenuRequired";
+            bool mix = intent.Action == GridAction.PortionBatter;
+            bool beverage = intent.Action == GridAction.PortionDrinkBase;
+            GridStationCapability capability = mix ? GridStationCapability.Mixing : juice ? GridStationCapability.Juice : GridStationCapability.Cook;
+            if (juice && !ProductMenuCatalog.Includes(((RestaurantRuntime)self.Restaurant)?.MenuVariant ?? 0, (int)ProductMenuVariant.Drink)) return "DrinkMenuRequired";
             GridItem bowl = self.Item(actor.HandItemId), pot = self.Item(station.ItemId);
+            if (beverage)
+            {
+                var active = self.AutoProcess(pot?.AutoProcessId ?? 0);
+                if (active == null || !IsBeverageCapability(active.RequiredCapability))
+                {
+                    return "ProcessChanged";
+                }
+                capability = (GridStationCapability)active.RequiredCapability;
+            }
             if (bowl == null || bowl.Id != intent.ExpectedItemId || bowl.Location != GridItemLocation.Hand || bowl.HolderId != actor.MemberId ||
-                pot == null || pot.Id != intent.ExpectedTargetItemId || pot.DefinitionId != (juice ? GridKitchenRules.JuiceJug : GridKitchenRules.Pot) || pot.Location != GridItemLocation.Counter || pot.HolderId != station.Id) return "TargetChanged";
+                pot == null || pot.Id != intent.ExpectedTargetItemId || pot.DefinitionId != AutoContainer(capability) || pot.Location != GridItemLocation.Counter || pot.HolderId != station.Id) return "TargetChanged";
             GridAutoProcess process = self.AutoProcess(pot.AutoProcessId);
             if (process == null || process.Id != intent.ExpectedProcessId || process.PotItemId != pot.Id) return "ProcessChanged";
-            if (process.RequiredCapability != (int)(juice ? GridStationCapability.Juice : GridStationCapability.Cook)) return "ProcessChanged";
+            if (process.RequiredCapability != (int)capability) return "ProcessChanged";
             if (process.State != GridAutoState.Ready) return "NotReady";
             if (process.RemainingPortions <= 0) return "EmptyBatch";
+            string permission = self.CheckProductionInput(process.ServingContainerDefinitionId, process.OutputDefinitionId);
+            if (permission != null)
+            {
+                return permission;
+            }
             if (bowl.Hygiene != ItemHygiene.Clean || pot.Hygiene != ItemHygiene.Clean) return "DirtyUtensil";
             if (bowl.DefinitionId != process.ServingContainerDefinitionId || !Tables.Instance.DTGridItemConfig.Get(bowl.DefinitionId).AcceptedDefinitionIds.Contains(process.OutputDefinitionId)) return "IncompatibleContainer";
-            if (bowl.Contents.Count != 0) return "ContainerFull";
+            if (beverage)
+            {
+                string addition = self.CheckDrinkBaseAddition(bowl, process.OutputDefinitionId);
+                if (addition != null)
+                {
+                    return addition;
+                }
+            }
+            else if (bowl.Contents.Count != 0)
+            {
+                return "ContainerFull";
+            }
             if (!pot.Contents.SequenceEqual(process.InputItemIds) || process.InputItemIds.Any(id => self.Item(id) == null || self.Item(id).HolderId != pot.Id)) return "TargetChanged";
             self.PauseWork(actor);
             GridItem soup = self.CreateGridItem(process.OutputDefinitionId, GridItemLocation.Container, bowl.Id, bowl.Cell);

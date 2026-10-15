@@ -14,6 +14,7 @@ namespace ET
         {
             self.ResultLevelId = 0; self.ResultLevelGeneration = 0; self.ChoiceVersion = 0;
             self.SelectedDefinitionId = 0; self.SelectedName = null;
+            self.SelectionFinalized = false;
             self.Failure = null;
             self.Candidates = Array.Empty<int>(); self.PendingPlacements = Array.Empty<GridStationPlacement>();
             self.PendingUpgradeStation = default; self.PendingUpgradeExpectedLevel = 0; self.UpgradeTargets.Clear();
@@ -25,6 +26,7 @@ namespace ET
     }
 
     [FriendOf(typeof(RestaurantRenovation))]
+    [FriendOf(typeof(RestaurantUnlocks))]
     [FriendOf(typeof(GridStation))]
     [FriendOf(typeof(HostSessionComponent))]
     [FriendOf(typeof(ProductRuntimeComponent))]
@@ -73,6 +75,7 @@ namespace ET
             renovation.ResultLevelId = renovation.ResultLevelGeneration = 0;
             renovation.Candidates = Array.Empty<int>(); renovation.SelectedDefinitionId = 0; renovation.SelectedName = null;
             renovation.Failure = null;
+            renovation.SelectionFinalized = false;
             renovation.PendingPlacements = Array.Empty<GridStationPlacement>();
             renovation.PendingUpgradeStation = default; renovation.PendingUpgradeExpectedLevel = 0; renovation.UpgradeTargets.Clear();
             self.Root().GetComponent<ProcessInnerSender>().Send(((Scene)self.IScene).GetComponent<HostSessionComponent>().GetActorId(), ProductMessages.Create<LevelFinished>(value =>
@@ -124,14 +127,24 @@ namespace ET
             foreach (int id in level.AllowedRenovationIds.OrderBy(id => id))
             {
                 var definition = Tables.Instance.DTRenovationConfig.Get(id);
-                if (definition.RewardKind == 2)
+                if (definition.RewardKind == RenovationRewardKind.ExpandSpace)
                 {
-                    HostSessionComponent authority = ((Scene)self.IScene).GetComponent<HostSessionComponent>();
-                    ProductRuntimeComponent runtime = authority.Runtime;
-                    if (runtime.Config.Role != RuntimeInstanceRole.Solo)
+                    if (!renovation.AppliedStations.ContainsKey(id) && kitchen.CheckSpaceExpansion(definition, out _) == null)
                     {
-                        continue;
+                        candidates.Add(id);
                     }
+                }
+                else if (definition.RewardKind == RenovationRewardKind.UnlockDefinitions)
+                {
+                    var unlocked = self.GetComponent<RestaurantUnlocks>();
+                    if (!renovation.AppliedStations.ContainsKey(id) && (definition.UnlockDishIds.Any(value => !unlocked.DishIds.Contains(value)) ||
+                        definition.UnlockStationIds.Any(value => !unlocked.StationIds.Contains(value))))
+                    {
+                        candidates.Add(id);
+                    }
+                }
+                else if (definition.RewardKind == RenovationRewardKind.UpgradeStation)
+                {
                     var upgrade = Tables.Instance.DTStationUpgradeConfig.Get(definition.UpgradeDefinitionId);
                     foreach (GridStation station in kitchen.Stations.Values.Select(value => (GridStation)value).OrderBy(station => station.Id))
                         if (station.UpgradeLevel == 0 && StationUpgradeConfig.Matches(upgrade, (int)station.Kind, station.Capabilities))
@@ -142,6 +155,7 @@ namespace ET
                     candidates.Add(id);
             }
             renovation.Candidates = Array.AsReadOnly(candidates.ToArray());
+            renovation.SelectionFinalized = candidates.Count == 0;
         }
 
         private static void AdvanceRenovationChoices(this RestaurantRuntime self, Level level)
@@ -157,23 +171,31 @@ namespace ET
                     : !renovation.Prepared ? "RenovationNotReady"
                     : renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation ||
                         command.Intent.ChoiceVersion != renovation.ChoiceVersion ? "RenovationChanged"
-                    : renovation.SelectedDefinitionId != 0 ? "RenovationLocked"
+                    : renovation.SelectedDefinitionId != 0 || renovation.SelectionFinalized ? "RenovationLocked"
                     : !renovation.Candidates.Contains(command.Intent.DefinitionId) ? "InvalidRenovationChoice" : null;
                 if (error == null)
                 {
                     DRRenovationConfig definition = Tables.Instance.DTRenovationConfig.Get(command.Intent.DefinitionId);
-                    var plan = definition.RewardKind == 1 ? RenovationConfig.Placements(definition).ToArray() : Array.Empty<GridStationPlacement>();
+                    var plan = definition.RewardKind == RenovationRewardKind.InstallStation ? RenovationConfig.Placements(definition).ToArray() : Array.Empty<GridStationPlacement>();
                     GridStation target = kitchen.Station(command.Intent.TargetStationId);
-                    error = definition.RewardKind == 2
+                    error = definition.RewardKind == RenovationRewardKind.UpgradeStation
                         ? !renovation.UpgradeTargets.Any(candidate => candidate.DefinitionId == definition.Id && candidate.StationId == command.Intent.TargetStationId && candidate.ExpectedLevel == command.Intent.ExpectedUpgradeLevel)
                             ? "InvalidUpgradeTarget" : CheckUpgradeTarget(definition, target, command.Intent.ExpectedUpgradeLevel)
-                        : command.Intent.TargetStationId != 0 || command.Intent.ExpectedUpgradeLevel != 0 ? "InvalidRenovationTarget" : kitchen.CheckRenovationInstallation(plan, out _);
+                        : command.Intent.TargetStationId != 0 || command.Intent.ExpectedUpgradeLevel != 0 ? "InvalidRenovationTarget"
+                        : definition.RewardKind == RenovationRewardKind.UnlockDefinitions ? null
+                        : definition.RewardKind == RenovationRewardKind.ExpandSpace ? kitchen.CheckSpaceExpansion(definition, out _)
+                        : kitchen.CheckRenovationInstallation(plan, out _);
                     if (error == null)
                     {
                         renovation.SelectedDefinitionId = definition.Id; renovation.SelectedName = definition.Name;
+                        renovation.SelectionFinalized = true;
                         renovation.PendingPlacements = Array.AsReadOnly(plan);
-                        renovation.PendingUpgradeStation = definition.RewardKind == 2 ? target : default;
+                        renovation.PendingUpgradeStation = definition.RewardKind == RenovationRewardKind.UpgradeStation ? target : default;
                         renovation.PendingUpgradeExpectedLevel = command.Intent.ExpectedUpgradeLevel;
+                        if (definition.RewardKind == RenovationRewardKind.UnlockDefinitions && self.GetComponent<RestaurantUnlocks>().GrantRestaurantUnlocks(definition))
+                        {
+                            self.RefreshProductionPermissions();
+                        }
                     }
                 }
                 peer?.RecordProductResult(command.Context, ProductCommandKind.Renovation, error == null ? GridResultStatus.Executed : GridResultStatus.Rejected, error);
@@ -187,9 +209,17 @@ namespace ET
             Level level = self.CurrentLevel;
             if (self.SupportsRenovation() && (!renovation.Prepared || renovation.ResultLevelId != level.Id || renovation.ResultLevelGeneration != level.Generation))
                 return "RenovationNotReady";
-            if (renovation.SelectedDefinitionId != 0 && Tables.Instance.DTRenovationConfig.Get(renovation.SelectedDefinitionId).RewardKind == 2)
+            if (renovation.SelectedDefinitionId != 0 && Tables.Instance.DTRenovationConfig.Get(renovation.SelectedDefinitionId).RewardKind == RenovationRewardKind.UpgradeStation)
                 return CheckUpgradeTarget(Tables.Instance.DTRenovationConfig.Get(renovation.SelectedDefinitionId), renovation.PendingUpgradeStation, renovation.PendingUpgradeExpectedLevel);
             if (renovation.SelectedDefinitionId == 0 || renovation.AppliedStations.ContainsKey(renovation.SelectedDefinitionId)) return null;
+            if (Tables.Instance.DTRenovationConfig.Get(renovation.SelectedDefinitionId).RewardKind == RenovationRewardKind.UnlockDefinitions)
+            {
+                return null;
+            }
+            if (Tables.Instance.DTRenovationConfig.Get(renovation.SelectedDefinitionId).RewardKind == RenovationRewardKind.ExpandSpace)
+            {
+                return ((GridKitchenComponent)self.Kitchen).CheckSpaceExpansion(Tables.Instance.DTRenovationConfig.Get(renovation.SelectedDefinitionId), out _);
+            }
             return ((GridKitchenComponent)self.Kitchen).CheckRenovationInstallation(renovation.PendingPlacements, out _);
         }
 
@@ -199,7 +229,13 @@ namespace ET
             renovation.Failure = null;
             if (renovation.SelectedDefinitionId == 0) return;
             var reward = Tables.Instance.DTRenovationConfig.Get(renovation.SelectedDefinitionId);
-            if (reward.RewardKind == 2)
+            if (reward.RewardKind == RenovationRewardKind.UnlockDefinitions)
+            {
+                renovation.AppliedStations.TryAdd(reward.Id, Array.Empty<long>());
+                kitchen.Dirty = true;
+                return;
+            }
+            if (reward.RewardKind == RenovationRewardKind.UpgradeStation)
             {
                 GridStation target = renovation.PendingUpgradeStation;
                 var upgrade = Tables.Instance.DTStationUpgradeConfig.Get(reward.UpgradeDefinitionId);
@@ -209,6 +245,17 @@ namespace ET
                 kitchen.Dirty = true; return;
             }
             if (renovation.AppliedStations.ContainsKey(renovation.SelectedDefinitionId)) return;
+            if (reward.RewardKind == RenovationRewardKind.ExpandSpace)
+            {
+                string error = kitchen.CheckSpaceExpansion(reward, out var terrain);
+                if (error != null)
+                {
+                    throw new InvalidOperationException(error);
+                }
+                var expandedTable = kitchen.InstallSpaceExpansion(reward, terrain);
+                renovation.AppliedStations.Add(reward.Id, Array.AsReadOnly(new[] { expandedTable.Id }));
+                return;
+            }
             // Continue已完整预检；只创建配置工位，绝不附加初始物品。
             var ids = new long[renovation.PendingPlacements.Count];
             for (int i = 0; i < ids.Length; ++i)
@@ -225,7 +272,7 @@ namespace ET
             kitchen.Blocked.Clear(); kitchen.Blocked.UnionWith(GridStationConfig.ValidateTerrain(
                 GridStationConfig.ValidateDefinitions(Tables.Instance.DTStationConfig.DataList),
                 kitchen.Stations.Values.Select(value => (GridStation)value).Select(value => new GridStationPlacement(value.DefinitionId, value.Cell, value.Orientation)),
-                Tables.Instance.DTLevelConfig.DataList.Select(row => new GridCell(row.SpawnX, row.SpawnY))));
+                Tables.Instance.DTLevelConfig.DataList.Select(row => new GridCell(row.SpawnX, row.SpawnY)), kitchen.Width, kitchen.Height));
             ++kitchen.LayoutVersion; kitchen.Dirty = true;
         }
 

@@ -25,6 +25,7 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
         AllowsEmptyContainers = _buf.ReadBool();
         Disposable = _buf.ReadBool();
         MenuVariant = _buf.ReadInt();
+        {int n0 = _buf.ReadSize(); ExclusiveDefinitionIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); ExclusiveDefinitionIds.Add(_e0);}}
         PostInit();
     }
 
@@ -73,6 +74,10 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
     /// MenuVariant
     /// </summary>
     public readonly int MenuVariant;
+    /// <summary>
+    /// 必须独占容器的成品内容
+    /// </summary>
+    public readonly System.Collections.Generic.List<int> ExclusiveDefinitionIds;
     public const int __ID__ = -1316266935;
     public override int GetTypeId() => __ID__;
 
@@ -94,6 +99,7 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
         + "AllowsEmptyContainers:" + AllowsEmptyContainers + ","
         + "Disposable:" + Disposable + ","
         + "MenuVariant:" + MenuVariant + ","
+        + "ExclusiveDefinitionIds:" + Luban.StringUtil.CollectionToString(ExclusiveDefinitionIds) + ","
         + "}";
     }
 

@@ -7,24 +7,47 @@ namespace ET
 {
     public static class RestaurantConfig
     {
+        public static DRLevelConfig FirstCooperativeLevel(int menuVariant)
+        {
+            return Tables.Instance.DTLevelConfig.DataList.Single(row => row.ChapterId == 2 && row.ChapterStage == 1 && row.MenuVariant == menuVariant);
+        }
+
+        public static int ChapterLevelCount(DRLevelConfig definition)
+        {
+            int count = 0;
+            foreach (DRLevelConfig row in Tables.Instance.DTLevelConfig.DataList)
+            {
+                if (row.ChapterId == definition.ChapterId && row.MenuVariant == definition.MenuVariant)
+                {
+                    ++count;
+                }
+            }
+            return count;
+        }
+
         public static void ValidateLevelDefinitions(IEnumerable<DRLevelConfig> definitions, Func<GridCell, bool> canSpawn)
         {
             DRLevelConfig[] rows = definitions.ToArray();
             if (rows.Length == 0 || rows.Any(row => row.Id <= 0) || rows.Select(row => row.Id).Distinct().Count() != rows.Length)
                 throw new InvalidOperationException("Invalid level definitions");
             var ids = rows.Select(row => row.Id).ToHashSet();
-            foreach (var chapter in rows.GroupBy(row => (row.ChapterId, row.MenuVariant)))
-            {
-                int[] menu = chapter.First().AllowedDishIds.OrderBy(id => id).ToArray();
-                int[] drinks = chapter.First().AllowedDrinkIds.OrderBy(id => id).ToArray();
-                if (menu.Length == 0 || chapter.Any(row => !row.AllowedDishIds.OrderBy(id => id).SequenceEqual(menu) ||
-                    !row.AllowedDrinkIds.OrderBy(id => id).SequenceEqual(drinks)))
-                    throw new InvalidOperationException("Chapter levels require the same nonempty menu");
-            }
             if (!ids.Contains(1)) throw new InvalidOperationException("Missing first level definition");
             foreach (var row in rows)
             {
-                if (row.MenuVariant is not (0 or 1) || row.MenuVariant == 0 && row.AllowedDrinkIds.Count != 0 ||
+                if (row.AllowedDishIds.Count + row.AllowedDrinkIds.Count == 0 ||
+                    row.AllowedDishIds.Distinct().Count() != row.AllowedDishIds.Count)
+                {
+                    throw new InvalidOperationException("Empty / duplicate level menu:" + row.Id);
+                }
+                var unlocked = RestaurantUnlockValues.Initial(row);
+                RestaurantUnlockValues.Validate(unlocked);
+                var permit = new ProductionPermit();
+                ProductionPermissionRules.Rebuild(permit, row.AllowedDishIds.Concat(row.AllowedDrinkIds).Intersect(unlocked.DishIds), unlocked.StationIds);
+                if (row.ChapterStage <= 1 && permit.DishIds.Count == 0)
+                {
+                    throw new InvalidOperationException("No initially producible dish:" + row.Id);
+                }
+                if (!ProductMenuCatalog.IsValid(row.MenuVariant) || row.MenuVariant == 0 && row.AllowedDrinkIds.Count != 0 ||
                     row.AllowedDrinkIds.Distinct().Count() != row.AllowedDrinkIds.Count || row.AllowedDrinkIds.Intersect(row.AllowedDishIds).Any())
                     throw new InvalidOperationException("Invalid level menu variant:" + row.Id);
                 if ((row.IsChapterTerminal ? row.NextLevelConfigId != 0 || row.ChapterId <= 0 || row.AllowedRenovationIds.Count != 0
@@ -36,10 +59,15 @@ namespace ET
             foreach (var chapter in rows.Where(row => row.ChapterId > 0).GroupBy(row => (row.ChapterId, row.MenuVariant)))
             {
                 var stages = chapter.OrderBy(row => row.ChapterStage).ToArray();
-                if (stages.Length != 3 || !stages.Select(row => row.ChapterStage).SequenceEqual(new[] { 1, 2, 3 }) ||
-                    stages[0].IsChapterTerminal || stages[1].IsChapterTerminal || !stages[2].IsChapterTerminal ||
-                    stages[0].NextLevelConfigId != stages[1].Id || stages[1].NextLevelConfigId != stages[2].Id)
-                    throw new InvalidOperationException($"Invalid three-level chapter {chapter.Key}");
+                for (int i = 0; i < stages.Length; ++i)
+                {
+                    bool terminal = i == stages.Length - 1;
+                    if (stages[i].ChapterStage != i + 1 || stages[i].IsChapterTerminal != terminal ||
+                        stages[i].NextLevelConfigId != (terminal ? 0 : stages[i + 1].Id))
+                    {
+                        throw new InvalidOperationException($"Invalid chapter sequence {chapter.Key}");
+                    }
+                }
             }
             if (rows.Any(row => row.ChapterId < 0 || row.ChapterId == 0 && (row.ChapterStage != 0 || row.IsChapterTerminal)))
                 throw new InvalidOperationException("Invalid legacy level chapter");

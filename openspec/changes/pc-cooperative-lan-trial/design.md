@@ -1,5 +1,7 @@
 # Design
 
+当前为暂缓设备案。本轮只优化计划，不执行构建、启动Player、开放LAN监听或操作真机；原有暂缓决定保持，恢复实施时按届时授权和实际环境交接。
+
 ## Context
 
 当前 endpoint 限制 loopback，Editor 同进程/双 Editor 结果不能证明独立 Player 和 LAN。沿既有 BuildHelper/HybridCLR/资源入口补有限启动配置，最后做设备验收。 动机见 [proposal.md](proposal.md)。本案为待实施规划。
@@ -8,13 +10,13 @@
 
 目标模式：PC Player Host/Client。不做公网、中继、NAT、大厅、联机存档或更换正式传输；不新建双包编排器／端口注册表。
 
-依赖：[cooperative-restaurant-loopback](../archive/2026-10-14-cooperative-restaurant-loopback/proposal.md)。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
+依赖：[cooperative-restaurant-loopback](../archive/2026-10-14-cooperative-restaurant-loopback/proposal.md)，并复用已交付[模式/房间](../archive/2026-10-15-product-mode-room-flow/execution-notes.md)及[合作终关](../archive/2026-10-15-cooperative-chapter-completion/execution-notes.md)的实际行为。层次只表达从局部到跨模块的深度；仅上述实际合同构成依赖。
 
 ## Decisions
 
 ### 1. 运行输入进入稳定入口
 
-独立 Player 从显式命令行角色/endpoint 输入生成现有 RuntimeInstanceRequest，启动时验证并冻结；无参数默认 Solo。Host 显示实际监听结果，Client 使用显式输入；不依赖 EditorPrefs 或制作专用双包编排器。首次从普通 Launcher 场景完成 UGF/ET 启动。
+RuntimeInstanceRequest 整个类型受 UNITY_EDITOR 限定，Player不能直接调用。独立Player在稳定Game层解析显式角色/endpoint，复用 RuntimeInstanceConfig.Create 校验及 RuntimeInstanceContext 的准备交接，启动时冻结；无参数沿当前模式选择菜单的默认Solo上下文，不自动进入餐厅。Host 显示实际监听结果，Client 使用显式输入；不依赖 EditorPrefs 或制作专用双包编排器。首次从普通 Launcher 场景完成 UGF/ET 启动。
 
 ### 2. 显式私网范围
 
@@ -46,7 +48,7 @@ Product Fiber / RootScene (SceneType.ProductRoot)
    └─ Component: ClientSession + MailBox → Component: GridClient（独立值投影）
       同 Scene 受管 GridPresentation、UIComponent、GFEntityComponent
 ```
-Host/Solo 先建立权威及餐厅，再建立接入、客户端和视图；远端 Client 只有客户端一侧。不同运行使用独立 Fiber/世界身份，UI 不持有权威实体。
+普通模式菜单先无运行餐厅；合作建房先建立Match/接入，合法Host开局后才建餐厅，显式直达入口保留已有合同；远端Client只有客户端一侧。不同运行使用独立 Fiber/世界身份，UI 不持有权威实体。
 
 本地 UI 从当前 LocalMessage.Peer 取得本地 HostPeer ActorId，并由 ClientSession 提供本轮命令上下文，经 ProductRoot 的 ProcessInnerSender/本地队列投递；HostPeer 的 ProductHost handler 校验真实发送者与绑定，再发往同 Scene 的 HostSession Ordered MailBox。远端经 Session 和 ProductWire 显式白名单复制为同一内部请求，再进入该 Peer；Host 不向自己发 UDP。
 
@@ -54,7 +56,7 @@ Host/Solo 先建立权威及餐厅，再建立接入、客户端和视图；远�
 
 请求池对象只在本次处理内使用，跨 await／队列复制值；每一跳答复对象由该跳调用者收尾，领域快照不引用消息池。视图关闭取消业务等待但原调用继续按答复／有限超时收尾，await 后核对 owner InstanceId 和绑定。成员退出只撤自身接入、取消旧动作并执行既有落物；整轮停止才结束公共发送器、剩余等待和子树。
 
-不新增业务树。新增交接仅 Player 进程参数 → 稳定 RuntimeInstance 配置 → ProcedureET/ET 初始化 → ProductRuntimeBootstrap。Host NetComponent/Session 属 ProductHost，Client Session 属本轮接入；每个 Player 独立进程拥有自己的 Fiber。端口和进程只清理本轮明确拥有者，另一个工作区仍按实际分支发现与指定提交维护。
+不新增业务树。新增交接仅 Player进程参数 → 稳定RuntimeInstanceConfig/Context → ProcedureET/ET初始化 → ProductRuntimeBootstrap；编辑器SessionState请求仍只在Editor使用。Host NetComponent/Session 属 ProductHost，Client Session 属本轮接入；每个 Player 独立进程拥有自己的 Fiber。端口和进程只清理本轮明确拥有者，另一个工作区仍按实际分支发现与指定提交维护。
 
 ## Risks / Trade-offs
 

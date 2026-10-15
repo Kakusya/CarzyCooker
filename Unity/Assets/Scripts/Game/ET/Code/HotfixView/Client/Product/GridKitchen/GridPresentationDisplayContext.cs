@@ -37,8 +37,11 @@ namespace ET.Client
             Field(grid.WorldGeneration,grid.WorldId);Field(grid.BindingGeneration);Field(grid.MemberId);Flag(grid.Confirmed);
             Field(grid.LevelId);Field(grid.LevelGeneration);Field(grid.LevelConfigId);Field((int)grid.LevelPhase);Flag(grid.LevelPaused);
             Field(grid.LayoutVersion);Field(self.LayoutStationId);Field(self.SelectedStationId);Field(self.SelectedLevelId);Field(self.SelectedLevelGeneration);
+            Field(grid.PermissionVersion);
             Field(own.HandItemId);Field(own.WorkId);Field(own.FrontWorkId);Field(own.FrontClaimSerial);
             Flag(self.DetailsVisible);Flag(self.OrdersVisible);Field(self.RecipeDishId);Flag(self.RecipeVisible);Flag(self.FirstOrderGuideVisible);
+            Field((int)self.CompanionChat);
+            Flag(self.RoomControlPending);
             Flag(grid.CanControlRestaurant);Field(grid.BuffDrawVersion);Field(grid.SelectedBuffId);Flag(grid.RequireBuffChoice);Flag(self.BuffCandidatesVisible);
             Field(grid.BuffCandidates.Count);for(int i=0;i<grid.BuffCandidates.Count;i++)Field(grid.BuffCandidates[i]);
             Field(grid.AllowedDishIds.Count);for(int i=0;i<grid.AllowedDishIds.Count;i++)Field(grid.AllowedDishIds[i]);
@@ -110,6 +113,7 @@ namespace ET.Client
                 var target=grid.UpgradeTargets[i];Field(target.DefinitionId);Field(target.StationId);Field(target.ExpectedLevel);
             }
             Flag(grid.SaveEnabled);Field((int)grid.SaveState,grid.SaveResultId);
+            Flag(grid.CooperativeSave);Flag(grid.RenovationSelectionFinalized);
             return EndDisplayFields(self.HudActionFields,index,changed);
         }
 
@@ -125,6 +129,7 @@ namespace ET.Client
             foreach(var work in grid.AutoProcesses.Values){Field(work.Id);Field(work.ProgressTicks);Field(work.RequiredTicks);}
             foreach(var work in grid.BakeProcesses.Values){Field(work.Id);Field(work.ProgressTicks);Field(work.RequiredTicks);}
             foreach(var work in grid.FrontWorks.Values){Field(work.Id);Field((long)Math.Round(work.Progress*100));}
+            Field(self.CompanionFeedbackRevision);
             Field(grid.Companions.Count);
             foreach(var companion in grid.Companions.Values)
             {

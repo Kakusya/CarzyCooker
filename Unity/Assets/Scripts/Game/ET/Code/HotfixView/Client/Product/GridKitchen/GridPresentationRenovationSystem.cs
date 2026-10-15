@@ -30,31 +30,49 @@ namespace ET.Client
                     "RenovationOccupied" => "安装位置仍有角色或落物",
                     "RenovationBlocked" => "安装会重叠或堵住通路",
                     "RenovationRelationshipsChanged" => "厨房物品或加工关系已变化",
+                    "UpgradeTargetChanged" => "升级目标工位已失效",
+                    "UpgradeLevelChanged" => "目标等级已变化，升级未安装",
+                    "UpgradeCapabilityMismatch" => "目标工位不支持该升级",
                     _ => "请检查布局后重试"
                 };
                 view.SettlementText.text += "\n装修未安装：" + reason;
             }
             if (grid.SelectedRenovationId != 0)
             {
-                view.SettlementText.text += "\n已选装修：" + Tables.Instance.DTRenovationConfig.Get(grid.SelectedRenovationId).Name + "，下一关安装";
+                var selectedReward = Tables.Instance.DTRenovationConfig.Get(grid.SelectedRenovationId);
+                view.SettlementText.text += "\n已选装修：" + selectedReward.Name + (selectedReward.RewardKind == RenovationRewardKind.UnlockDefinitions
+                    ? "，定义已解锁，不补发食材或设备" : "，下一关安装");
+                if (grid.SelectedUpgradeStationId != 0 && grid.Stations.TryGetValue(grid.SelectedUpgradeStationId, out var selected))
+                {
+                    view.SettlementText.text += $"\n目标：{selected.Name} ({selected.Cell.X},{selected.Cell.Y}) · 等级 {grid.PendingUpgradeExpectedLevel}→1";
+                }
                 return;
             }
             if (grid.RenovationCandidates.Count == 0) { view.SettlementText.text += "\n当前没有可选装修，可以继续"; return; }
             view.SettlementText.text += !grid.CanControlRestaurant
                 ? "\n等待 Host 选择装修：" + string.Join("、", grid.RenovationCandidates.Select(id => Tables.Instance.DTRenovationConfig.Get(id).Name))
                 : grid.SaveEnabled ? "\n选择一项装修后保存并继续" : "\n可选择一项装修，或直接继续";
+            if (!grid.CanControlRestaurant && grid.UpgradeTargets.Count > 0)
+            {
+                view.SettlementText.text += "\n可升级目标：" + string.Join("、", grid.UpgradeTargets
+                    .Where(target => grid.Stations.ContainsKey(target.StationId)).Select(target =>
+                    {
+                        var station = grid.Stations[target.StationId];
+                        return $"{Tables.Instance.DTRenovationConfig.Get(target.DefinitionId).Name} → {station.Name} ({station.Cell.X},{station.Cell.Y}) · 等级 {target.ExpectedLevel}→1";
+                    }));
+            }
         }
 
         private static void AddRenovationTargets(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
             if (!grid.CanControlRestaurant || grid.LevelPhase != LevelPhase.Completed || grid.RenovationLevelId != grid.LevelId || grid.RenovationLevelGeneration != grid.LevelGeneration ||
-                grid.SelectedRenovationId != 0) return;
+                grid.SelectedRenovationId != 0 || grid.RenovationSelectionFinalized) return;
             EntityRef<GridPresentationComponent> selfRef = self;
             long level = grid.LevelId, generation = grid.LevelGeneration, version = grid.RenovationChoiceVersion;
             foreach (int id in grid.RenovationCandidates)
             {
                 string name = Tables.Instance.DTRenovationConfig.Get(id).Name;
-                if (Tables.Instance.DTRenovationConfig.Get(id).RewardKind == 2)
+                if (Tables.Instance.DTRenovationConfig.Get(id).RewardKind == RenovationRewardKind.UpgradeStation)
                 {
                     foreach (var target in grid.UpgradeTargets.Where(target => target.DefinitionId == id))
                     {

@@ -7,6 +7,10 @@ namespace ET.Client
     {
         public static void OpenGridHud(this GridPresentationComponent self)
         {
+            if (ProductEntryPresentationSystem.ClaimsAreVisible((Scene)self.IScene))
+            {
+                return;
+            }
             UIGridKitchen existing=self.Hud;
             if(self.HudLoading || existing?.Available==true)return;
             self.HudLoading=true;long epoch=++self.HudLoadEpoch;EntityRef<GridPresentationComponent> original=self;
@@ -28,6 +32,8 @@ namespace ET.Client
         }
         public static void CloseGridHud(this GridPresentationComponent self)
         {
+            self.ResetCompanionDisplay();
+            self.RoomControlPending=false;
             self.Ready=false;self.HudLoading=false;++self.HudLoadEpoch;self.PointerHeld=false;self.Highlight=null;self.HudTargetsValid=false;self.HudInformationValid=false;
             self.RecoveryDisplayed=false;self.RecoveryFeedback=null;self.RecoveryRuntime=default;self.RecoveryClient=default;self.RecoveryHud=default;
             self.HudActionFields.Clear();self.HudInformationFields.Clear();
@@ -36,6 +42,7 @@ namespace ET.Client
         public static void GridHudClosed(this GridPresentationComponent self,UIGridKitchen hud)
         {
             if((UIGridKitchen)self.Hud!=hud)return;
+            self.ResetCompanionDisplay();
             self.RecoveryDisplayed=false;self.RecoveryFeedback=null;self.RecoveryRuntime=default;self.RecoveryClient=default;self.RecoveryHud=default;
             self.HudActionFields.Clear();self.HudInformationFields.Clear();
             self.Ready=false;self.PointerHeld=false;self.Highlight=null;self.HudTargetsValid=false;self.HudInformationValid=false;self.Hud=default;

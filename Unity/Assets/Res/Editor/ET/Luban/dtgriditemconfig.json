@@ -9,7 +9,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 2,
@@ -21,7 +22,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 3,
@@ -33,7 +35,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 4,
@@ -45,7 +48,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 5,
@@ -62,7 +66,8 @@
     "Discardable": false,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 6,
@@ -77,7 +82,8 @@
     "Discardable": false,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 7,
@@ -89,7 +95,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 8,
@@ -101,7 +108,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 9,
@@ -113,21 +121,41 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 10,
     "Name": "盘",
     "Kind": 2,
-    "ContainerCapacity": 1,
+    "ContainerCapacity": 4,
     "AcceptedDefinitionIds": [
-      9
+      9,
+      2,
+      23,
+      25,
+      26,
+      27,
+      28,
+      32,
+      34,
+      36,
+      37,
+      38,
+      39
     ],
     "Form": 3,
     "Discardable": false,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": [
+      9,
+      27,
+      28,
+      38,
+      39
+    ]
   },
   {
     "Id": 11,
@@ -139,7 +167,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 12,
@@ -153,7 +182,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 13,
@@ -167,7 +197,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 14,
@@ -181,7 +212,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 0
+    "MenuVariant": 0,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 15,
@@ -193,7 +225,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 1
+    "MenuVariant": 1,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 16,
@@ -205,7 +238,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 1
+    "MenuVariant": 1,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 17,
@@ -219,7 +253,8 @@
     "Discardable": false,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 1
+    "MenuVariant": 1,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 18,
@@ -231,7 +266,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 1
+    "MenuVariant": 1,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 19,
@@ -245,7 +281,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": true,
-    "MenuVariant": 1
+    "MenuVariant": 1,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 20,
@@ -259,7 +296,8 @@
     "Discardable": true,
     "AllowsEmptyContainers": false,
     "Disposable": false,
-    "MenuVariant": 1
+    "MenuVariant": 1,
+    "ExclusiveDefinitionIds": []
   },
   {
     "Id": 21,
@@ -273,6 +311,600 @@
     "Discardable": true,
     "AllowsEmptyContainers": true,
     "Disposable": false,
-    "MenuVariant": 1
+    "MenuVariant": 1,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 22,
+    "Name": "生菜",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 2,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 23,
+    "Name": "生菜片",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 2,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 24,
+    "Name": "黄瓜",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 2,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 25,
+    "Name": "黄瓜片",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 2,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 26,
+    "Name": "芝士片",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 2,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 27,
+    "Name": "田园沙拉",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 2,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 28,
+    "Name": "芝士蔬菜沙拉",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 2,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 29,
+    "Name": "生菜补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      22
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 2,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 30,
+    "Name": "黄瓜补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      24
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 2,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 31,
+    "Name": "芝士补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      26
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 2,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 32,
+    "Name": "汉堡面包",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 33,
+    "Name": "生牛肉饼",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 34,
+    "Name": "熟牛肉饼",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 35,
+    "Name": "生香肠",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 36,
+    "Name": "熟香肠",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 37,
+    "Name": "煎蛋",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 38,
+    "Name": "经典牛肉汉堡",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 39,
+    "Name": "香肠鸡蛋早餐",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 40,
+    "Name": "汉堡面包补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      32
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 41,
+    "Name": "牛肉饼补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      33
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 42,
+    "Name": "香肠补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      35
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 4,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 43,
+    "Name": "甜点预拌粉",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 5,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 44,
+    "Name": "瓶装牛奶",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 5,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 45,
+    "Name": "搅拌盆",
+    "Kind": 2,
+    "ContainerCapacity": 3,
+    "AcceptedDefinitionIds": [
+      43,
+      3,
+      44
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 5,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 46,
+    "Name": "甜面糊",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 5,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 47,
+    "Name": "小蛋糕模具",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      46,
+      48
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 5,
+    "ExclusiveDefinitionIds": [
+      48
+    ]
+  },
+  {
+    "Id": 48,
+    "Name": "原味小蛋糕",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 5,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 49,
+    "Name": "甜品盘",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      48
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 5,
+    "ExclusiveDefinitionIds": [
+      48
+    ]
+  },
+  {
+    "Id": 50,
+    "Name": "预拌粉补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      43
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 5,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 51,
+    "Name": "牛奶补给盒",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      44
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 5,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 52,
+    "Name": "咖啡豆",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 53,
+    "Name": "咖啡粉",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 54,
+    "Name": "咖啡接液壶",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      53
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 55,
+    "Name": "奶缸",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      44
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 56,
+    "Name": "浓缩咖啡液",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 57,
+    "Name": "热牛奶",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 58,
+    "Name": "奶泡",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 59,
+    "Name": "热饮杯",
+    "Kind": 2,
+    "ContainerCapacity": 3,
+    "AcceptedDefinitionIds": [
+      56,
+      57,
+      58,
+      60,
+      61
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": true,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": [
+      56,
+      60,
+      61
+    ]
+  },
+  {
+    "Id": 60,
+    "Name": "热拿铁",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 61,
+    "Name": "卡布奇诺",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 62,
+    "Name": "咖啡豆补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      52
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 63,
+    "Name": "热饮杯补给包",
+    "Kind": 2,
+    "ContainerCapacity": 3,
+    "AcceptedDefinitionIds": [
+      59
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": true,
+    "Disposable": false,
+    "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
   }
 ]

@@ -92,12 +92,12 @@ namespace ET
 
     public readonly struct GridBakeProjection
     {
-        public readonly long Id, StationId, InputItemId, OutputItemId, StartedTick;
+        public readonly long Id, StationId, InputItemId, OutputItemId, StartedTick, CarrierItemId;
         public readonly int RecipeId, OutputDefinitionId, RequiredTicks, ProgressTicks;
         public readonly GridBakeState State;
         public GridBakeProjection(long id, int recipe, long station, long input, int outputDefinition, int required, int progress,
-            long output, GridBakeState state, long started)
-        { Id=id;RecipeId=recipe;StationId=station;InputItemId=input;OutputDefinitionId=outputDefinition;RequiredTicks=required;ProgressTicks=progress;OutputItemId=output;State=state;StartedTick=started; }
+            long output, GridBakeState state, long started, long carrier = 0)
+        { Id=id;RecipeId=recipe;StationId=station;InputItemId=input;OutputDefinitionId=outputDefinition;RequiredTicks=required;ProgressTicks=progress;OutputItemId=output;State=state;StartedTick=started;CarrierItemId=carrier; }
     }
 
     [ComponentOf(typeof(ClientSessionComponent))]
@@ -108,6 +108,11 @@ namespace ET
         public long LevelId, LevelGeneration;
         public long LayoutVersion;
         public IReadOnlyList<int> AllowedDishIds;
+        public long PermissionVersion;
+        public bool PermissionReady;
+        public readonly HashSet<int> UnlockedDishIds = new(16);
+        public readonly HashSet<int> UnlockedStationIds = new(16);
+        public readonly ProductionPermit ProductionPermit = new();
         public LevelPhase LevelPhase;
         public bool LevelPaused;
         public int LevelOperatingTicks, LevelElapsedTicks, LevelScore, LevelStars, LevelConfigId, NextLevelConfigId;
@@ -158,6 +163,7 @@ namespace ET
         public string RenovationFailure;
         public readonly Dictionary<int, IReadOnlyList<long>> RenovationApplied = new();
         public bool SaveEnabled;
+        public bool CooperativeSave, RenovationSelectionFinalized;
         public bool CanControlRestaurant;
         public string SaveResultId, SaveFailure, LastSavedSlotId;
         public SoloSaveState SaveState;

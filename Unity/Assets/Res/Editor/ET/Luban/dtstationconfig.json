@@ -257,5 +257,120 @@
     "Capabilities": 2048,
     "WaterDefinitionId": 0,
     "WaterUnits": 0
+  },
+  {
+    "Id": 12,
+    "Name": "煎台",
+    "Kind": 11,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 4096,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
+  },
+  {
+    "Id": 13,
+    "Name": "搅拌机",
+    "Kind": 12,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 8192,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
+  },
+  {
+    "Id": 14,
+    "Name": "磨豆机",
+    "Kind": 13,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 16384,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
+  },
+  {
+    "Id": 15,
+    "Name": "咖啡机",
+    "Kind": 14,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 32768,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
+  },
+  {
+    "Id": 16,
+    "Name": "蒸汽机",
+    "Kind": 15,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 196608,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
   }
 ]

@@ -20,6 +20,7 @@ public sealed partial class DRGridBakeRecipeConfig : Luban.BeanBase
         OutputDefinitionId = _buf.ReadInt();
         StationCapability = _buf.ReadInt();
         RequiredTicks = _buf.ReadInt();
+        CarrierDefinitionId = _buf.ReadInt();
         PostInit();
     }
 
@@ -48,6 +49,10 @@ public sealed partial class DRGridBakeRecipeConfig : Luban.BeanBase
     /// RequiredTicks
     /// </summary>
     public readonly int RequiredTicks;
+    /// <summary>
+    /// 烘焙载具定义（0为直接物件）
+    /// </summary>
+    public readonly int CarrierDefinitionId;
     public const int __ID__ = -1221514243;
     public override int GetTypeId() => __ID__;
 
@@ -64,6 +69,7 @@ public sealed partial class DRGridBakeRecipeConfig : Luban.BeanBase
         + "OutputDefinitionId:" + OutputDefinitionId + ","
         + "StationCapability:" + StationCapability + ","
         + "RequiredTicks:" + RequiredTicks + ","
+        + "CarrierDefinitionId:" + CarrierDefinitionId + ","
         + "}";
     }
 

@@ -80,8 +80,8 @@ namespace ET.Client
 
         private Sprite ItemArt(int definition)
         {
-            // Projection 的旧测试构造器允许 definition=0；正式物品由已校验配置提供 1–21。
-            return definition > 0 && definition <= 21 ? artSprites[ArtItemStart + definition - 1] : PaletteSpriteRenderer.sprite;
+            // Projection旧测试允许definition=0；正式范围由原模型源生成，新增物品不落入占位图。
+            return definition > 0 && definition <= ArtItemCount ? artSprites[ArtItemStart + definition - 1] : PaletteSpriteRenderer.sprite;
         }
 
         private void ApplyStationArt(GridStationProjection station, SpriteRenderer renderer,
@@ -137,8 +137,8 @@ namespace ET.Client
                 secondDefinition = 0;
             }
             bool hasContents = contentDefinition > 0;
-            int contentIndex = hasContents && contentDefinition <= 21 ? ArtItemStart + contentDefinition - 1 : ArtItemStart;
-            float contentY = item.DefinitionId == GridKitchenRules.Plate ? .045f : .18f;
+            int contentIndex = hasContents && contentDefinition <= ArtItemCount ? ArtItemStart + contentDefinition - 1 : ArtItemStart;
+            float contentY = item.DefinitionId is GridKitchenRules.Plate or GridKitchenRules.DessertPlate ? .045f : .18f;
             SetDecoration(contents, item.Id, renderer, contentIndex, hasContents, new Vector3(0, contentY, 0), .73f, 1);
             SetDecoration(secondaryContents, item.Id, renderer, secondDefinition > 0 ? ArtItemStart + secondDefinition - 1 : ArtItemStart,
                 secondDefinition > 0, new Vector3(.10f,contentY+.035f,0), .50f, 2);
@@ -213,7 +213,7 @@ namespace ET.Client
 
         public static Sprite CreateItemArtSlice(Texture2D atlas, int definition)
         {
-            if (atlas == null || definition < 1 || definition > 21)
+            if (atlas == null || definition < 1 || definition > ArtItemCount)
             {
                 return null;
             }

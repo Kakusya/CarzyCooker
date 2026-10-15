@@ -12,15 +12,29 @@ namespace ET
     [FriendOf(typeof(Match))]
     public static class ProductRuntimeBootstrap
     {
-        public static void InitializeProduct(this ProductRuntimeComponent self, bool joinLocal = true, int menuVariant = 0) => self.InitializeProductCore(joinLocal, null, null, null, menuVariant);
+        public static void InitializeProduct(this ProductRuntimeComponent self, bool joinLocal = true, int menuVariant = 0, int contentChapterId = 0) =>
+            self.InitializeProductCore(joinLocal, null, null, null, menuVariant, contentChapterId: contentChapterId);
 
-        public static void InitializeSavedProduct(this ProductRuntimeComponent self, string profile, SoloSaveHeader header = null, SoloSavePayload payload = null, bool joinLocal = true, int menuVariant = 0)
+        public static void InitializeProductRoom(this ProductRuntimeComponent self, bool joinLocal = true, int menuVariant = 1)
+        {
+            if (self.Config.Role != RuntimeInstanceRole.Host)
+            {
+                throw new InvalidOperationException("HostRoomOnly");
+            }
+            self.InitializeProductCore(joinLocal, null, null, null, menuVariant, roomOnly: true);
+        }
+
+        public static void InitializeSavedProduct(this ProductRuntimeComponent self, string profile, SoloSaveHeader header = null, SoloSavePayload payload = null, bool joinLocal = true, int menuVariant = 0, int contentChapterId = 0)
         {
             if (self.Config.Role != RuntimeInstanceRole.Solo || !SoloSaveValidation.IsIdentifier(profile)) throw new InvalidOperationException("SoloSaveOnly");
             if (header != null) SoloSaveValidation.Payload(header, payload, profile);
             else if (payload != null) throw new InvalidOperationException("MissingSaveHeader");
             if (header?.RecordKind == SoloSaveRecordKind.ChapterCompleted) throw new InvalidOperationException("ChapterCompleted");
-            self.InitializeProductCore(joinLocal, profile, header, payload, menuVariant);
+            if (header != null && contentChapterId != 0)
+            {
+                throw new InvalidOperationException("SavedChapterAlreadySelected");
+            }
+            self.InitializeProductCore(joinLocal, profile, header, payload, menuVariant, contentChapterId: contentChapterId);
         }
 
         public static void RegisterProductEntry(this ProductRuntimeComponent self)
@@ -34,7 +48,7 @@ namespace ET
             });
         }
 
-        private static void InitializeProductCore(this ProductRuntimeComponent self, bool joinLocal, string profile, SoloSaveHeader header, SoloSavePayload payload, int menuVariant)
+        private static void InitializeProductCore(this ProductRuntimeComponent self, bool joinLocal, string profile, SoloSaveHeader header, SoloSavePayload payload, int menuVariant, bool roomOnly = false, int contentChapterId = 0)
         {
             if ((Scene)self.HostScene != null || (Scene)self.ClientScene != null || self.Stage is ProductStage.Stopping or ProductStage.Stopped)
                 throw new InvalidOperationException("ProductAlreadyStarted");
@@ -56,15 +70,19 @@ namespace ET
                         FrontConfig.Validate(Tables.Instance.DTCustomerFlowConfig.DataList, Tables.Instance.DTOrderConfig.DataList, Tables.Instance.DTTableConfig.DataList);
                         BuffConfig.ValidateAll();
                         RenovationConfig.ValidateAll();
+                        RestaurantChapters.ValidateAll();
                     }
                     var firstDefinition = header != null ? Tables.Instance.DTLevelConfig.Get(header.NextLevelId)
-                        : self.Config.Role == RuntimeInstanceRole.Solo ? Tables.Instance.DTLevelConfig.DataList.Single(row => row.ChapterId == 1 && row.ChapterStage == 1 && row.MenuVariant == menuVariant)
-                        : Tables.Instance.DTLevelConfig.Get(menuVariant == 1 ? 3 : 1);
+                        : RestaurantChapters.First(contentChapterId, self.Config.Role, menuVariant);
                     Scene host = EntitySceneFactory.CreateScene(root, IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(), SceneType.ProductHost, "ProductHost");
                     self.HostScene = host;
                     Match match = host.AddChild<Match>();
                     if (profile != null) match.BindSoloSave(profile, header, payload);
-                    match.Restaurant = match.AddChild<RestaurantRuntime, DRLevelConfig>(firstDefinition);
+                    match.RoomMenuVariant = menuVariant;
+                    if (!roomOnly)
+                    {
+                        match.Restaurant = match.AddChild<RestaurantRuntime, DRLevelConfig>(firstDefinition);
+                    }
                     HostSessionComponent authority = host.AddComponent<HostSessionComponent, Match, ProductRuntimeComponent>(match, self);
                     authority.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
                     self.Authority = authority;

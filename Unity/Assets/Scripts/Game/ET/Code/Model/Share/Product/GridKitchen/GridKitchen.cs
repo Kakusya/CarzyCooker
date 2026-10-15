@@ -18,12 +18,12 @@ namespace ET
         public override string ToString() => $"({X},{Y})";
     }
 
-    public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4, AddToContainer = 5, StartStationWork = 6, StartHeldWork = 7, StopWork = 8, PourContents = 9, StartAutoWork = 10, PortionSoup = 11, StartBake = 12, FillWater = 13, DrainLiquid = 14, DiscardSolid = 15, ReceiveSupply = 16, TakeSupplyPortion = 17, StartJuice = 18, PortionJuice = 19, BindDrink = 20, UnbindDrink = 21 }
+    public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4, AddToContainer = 5, StartStationWork = 6, StartHeldWork = 7, StopWork = 8, PourContents = 9, StartAutoWork = 10, PortionSoup = 11, StartBake = 12, FillWater = 13, DrainLiquid = 14, DiscardSolid = 15, ReceiveSupply = 16, TakeSupplyPortion = 17, StartJuice = 18, PortionJuice = 19, BindDrink = 20, UnbindDrink = 21, TakeContainerContent = 22, StartAssembly = 23, StartFry = 24, StartMix = 25, PortionBatter = 26, Unmold = 27, StartGrind = 28, StartExtract = 29, HeatMilk = 30, FoamMilk = 31, PortionDrinkBase = 32 }
     public enum GridMotion { Standing, Transit, Waiting }
     public enum GridItemLocation { Counter = 1, Hand = 2, Ground = 3, Container = 4, Table = 5, DirtyPool = 6, CleanPool = 7 }
-    public enum GridStationKind { Counter, Chopping, Stove, Oven, Table, Wash, DirtyPool, CleanPool, Trash, Juicer, LabelDesk }
+    public enum GridStationKind { Counter, Chopping, Stove, Oven, Table, Wash, DirtyPool, CleanPool, Trash, Juicer, LabelDesk, Frying, Mixer, Grinder, CoffeeMachine, SteamMachine }
     [Flags]
-    public enum GridStationCapability { None = 0, Chop = 1, Cook = 2, Bake = 4, Serve = 8, Wash = 16, DirtyPool = 32, CleanPool = 64, FillWater = 128, DrainLiquid = 256, Trash = 512, Juice = 1024, LabelDrink = 2048 }
+    public enum GridStationCapability { None = 0, Chop = 1, Cook = 2, Bake = 4, Serve = 8, Wash = 16, DirtyPool = 32, CleanPool = 64, FillWater = 128, DrainLiquid = 256, Trash = 512, Juice = 1024, LabelDrink = 2048, Fry = 4096, Mixing = 8192, Grind = 16384, Extract = 32768, HeatMilk = 65536, FoamMilk = 131072 }
     public enum GridMaterialForm { Solid = 1, Liquid = 2, Container = 3 }
     public enum GridAutoState { Cooking, Ready }
     public enum GridWorkState { Paused, Working, Completed }
@@ -41,6 +41,8 @@ namespace ET
         public const int Tomato = 1, TomatoChunks = 2, Egg = 3, EggLiquid = 4, Bowl = 5;
         public const int Pot = 6, Soup = 7;
         public const int Bread = 8, Toast = 9, Plate = 10, Water = 11;
+        public const int MixingBowl = 45, SweetBatter = 46, BakingMold = 47, PlainCake = 48, DessertPlate = 49;
+        public const int CoffeeBeans = 52, CoffeeGrounds = 53, CoffeeReceiver = 54, MilkPitcher = 55, Espresso = 56, HotMilk = 57, MilkFoam = 58, HotDrinkCup = 59;
         public const int Orange = 15, OrangeChunks = 16, JuiceJug = 17, OrangeJuice = 18, DisposableCup = 19;
     }
 
@@ -54,6 +56,7 @@ namespace ET
         public long ExpectedTargetItemId { get; }
         public long ExpectedProcessId { get; }
         public long ExpectedOrderId { get; }
+        public int RecipeId { get; }
         // 清理意图冻结完整内容顺序及设施布局；不引用待回收请求的列表。
         private readonly IReadOnlyList<long> expectedContentIds;
         public IReadOnlyList<long> ExpectedContentIds => expectedContentIds ?? Array.Empty<long>();
@@ -61,17 +64,17 @@ namespace ET
         public long ExpectedLayoutVersion { get; }
         public ProductCommandKind OriginKind { get; }
         public GridIntent(long commandId, GridAction action, GridCell cell, long targetId = 0, long expectedItemId = 0, long expectedTargetItemId = 0, long expectedProcessId = 0,
-            IEnumerable<long> expectedContents = null, int expectedRemainingPortions = 0, long expectedLayoutVersion = 0, ProductCommandKind originKind = ProductCommandKind.Grid, long expectedOrderId = 0)
+            IEnumerable<long> expectedContents = null, int expectedRemainingPortions = 0, long expectedLayoutVersion = 0, ProductCommandKind originKind = ProductCommandKind.Grid, long expectedOrderId = 0, int recipeId = 0)
         {
             CommandId = commandId; Action = action; Cell = cell; TargetId = targetId; ExpectedItemId = expectedItemId;
             ExpectedTargetItemId = expectedTargetItemId; ExpectedProcessId = expectedProcessId;
             expectedContentIds = expectedContents == null ? null : Array.AsReadOnly(expectedContents.ToArray());
             ExpectedRemainingPortions = expectedRemainingPortions; ExpectedLayoutVersion = expectedLayoutVersion;
             OriginKind = originKind;
-            ExpectedOrderId = expectedOrderId;
+            ExpectedOrderId = expectedOrderId; RecipeId = recipeId;
         }
         public bool Equals(GridIntent other) => CommandId == other.CommandId && Action == other.Action && Cell == other.Cell && TargetId == other.TargetId && ExpectedItemId == other.ExpectedItemId && ExpectedTargetItemId == other.ExpectedTargetItemId && ExpectedProcessId == other.ExpectedProcessId
-            && ExpectedRemainingPortions == other.ExpectedRemainingPortions && ExpectedLayoutVersion == other.ExpectedLayoutVersion && OriginKind == other.OriginKind && ExpectedOrderId == other.ExpectedOrderId && ExpectedContentIds.SequenceEqual(other.ExpectedContentIds);
+            && ExpectedRemainingPortions == other.ExpectedRemainingPortions && ExpectedLayoutVersion == other.ExpectedLayoutVersion && OriginKind == other.OriginKind && ExpectedOrderId == other.ExpectedOrderId && RecipeId == other.RecipeId && ExpectedContentIds.SequenceEqual(other.ExpectedContentIds);
     }
 
     public readonly struct GridMemberChange
@@ -104,6 +107,7 @@ namespace ET
         public long Tick;
         public long Version;
         public long LayoutVersion;
+        public int Width, Height;
         public long LastFrameTime;
         public long Accumulator;
         public bool Stopped;
@@ -128,9 +132,9 @@ namespace ET
         // 固定步同步快照；MemberId 排序后逐次解引用，不能跨 await 或被容量查询覆盖。
         public readonly List<KeyValuePair<int,EntityRef<GridActor>>> ActorStepBuffer = new(8);
         public readonly List<EntityRef<GridManualProcess>> ManualStepBuffer = new(16);
-        // 固定 7×18 厨房的同步 BFS 工作区；公开路线复制，不能跨搜索借用这些前驱或路径。
-        public readonly int[] SearchQueue = new int[GridKitchenRules.Width*GridKitchenRules.Height];
-        public readonly int[] SearchPrevious = new int[GridKitchenRules.Width*GridKitchenRules.Height];
+        // 几何提交时扩容的同步 BFS 工作区；公开路线复制，不能跨搜索借用这些前驱或路径。
+        public int[] SearchQueue = new int[GridKitchenRules.Width*GridKitchenRules.Height];
+        public int[] SearchPrevious = new int[GridKitchenRules.Width*GridKitchenRules.Height];
         public readonly List<GridCell> ActorRouteBuffer = new(GridKitchenRules.Width*GridKitchenRules.Height);
     }
 

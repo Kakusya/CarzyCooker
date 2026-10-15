@@ -2,7 +2,7 @@
 
 ## Purpose
 
-定义首款鲜榨橙汁从有限原料和杯子供应到切橙、壶中加工、搬运及逐杯盛装的实物链路，明确加工锁定、完成解锁和可承接份数，使新饮品遵守既有厨房守恒、暂停、清理与跨关保存规则。
+定义鲜榨橙汁和首批三款咖啡的真实制作、有限原料与杯子供应、明确设备模式、有限基底及按份混合，保持原有加工锁定、暂停、清理与成功档恢复守恒。饮品身份和订单绑定分开，成品须合法贴单后一次性交付消费。
 
 ## Requirements
 
@@ -34,7 +34,25 @@
 - **WHEN** 已盛出部分果汁后保存并进入下一关，或从该有效记录恢复
 - **THEN** 原合法剩余份数保持，不补满壶，不恢复旧关贴单关系
 
+### Requirement: 共享基底真实制备
+
+本批咖啡、热奶和奶泡 MUST 通过有效输入及明确设备模式制备，按统一业务时间产出有限份数；模式不匹配不得产生另一基底。
+
+#### Scenario: 加热模式不能产奶泡
+- **WHEN** 玩家在热奶模式完成牛奶加工
+- **THEN** 获得定义的热奶而非奶泡，未执行打泡阶段不能满足卡布奇诺最后条件
+
+### Requirement: 新饮品沿用独立贴单
+
+新成品饮品 MUST 继续使用原有效订单绑定、原子换绑和一次性杯消费规则；暂存不计分，旧关绑定不恢复，基底剩余份数可保存。
+
+#### Scenario: 饮品完成后错单换绑
+- **WHEN** 完成的新饮品尝试从有效绑定换到不匹配订单
+- **THEN** 拒绝且保留原绑定及内容，之后合法交付仍只计一次
+
 ## Sources
 
 - [实施与运行记录](../../changes/archive/2026-10-14-first-drink-order-binding/execution-notes.md)
 - [自动批次实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridSoupSystem.cs)
+
+- [三款咖啡、模式与顺序运行](../../changes/archive/2026-10-15-kitchen-beverage-batch/execution-notes.md)、[基底添加预检](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridBeverageSystem.cs)、[份数与顺序定义](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridAssemblyConfig.cs)。

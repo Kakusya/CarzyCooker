@@ -18,6 +18,39 @@ namespace ET.Client
         [SerializeField] private Texture2D m_ArtAtlas;
         [SerializeField] private Image m_HandIcon;
         private Sprite[] handArt;
+        private InputField m_EntryAddress;
+        public string EntryAddress => m_EntryAddress == null ? "" : m_EntryAddress.text;
+        public bool EntryAddressVisible => m_EntryAddress != null && m_EntryAddress.gameObject.activeSelf;
+
+        public void ShowEntryAddress(string address, int characterLimit = 64)
+        {
+            if (m_EntryAddress == null)
+            {
+                var field = new GameObject("JoinAddress", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(InputField));
+                field.transform.SetParent(ControlPanelRectTransform, false);
+                field.GetComponent<Image>().color = new Color(.99f, .96f, .86f);
+                var caption = new GameObject("Address", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+                caption.transform.SetParent(field.transform, false);
+                RectTransform rect = caption.GetComponent<RectTransform>();
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = new Vector2(12, 4);
+                rect.offsetMax = new Vector2(-12, -4);
+                Text text = caption.GetComponent<Text>();
+                text.font = font;
+                text.fontSize = 22;
+                text.color = new Color(.15f, .26f, .23f);
+                text.alignment = TextAnchor.MiddleLeft;
+                text.supportRichText = false;
+                m_EntryAddress = field.GetComponent<InputField>();
+                m_EntryAddress.textComponent = text;
+                m_EntryAddress.characterLimit = 64;
+                m_EntryAddress.lineType = InputField.LineType.SingleLine;
+            }
+            m_EntryAddress.characterLimit = characterLimit;
+            m_EntryAddress.text = address;
+            m_EntryAddress.gameObject.SetActive(true);
+        }
         public void SetInputGuard(Func<bool> guard)=>inputGuard=guard;
         public void ConfigureHud()
         {
@@ -57,6 +90,10 @@ namespace ET.Client
         }
         public void ClearTargets()
         {
+            if (m_EntryAddress != null)
+            {
+                m_EntryAddress.gameObject.SetActive(false);
+            }
             foreach(Button button in buttons){button.onClick.RemoveAllListeners();button.gameObject.SetActive(false);Destroy(button.gameObject);}buttons.Clear();
         }
         public void SetInformation(string target, string details, bool showDetails, bool showOrders)
@@ -99,6 +136,12 @@ namespace ET.Client
         }
         public void ReleaseHud()
         {
+            if (m_EntryAddress != null)
+            {
+                m_EntryAddress.gameObject.SetActive(false);
+                Destroy(m_EntryAddress.gameObject);
+                m_EntryAddress = null;
+            }
             ClearTargets();inputGuard=null;hudCanvas=null; if(font!=null)Destroy(font);font=null;
             if(m_HandIcon!=null)m_HandIcon.sprite=null;
             if(handArt!=null)

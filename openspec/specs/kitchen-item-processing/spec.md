@@ -2,7 +2,7 @@
 
 ## Purpose
 
-为合作厨房提供真实材料、容器内容与可接续的手工加工，使玩家能够制作并交接番茄蛋花汤所需的半成品。本轮仅覆盖番茄切块和手持碗打蛋，使用临时地图与单电脑会话，不代表煮汤、订单、正式餐厅或存档已经成立。
+定义餐厅真实材料、容器内容、可接续手工加工及有限烘焙载具，支持Solo和本机合作在同一规则下备料、搬运、加工和合法清理。甜品链保持原模具身份，跨关和成功档保存由已交付持久厨房承接；实际设备和独立Player范围以各案运行记录为准。
 
 ## Requirements
 
@@ -88,14 +88,14 @@
 
 ### Requirement: 本地与本机联机使用同一加工事实
 
-Solo、Host 本地玩家和本机 KCP 玩家 MUST 经过相同裁决与提交规则。客户端须独立保存同一世界版本的材料、容器和作业投影，消息回收不损坏投影；重复业务编号不重复添加或产物，旧世界或失效绑定数据不得应用。本轮协议版本为 3，旧版本须明确拒绝。
+Solo、Host 本地玩家和本机 KCP 玩家 MUST 经过相同裁决与提交规则。客户端须独立保存同一世界版本的材料、容器和作业投影，消息回收不损坏投影；重复业务编号不重复添加或产物，旧世界或失效绑定数据不得应用。协议版本以当前会话常量为准，不兼容的旧版本须明确拒绝。
 
 #### Scenario: 同电脑合作与重复指令
 - **WHEN** 同一电脑上的本地及真实 KCP 客户端分工备料，并重放已接收的合法添加或开始指令
 - **THEN** 两端观察相同内容和进度，材料只添加一次、加工只完成一次，各端投影不共享 Host 的可变状态
 
 #### Scenario: 旧协议或旧数据到达
-- **WHEN** 版本 2 的接入／命令或旧世界、失效绑定的数据到达
+- **WHEN** 不兼容旧版本的接入／命令或旧世界、失效绑定的数据到达
 - **THEN** 明确拒绝不兼容接入或命令，旧数据不改变当前材料、进度或执行资格
 
 ### Requirement: 可读作业提示与受管输入
@@ -169,11 +169,60 @@ Solo、Host 本地玩家和本机 KCP 玩家 MUST 经过相同裁决与提交规
 - **WHEN** 玩家在 HUD 选择水池倒液并关闭重开界面
 - **THEN** 仍需实际走到该水池才能处理，重开不重复倾倒或额外清空
 
+### Requirement: 普通容器取出未加工固体
+
+空手玩家 SHALL 在合法台面操作位从干净、未锁定且内容无关联加工记录的普通容器选择一个真实固体取出，保持其身份；外层容器及其他内容不变。
+
+#### Scenario: 从碗取回尚未打蛋的鸡蛋
+- **WHEN** 原鸡蛋在合法台面碗中且尚未开始打蛋，空手玩家选择该内容取出
+- **THEN** 同一鸡蛋进入手槽并离开碗，原碗仍在原台面，世界没有复制鸡蛋
+
+#### Scenario: 基础菜单和饮品菜单均可取出
+- **WHEN** 玩家分别在基础菜单和饮品菜单满足普通容器取出条件
+- **THEN** 两种菜单均可执行该基础动作，不因饮品专用门槛拒绝基础菜单；未知动作仍明确拒绝
+
+### Requirement: 取出不绕过加工与分装
+
+取出 MUST 拒绝液体、已有加工关联或锁定/完成批次输入、满手、失效目标及错误内容；失败保留两端，不能借取出取消加工或免费拆批。
+
+#### Scenario: 对完成汤锅或加工碗取出
+- **WHEN** 玩家尝试取出完成批次原输入或已有暂停/进行中打蛋记录的内容
+- **THEN** 拒绝且不改变批次、进度或内容；液体仍走合法倾倒，熟汤仍按份盛装
+
+### Requirement: 内容取出共同裁决与防重复
+
+本地与远端取出 MUST 经同一到位预检及提交，重复业务请求不多取，竞争只允许一个合法胜者；默认拿整个容器和专用包装拆份仍保持可用。
+
+#### Scenario: 两人争取同一内容
+- **WHEN** 两名空手成员同时请求取同一容器内容
+- **THEN** 仅一个取得该物，另一请求拒绝且手槽仍空，容器与其他内容保持
+
+### Requirement: 组装过程可停手接续
+
+多输入手工组装 MUST 复用单执行者和业务 Tick，停手保留合法阶段及进度；载具内容随同一外层物移动，普通台面仍一外层物。
+
+#### Scenario: 组装一半交接
+- **WHEN** 甲停止并交出半组装载具，乙合法接续
+- **THEN** 原实物和进度保持，只乙推进；未完成阶段不能交付成品
+
+### Requirement: 烘焙载具保持唯一身份
+
+模具 MUST 为真实可复用载具，内容使用受限定的无环关系；装模、搬运、烘焙和脱模不复制或销毁模具，失败不部分转移。
+
+#### Scenario: 脱模目标已满
+- **WHEN** 玩家向非空或不兼容出餐容器脱模
+- **THEN** 拒绝并保留模具、成品内容和目标，之后合法目标仍可脱模
+
 ## Sources
+
+- [普通容器取出运行记录](../../changes/archive/2026-10-15-kitchen-container-extraction/execution-notes.md)、[裁决](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridContainerExtraction.cs)、[受管详情](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationContainerExtraction.cs)。
 
 - [材料与作业模型](../../../Unity/Assets/Scripts/Game/ET/Code/Model/Share/Product/GridKitchen/)、[Host 加工与裁决](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/)。
 - [独立客户端投影与受管展示](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/)。
-- [厨房加工目标规格](../../../Docs/Product/specs/kitchen-item-processing/spec.md)：本主规格仅覆盖已实施的备料子集，其余目标不构成当前能力。
+- [厨房加工目标规格](../../../Docs/Product/specs/kitchen-item-processing/spec.md)：本主规格仅覆盖已交付加工合同，其余目标不构成当前能力。
 - [备料执行记录](../../changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)、[owner 树与消息路径](../../changes/archive/2026-10-11-grid-kitchen-prep-processing/design.md)：实际运行范围及双进程 NotRun。
 
 - [solo-kitchen-clear-and-discard 逐功能运行与验收](../../changes/archive/2026-10-14-solo-kitchen-clear-and-discard/execution-notes.md)。
+- [多输入组装验收](../../changes/archive/2026-10-15-kitchen-multi-input-assembly/execution-notes.md)、[组装裁决](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridAssemblySystem.cs)。
+
+- [甜品载具与面糊验收](../../changes/archive/2026-10-15-kitchen-dessert-batch/execution-notes.md)、[搅拌和脱模裁决](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridDessertSystem.cs)。

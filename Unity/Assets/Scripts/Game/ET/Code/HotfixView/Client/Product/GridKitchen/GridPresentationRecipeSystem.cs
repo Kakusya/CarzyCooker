@@ -24,7 +24,23 @@ namespace ET.Client
                 if(selected!=0)return selected;
             }
             var order=grid.Orders.Values.Where(value=>value.State==OrderState.Waiting).OrderBy(value=>value.Id).FirstOrDefault();
-            return order.Id!=0?order.DishId:grid.AllowedDishIds.First();
+            if (order.Id != 0)
+            {
+                return order.DishId;
+            }
+            var flow = Tables.Instance.DTCustomerFlowConfig.DataList.FirstOrDefault(row => row.LevelConfigId == grid.LevelConfigId);
+            if (flow != null)
+            {
+                foreach (int id in flow.OrderConfigIds)
+                {
+                    int dish = Tables.Instance.DTOrderConfig.Get(id).DishId;
+                    if (grid.AllowedDishIds.Contains(dish))
+                    {
+                        return dish;
+                    }
+                }
+            }
+            return grid.AllowedDishIds.First();
         }
 
         private static void RefreshRecipeInformation(this GridPresentationComponent self,MonoUIGridKitchen view,GridClientComponent grid)
@@ -54,7 +70,7 @@ namespace ET.Client
                 view.AddTarget("菜谱 "+Tables.Instance.DTDishConfig.Get(dish).Name,()=>
                 {
                     GridPresentationComponent current=original;if(current==null)return;
-                    current.RecipeDishId=dish;current.RecipeVisible=true;current.RefreshGridHud();
+                    current.CompanionChat=CompanionChatTopic.None;current.RecipeDishId=dish;current.RecipeVisible=true;current.RefreshGridHud();
                 });
             }
             if(self.RecipeVisible)
@@ -74,7 +90,7 @@ namespace ET.Client
                     view.AddTarget("查看首单步骤",()=>
                     {
                         GridPresentationComponent current=original;if(current==null)return;
-                        current.RecipeDishId=dish;current.RecipeVisible=true;current.RefreshGridHud();
+                        current.CompanionChat=CompanionChatTopic.None;current.RecipeDishId=dish;current.RecipeVisible=true;current.RefreshGridHud();
                     },self.SelectedStationId==0);
                 }
                 view.AddTarget(shown?"跳过首单引导":"重看首单引导",()=>

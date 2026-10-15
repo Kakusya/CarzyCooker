@@ -45,6 +45,7 @@ namespace ET
             string error = request.ProtocolVersion != ProductSessionRules.ProtocolVersion ? "IncompatibleProtocol"
                 : peer == null || peer.InstanceId != request.PeerInstanceId || peer.Generation != request.PeerGeneration ||
                     peer.Generation != request.BindingGeneration || !peer.EntryOpen || peer.Closing ? "EntryClosed"
+                : match.ProductKitchen() == null ? "RestaurantUnavailable"
                 : match.ProductKitchen().QueueSupplyCommand(peer,
                     new ProductCommandContext(request.MatchId, request.WorldId, request.WorldGeneration, request.LevelId,
                         request.LevelGeneration, request.BindingGeneration, request.CommandId),

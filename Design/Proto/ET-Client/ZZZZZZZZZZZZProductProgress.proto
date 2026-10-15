@@ -1,0 +1,150 @@
+syntax = "proto3";
+package ET;
+
+// 1=本绑定新挑战，2=提交私钥持有证明。内部 Submit 不进入 wire 白名单。
+// ResponseType ProductProfileResponse
+message ProductProfileRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    int64 BindingGeneration = 4;
+    int32 Action = 5;
+    bytes Proof = 6;
+}
+
+message ProductProfileResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    string Challenge = 4;
+    string ProfileId = 5;
+}
+
+// ResponseType ProductProfileSubmitResponse
+message ProductProfileSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int32 ProtocolVersion = 4;
+    string MatchId = 5;
+    int64 BindingGeneration = 6;
+    int32 Action = 7;
+    bytes Proof = 8;
+}
+
+message ProductProfileSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    string Challenge = 4;
+    string ProfileId = 5;
+}
+
+// 完整授权值包含只读基线和本次 MatchAuthority，不传本机路径。
+// ResponseType CooperativeBaselineResponse
+message CooperativeBaselineRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    int64 BindingGeneration = 4;
+    int64 CommandId = 5;
+    int64 ExpectedRoomVersion = 6;
+    bytes Authorization = 7;
+}
+
+message CooperativeBaselineResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+// ResponseType CooperativeBaselineSubmitResponse
+message CooperativeBaselineSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int32 ProtocolVersion = 4;
+    string MatchId = 5;
+    int64 BindingGeneration = 6;
+    int64 CommandId = 7;
+    int64 ExpectedRoomVersion = 8;
+    bytes Authorization = 9;
+}
+
+message CooperativeBaselineSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+// 以下仅为本端 ProductRoot repository 有序请求，不向远端开放。
+// ResponseType CooperativeBaselineSelectResponse
+message CooperativeBaselineSelectRequest // IRequest
+{
+    int32 RpcId = 1;
+    string SlotId = 2;
+    string MatchId = 3;
+    bytes HostIdentity = 4;
+}
+
+message CooperativeBaselineSelectResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    bytes Authorization = 4;
+}
+
+// 1导出身份、2查看身份/读取授权、3明确绑定身份、4导出只读运行授权。
+// ResponseType ProgressFileResponse
+message ProgressFileRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 Action = 2;
+    string InputPath = 3;
+    bytes Identity = 4;
+    string SlotId = 5;
+    string MatchId = 6;
+}
+
+message ProgressFileResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    string OutputPath = 4;
+    bytes Identity = 5;
+    bytes Authorization = 6;
+    string Summary = 7;
+    int32 AuthorizationKind = 8;
+}
+
+// 本端 repository 为已取得的本绑定挑战签名；私钥不离开 repository。
+// ResponseType ProductProfileSignResponse
+message ProductProfileSignRequest // IRequest
+{
+    int32 RpcId = 1;
+    string MatchId = 2;
+    int64 BindingGeneration = 3;
+    string Challenge = 4;
+}
+
+message ProductProfileSignResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    bytes Proof = 4;
+}

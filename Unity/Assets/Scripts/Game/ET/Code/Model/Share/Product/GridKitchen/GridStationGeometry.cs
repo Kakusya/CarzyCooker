@@ -26,8 +26,8 @@ namespace ET
             return cells;
         }
 
-        public static bool Inside(GridCell cell) => cell.X > 0 && cell.X < GridKitchenRules.Width - 1 &&
-            cell.Y > 0 && cell.Y < GridKitchenRules.Height - 1;
+        public static bool Inside(GridCell cell, int width = GridKitchenRules.Width, int height = GridKitchenRules.Height) =>
+            cell.X > 0 && cell.X < width - 1 && cell.Y > 0 && cell.Y < height - 1;
 
         public static GridCell[] Neighbours(GridCell cell) => new[] { new GridCell(cell.X, cell.Y + 1),
             new GridCell(cell.X + 1, cell.Y), new GridCell(cell.X, cell.Y - 1), new GridCell(cell.X - 1, cell.Y) };

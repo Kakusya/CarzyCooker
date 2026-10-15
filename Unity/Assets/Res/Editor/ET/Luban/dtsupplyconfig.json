@@ -53,5 +53,115 @@
     "TransitTicks": 40,
     "ReceivingLayoutId": 4,
     "MenuVariant": 1
+  },
+  {
+    "Id": 6,
+    "Name": "生菜补货",
+    "MaterialDefinitionId": 22,
+    "PackageDefinitionId": 29,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 2
+  },
+  {
+    "Id": 7,
+    "Name": "黄瓜补货",
+    "MaterialDefinitionId": 24,
+    "PackageDefinitionId": 30,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 2
+  },
+  {
+    "Id": 8,
+    "Name": "芝士补货",
+    "MaterialDefinitionId": 26,
+    "PackageDefinitionId": 31,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 2
+  },
+  {
+    "Id": 9,
+    "Name": "汉堡面包补货",
+    "MaterialDefinitionId": 32,
+    "PackageDefinitionId": 40,
+    "PackageUnits": 1,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 4
+  },
+  {
+    "Id": 10,
+    "Name": "牛肉饼补货",
+    "MaterialDefinitionId": 33,
+    "PackageDefinitionId": 41,
+    "PackageUnits": 1,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 4
+  },
+  {
+    "Id": 11,
+    "Name": "香肠补货",
+    "MaterialDefinitionId": 35,
+    "PackageDefinitionId": 42,
+    "PackageUnits": 1,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 4
+  },
+  {
+    "Id": 12,
+    "Name": "预拌粉补货",
+    "MaterialDefinitionId": 43,
+    "PackageDefinitionId": 50,
+    "PackageUnits": 1,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 5
+  },
+  {
+    "Id": 13,
+    "Name": "牛奶补货",
+    "MaterialDefinitionId": 44,
+    "PackageDefinitionId": 51,
+    "PackageUnits": 1,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 5
+  },
+  {
+    "Id": 14,
+    "Name": "咖啡豆补货",
+    "MaterialDefinitionId": 52,
+    "PackageDefinitionId": 62,
+    "PackageUnits": 1,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 6
+  },
+  {
+    "Id": 15,
+    "Name": "热饮杯补货",
+    "MaterialDefinitionId": 59,
+    "PackageDefinitionId": 63,
+    "PackageUnits": 3,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 6
   }
 ]

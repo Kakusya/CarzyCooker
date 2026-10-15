@@ -51,7 +51,7 @@ namespace ET
                 {
                     member.Online = false;
                     member.BoundPeer = default;
-                    match.ProductKitchen().QueueGridMember(member.MemberId, member.BindingGeneration, false);
+                    match.ProductKitchen()?.QueueGridMember(member.MemberId, member.BindingGeneration, false);
                     Changed(authority, match);
                 }
                 peer.CloseFinished = true;
@@ -88,7 +88,7 @@ namespace ET
                         member.BoundPeer = peer;
                         member.BindingGeneration = peer.Generation;
                         peer.MemberId = memberId;
-                        match.ProductKitchen().QueueGridMember(memberId, peer.Generation, true);
+                        match.ProductKitchen()?.QueueGridMember(memberId, peer.Generation, true);
                         Changed(authority, match);
                     }
                     FillJoin(match, peer, response);
@@ -143,11 +143,11 @@ namespace ET
                     Session remoteSession = ((RemoteDelivery)peer.GetComponent<RemoteDelivery>()).Session;
                     remoteSession.GetComponent<ProductPeerBinding>().Generation = peer.Generation;
                     HostPeer previous = returning.BoundPeer;
-                    match.ProductKitchen().QueueGridMember(returning.MemberId, returning.BindingGeneration, false);
+                    match.ProductKitchen()?.QueueGridMember(returning.MemberId, returning.BindingGeneration, false);
                     previous?.CloseEntry();
                     returning.Online = true; returning.BoundPeer = peer; returning.BindingGeneration = peer.Generation;
                     returning.LastResumeAttempt = request.ResumeAttempt; peer.MemberId = returning.MemberId;
-                    match.ProductKitchen().QueueGridMember(returning.MemberId, peer.Generation, true);
+                    match.ProductKitchen()?.QueueGridMember(returning.MemberId, peer.Generation, true);
                     Changed(authority, match);
                     FillJoin(match, peer, response); response.ResumeAttempt = request.ResumeAttempt;
                     return;
@@ -176,7 +176,7 @@ namespace ET
                         response.Payload = request.Payload;
                         return;
                     }
-                    match.ProductKitchen().QueueGridMember(participant.MemberId, participant.BindingGeneration, false);
+                    match.ProductKitchen()?.QueueGridMember(participant.MemberId, participant.BindingGeneration, false);
                     participant.Dispose();
                     peer.EntryOpen = false;
                     peer.Closing = true;
@@ -219,6 +219,7 @@ namespace ET
                 }
                 ProductDelivery.Send(peer, snapshot);
             }
+            authority.BroadcastRoom();
             EventSystem.Instance.Publish((Scene)authority.IScene, new ProductMemberChanged { MatchId = match.MatchId, RosterVersion = match.RosterVersion });
         }
 

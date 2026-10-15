@@ -23,6 +23,11 @@ public sealed partial class DRCompanionConfig : Luban.BeanBase
         AskTicks = _buf.ReadInt();
         ClearTicks = _buf.ReadInt();
         WashTicks = _buf.ReadInt();
+        PreparationChat = _buf.ReadString();
+        CooperationChat = _buf.ReadString();
+        ClosingChat = _buf.ReadString();
+        WorkFeedback = _buf.ReadString();
+        GrowthFeedback = _buf.ReadString();
         PostInit();
     }
 
@@ -63,6 +68,26 @@ public sealed partial class DRCompanionConfig : Luban.BeanBase
     /// WashTicks
     /// </summary>
     public readonly int WashTicks;
+    /// <summary>
+    /// 准备态备菜聊天
+    /// </summary>
+    public readonly string PreparationChat;
+    /// <summary>
+    /// 准备态合作聊天
+    /// </summary>
+    public readonly string CooperationChat;
+    /// <summary>
+    /// 准备态收店聊天
+    /// </summary>
+    public readonly string ClosingChat;
+    /// <summary>
+    /// 真实伙伴完成反馈
+    /// </summary>
+    public readonly string WorkFeedback;
+    /// <summary>
+    /// 本关第三次成长反馈
+    /// </summary>
+    public readonly string GrowthFeedback;
     public const int __ID__ = 2104335104;
     public override int GetTypeId() => __ID__;
 
@@ -82,6 +107,11 @@ public sealed partial class DRCompanionConfig : Luban.BeanBase
         + "AskTicks:" + AskTicks + ","
         + "ClearTicks:" + ClearTicks + ","
         + "WashTicks:" + WashTicks + ","
+        + "PreparationChat:" + PreparationChat + ","
+        + "CooperationChat:" + CooperationChat + ","
+        + "ClosingChat:" + ClosingChat + ","
+        + "WorkFeedback:" + WorkFeedback + ","
+        + "GrowthFeedback:" + GrowthFeedback + ","
         + "}";
     }
 

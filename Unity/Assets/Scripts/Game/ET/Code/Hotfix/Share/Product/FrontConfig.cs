@@ -33,9 +33,21 @@ namespace ET
                     new GridCell(flow.EntranceX, flow.EntranceY) != GridStationConfig.Entrance() || !reachable.Contains(new GridCell(flow.QueueX, flow.QueueY)))
                     throw new InvalidOperationException($"Invalid customer flow definition {flow.Id}");
             var tableLayouts = layouts.Values.Where(row => stations[row.StationDefinitionId].Kind == (int)GridStationKind.Table).ToArray();
-            if (tableLayouts.Length != tables.Length) throw new InvalidOperationException("Each table requires one target definition");
+            if (tableLayouts.Length != tables.Count(table => table.InitialLayoutId != 0)) throw new InvalidOperationException("Each initial table requires one target definition");
             foreach (DRTableConfig table in tables)
             {
+                if (table.InitialLayoutId == 0)
+                {
+                    var rewards = Tables.Instance.DTRenovationConfig.DataList.Where(reward => reward.RewardKind == RenovationRewardKind.ExpandSpace && reward.TableDefinitionId == table.Id).ToArray();
+                    if (table.Id <= 0 || rewards.Length != 1)
+                    {
+                        throw new InvalidOperationException("MissingExpansionTableReward");
+                    }
+                    KitchenGeometryConfig.ValidateExpansionLayout(rewards[0], layouts.Values.Select(row =>
+                        new GridStationPlacement(row.StationDefinitionId, new GridCell(row.X, row.Y), row.Orientation)),
+                        levels.Values.Select(row => new GridCell(row.SpawnX, row.SpawnY)));
+                    continue;
+                }
                 if (table.Id <= 0 || !layouts.TryGetValue(table.InitialLayoutId, out var layout) ||
                     stations[layout.StationDefinitionId].Kind != (int)GridStationKind.Table || layout.InitialItemDefinitionId != 0)
                     throw new InvalidOperationException($"Invalid table definition {table.Id}");

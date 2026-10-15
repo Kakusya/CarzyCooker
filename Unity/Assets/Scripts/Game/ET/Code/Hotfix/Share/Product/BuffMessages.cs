@@ -34,6 +34,7 @@ namespace ET
             HostPeer peer=authority.GetChild<HostPeer>(request.PeerId);Match match=authority.Match;
             string error=request.ProtocolVersion!=ProductSessionRules.ProtocolVersion?"IncompatibleProtocol"
                 :peer==null || peer.InstanceId!=request.PeerInstanceId || peer.Generation!=request.PeerGeneration || peer.Generation!=request.BindingGeneration || !peer.EntryOpen || peer.Closing?"EntryClosed"
+                :match.ProductKitchen()==null?"RestaurantUnavailable"
                 :match.ProductKitchen().QueueBuffChoice(peer,new ProductCommandContext(request.MatchId,request.WorldId,request.WorldGeneration,request.LevelId,request.LevelGeneration,request.BindingGeneration,request.CommandId),new BuffChoiceIntent(request.DrawVersion,request.ChoiceDefId));
             response.Error=error==null?0:ProductError.InvalidRequest;response.Message=error??peer?.LastCommandReason;
             response.Status=(int)(error==null?peer.LastCommandStatus:GridResultStatus.Rejected);return UniTask.CompletedTask;

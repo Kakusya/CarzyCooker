@@ -8,10 +8,10 @@ namespace ET
     public sealed partial class ProductSessionTests
     {
         [Test]
-        public void FirstDrinkConfigRejectsChangingDrinkMenuWithinThreeStagesBeforeWorldCreation()
+        public void FirstDrinkConfigAllowsPerStageMenuBeforeWorldCreation()
         {
             Tables.Instance.DTLevelConfig.Get(202).AllowedDrinkIds.Clear();
-            Assert.Throws<InvalidOperationException>(() => RestaurantConfig.ValidateLevelDefinitions(Tables.Instance.DTLevelConfig.DataList, GridKitchenSystem.IsInitialGridWalkable));
+            Assert.DoesNotThrow(() => RestaurantConfig.ValidateLevelDefinitions(Tables.Instance.DTLevelConfig.DataList, GridKitchenSystem.IsInitialGridWalkable));
             Assert.That(host, Is.Null); Assert.That(fibers, Is.Empty);
         }
 

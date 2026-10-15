@@ -1,0 +1,182 @@
+syntax = "proto3";
+package ET;
+
+// 一个合资格Profile的稳定Ticket或整个Match的关闭回执；每个接收绑定单独投递。
+message ProgressDelivery // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    int64 BindingGeneration = 3;
+    int32 Kind = 4;
+    string Id = 5;
+    bytes Document = 6;
+}
+
+// ResponseType ProgressAckResponse
+message ProgressAckRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    int64 BindingGeneration = 4;
+    int32 Kind = 5;
+    string Id = 6;
+}
+
+message ProgressAckResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+}
+
+// ResponseType ProgressAckSubmitResponse
+message ProgressAckSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int32 ProtocolVersion = 4;
+    string MatchId = 5;
+    int64 BindingGeneration = 6;
+    int32 Kind = 7;
+    string Id = 8;
+}
+
+message ProgressAckSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+}
+
+// 整个Match的正常结束，只接受可信本地Host；退役餐厅不调用它。
+// ResponseType ProgressCloseMatchResponse
+message ProgressCloseMatchRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    int64 BindingGeneration = 4;
+    int64 ExpectedRoomVersion = 5;
+}
+
+message ProgressCloseMatchResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int32 Status = 4;
+}
+
+// ResponseType ProgressCloseMatchSubmitResponse
+message ProgressCloseMatchSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int32 ProtocolVersion = 4;
+    string MatchId = 5;
+    int64 BindingGeneration = 6;
+    int64 ExpectedRoomVersion = 7;
+}
+
+message ProgressCloseMatchSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int32 Status = 4;
+}
+
+// Root repository私有：1准备签名结果，2持久Ticket，3持久关闭，4主动新建领取，5查询，6签关闭。
+// ResponseType ProgressRepositoryResponse
+message ProgressRepositoryRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 Operation = 2;
+    string MatchId = 3;
+    string Id = 4;
+    bytes Document = 5;
+    repeated string Profiles = 6;
+    repeated string Keys = 7;
+    repeated string TicketIds = 8;
+    bytes ExpectedHostIdentity = 9;
+}
+
+message ProgressRepositoryResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    string Id = 4;
+    bytes Document = 5;
+    repeated bytes Documents = 6;
+    bytes Receipt = 7;
+}
+
+// 以下仅供当前HostSession有序邮箱使用，不开放wire。
+message ProgressPulse // IMessage
+{
+    string MatchId = 1;
+    int64 StateId = 2;
+    int64 StateInstanceId = 3;
+}
+
+// ResponseType ProgressPreparedResponse
+message ProgressPreparedRequest // IRequest
+{
+    int32 RpcId = 1;
+    string MatchId = 2;
+    int64 ResultEntityId = 3;
+    int64 ResultInstanceId = 4;
+    int32 Error = 5;
+    string Failure = 6;
+    bytes Success = 7;
+    repeated bytes Tickets = 8;
+}
+
+message ProgressPreparedResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+}
+
+// ResponseType ProgressHostSavedResponse
+message ProgressHostSavedRequest // IRequest
+{
+    int32 RpcId = 1;
+    string MatchId = 2;
+    int64 ResultEntityId = 3;
+    int64 ResultInstanceId = 4;
+    int32 Error = 5;
+    string Failure = 6;
+    bytes Receipt = 7;
+}
+
+message ProgressHostSavedResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+}
+
+// ResponseType ProgressClosePreparedResponse
+message ProgressClosePreparedRequest // IRequest
+{
+    int32 RpcId = 1;
+    string MatchId = 2;
+    int64 ReceiptEntityId = 3;
+    int64 ReceiptInstanceId = 4;
+    int32 Error = 5;
+    string Failure = 6;
+    bytes Document = 7;
+}
+
+message ProgressClosePreparedResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+}

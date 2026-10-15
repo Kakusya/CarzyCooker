@@ -52,6 +52,10 @@ namespace ET
             yield return Wait(()=>GameEntry.RuntimeOwner is Component,"Owned GameEntry starts");
             ownedRoot=((Component)GameEntry.RuntimeOwner).transform.root.gameObject;
             yield return Wait(()=>Init.Instance!=null,"ET entry starts");ownedInit=Init.Instance;
+            yield return Wait(() => Runtime?.Root().GetComponent<ProductEntryPresentation>() is ProductEntryPresentation entry &&
+                ((UIGridKitchen)entry.Hud)?.Available == true, "Ordinary managed mode menu ready");
+            var modeEntry = Runtime.Root().GetComponent<ProductEntryPresentation>();
+            Pointer(((UIGridKitchen)modeEntry.Hud).View.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "单机餐厅"));
             yield return Wait(() => Runtime?.Root().GetComponent<SoloSavePresentation>() is SoloSavePresentation selection &&
                 ((UIGridKitchen)selection.Hud)?.Available == true, "Real managed save selector ready");
             if (!chooseGame) yield break;

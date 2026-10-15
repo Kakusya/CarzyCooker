@@ -10,16 +10,20 @@
 
 同日已完成并归档合作装修、原成员恢复与合作饮品贴单三案，合计13/13；新增链在主工作区Host／第二工作区Client的真实双Editor通过，复用22项新增UTF及11项相关回归结果。三份delta的13项需求与场景已核对主规格，当前36份主规格严格验证通过；原始失败及设备未验收范围保留在各归档案记录。
 
+2026-10-15 已完成并归档[16项业务变更](../Docs/Product/full-version-roadmap.md)，66/66任务。涉及27份delta、5组共享规格按实际最终实现核对，保留扩建后续合同；离线协议案显式跳过delta。48份主规格严格验证通过。原功能运行记录随各案归档，未因归档重复执行未改变的套件；设备／物理LAN／Player/AOT／构建边界保持。
+
 | 规格 | 范围 |
 |---|---|
 | [startup](specs/startup/spec.md) | 启动/模式 |
 | [runtime-foundation](specs/runtime-foundation/spec.md) | 公共组件/流程/示例 |
 | [runtime-instances](specs/runtime-instances/spec.md) | 显式实例配置、工程范围请求、Play 交接与本轮入口收尾 |
+| [product-entry](specs/product-entry/spec.md) | 普通模式菜单、无餐厅房间、开局/返回/重开及取消失败 |
+| [cooperative-save-baselines](specs/cooperative-save-baselines/spec.md) | 当前绑定Profile证明、离线授权基线读取及真实库存恢复 |
 | [product-session](specs/product-session/spec.md) | Unity 本机产品树、共同裁决、逻辑成员/连接分离、本轮手动恢复、本地/远端消息与收尾 |
 | [grid-kitchen](specs/grid-kitchen/spec.md) | 竖屏固定地图、四方向行走、台面交接、断线落物与同格拾取 |
 | [kitchen-item-processing](specs/kitchen-item-processing/spec.md) | 真实材料／碗内容、切配与手持打蛋、单工作者 Tick、暂停接续与合作交接 |
 | [kitchen-batch-cooking](specs/kitchen-batch-cooking/spec.md) | 蛋液倾倒、显式煮汤、可搬批次、有限盛装与最后一份复位 |
-| [station-upgrades](specs/station-upgrades/spec.md) | Solo 原位单级升级、冻结比例及旧格式恢复 |
+| [station-upgrades](specs/station-upgrades/spec.md) | Solo/合作原位单级升级、冻结比例及旧格式恢复 |
 | [kitchen-workstations](specs/kitchen-workstations/spec.md) | 工位能力、单槽／有限池、准备态布局预检和共用地形 |
 | [dish-recipes](specs/dish-recipes/spec.md) | 菜品身份、依赖闭包、真实烘焙和盘装吐司 |
 | [fixed-companions](specs/fixed-companions/spec.md) | 固定伙伴、单执行者、接续、关内成长及新关重置 |
@@ -35,7 +39,10 @@
 | [restaurant-art](specs/restaurant-art/spec.md) | 统一斜俯视美术、当前资源、方向／内容图层、竖屏可读性与本轮回收 |
 | [kitchen-supply](specs/kitchen-supply/spec.md) | 有限采购、业务运输、满槽待收货、真实包装拆份及跨关保留 |
 | [restaurant-renovation](specs/restaurant-renovation/spec.md) | 成功固定候选、下一关一次安装、整体布局预检及持续装修归属 |
+| [restaurant-unlocks](specs/restaurant-unlocks/spec.md) | 持续定义解锁、逐关生产闭包、许可缩小保物与旧档适配 |
 | [solo-save-progress](specs/solo-save-progress/spec.md) | 本机选档、成功结果新建提交、最多一次保存及完整载荷恢复 |
+| [progress-claims](specs/progress-claims/spec.md) | 合作开局资格、稳定结果/凭证、持久化ACK、主动新建及整个Match正常关闭 |
+| [save-authorization](specs/save-authorization/spec.md) | 同平台独立分支导入、目标Owner/修订有损确认、原子替换及消费去重 |
 | [cooperative-kitchen](specs/cooperative-kitchen/spec.md) | 正式 Host／Solo 单厨房、可信共享控制、两菜共同裁决及加入就绪 |
 | [cooperative-kitchen-logistics](specs/cooperative-kitchen-logistics/spec.md) | 远端设施、公共有限采购、唯一收货、包装数量和持续物流 |
 | [cooperative-restaurant](specs/cooperative-restaurant/spec.md) | 普通双 Editor 两种角色完整合作、控制／退出组合及基础验收范围 |

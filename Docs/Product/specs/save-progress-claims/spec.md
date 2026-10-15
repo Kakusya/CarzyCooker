@@ -4,7 +4,7 @@
 
 ## Purpose
 
-定义存档归属、授权导入、成功检查点、共同结果与主动领取的目标契约，避免房主身份、传输确认和持久化混淆。本文捕获未来产品语义，授权认证、密钥与断电协议尚未设计，不代表已有安全或存档实现。
+定义存档归属、授权导入、成功检查点、共同结果与主动领取的目标契约，避免房主身份、传输确认和持久化混淆。2026-10-15 用户已确认首版采用同平台离线文件授权，身份证明、授权、关闭与文件提交合同见[离线合作进度协议](../../offline-progress-protocol.md)；协议定稿不代表下游运行功能已验收。
 
 ## Requirements
 
@@ -34,7 +34,7 @@ PC 与 Android MUST 保持独立产品生态，不共享 Match、Profile、SaveS
 
 ### Requirement: 成功时生成不可变共同结果
 
-Level MUST 在启动时冻结合资格 Participant／Profile 名单，成功原子提交后生成不可变 SaveResult 和各合资格 Profile 的独立稳定凭证。迟加入者不能领取本关结果；未领取或离线不回滚成功、不阻止别人，提交前中断不产生可领取结果。
+Level MUST 在启动时冻结合资格 Participant／Profile 名单，自然成功、前厅收口且结算选择确定后生成不可变 SaveResult 和各合资格 Profile 的独立稳定凭证。迟加入者不能领取本关结果；未领取或离线不回滚成功、不阻止别人，提交前中断不产生可领取结果。
 
 #### Scenario: 关中加入新玩家
 - **WHEN** 新成员在本关开局冻结资格后加入 Match
@@ -82,7 +82,7 @@ Client MUST 在持久化领取凭证后才发送 ACK；ACK 不等于领取。Hos
 
 ### Requirement: 正常关闭与异常终止按本端观察
 
-Client MUST 在收到并持久化 normal-close receipt 后关闭本地未领取资格；没有收到该回执的异常终止可保留已经持久化凭证。不同 Client 的终止观察可以不同，正常关闭不能撤销未观察回执的另一设备副本。
+Client MUST 在收到并持久化整个 Match 的 normal-close receipt 后关闭本地未领取资格；仅退役餐厅回到原房间不关闭 Match 资格。没有收到该回执的异常终止可保留已经持久化凭证。不同 Client 的终止观察可以不同，正常关闭不能撤销未观察回执的另一设备副本。
 
 #### Scenario: 两个 Client 对关闭观察不同
 - **WHEN** 一个 Client 持久化正常关闭回执，另一个已离线并未收到
@@ -98,7 +98,7 @@ Client MUST 在收到并持久化 normal-close receipt 后关闭本地未领取�
 
 ### Requirement: 运行对象与离线凭证寿命分离
 
-SaveResult 和 Claim 运行对象 MUST 归 Match 管理，不能活过其释放；终止前按允许规则导出稳定离线凭证。资源 Dispose 不产生结算或授权，正常关闭认证与离线凭证安全协议须另行设计后实施。
+SaveResult 和 Claim 运行对象 MUST 归 Match 管理，不能活过其释放；终止前按允许规则导出稳定离线凭证。资源 Dispose 不产生结算或授权，正常关闭认证与离线凭证按已确认的[离线协议](../../offline-progress-protocol.md)实施。
 
 #### Scenario: Match 释放后处理已保存资格
 - **WHEN** Client 按异常观察保留合法持久凭证并离线领取

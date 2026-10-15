@@ -16,6 +16,7 @@ namespace ET.Client
         private Camera boardCamera, originalCamera;
         private bool originalEnabled, configured;
         private int mapWidth, mapHeight, kitchenBottom;
+        private SpriteRenderer restaurantPlant, restaurantWindow;
         private Rect inputViewport=new(0,0,1,1);
         private bool hudViewportConfigured;
         private float viewportAspect;
@@ -85,13 +86,21 @@ namespace ET.Client
 
         public void Configure(int width, int height, int bottom)
         {
-            if (configured) return;
-            InitializeArt();
+            if (configured && mapWidth == width && mapHeight == height && kitchenBottom == bottom)
+            {
+                return;
+            }
+            bool first = !configured;
+            if (first)
+            {
+                InitializeArt();
+                inputViewport = new Rect(0, 0, 1, 1);
+                boardCamera = ViewportTransform.GetComponent<Camera>();
+                originalCamera = GameEntry.Camera.CurrentSceneCamera;
+                originalEnabled = originalCamera != null && originalCamera.enabled;
+            }
             configured = true; mapWidth = width; mapHeight = height; kitchenBottom = bottom;
-            inputViewport=new Rect(0,0,1,1);hudViewportConfigured=false;viewportAspect=0;
-            boardCamera = ViewportTransform.GetComponent<Camera>();
-            originalCamera = GameEntry.Camera.CurrentSceneCamera;
-            originalEnabled = originalCamera != null && originalCamera.enabled;
+            hudViewportConfigured=false;viewportAspect=0;
             for (int y = 0; y < height; ++y)
             for (int x = 0; x < width; ++x)
             {
@@ -99,22 +108,33 @@ namespace ET.Client
                 bool wall = x == 0 || x == width - 1 || y == 0 || y == height - 1;
                 Color color = Color.white;
                 // 小间距形成常驻淡格线，图形和点击使用相同投影。
-                SpriteRenderer tile = CreateSprite($"Cell {x},{y}", CellToWorld(cell), new Vector3(.645f, .645f, 1), color, -1000);
+                if (!tiles.TryGetValue(cell, out SpriteRenderer tile))
+                {
+                    tile = CreateSprite($"Cell {x},{y}", CellToWorld(cell), new Vector3(.645f, .645f, 1), color, -1000);
+                    tiles.Add(cell, tile);
+                }
                 tile.sprite = artSprites[wall ? 2 : y >= bottom ? 0 : 1];
-                tiles.Add(cell, tile);
             }
             // 边缘饰物不参与占地或点击；只在地图配置时创建。
-            SpriteRenderer plant = CreateSprite("Restaurant plant", CellToWorld(new GridCell(0, bottom)), new Vector3(.65f,.65f,1), Color.white, 2000);
-            plant.sprite = artSprites[3];
-            SpriteRenderer window = CreateSprite("Restaurant window", CellToWorld(new GridCell(width/2,height-1))+new Vector3(0,.2f,0), new Vector3(.8f,.8f,1), Color.white, 2000);
-            window.sprite = artSprites[4];
+            if (first)
+            {
+                restaurantPlant = CreateSprite("Restaurant plant", CellToWorld(new GridCell(0, bottom)), new Vector3(.65f,.65f,1), Color.white, 2000);
+                restaurantPlant.sprite = artSprites[3];
+                restaurantWindow = CreateSprite("Restaurant window", CellToWorld(new GridCell(width/2,height-1))+new Vector3(0,.2f,0), new Vector3(.8f,.8f,1), Color.white, 2000);
+                restaurantWindow.sprite = artSprites[4];
+            }
+            restaurantPlant.transform.localPosition = CellToWorld(new GridCell(0, bottom));
+            restaurantWindow.transform.localPosition = CellToWorld(new GridCell(width/2,height-1))+new Vector3(0,.2f,0);
             // 保留完整相机 viewport，让既有 URP UI overlay 正常绘制；上下 HUD 遮住对应区域。
             boardCamera.rect = new Rect(0, 0, 1, 1);
             boardCamera.orthographicSize = Mathf.Max((width + .4f) / (2 * boardCamera.aspect), (height - bottom + .7f) * GroundY / 1.4f);
             boardCamera.transform.position = new Vector3((width - 1) / 2f, (height + bottom - 1) * GroundY / 2 - boardCamera.orthographicSize * .1f, -10);
             boardCamera.transform.rotation = Quaternion.identity;
             boardCamera.enabled = true;
-            GameEntry.Event.Fire(this, SceneCameraEnableEventArgs.Create(boardCamera));
+            if (first)
+            {
+                GameEntry.Event.Fire(this, SceneCameraEnableEventArgs.Create(boardCamera));
+            }
             Pan(0);
         }
 
@@ -461,6 +481,7 @@ namespace ET.Client
             ReleaseArt();
             if(labelFont!=null)Destroy(labelFont);labelFont=null;
             originalCamera=null;
+            restaurantPlant=null;restaurantWindow=null;
         }
 
         private void RenderFrontPerson(long id, GridCell cell, GridCell next, GridMotion motion, long start,

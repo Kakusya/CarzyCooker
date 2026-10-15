@@ -1,7 +1,7 @@
 #if !DOTNET
 namespace ET
 {
-    public enum KitchenProcessKind { Manual = 1, Soup = 2, Bake = 3, Juice = 4 }
+    public enum KitchenProcessKind { Manual = 1, Soup = 2, Bake = 3, Juice = 4, Mix = 5, Beverage = 6 }
     public enum KitchenTransitionAction { Complete = 1 }
     public enum KitchenWorkStage { Started = 1, Paused = 2, Resumed = 3, Finished = 4, Cancelled = 5 }
     public enum CustomerFlowAction { Arrive = 1, AdmitSeat = 2, ReachedSeat = 3, OrderExpired = 4, FinishedEating = 5, ReachedExit = 6, ReachedQueue = 7 }

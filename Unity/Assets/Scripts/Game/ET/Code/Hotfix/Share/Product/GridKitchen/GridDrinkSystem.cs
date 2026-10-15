@@ -20,7 +20,7 @@ namespace ET
         private static string BindDrink(this GridKitchenComponent kitchen, GridActor actor, GridStation station, GridIntent intent)
         {
             Level level = kitchen.ProductLevel();
-            if (level?.MenuVariant != 1) return "DrinkMenuRequired";
+            if (!ProductMenuCatalog.Includes(level?.MenuVariant ?? 0, (int)ProductMenuVariant.Drink)) return "DrinkMenuRequired";
             if ((station.Capabilities & GridStationCapability.LabelDrink) == 0) return "RequiresLabelDesk";
             if (actor.HandItemId != 0) return "HandFull";
             GridItem cup = kitchen.Item(station.ItemId);

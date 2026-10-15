@@ -10,5 +10,11 @@
     "InitialLayoutId": 12,
     "SeatOffsetX": -1,
     "SeatOffsetY": 0
+  },
+  {
+    "Id": 3,
+    "InitialLayoutId": 0,
+    "SeatOffsetX": -1,
+    "SeatOffsetY": 0
   }
 ]

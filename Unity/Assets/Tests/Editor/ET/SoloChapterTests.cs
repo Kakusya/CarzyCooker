@@ -50,7 +50,7 @@ namespace ET
             Assert.That(chapter.Last().AllowedRenovationIds, Is.Empty);
             Assert.Throws<InvalidOperationException>(() => RestaurantConfig.ValidateLevelDefinitions(rows.Where(row => row.Id != 102), GridKitchenSystem.IsInitialGridWalkable));
             Assert.That(Tables.Instance.DTLevelConfig.Get(2).NextLevelConfigId, Is.EqualTo(2));
-            StartHost(); Assert.That(CurrentLevel.ConfigId, Is.EqualTo(1)); Assert.That(CurrentLevel.IsChapterTerminal, Is.False);
+            StartHost(); Assert.That(CurrentLevel.ConfigId, Is.EqualTo(301)); Assert.That(CurrentLevel.IsChapterTerminal, Is.False);
         }
 
         [Test]

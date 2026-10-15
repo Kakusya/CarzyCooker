@@ -76,7 +76,7 @@ namespace ET
                 terrain = GridStationConfig.ValidateTerrain(GridStationConfig.ValidateDefinitions(Tables.Instance.DTStationConfig.DataList), placements,
                     Tables.Instance.DTLevelConfig.DataList.Select(row => new GridCell(row.SpawnX, row.SpawnY))
                         .Concat(self.OrderedActors().Select(actor => actor.Cell))
-                        .Concat(self.OrderedActors().Where(actor => actor.Motion == GridMotion.Transit).Select(actor => actor.NextCell)));
+                        .Concat(self.OrderedActors().Where(actor => actor.Motion == GridMotion.Transit).Select(actor => actor.NextCell)), self.Width, self.Height);
             }
             catch (InvalidOperationException) { return "LayoutBlocked"; }
             string frontError = null; self.CheckFrontLayout(terrain, footprint, intent, ref frontError);

@@ -46,8 +46,8 @@ namespace ET
         {
             GridDishConfig.ValidateAllMenus();StartSolo();ClientSessionComponent client=host.Client;
             Assert.That(CurrentLevel.AllowedDishIds,Is.EqualTo(new[]{1,2}));
-            Assert.That(Tables.Instance.DTLevelConfig.DataList.All(row=>row.AllowedDishIds.SequenceEqual(new[]{1,2})),Is.True);
-            Assert.That(Tables.Instance.DTDishConfig.DataList.Select(row=>row.Name),Is.EqualTo(new[]{"番茄蛋花汤","盘装吐司"}));
+            Assert.That(Tables.Instance.DTLevelConfig.DataList.Where(row=>row.ChapterId is 1 or 2 && row.MenuVariant is 0 or 1).All(row=>row.AllowedDishIds.SequenceEqual(new[]{1,2})),Is.True);
+            Assert.That(Tables.Instance.DTDishConfig.DataList.Where(row=>row.Id is 1 or 2).Select(row=>row.Name),Is.EqualTo(new[]{"番茄蛋花汤","盘装吐司"}));
             Assert.That(Grid.Items.Values.Count(value=>((GridItem)value).DefinitionId==GridKitchenRules.Bread),Is.EqualTo(1));
             Assert.That(Grid.Items.Values.Count(value=>((GridItem)value).DefinitionId==GridKitchenRules.Plate),Is.EqualTo(1));
             Assert.That(Grid.Items.Values.Any(value=>((GridItem)value).DefinitionId is GridKitchenRules.Toast or GridKitchenRules.Soup),Is.False);
@@ -200,7 +200,7 @@ namespace ET
             var layouts=(List<DRInitialLayoutConfig>)Tables.Instance.DTInitialLayoutConfig.DataList;
             try
             {
-                layouts.Add(InitialStation(101,1,3,12,item:GridKitchenRules.Bread));StartSolo();ClientSessionComponent client=host.Client;
+                layouts.Add(InitialStation(101,1,2,7,item:GridKitchenRules.Bread));StartSolo();ClientSessionComponent client=host.Client;
                 long toast=DishBake(client);GridStation oven=PrepStation("烤箱"),plate=PrepStation("盘台");long container=plate.ItemId;
                 PrepDo(client,GridAction.TakeCounter,oven.Id,toast);PrepDo(client,GridAction.AddToContainer,plate.Id,toast,container);
                 long other=DishBake(client,"测试工位101");PrepDo(client,GridAction.TakeCounter,oven.Id,other);

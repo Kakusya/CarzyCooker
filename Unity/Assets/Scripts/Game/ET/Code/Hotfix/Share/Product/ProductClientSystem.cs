@@ -37,6 +37,7 @@ namespace ET
             self.CandidateVersion = 0;
             self.CandidateRoster.Clear();
             self.AddComponent<GridClientComponent>();
+            self.AddComponent<ProductRoomClient>();
         }
 
         [EntitySystem]
@@ -172,6 +173,7 @@ namespace ET
                 self.CandidateRoster.Clear();
                 self.CandidateMatchId = null;
                 self.Stage = ProductClientStage.Joined;
+                self.ApplyCandidateRoom();
                 self.GetComponent<GridClientComponent>().ConfirmGridProjection();
                 runtime = self.Runtime;
                 runtime.Report(runtime.Config.Role == RuntimeInstanceRole.Solo ? ProductStage.SoloReady :

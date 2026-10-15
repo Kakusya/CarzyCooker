@@ -26,6 +26,7 @@ namespace ET
             self.PhaseOutcomes.Clear();
             self.NextLevelGeneration = 0; self.LastFrameTime = TimeInfo.Instance.FrameTime; self.Accumulator = 0;
             self.AddComponent<RestaurantRenovation>();
+            self.AddComponent<RestaurantUnlocks, DRLevelConfig>(first);
             self.Kitchen = self.AddComponent<GridKitchenComponent>();
             self.InstallLevel(first);
         }
@@ -33,6 +34,7 @@ namespace ET
         private static void InstallLevel(this RestaurantRuntime self, DRLevelConfig definition)
         {
             self.CurrentLevel = self.AddChild<Level, DRLevelConfig, long>(definition, checked(++self.NextLevelGeneration));
+            self.RefreshProductionPermissions();
             self.InstallLevelAdditions(self.CurrentLevel);
             self.PublishLevelPhase(self.CurrentLevel);
         }
@@ -84,7 +86,7 @@ namespace ET
                 return identity;
             }
             if (prior != null || replay) return prior;
-            if (intent.Action < LevelControlAction.Start || intent.Action > LevelControlAction.FinishChapter) return "InvalidCommand";
+            if (intent.Action < LevelControlAction.Start || intent.Action > LevelControlAction.SkipRenovation) return "InvalidCommand";
             if (level.IsChapterTerminal && intent.Action is LevelControlAction.Continue or LevelControlAction.SaveAndContinue) return "ChapterCompleted";
             if (intent.Action is LevelControlAction.Continue or LevelControlAction.SaveAndContinue && intent.NextLevelConfigId != level.NextLevelConfigId) return "NextLevelChanged";
             peer.RecordProductCommand(context, ProductCommandKind.Level); peer.LastLevelCommand = intent;
@@ -101,6 +103,7 @@ namespace ET
             self.AdvanceBuffPreparation(self.CurrentLevel);
             self.AdvanceRenovationPreparation(self.CurrentLevel);
             self.AdvanceRenovationChoices(self.CurrentLevel);
+            self.AdvanceCooperativeResults(self.CurrentLevel);
             self.AdvanceSoloSaveCompletions();
             while (self.Controls.Count > 0)
             {
@@ -108,10 +111,16 @@ namespace ET
                 string error = peer == null || !kitchen.HasBinding(peer.MemberId, control.Context.BindingGeneration) ? "EntryClosed"
                     : control.Context.Validate(match.MatchId, kitchen.WorldId, kitchen.WorldGeneration, level.Id, level.Generation, peer.Generation);
                 if (error == null && !peer.CanControlRestaurant()) error = "HostControlOnly";
-                if (error == null) error = control.Intent.Action == LevelControlAction.SaveAndContinue ||
+                bool cooperativeSave = level.EligibleProfiles.Count > 0 && control.Intent.Action is LevelControlAction.Continue or LevelControlAction.SaveAndContinue or LevelControlAction.FinishChapter;
+                if (error == null && cooperativeSave)
+                {
+                    error = self.BeginCooperativeSave(level, control);
+                }
+                else if (error == null) error = control.Intent.Action == LevelControlAction.SaveAndContinue ||
                     control.Intent.Action == LevelControlAction.FinishChapter && ((Match)self.Match).GetComponent<SoloSaveBinding>() != null
                     ? self.BeginSoloSave(level, control) : self.ApplyLevelControl(level, control.Intent);
-                var status = error == null ? control.Intent.Action is LevelControlAction.SaveAndContinue or LevelControlAction.FinishChapter && self.SoloSavePending()
+                var status = error == null ? cooperativeSave && self.CooperativeSavePending(level) ||
+                    control.Intent.Action is LevelControlAction.SaveAndContinue or LevelControlAction.FinishChapter && self.SoloSavePending()
                     ? GridResultStatus.Accepted : GridResultStatus.Executed : GridResultStatus.Rejected;
                 Level installed = self.CurrentLevel;
                 if (status == GridResultStatus.Executed && installed != level && !installed.GetComponent<LevelBuff>().Prepared)
@@ -166,6 +175,7 @@ namespace ET
                     if (level.Paused) return "Paused";
                     string gate = self.CheckStartGate(level);
                     if (gate != null) return gate;
+                    self.FreezeCooperativeEligibility(level);
                     level.Phase = LevelPhase.Operating; ++level.TransitionSerial; self.PublishLevelPhase(level); return null;
                 case LevelControlAction.Pause:
                     if (level.Phase == LevelPhase.Completed) return "LevelCompleted";
@@ -206,8 +216,24 @@ namespace ET
                     string finishGate = self.CheckSoloSaveGate(level);
                     if (finishGate != null) return finishGate;
                     var runtime = ((Scene)self.IScene).GetComponent<HostSessionComponent>().Runtime;
-                    if (((ProductRuntimeComponent)runtime)?.Config.Role != Game.RuntimeInstanceRole.Solo) return "SoloRestaurantOnly";
+                    if (((ProductRuntimeComponent)runtime)?.Config.Role is not (Game.RuntimeInstanceRole.Solo or Game.RuntimeInstanceRole.Host)) return "HostControlOnly";
                     ((ProductRuntimeComponent)runtime).FinishingRestaurant = self;
+                    return null;
+                case LevelControlAction.SkipRenovation:
+                    if (level.Phase != LevelPhase.Completed || level.IsChapterTerminal)
+                    {
+                        return "WrongPhase";
+                    }
+                    var renovation = self.GetComponent<RestaurantRenovation>();
+                    if (!renovation.Prepared)
+                    {
+                        return "RenovationNotReady";
+                    }
+                    if (renovation.SelectedDefinitionId != 0 || renovation.SelectionFinalized)
+                    {
+                        return "RenovationLocked";
+                    }
+                    renovation.SelectionFinalized = true;
                     return null;
                 default: return "InvalidCommand";
             }
@@ -242,6 +268,8 @@ namespace ET
             self.CompletionSerial = 1;
             self.TransitionSerial = 1; self.TransitionQueued = false;
             self.PreparationControl = null;
+            self.EligibleProfiles.Clear();
+            self.ClaimResult = default;
         }
     }
 }

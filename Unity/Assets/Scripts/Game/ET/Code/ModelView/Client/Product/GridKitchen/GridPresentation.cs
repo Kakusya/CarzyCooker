@@ -3,12 +3,15 @@ using System.Collections.Generic;
 
 namespace ET.Client
 {
+    public enum CompanionChatTopic { None, Preparation, Cooperation, Closing }
+
     [ComponentOf(typeof(Scene))]
     public sealed class GridPresentationComponent : Entity, IAwake, IUpdate, IDestroy
     {
         public EntityRef<GridKitchenBoard> Board;
         public EntityRef<UIGridKitchen> Hud;
         public bool Ready;
+        public bool RoomControlPending;
         public string Failure;
         public long HudVersion;
         // 已展示字段，不含消息或业务实体。动作结构与时间／进度分别失效；重开首次完整显示。
@@ -38,6 +41,11 @@ namespace ET.Client
         public bool RecipeVisible, FirstOrderGuideVisible;
         public bool HudLoading;
         public long HudLoadEpoch;
+        // 当前视图的只读选择与已显示次数，不持有业务成长权威。
+        public CompanionChatTopic CompanionChat;
+        public string CompanionWorld, CompanionFeedback;
+        public long CompanionWorldGeneration, CompanionLevel, CompanionLevelGeneration, CompanionRole, CompanionFeedbackRevision;
+        public int CompanionDisplayedCount;
     }
 
     [ComponentOf(typeof(GFEntityComponent))]

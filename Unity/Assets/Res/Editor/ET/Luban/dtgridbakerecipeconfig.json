@@ -4,6 +4,47 @@
     "InputDefinitionId": 8,
     "OutputDefinitionId": 9,
     "StationCapability": 4,
-    "RequiredTicks": 80
+    "RequiredTicks": 80,
+    "CarrierDefinitionId": 0
+  },
+  {
+    "Id": 2,
+    "InputDefinitionId": 33,
+    "OutputDefinitionId": 34,
+    "StationCapability": 4096,
+    "RequiredTicks": 80,
+    "CarrierDefinitionId": 0
+  },
+  {
+    "Id": 3,
+    "InputDefinitionId": 35,
+    "OutputDefinitionId": 36,
+    "StationCapability": 4096,
+    "RequiredTicks": 70,
+    "CarrierDefinitionId": 0
+  },
+  {
+    "Id": 4,
+    "InputDefinitionId": 3,
+    "OutputDefinitionId": 37,
+    "StationCapability": 4096,
+    "RequiredTicks": 60,
+    "CarrierDefinitionId": 0
+  },
+  {
+    "Id": 5,
+    "InputDefinitionId": 46,
+    "OutputDefinitionId": 48,
+    "StationCapability": 4,
+    "RequiredTicks": 100,
+    "CarrierDefinitionId": 47
+  },
+  {
+    "Id": 6,
+    "InputDefinitionId": 52,
+    "OutputDefinitionId": 53,
+    "StationCapability": 16384,
+    "RequiredTicks": 40,
+    "CarrierDefinitionId": 0
   }
 ]

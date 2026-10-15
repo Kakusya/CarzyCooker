@@ -19,17 +19,25 @@ namespace Game
         public RuntimeInstanceRole Role { get; }
         public string Address { get; }
         public int Port { get; }
+        public bool ShowModeMenu { get; }
+        public bool StartInRoom { get; }
+        public string EntryFeedback { get; }
 
-        private RuntimeInstanceConfig(string runId, string instanceId, RuntimeInstanceRole role, string address, int port)
+        private RuntimeInstanceConfig(string runId, string instanceId, RuntimeInstanceRole role, string address, int port,
+            bool showModeMenu, bool startInRoom, string entryFeedback)
         {
             RunId = runId;
             InstanceId = instanceId;
             Role = role;
             Address = address;
             Port = port;
+            ShowModeMenu = showModeMenu;
+            StartInRoom = startInRoom;
+            EntryFeedback = entryFeedback;
         }
 
-        public static RuntimeInstanceConfig Create(string runId, string instanceId, string role, string listen = null, string connect = null)
+        public static RuntimeInstanceConfig Create(string runId, string instanceId, string role, string listen = null, string connect = null,
+            bool showModeMenu = false, bool startInRoom = false, string entryFeedback = null)
         {
             ValidateId(runId, nameof(runId));
             ValidateId(instanceId, nameof(instanceId));
@@ -41,13 +49,17 @@ namespace Game
                 "solo" => RuntimeInstanceRole.Solo,
                 _ => throw new ArgumentException("role 必须是 legacy、solo、host 或 client。")
             };
+            if (showModeMenu && parsedRole != RuntimeInstanceRole.Solo || startInRoom && parsedRole is not (RuntimeInstanceRole.Host or RuntimeInstanceRole.Client))
+            {
+                throw new ArgumentException("模式选择只用于初始单机上下文，合作房间需要 Host 或 Client。 ");
+            }
             if (parsedRole is RuntimeInstanceRole.Legacy or RuntimeInstanceRole.Solo)
             {
                 if (!string.IsNullOrEmpty(listen) || !string.IsNullOrEmpty(connect))
                 {
                     throw new ArgumentException("legacy／solo 不接受 endpoint。 ");
                 }
-                return new RuntimeInstanceConfig(runId, instanceId, parsedRole, null, 0);
+                return new RuntimeInstanceConfig(runId, instanceId, parsedRole, null, 0, showModeMenu, startInRoom, entryFeedback);
             }
             if (parsedRole == RuntimeInstanceRole.Host && !string.IsNullOrEmpty(connect) ||
                 parsedRole == RuntimeInstanceRole.Client && !string.IsNullOrEmpty(listen))
@@ -66,7 +78,7 @@ namespace Game
             {
                 throw new ArgumentException("需要 IP 格式的 loopback endpoint；client 端口必须非零。 ");
             }
-            return new RuntimeInstanceConfig(runId, instanceId, parsedRole, address.ToString(), port);
+            return new RuntimeInstanceConfig(runId, instanceId, parsedRole, address.ToString(), port, showModeMenu, startInRoom, entryFeedback);
         }
 
         private static void ValidateId(string value, string name)

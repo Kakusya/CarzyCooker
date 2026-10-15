@@ -1,0 +1,69 @@
+syntax = "proto3";
+package ET;
+
+// 房间控制不要求尚未创建的 World/Level 身份；内部 Submit 不开放 wire。
+// ResponseType ProductRoomControlResponse
+message ProductRoomControlRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    int64 BindingGeneration = 4;
+    int64 CommandId = 5;
+    int64 ExpectedRoomVersion = 6;
+    int32 Action = 7;
+    int32 MenuVariant = 8;
+    int32 ContentChapterId = 9;
+}
+
+message ProductRoomControlResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+// ResponseType ProductRoomSubmitResponse
+message ProductRoomSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int64 BindingGeneration = 4;
+    int32 ProtocolVersion = 5;
+    string MatchId = 6;
+    int64 CommandId = 7;
+    int64 ExpectedRoomVersion = 8;
+    int32 Action = 9;
+    int32 MenuVariant = 10;
+    int32 ContentChapterId = 11;
+}
+
+message ProductRoomSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+message ProductRoomSnapshot // IMessage
+{
+    int32 ProtocolVersion = 1;
+    string MatchId = 2;
+    int32 MemberId = 3;
+    int64 BindingGeneration = 4;
+    int64 RoomVersion = 5;
+    string WorldId = 6;
+    int64 WorldGeneration = 7;
+    int32 MenuVariant = 8;
+    bool CanControlRoom = 9;
+    string VerifiedProfileId = 10;
+    bytes HostIdentity = 11;
+    string BaselineOwnerId = 12;
+    string BaselineSlotId = 13;
+    int32 BaselineRevision = 14;
+}

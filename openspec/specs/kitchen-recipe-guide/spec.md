@@ -2,16 +2,21 @@
 
 ## Purpose
 
-以生效配方图和当前只读投影解释汤、吐司的原料、设备、容器、工序与缺口，提供可跳过、可重看的 Solo 首单说明。代码与边界验收已运行；新玩家理解观察尚未完成，实际范围见执行记录。
+以当前有效配方和只读投影解释已开放菜品的原料、份数、设备、容器、工序与缺口，并提供可跳过、可重看的Solo首单说明。菜谱与提示不生成物品或代交动作，新玩家理解观察仍不在自动化验收范围内。
 
 ## Requirements
 
 ### Requirement: 菜谱对应有效配方
-菜谱 SHALL 展示当前两菜实际需要的原料、加工步骤、设备及容器，名称和要求与生效定义一致；无效引用不得被显示成可执行配方。
+
+菜谱 SHALL 展示当前已开放菜品实际需要的原料、加工步骤、精确份数、设备及容器，名称和要求与生效定义一致；无效引用不得被显示成可执行配方，不限于旧汤、吐司、橙汁。提示只解释当前实际阶段与缺口，不自动完成动作。
 
 #### Scenario: 查看汤和吐司
 - **WHEN** 玩家打开任一已开放菜谱
 - **THEN** 可找到完成制作和交付需要的依赖，不出现免费的原料或不存在的设备
+
+#### Scenario: 选择新菜单菜品
+- **WHEN** 玩家查看新包中已开放菜谱且已有部分备料
+- **THEN** 提示读取当前有效定义和实物，显示剩余步骤，无须重做或免费生成材料
 
 ### Requirement: 引导以当前事实更新
 Solo 首单提示 MUST 依据当前关和当前物品事实计算阶段与缺口，允许跳过和重新打开；已经完成的合法备料无需重复制作，动作拒绝不能使步骤提前完成。
@@ -43,3 +48,5 @@ Solo 首单提示 MUST 依据当前关和当前物品事实计算阶段与缺口
 - [只读配方与缺口](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridRecipeGuide.cs)。
 - [受管视图接入](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationRecipeSystem.cs)。
 - [实施与验证范围](../../changes/archive/2026-10-14-kitchen-recipe-guide/execution-notes.md)。
+
+- [两个内容章的参数与实际运行记录](../../changes/archive/2026-10-15-restaurant-chapter-content/execution-notes.md)。

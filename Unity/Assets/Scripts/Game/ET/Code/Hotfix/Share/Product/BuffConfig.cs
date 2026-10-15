@@ -20,7 +20,7 @@ namespace ET
                 int ticks = row.EffectKind switch
                 {
                     1 when row.ManualRecipeId == 0 && row.BakeRecipeId == 0 => Tables.Instance.DTGridAutoRecipeConfig.GetOrDefault(row.BatchRecipeId)?.RequiredTicks ?? 0,
-                    2 when row.BatchRecipeId == 0 && row.BakeRecipeId == 0 && Tables.Instance.DTGridManualRecipeConfig.GetOrDefault(row.ManualRecipeId)?.Mode == 1
+                    2 when row.BatchRecipeId == 0 && row.BakeRecipeId == 0 && Tables.Instance.DTGridManualRecipeConfig.GetOrDefault(row.ManualRecipeId)?.Mode == GridManualMode.Chop
                         => Tables.Instance.DTGridManualRecipeConfig.Get(row.ManualRecipeId).RequiredTicks,
                     3 when row.BatchRecipeId == 0 && row.ManualRecipeId == 0 => Tables.Instance.DTGridBakeRecipeConfig.GetOrDefault(row.BakeRecipeId)?.RequiredTicks ?? 0,
                     _ => 0

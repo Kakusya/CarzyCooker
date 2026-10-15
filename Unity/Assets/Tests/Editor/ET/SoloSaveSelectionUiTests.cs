@@ -28,6 +28,12 @@ namespace ET
             var tables = Tables.Instance;
             return new SoloSavePayload
             {
+                Geometry = new SavedKitchenGeometry { Width = GridKitchenRules.Width, Height = GridKitchenRules.Height },
+                Unlocks = new SavedRestaurantUnlocks
+                {
+                    DishIds = tables.DTDishConfig.DataList.Select(row => row.Id).ToArray(),
+                    StationIds = tables.DTStationConfig.DataList.Select(row => row.Id).ToArray()
+                },
                 Stations = tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == 0).Select(row => new SoloSavedStation
                 {
                     Key = row.Id, InitialLayoutId = row.Id, DefinitionId = row.StationDefinitionId, X = row.X, Y = row.Y, Orientation = row.Orientation,

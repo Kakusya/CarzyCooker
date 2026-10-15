@@ -1,8 +1,10 @@
 # Design
 
+当前为暂缓设备案。本轮只优化计划，不执行构建、启动Player、开放LAN监听或操作真机；原有暂缓决定保持，恢复实施时按届时授权和实际环境交接。
+
 ## Context
 
-当前移动平台在 SoloSavePresentationSystem 明确拒绝保存，540×960 Editor 已显示可用但未证明触控/后台/AOT。本案保留热更与 ET 分层，在全部选定 Editor 功能后交付 Android Solo。 动机见 [proposal.md](proposal.md)。本案为待实施规划。
+当前移动平台在 SoloSavePresentationSystem 明确拒绝保存，540×960 Editor 已显示可用但未证明触控/后台/AOT。本案保留热更与 ET 分层，在本次选定功能已有Editor证据后交付Android Solo，不依赖未来全部内容。 动机见 [proposal.md](proposal.md)。本案为待实施规划。
 
 ## Goals / Non-Goals
 
@@ -57,6 +59,8 @@ Host/Solo 先建立权威及餐厅，再建立接入、客户端和视图；远�
 入口快速答复接受／拒绝，服务步由持有相关状态的 owner 完成验证后提交；接收、启动、完成分别返回，状态先提交再发布投影或观察 Event。通知经 LocalDelivery／RemoteDelivery 回到 ProductClient handler，按运行、Level、绑定代次安装独立值；网络 RPC 号不代替业务编号。框架 Invoke 仅承担既有启动/生命周期，Event 不充当请求答复，不增加 SceneType.All 写状态消费者。
 
 请求池对象只在本次处理内使用，跨 await／队列复制值；每一跳答复对象由该跳调用者收尾，领域快照不引用消息池。视图关闭取消业务等待但原调用继续按答复／有限超时收尾，await 后核对 owner InstanceId 和绑定。成员退出只撤自身接入、取消旧动作并执行既有落物；整轮停止才结束公共发送器、剩余等待和子树。
+
+平台检查同时覆盖 SoloSavePresentationSystem 和新 ProductEntryProgressSystem 的移动平台拒绝点；仅开放Android Solo，不顺带开放合作授权页面。无参数普通Launcher沿已有模式菜单进入Solo选档，不回退旧入口。
 
 保存沿现有链：ProductClient 的受管入口 → 本地请求 → HostSession/Match 下 SoloSaveResult 捕获纯值 → ProductRoot 的 SoloSaveRepository Ordered MailBox 写文件 → 结果回原 Match/Client。Repository 比 Match 长寿，晚到 I/O 不写新 Match；文件完成后才允许离开原结算。沿用临时文件、Flush(true)、不覆盖发布和 Result/Profile 去重；重试同一结果不重复奖励。Header 不保存 ET ActorId/EntityId。
 

@@ -15,11 +15,12 @@ namespace ET
         }
 
         [Test]
-        public void StationUpgradeHostNeverOffersOrAcceptsSoloUpgradeReward()
+        [Category("CooperativeUpgrade")]
+        public void CoopUpgradeWrongPhaseCannotSelectBeforeSettlement()
         {
-            StartHost(); Assert.That(Renovation.UpgradeTargets, Is.Empty); Assert.That(CurrentLevel.AllowedRenovationIds, Is.EqualTo(new[] { 1, 2 }));
+            StartHost(); Assert.That(Renovation.UpgradeTargets, Is.Empty); Assert.That(CurrentLevel.AllowedRenovationIds, Is.EqualTo(new[] { 1, 2, 3, 4 }));
             using var reply = RenovationReply(RenovationView.CreateRenovationChoice(3, 1, PrepStation("切配台").Id));
-            Assert.That(reply.Error, Is.Not.Zero); Assert.That(reply.Message, Is.EqualTo("SoloRestaurantOnly"));
+            Assert.That(reply.Error, Is.Not.Zero); Assert.That(reply.Message, Is.EqualTo("WrongPhase"));
             Assert.That(PrepStation("切配台").UpgradeLevel, Is.Zero);
         }
 

@@ -19,7 +19,7 @@ namespace ET
             Customer[] customers = level.Children.Values.OfType<Customer>().Where(value => value.Phase != CustomerPhase.Gone).ToArray();
             if (customers.Any(customer => footprint.Contains(customer.Cell) || customer.Motion == GridMotion.Transit && footprint.Contains(customer.NextCell)))
             { error = "LayoutOccupied"; return; }
-            HashSet<GridCell> reachable = GridStationConfig.Reachable(terrain, GridStationConfig.Entrance());
+            HashSet<GridCell> reachable = GridStationConfig.Reachable(terrain, GridStationConfig.Entrance(), self.Width, self.Height);
             if (roles.Any(role => !reachable.Contains(role.Cell) || role.Motion == GridMotion.Transit && !reachable.Contains(role.NextCell)) ||
                 Tables.Instance.DTCompanionConfig.DataList.Any(row => !reachable.Contains(new GridCell(row.SpawnX, row.SpawnY))))
                 error = "LayoutBlocked";

@@ -16,10 +16,14 @@ public sealed partial class DRGridManualRecipeConfig : Luban.BeanBase
     public DRGridManualRecipeConfig(ByteBuf _buf) 
     {
         Id = _buf.ReadInt();
-        Mode = _buf.ReadInt();
+        Mode = (GridManualMode)_buf.ReadInt();
         InputDefinitionId = _buf.ReadInt();
         OutputDefinitionId = _buf.ReadInt();
         RequiredTicks = _buf.ReadInt();
+        {int n0 = _buf.ReadSize(); InputDefinitionIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); InputDefinitionIds.Add(_e0);}}
+        {int n0 = _buf.ReadSize(); InputCounts = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); InputCounts.Add(_e0);}}
+        ContainerDefinitionId = _buf.ReadInt();
+        LastInputDefinitionId = _buf.ReadInt();
         PostInit();
     }
 
@@ -35,7 +39,7 @@ public sealed partial class DRGridManualRecipeConfig : Luban.BeanBase
     /// <summary>
     /// Mode
     /// </summary>
-    public readonly int Mode;
+    public readonly GridManualMode Mode;
     /// <summary>
     /// InputDefinitionId
     /// </summary>
@@ -48,6 +52,22 @@ public sealed partial class DRGridManualRecipeConfig : Luban.BeanBase
     /// RequiredTicks
     /// </summary>
     public readonly int RequiredTicks;
+    /// <summary>
+    /// 精确组装投入
+    /// </summary>
+    public readonly System.Collections.Generic.List<int> InputDefinitionIds;
+    /// <summary>
+    /// 精确组装份数
+    /// </summary>
+    public readonly System.Collections.Generic.List<int> InputCounts;
+    /// <summary>
+    /// 组装载具
+    /// </summary>
+    public readonly int ContainerDefinitionId;
+    /// <summary>
+    /// 最后投入的定义（0为不限顺序）
+    /// </summary>
+    public readonly int LastInputDefinitionId;
     public const int __ID__ = 562732394;
     public override int GetTypeId() => __ID__;
 
@@ -64,6 +84,10 @@ public sealed partial class DRGridManualRecipeConfig : Luban.BeanBase
         + "InputDefinitionId:" + InputDefinitionId + ","
         + "OutputDefinitionId:" + OutputDefinitionId + ","
         + "RequiredTicks:" + RequiredTicks + ","
+        + "InputDefinitionIds:" + Luban.StringUtil.CollectionToString(InputDefinitionIds) + ","
+        + "InputCounts:" + Luban.StringUtil.CollectionToString(InputCounts) + ","
+        + "ContainerDefinitionId:" + ContainerDefinitionId + ","
+        + "LastInputDefinitionId:" + LastInputDefinitionId + ","
         + "}";
     }
 

@@ -33,13 +33,39 @@ namespace ET
 
     [EntitySystemOf(typeof(Customer))]
     [FriendOf(typeof(Customer))]
+    [FriendOf(typeof(Level))]
     public static partial class CustomerSystem
     {
         [EntitySystem]
         private static void Awake(this Customer self, DRCustomerFlowConfig definition, long generation, int sequence)
         {
             self.FlowDefinitionId = definition.Id; self.LevelGeneration = generation; self.ArrivalSequence = sequence;
-            self.OrderDefinitionId = definition.OrderConfigIds[(sequence - 1) % definition.OrderConfigIds.Count];
+            Level level = self.GetParent<Level>();
+            int available = 0;
+            foreach (int id in definition.OrderConfigIds)
+            {
+                if (System.Array.IndexOf(level.AllowedDishIds, Tables.Instance.DTOrderConfig.Get(id).DishId) >= 0)
+                {
+                    ++available;
+                }
+            }
+            if (available == 0)
+            {
+                throw new System.InvalidOperationException("NoPermittedCustomerOrder");
+            }
+            int selected = (sequence - 1) % available;
+            foreach (int id in definition.OrderConfigIds)
+            {
+                if (System.Array.IndexOf(level.AllowedDishIds, Tables.Instance.DTOrderConfig.Get(id).DishId) < 0)
+                {
+                    continue;
+                }
+                if (selected-- == 0)
+                {
+                    self.OrderDefinitionId = id;
+                    break;
+                }
+            }
             self.Phase = CustomerPhase.Entering; self.TableStationId = 0; self.AskWorkId = 0; self.OrderId = 0;
             self.Cell = self.NextCell = new GridCell(definition.EntranceX, definition.EntranceY); self.Motion = GridMotion.Standing;
             self.StepStartTick = 0; self.Path.Clear(); self.PathIndex = 0; self.RemainingEatTicks = 0;

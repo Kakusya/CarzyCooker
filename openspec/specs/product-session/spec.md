@@ -4,17 +4,17 @@
 
 为产品提供可在本机验证的 Host／Client 会话及本轮手动原成员恢复，明确本地与远端玩家的共用裁决、成员状态、消息与运行生命周期。厨房玩法由相关独立规格定义；本规格不宣称持久进度、正式传输选型、自动重连或跨进程重启恢复已经支持。
 
-本规格保留交接 A3／G3 的 Match／Participant 与连接分离，断线保留离线成员，并接入本 Match 内存凭证支持手动恢复原成员；该凭证不持久化，不以普通 Join 的新连接成立冒充旧身份恢复。Profile、跨设备身份和 Host 迁移尚未纳入本原型。
+本规格保留交接 A3／G3 的 Match／Participant 与连接分离，断线保留离线成员，并接入本 Match 内存凭证支持手动恢复原成员；该凭证不持久化，不以普通 Join 的新连接成立冒充旧身份恢复。长期Profile证明与离线基线读取见[合作基线规格](../cooperative-save-baselines/spec.md)；中心账号、Host迁移及跨进程成员恢复仍不在本规格范围。
 
 ## Requirements
 
 ### Requirement: 产品会话所有者与角色分离
 
-产品会话 MUST 通过 ET Child／Component 关系持有本轮状态、入口及下级资源。Host 同时包含权威会话和本地客户端，Solo 包含相同权威会话和本地客户端但不创建网络监听，远端 Client 仅包含客户端；运行角色不得由主线／稳定工作区职责决定。成员权威和客户端投影须分开，不共享可变业务状态。正式 Host 与 Solo 须持有同一持续厨房与当前关卡合同，远端不得创建本端餐厅权威。
+产品会话 MUST 通过 ET Child／Component 关系持有本轮状态、入口及下级资源。Host 同时包含权威会话和本地客户端，Solo 包含相同权威会话和本地客户端但不创建网络监听，远端 Client 仅包含客户端；运行角色不得由主线／稳定工作区职责决定。成员权威和客户端投影须分开，不共享可变业务状态。Host 的 Match 可以先无餐厅；合法开局后，正式 Host 与 Solo 须持有同一持续厨房与当前关卡合同。关闭餐厅回房间不自动解散 Match，远端不得创建本端餐厅权威。
 
 #### Scenario: 启动 Host
 - **WHEN** 合法 Host 配置进入产品入口
-- **THEN** 创建本轮权威会话及本地客户端，本地玩家必须获得真实加入确认，不能仅因拥有 Host 而报告已加入；正式餐厅由本轮权威持有且只有一个业务驱动
+- **THEN** 创建本轮权威会话及本地客户端，本地玩家必须获得真实加入确认，不能仅因拥有 Host 而报告已加入；房间阶段可无餐厅，合法开局后餐厅由本轮权威持有且只有一个业务驱动
 
 #### Scenario: 启动远端 Client
 - **WHEN** 合法 Client 配置进入产品入口
@@ -441,3 +441,5 @@ Host SHALL 发布包含世界身份、版本和 Tick 的地图快照；各端复
 - [恢复实施](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProductResumeSystem.cs)
 
 - [cooperative-restaurant-core 逐功能运行与验收](../../changes/archive/2026-10-14-cooperative-restaurant-core/execution-notes.md)。
+
+- [游戏入口增量及验收](../../changes/archive/2026-10-15-product-mode-room-flow/execution-notes.md)。

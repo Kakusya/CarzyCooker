@@ -7,7 +7,11 @@
 ## ADDED Requirements
 
 ### Requirement: Player 显式启动角色
-独立 Player MUST 经正常启动链消费显式角色和 endpoint 输入，无显式输入默认 Solo；无效输入须报告失败，不能依赖 Editor 草稿或自动回退成其他角色。
+独立 Player MUST 经正常启动链消费显式角色和 endpoint 输入，无显式输入沿现有默认Solo上下文显示模式选择，选择前无餐厅或监听；无效输入须报告失败，不能依赖 Editor 草稿或自动回退成其他角色。
+
+#### Scenario: 无参数启动
+- **WHEN** 玩家直接打开没有显式角色参数的Player
+- **THEN** 先显示现有模式选择，不继承Editor草稿、不自动开餐厅或监听
 
 #### Scenario: 使用包体显式启动 Client
 - **WHEN** Player 收到合法 Client 角色和目标

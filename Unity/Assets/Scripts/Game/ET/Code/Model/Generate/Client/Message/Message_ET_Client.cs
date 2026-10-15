@@ -1708,6 +1708,8 @@ namespace ET
         public long ExpectedLayoutVersion { get; set; }
         [MemoryPackOrder(19)]
         public long ExpectedOrderId { get; set; }
+        [MemoryPackOrder(20)]
+        public int RecipeId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1731,11 +1733,12 @@ namespace ET
             this.ExpectedRemainingPortions = default;
             this.ExpectedLayoutVersion = default;
             this.ExpectedOrderId = default;
+            this.RecipeId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:29)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:30)
     [MemoryPackable]
     [Message(Message_ET_Client.GridCommandResponse)]
     public partial class GridCommandResponse: MessageObject, IResponse
@@ -1768,7 +1771,7 @@ namespace ET
     }
 
     // 内部可信转交，不进入 wire 白名单。
-    // proto file : ET-Client/ZZGridKitchen.proto (line:40)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:41)
     [MemoryPackable]
     [Message(Message_ET_Client.GridSubmitRequest)]
     [ResponseType(nameof(GridSubmitResponse))]
@@ -1825,6 +1828,8 @@ namespace ET
         public long ExpectedLayoutVersion { get; set; }
         [MemoryPackOrder(22)]
         public long ExpectedOrderId { get; set; }
+        [MemoryPackOrder(23)]
+        public int RecipeId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -1851,11 +1856,12 @@ namespace ET
             this.ExpectedRemainingPortions = default;
             this.ExpectedLayoutVersion = default;
             this.ExpectedOrderId = default;
+            this.RecipeId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:67)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:69)
     [MemoryPackable]
     [Message(Message_ET_Client.GridSubmitResponse)]
     public partial class GridSubmitResponse: MessageObject, IResponse
@@ -1887,7 +1893,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:76)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:78)
     [MemoryPackable]
     [Message(Message_ET_Client.GridPathCell)]
     public partial class GridPathCell: MessageObject
@@ -1910,7 +1916,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:82)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:84)
     [MemoryPackable]
     [Message(Message_ET_Client.GridActorState)]
     public partial class GridActorState: MessageObject
@@ -1984,7 +1990,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:105)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:107)
     [MemoryPackable]
     [Message(Message_ET_Client.GridStationState)]
     public partial class GridStationState: MessageObject
@@ -2058,7 +2064,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:128)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:130)
     [MemoryPackable]
     [Message(Message_ET_Client.GridItemState)]
     public partial class GridItemState: MessageObject
@@ -2117,7 +2123,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:146)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:148)
     [MemoryPackable]
     [Message(Message_ET_Client.GridWorldSnapshot)]
     public partial class GridWorldSnapshot: MessageObject, IMessage
@@ -2259,6 +2265,16 @@ namespace ET
         public List<GridRenovationUpgradeTarget> UpgradeTargets { get; set; } = new List<GridRenovationUpgradeTarget>();
         [MemoryPackOrder(65)]
         public string RenovationFailure { get; set; }
+        [MemoryPackOrder(66)]
+        public bool CooperativeSave { get; set; }
+        [MemoryPackOrder(67)]
+        public bool RenovationSelectionFinalized { get; set; }
+        [MemoryPackOrder(68)]
+        public long PermissionVersion { get; set; }
+        [MemoryPackOrder(69)]
+        public List<int> UnlockedDishIds { get; set; } = new List<int>();
+        [MemoryPackOrder(70)]
+        public List<int> UnlockedStationIds { get; set; } = new List<int>();
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -2328,11 +2344,16 @@ namespace ET
             this.PendingUpgradeExpectedLevel = default;
             this.UpgradeTargets.Clear();
             this.RenovationFailure = default;
+            this.CooperativeSave = default;
+            this.RenovationSelectionFinalized = default;
+            this.PermissionVersion = default;
+            this.UnlockedDishIds.Clear();
+            this.UnlockedStationIds.Clear();
             ObjectPool.Instance.Recycle(this);
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:216)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:223)
     [MemoryPackable]
     [Message(Message_ET_Client.GridCommandResult)]
     public partial class GridCommandResult: MessageObject, IMessage
@@ -2379,7 +2400,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:230)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:237)
     [MemoryPackable]
     [Message(Message_ET_Client.GridManualProcessState)]
     public partial class GridManualProcessState: MessageObject
@@ -2429,7 +2450,7 @@ namespace ET
         }
     }
 
-    // proto file : ET-Client/ZZGridKitchen.proto (line:245)
+    // proto file : ET-Client/ZZGridKitchen.proto (line:252)
     [MemoryPackable]
     [Message(Message_ET_Client.GridAutoProcessState)]
     public partial class GridAutoProcessState: MessageObject
@@ -2892,6 +2913,8 @@ namespace ET
         public int State { get; set; }
         [MemoryPackOrder(9)]
         public long StartedTick { get; set; }
+        [MemoryPackOrder(10)]
+        public long CarrierItemId { get; set; }
         public override void Dispose()
         {
             if (!this.IsFromPool) { return; }
@@ -2905,6 +2928,7 @@ namespace ET
             this.OutputItemId = default;
             this.State = default;
             this.StartedTick = default;
+            this.CarrierItemId = default;
             ObjectPool.Instance.Recycle(this);
         }
     }
@@ -5591,6 +5615,1400 @@ namespace ET
             this.RosterVersion = default;
             this.Members.Clear();
             this.AttemptId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 房间控制不要求尚未创建的 World/Level 身份；内部 Submit 不开放 wire。
+    // proto file : ET-Client/ZZZZZZZZZZZProductRoom.proto (line:6)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductRoomControlRequest)]
+    [ResponseType(nameof(ProductRoomControlResponse))]
+    public partial class ProductRoomControlRequest: MessageObject, IRequest
+    {
+        public static ProductRoomControlRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductRoomControlRequest), isFromPool) as ProductRoomControlRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(2)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(3)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(5)]
+        public long ExpectedRoomVersion { get; set; }
+        [MemoryPackOrder(6)]
+        public int Action { get; set; }
+        [MemoryPackOrder(7)]
+        public int MenuVariant { get; set; }
+        [MemoryPackOrder(8)]
+        public int ContentChapterId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.CommandId = default;
+            this.ExpectedRoomVersion = default;
+            this.Action = default;
+            this.MenuVariant = default;
+            this.ContentChapterId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZProductRoom.proto (line:19)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductRoomControlResponse)]
+    public partial class ProductRoomControlResponse: MessageObject, IResponse
+    {
+        public static ProductRoomControlResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductRoomControlResponse), isFromPool) as ProductRoomControlResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(4)]
+        public int Status { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.CommandId = default;
+            this.Status = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZProductRoom.proto (line:29)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductRoomSubmitRequest)]
+    [ResponseType(nameof(ProductRoomSubmitResponse))]
+    public partial class ProductRoomSubmitRequest: MessageObject, IRequest
+    {
+        public static ProductRoomSubmitRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductRoomSubmitRequest), isFromPool) as ProductRoomSubmitRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public long PeerId { get; set; }
+        [MemoryPackOrder(2)]
+        public long PeerInstanceId { get; set; }
+        [MemoryPackOrder(3)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(5)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(6)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(7)]
+        public long ExpectedRoomVersion { get; set; }
+        [MemoryPackOrder(8)]
+        public int Action { get; set; }
+        [MemoryPackOrder(9)]
+        public int MenuVariant { get; set; }
+        [MemoryPackOrder(10)]
+        public int ContentChapterId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.PeerId = default;
+            this.PeerInstanceId = default;
+            this.BindingGeneration = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.CommandId = default;
+            this.ExpectedRoomVersion = default;
+            this.Action = default;
+            this.MenuVariant = default;
+            this.ContentChapterId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZProductRoom.proto (line:44)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductRoomSubmitResponse)]
+    public partial class ProductRoomSubmitResponse: MessageObject, IResponse
+    {
+        public static ProductRoomSubmitResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductRoomSubmitResponse), isFromPool) as ProductRoomSubmitResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(4)]
+        public int Status { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.CommandId = default;
+            this.Status = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZProductRoom.proto (line:53)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductRoomSnapshot)]
+    public partial class ProductRoomSnapshot: MessageObject, IMessage
+    {
+        public static ProductRoomSnapshot Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductRoomSnapshot), isFromPool) as ProductRoomSnapshot;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public int MemberId { get; set; }
+        [MemoryPackOrder(3)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long RoomVersion { get; set; }
+        [MemoryPackOrder(5)]
+        public string WorldId { get; set; }
+        [MemoryPackOrder(6)]
+        public long WorldGeneration { get; set; }
+        [MemoryPackOrder(7)]
+        public int MenuVariant { get; set; }
+        [MemoryPackOrder(8)]
+        public bool CanControlRoom { get; set; }
+        [MemoryPackOrder(9)]
+        public string VerifiedProfileId { get; set; }
+        [MemoryPackOrder(10)]
+        public byte[] HostIdentity { get; set; }
+        [MemoryPackOrder(11)]
+        public string BaselineOwnerId { get; set; }
+        [MemoryPackOrder(12)]
+        public string BaselineSlotId { get; set; }
+        [MemoryPackOrder(13)]
+        public int BaselineRevision { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.MemberId = default;
+            this.BindingGeneration = default;
+            this.RoomVersion = default;
+            this.WorldId = default;
+            this.WorldGeneration = default;
+            this.MenuVariant = default;
+            this.CanControlRoom = default;
+            this.VerifiedProfileId = default;
+            this.HostIdentity = default;
+            this.BaselineOwnerId = default;
+            this.BaselineSlotId = default;
+            this.BaselineRevision = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 1=本绑定新挑战，2=提交私钥持有证明。内部 Submit 不进入 wire 白名单。
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:6)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductProfileRequest)]
+    [ResponseType(nameof(ProductProfileResponse))]
+    public partial class ProductProfileRequest: MessageObject, IRequest
+    {
+        public static ProductProfileRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductProfileRequest), isFromPool) as ProductProfileRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(2)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(3)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public int Action { get; set; }
+        [MemoryPackOrder(5)]
+        public byte[] Proof { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.Action = default;
+            this.Proof = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:16)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductProfileResponse)]
+    public partial class ProductProfileResponse: MessageObject, IResponse
+    {
+        public static ProductProfileResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductProfileResponse), isFromPool) as ProductProfileResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public string Challenge { get; set; }
+        [MemoryPackOrder(4)]
+        public string ProfileId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.Challenge = default;
+            this.ProfileId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:26)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductProfileSubmitRequest)]
+    [ResponseType(nameof(ProductProfileSubmitResponse))]
+    public partial class ProductProfileSubmitRequest: MessageObject, IRequest
+    {
+        public static ProductProfileSubmitRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductProfileSubmitRequest), isFromPool) as ProductProfileSubmitRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public long PeerId { get; set; }
+        [MemoryPackOrder(2)]
+        public long PeerInstanceId { get; set; }
+        [MemoryPackOrder(3)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(4)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(5)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public int Action { get; set; }
+        [MemoryPackOrder(7)]
+        public byte[] Proof { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.PeerId = default;
+            this.PeerInstanceId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.Action = default;
+            this.Proof = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:38)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductProfileSubmitResponse)]
+    public partial class ProductProfileSubmitResponse: MessageObject, IResponse
+    {
+        public static ProductProfileSubmitResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductProfileSubmitResponse), isFromPool) as ProductProfileSubmitResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public string Challenge { get; set; }
+        [MemoryPackOrder(4)]
+        public string ProfileId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.Challenge = default;
+            this.ProfileId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 完整授权值包含只读基线和本次 MatchAuthority，不传本机路径。
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:49)
+    [MemoryPackable]
+    [Message(Message_ET_Client.CooperativeBaselineRequest)]
+    [ResponseType(nameof(CooperativeBaselineResponse))]
+    public partial class CooperativeBaselineRequest: MessageObject, IRequest
+    {
+        public static CooperativeBaselineRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(CooperativeBaselineRequest), isFromPool) as CooperativeBaselineRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(2)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(3)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(5)]
+        public long ExpectedRoomVersion { get; set; }
+        [MemoryPackOrder(6)]
+        public byte[] Authorization { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.CommandId = default;
+            this.ExpectedRoomVersion = default;
+            this.Authorization = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:60)
+    [MemoryPackable]
+    [Message(Message_ET_Client.CooperativeBaselineResponse)]
+    public partial class CooperativeBaselineResponse: MessageObject, IResponse
+    {
+        public static CooperativeBaselineResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(CooperativeBaselineResponse), isFromPool) as CooperativeBaselineResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(4)]
+        public int Status { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.CommandId = default;
+            this.Status = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:70)
+    [MemoryPackable]
+    [Message(Message_ET_Client.CooperativeBaselineSubmitRequest)]
+    [ResponseType(nameof(CooperativeBaselineSubmitResponse))]
+    public partial class CooperativeBaselineSubmitRequest: MessageObject, IRequest
+    {
+        public static CooperativeBaselineSubmitRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(CooperativeBaselineSubmitRequest), isFromPool) as CooperativeBaselineSubmitRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public long PeerId { get; set; }
+        [MemoryPackOrder(2)]
+        public long PeerInstanceId { get; set; }
+        [MemoryPackOrder(3)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(4)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(5)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(7)]
+        public long ExpectedRoomVersion { get; set; }
+        [MemoryPackOrder(8)]
+        public byte[] Authorization { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.PeerId = default;
+            this.PeerInstanceId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.CommandId = default;
+            this.ExpectedRoomVersion = default;
+            this.Authorization = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:83)
+    [MemoryPackable]
+    [Message(Message_ET_Client.CooperativeBaselineSubmitResponse)]
+    public partial class CooperativeBaselineSubmitResponse: MessageObject, IResponse
+    {
+        public static CooperativeBaselineSubmitResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(CooperativeBaselineSubmitResponse), isFromPool) as CooperativeBaselineSubmitResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public long CommandId { get; set; }
+        [MemoryPackOrder(4)]
+        public int Status { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.CommandId = default;
+            this.Status = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 以下仅为本端 ProductRoot repository 有序请求，不向远端开放。
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:94)
+    [MemoryPackable]
+    [Message(Message_ET_Client.CooperativeBaselineSelectRequest)]
+    [ResponseType(nameof(CooperativeBaselineSelectResponse))]
+    public partial class CooperativeBaselineSelectRequest: MessageObject, IRequest
+    {
+        public static CooperativeBaselineSelectRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(CooperativeBaselineSelectRequest), isFromPool) as CooperativeBaselineSelectRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public string SlotId { get; set; }
+        [MemoryPackOrder(2)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(3)]
+        public byte[] HostIdentity { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.SlotId = default;
+            this.MatchId = default;
+            this.HostIdentity = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:102)
+    [MemoryPackable]
+    [Message(Message_ET_Client.CooperativeBaselineSelectResponse)]
+    public partial class CooperativeBaselineSelectResponse: MessageObject, IResponse
+    {
+        public static CooperativeBaselineSelectResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(CooperativeBaselineSelectResponse), isFromPool) as CooperativeBaselineSelectResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public byte[] Authorization { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.Authorization = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 1导出身份、2查看身份/读取授权、3明确绑定身份、4导出只读运行授权。
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:112)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressFileRequest)]
+    [ResponseType(nameof(ProgressFileResponse))]
+    public partial class ProgressFileRequest: MessageObject, IRequest
+    {
+        public static ProgressFileRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressFileRequest), isFromPool) as ProgressFileRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Action { get; set; }
+        [MemoryPackOrder(2)]
+        public string InputPath { get; set; }
+        [MemoryPackOrder(3)]
+        public byte[] Identity { get; set; }
+        [MemoryPackOrder(4)]
+        public string SlotId { get; set; }
+        [MemoryPackOrder(5)]
+        public string MatchId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Action = default;
+            this.InputPath = default;
+            this.Identity = default;
+            this.SlotId = default;
+            this.MatchId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:122)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressFileResponse)]
+    public partial class ProgressFileResponse: MessageObject, IResponse
+    {
+        public static ProgressFileResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressFileResponse), isFromPool) as ProgressFileResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public string OutputPath { get; set; }
+        [MemoryPackOrder(4)]
+        public byte[] Identity { get; set; }
+        [MemoryPackOrder(5)]
+        public byte[] Authorization { get; set; }
+        [MemoryPackOrder(6)]
+        public string Summary { get; set; }
+        [MemoryPackOrder(7)]
+        public int AuthorizationKind { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.OutputPath = default;
+            this.Identity = default;
+            this.Authorization = default;
+            this.Summary = default;
+            this.AuthorizationKind = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 本端 repository 为已取得的本绑定挑战签名；私钥不离开 repository。
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:136)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductProfileSignRequest)]
+    [ResponseType(nameof(ProductProfileSignResponse))]
+    public partial class ProductProfileSignRequest: MessageObject, IRequest
+    {
+        public static ProductProfileSignRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductProfileSignRequest), isFromPool) as ProductProfileSignRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public string Challenge { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.Challenge = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZProductProgress.proto (line:144)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProductProfileSignResponse)]
+    public partial class ProductProfileSignResponse: MessageObject, IResponse
+    {
+        public static ProductProfileSignResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProductProfileSignResponse), isFromPool) as ProductProfileSignResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public byte[] Proof { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.Proof = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 一个合资格Profile的稳定Ticket或整个Match的关闭回执；每个接收绑定单独投递。
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:5)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressDelivery)]
+    public partial class ProgressDelivery: MessageObject, IMessage
+    {
+        public static ProgressDelivery Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressDelivery), isFromPool) as ProgressDelivery;
+        }
+
+        [MemoryPackOrder(0)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(3)]
+        public int Kind { get; set; }
+        [MemoryPackOrder(4)]
+        public string Id { get; set; }
+        [MemoryPackOrder(5)]
+        public byte[] Document { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.Kind = default;
+            this.Id = default;
+            this.Document = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:16)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressAckRequest)]
+    [ResponseType(nameof(ProgressAckResponse))]
+    public partial class ProgressAckRequest: MessageObject, IRequest
+    {
+        public static ProgressAckRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressAckRequest), isFromPool) as ProgressAckRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(2)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(3)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public int Kind { get; set; }
+        [MemoryPackOrder(5)]
+        public string Id { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.Kind = default;
+            this.Id = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:26)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressAckResponse)]
+    public partial class ProgressAckResponse: MessageObject, IResponse
+    {
+        public static ProgressAckResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressAckResponse), isFromPool) as ProgressAckResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:34)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressAckSubmitRequest)]
+    [ResponseType(nameof(ProgressAckSubmitResponse))]
+    public partial class ProgressAckSubmitRequest: MessageObject, IRequest
+    {
+        public static ProgressAckSubmitRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressAckSubmitRequest), isFromPool) as ProgressAckSubmitRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public long PeerId { get; set; }
+        [MemoryPackOrder(2)]
+        public long PeerInstanceId { get; set; }
+        [MemoryPackOrder(3)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(4)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(5)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public int Kind { get; set; }
+        [MemoryPackOrder(7)]
+        public string Id { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.PeerId = default;
+            this.PeerInstanceId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.Kind = default;
+            this.Id = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:46)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressAckSubmitResponse)]
+    public partial class ProgressAckSubmitResponse: MessageObject, IResponse
+    {
+        public static ProgressAckSubmitResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressAckSubmitResponse), isFromPool) as ProgressAckSubmitResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 整个Match的正常结束，只接受可信本地Host；退役餐厅不调用它。
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:55)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressCloseMatchRequest)]
+    [ResponseType(nameof(ProgressCloseMatchResponse))]
+    public partial class ProgressCloseMatchRequest: MessageObject, IRequest
+    {
+        public static ProgressCloseMatchRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressCloseMatchRequest), isFromPool) as ProgressCloseMatchRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(2)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(3)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(4)]
+        public long ExpectedRoomVersion { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.ExpectedRoomVersion = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:64)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressCloseMatchResponse)]
+    public partial class ProgressCloseMatchResponse: MessageObject, IResponse
+    {
+        public static ProgressCloseMatchResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressCloseMatchResponse), isFromPool) as ProgressCloseMatchResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public int Status { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.Status = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:73)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressCloseMatchSubmitRequest)]
+    [ResponseType(nameof(ProgressCloseMatchSubmitResponse))]
+    public partial class ProgressCloseMatchSubmitRequest: MessageObject, IRequest
+    {
+        public static ProgressCloseMatchSubmitRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressCloseMatchSubmitRequest), isFromPool) as ProgressCloseMatchSubmitRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public long PeerId { get; set; }
+        [MemoryPackOrder(2)]
+        public long PeerInstanceId { get; set; }
+        [MemoryPackOrder(3)]
+        public int ProtocolVersion { get; set; }
+        [MemoryPackOrder(4)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(5)]
+        public long BindingGeneration { get; set; }
+        [MemoryPackOrder(6)]
+        public long ExpectedRoomVersion { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.PeerId = default;
+            this.PeerInstanceId = default;
+            this.ProtocolVersion = default;
+            this.MatchId = default;
+            this.BindingGeneration = default;
+            this.ExpectedRoomVersion = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:84)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressCloseMatchSubmitResponse)]
+    public partial class ProgressCloseMatchSubmitResponse: MessageObject, IResponse
+    {
+        public static ProgressCloseMatchSubmitResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressCloseMatchSubmitResponse), isFromPool) as ProgressCloseMatchSubmitResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public int Status { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.Status = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // Root repository私有：1准备签名结果，2持久Ticket，3持久关闭，4主动新建领取，5查询，6签关闭。
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:94)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressRepositoryRequest)]
+    [ResponseType(nameof(ProgressRepositoryResponse))]
+    public partial class ProgressRepositoryRequest: MessageObject, IRequest
+    {
+        public static ProgressRepositoryRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressRepositoryRequest), isFromPool) as ProgressRepositoryRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Operation { get; set; }
+        [MemoryPackOrder(2)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(3)]
+        public string Id { get; set; }
+        [MemoryPackOrder(4)]
+        public byte[] Document { get; set; }
+        [MemoryPackOrder(5)]
+        public List<string> Profiles { get; set; } = new List<string>();
+        [MemoryPackOrder(6)]
+        public List<string> Keys { get; set; } = new List<string>();
+        [MemoryPackOrder(7)]
+        public List<string> TicketIds { get; set; } = new List<string>();
+        [MemoryPackOrder(8)]
+        public byte[] ExpectedHostIdentity { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Operation = default;
+            this.MatchId = default;
+            this.Id = default;
+            this.Document = default;
+            this.Profiles.Clear();
+            this.Keys.Clear();
+            this.TicketIds.Clear();
+            this.ExpectedHostIdentity = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:107)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressRepositoryResponse)]
+    public partial class ProgressRepositoryResponse: MessageObject, IResponse
+    {
+        public static ProgressRepositoryResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressRepositoryResponse), isFromPool) as ProgressRepositoryResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public string Id { get; set; }
+        [MemoryPackOrder(4)]
+        public byte[] Document { get; set; }
+        [MemoryPackOrder(5)]
+        public List<byte[]> Documents { get; set; } = new List<byte[]>();
+        [MemoryPackOrder(6)]
+        public byte[] Receipt { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.Id = default;
+            this.Document = default;
+            this.Documents.Clear();
+            this.Receipt = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 以下仅供当前HostSession有序邮箱使用，不开放wire。
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:119)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressPulse)]
+    public partial class ProgressPulse: MessageObject, IMessage
+    {
+        public static ProgressPulse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressPulse), isFromPool) as ProgressPulse;
+        }
+
+        [MemoryPackOrder(0)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(1)]
+        public long StateId { get; set; }
+        [MemoryPackOrder(2)]
+        public long StateInstanceId { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.MatchId = default;
+            this.StateId = default;
+            this.StateInstanceId = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:127)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressPreparedRequest)]
+    [ResponseType(nameof(ProgressPreparedResponse))]
+    public partial class ProgressPreparedRequest: MessageObject, IRequest
+    {
+        public static ProgressPreparedRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressPreparedRequest), isFromPool) as ProgressPreparedRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public long ResultEntityId { get; set; }
+        [MemoryPackOrder(3)]
+        public long ResultInstanceId { get; set; }
+        [MemoryPackOrder(4)]
+        public int Error { get; set; }
+        [MemoryPackOrder(5)]
+        public string Failure { get; set; }
+        [MemoryPackOrder(6)]
+        public byte[] Success { get; set; }
+        [MemoryPackOrder(7)]
+        public List<byte[]> Tickets { get; set; } = new List<byte[]>();
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.MatchId = default;
+            this.ResultEntityId = default;
+            this.ResultInstanceId = default;
+            this.Error = default;
+            this.Failure = default;
+            this.Success = default;
+            this.Tickets.Clear();
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:139)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressPreparedResponse)]
+    public partial class ProgressPreparedResponse: MessageObject, IResponse
+    {
+        public static ProgressPreparedResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressPreparedResponse), isFromPool) as ProgressPreparedResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:147)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressHostSavedRequest)]
+    [ResponseType(nameof(ProgressHostSavedResponse))]
+    public partial class ProgressHostSavedRequest: MessageObject, IRequest
+    {
+        public static ProgressHostSavedRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressHostSavedRequest), isFromPool) as ProgressHostSavedRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public long ResultEntityId { get; set; }
+        [MemoryPackOrder(3)]
+        public long ResultInstanceId { get; set; }
+        [MemoryPackOrder(4)]
+        public int Error { get; set; }
+        [MemoryPackOrder(5)]
+        public string Failure { get; set; }
+        [MemoryPackOrder(6)]
+        public byte[] Receipt { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.MatchId = default;
+            this.ResultEntityId = default;
+            this.ResultInstanceId = default;
+            this.Error = default;
+            this.Failure = default;
+            this.Receipt = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:158)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressHostSavedResponse)]
+    public partial class ProgressHostSavedResponse: MessageObject, IResponse
+    {
+        public static ProgressHostSavedResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressHostSavedResponse), isFromPool) as ProgressHostSavedResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:166)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressClosePreparedRequest)]
+    [ResponseType(nameof(ProgressClosePreparedResponse))]
+    public partial class ProgressClosePreparedRequest: MessageObject, IRequest
+    {
+        public static ProgressClosePreparedRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressClosePreparedRequest), isFromPool) as ProgressClosePreparedRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public string MatchId { get; set; }
+        [MemoryPackOrder(2)]
+        public long ReceiptEntityId { get; set; }
+        [MemoryPackOrder(3)]
+        public long ReceiptInstanceId { get; set; }
+        [MemoryPackOrder(4)]
+        public int Error { get; set; }
+        [MemoryPackOrder(5)]
+        public string Failure { get; set; }
+        [MemoryPackOrder(6)]
+        public byte[] Document { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.MatchId = default;
+            this.ReceiptEntityId = default;
+            this.ReceiptInstanceId = default;
+            this.Error = default;
+            this.Failure = default;
+            this.Document = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZProductClaims.proto (line:177)
+    [MemoryPackable]
+    [Message(Message_ET_Client.ProgressClosePreparedResponse)]
+    public partial class ProgressClosePreparedResponse: MessageObject, IResponse
+    {
+        public static ProgressClosePreparedResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(ProgressClosePreparedResponse), isFromPool) as ProgressClosePreparedResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // 仅ProductRoot本地repository；不得加入远端ProductWire白名单。
+    // proto file : ET-Client/ZZZZZZZZZZZZZZSaveAuthorization.proto (line:6)
+    [MemoryPackable]
+    [Message(Message_ET_Client.SaveAuthorizationRequest)]
+    [ResponseType(nameof(SaveAuthorizationResponse))]
+    public partial class SaveAuthorizationRequest: MessageObject, IRequest
+    {
+        public static SaveAuthorizationRequest Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(SaveAuthorizationRequest), isFromPool) as SaveAuthorizationRequest;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Action { get; set; }
+        [MemoryPackOrder(2)]
+        public string SlotId { get; set; }
+        [MemoryPackOrder(3)]
+        public byte[] Document { get; set; }
+        [MemoryPackOrder(4)]
+        public byte[] RecipientIdentity { get; set; }
+        [MemoryPackOrder(5)]
+        public string TicketId { get; set; }
+        [MemoryPackOrder(6)]
+        public byte[] Confirmation { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Action = default;
+            this.SlotId = default;
+            this.Document = default;
+            this.RecipientIdentity = default;
+            this.TicketId = default;
+            this.Confirmation = default;
+            ObjectPool.Instance.Recycle(this);
+        }
+    }
+
+    // proto file : ET-Client/ZZZZZZZZZZZZZZSaveAuthorization.proto (line:17)
+    [MemoryPackable]
+    [Message(Message_ET_Client.SaveAuthorizationResponse)]
+    public partial class SaveAuthorizationResponse: MessageObject, IResponse
+    {
+        public static SaveAuthorizationResponse Create(bool isFromPool = false)
+        {
+            return ObjectPool.Instance.Fetch(typeof(SaveAuthorizationResponse), isFromPool) as SaveAuthorizationResponse;
+        }
+
+        [MemoryPackOrder(0)]
+        public int RpcId { get; set; }
+        [MemoryPackOrder(1)]
+        public int Error { get; set; }
+        [MemoryPackOrder(2)]
+        public string Message { get; set; }
+        [MemoryPackOrder(3)]
+        public string OutputPath { get; set; }
+        [MemoryPackOrder(4)]
+        public byte[] Document { get; set; }
+        [MemoryPackOrder(5)]
+        public byte[] Receipt { get; set; }
+        [MemoryPackOrder(6)]
+        public byte[] Preview { get; set; }
+        public override void Dispose()
+        {
+            if (!this.IsFromPool) { return; }
+            this.RpcId = default;
+            this.Error = default;
+            this.Message = default;
+            this.OutputPath = default;
+            this.Document = default;
+            this.Receipt = default;
+            this.Preview = default;
             ObjectPool.Instance.Recycle(this);
         }
     }

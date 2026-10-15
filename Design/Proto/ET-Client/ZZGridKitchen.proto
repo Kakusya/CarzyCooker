@@ -24,6 +24,7 @@ message GridCommandRequest // IRequest
     int32 ExpectedRemainingPortions = 18;
     int64 ExpectedLayoutVersion = 19;
     int64 ExpectedOrderId = 20;
+    int32 RecipeId = 21;
 }
 
 message GridCommandResponse // IResponse
@@ -62,6 +63,7 @@ message GridSubmitRequest // IRequest
     int32 ExpectedRemainingPortions = 21;
     int64 ExpectedLayoutVersion = 22;
     int64 ExpectedOrderId = 23;
+    int32 RecipeId = 24;
 }
 
 message GridSubmitResponse // IResponse
@@ -211,6 +213,11 @@ message GridWorldSnapshot // IMessage
     int32 PendingUpgradeExpectedLevel = 64;
     repeated GridRenovationUpgradeTarget UpgradeTargets = 65;
     string RenovationFailure = 66;
+    bool CooperativeSave = 67;
+    bool RenovationSelectionFinalized = 68;
+    int64 PermissionVersion = 69;
+    repeated int32 UnlockedDishIds = 70;
+    repeated int32 UnlockedStationIds = 71;
 }
 
 message GridCommandResult // IMessage

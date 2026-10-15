@@ -20,6 +20,7 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
     {
             Name = "";
             AcceptedDefinitionIds = new System.Collections.Generic.List<int>();
+            ExclusiveDefinitionIds = new System.Collections.Generic.List<int>();
     }
 
     public override void LoadJson(JSONObject _json)
@@ -104,6 +105,14 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
             }
         }
         
+        { 
+            var _fieldJson = _json["ExclusiveDefinitionIds"];
+            if (_fieldJson != null)
+            {
+                if(!_fieldJson.IsArray) { throw new SerializationException(); } ExclusiveDefinitionIds = new System.Collections.Generic.List<int>(); foreach(JSONNode __e0 in _fieldJson.Children) { int __v0;  if(!__e0.IsNumber) { throw new SerializationException(); }  __v0 = __e0;  ExclusiveDefinitionIds.Add(__v0); }  
+            }
+        }
+        
     }
 
     public override void SaveJson(JSONObject _json)
@@ -141,6 +150,11 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
         }
         {
             _json["MenuVariant"] = new JSONNumber(MenuVariant);
+        }
+        {
+
+            if (ExclusiveDefinitionIds == null) { throw new System.ArgumentNullException(); }
+            { var __cjson0 = new JSONArray(); _json["ExclusiveDefinitionIds"] = __cjson0; foreach(var _e0 in ExclusiveDefinitionIds) { JSONNode __v0; __v0 = new JSONNumber(_e0); __cjson0.Add(__v0); } }
         }
     }
 
@@ -205,6 +219,11 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
     /// MenuVariant
     /// </summary>
     public int MenuVariant;
+
+    /// <summary>
+    /// 必须独占容器的成品内容
+    /// </summary>
+    public System.Collections.Generic.List<int> ExclusiveDefinitionIds;
 
 }
 }

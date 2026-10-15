@@ -107,7 +107,7 @@ namespace ET.Client
             view.HandText.text = "保存只新建，不覆盖原记录"; view.WorkText.text = ""; view.HintText.text = "本机 PC 单机 · 内存试玩退出后不保留";
             view.SettlementText.text = self.Failure == null ? "检查点恢复完整厨房，并进入下一关准备阶段" : "读取失败，尚未创建餐厅。可以重新选择或重试。";
             if (self.ViewedResult != null)
-                view.SettlementText.text = $"大关 {self.ViewedResult.ChapterId} 已完成 · 第 {self.ViewedResult.ChapterStage} 关\n成功 {self.ViewedResult.ServedOrders} 单 · 未满足 {self.ViewedResult.UnfulfilledOrders} 单\n{self.ViewedResult.Score} 分 · {self.ViewedResult.Stars} 星\n此记录仅供查看，选择新开餐厅可开始独立的一轮";
+                view.SettlementText.text = $"{RestaurantChapters.Find(Tables.Instance.DTLevelConfig.GetOrDefault(self.ViewedResult.CompletedLevelId))?.Name ?? "大关 " + self.ViewedResult.ChapterId} 已完成 · 第 {self.ViewedResult.ChapterStage} 关\n成功 {self.ViewedResult.ServedOrders} 单 · 未满足 {self.ViewedResult.UnfulfilledOrders} 单\n{self.ViewedResult.Score} 分 · {self.ViewedResult.Stars} 星\n此记录仅供查看，选择新开餐厅可开始独立的一轮";
             if (self.Failure != null) view.StatusText.text = self.Failure switch
             {
                 "UnsupportedVersion" => "此记录版本不受支持，请选择其他记录",
@@ -121,18 +121,84 @@ namespace ET.Client
             if (!Application.isMobilePlatform)
                 view.AddControl("新开餐厅", () => { SoloSavePresentation current = original; current?.ChooseSoloNewGame(true); });
             view.AddControl("内存试玩", () => { SoloSavePresentation current = original; current?.ChooseSoloNewGame(false); });
+            view.AddControl("新开沙拉餐厅", () =>
+            {
+                SoloSavePresentation current = original;
+                if (current != null)
+                {
+                    current.NewMenuVariant = (int)ProductMenuVariant.Salad;
+                    current.ChooseSoloNewGame(!Application.isMobilePlatform);
+                }
+            });
+            view.AddControl("新开经营成长餐厅", () =>
+            {
+                SoloSavePresentation current = original;
+                if (current != null)
+                {
+                    current.NewMenuVariant = (int)ProductMenuVariant.Growth;
+                    current.ChooseSoloNewGame(!Application.isMobilePlatform);
+                }
+            });
+            view.AddControl("新开热餐餐厅", () =>
+            {
+                SoloSavePresentation current = original;
+                if (current != null)
+                {
+                    current.NewMenuVariant = (int)ProductMenuVariant.Hot;
+                    current.ChooseSoloNewGame(!Application.isMobilePlatform);
+                }
+            });
+            view.AddControl("新开甜品餐厅", () =>
+            {
+                SoloSavePresentation current = original;
+                if (current != null)
+                {
+                    current.NewMenuVariant = (int)ProductMenuVariant.Dessert;
+                    current.ChooseSoloNewGame(!Application.isMobilePlatform);
+                }
+            });
+            view.AddControl("新开咖啡餐厅", () =>
+            {
+                SoloSavePresentation current = original;
+                if (current != null)
+                {
+                    current.NewMenuVariant = (int)ProductMenuVariant.Cafe;
+                    current.ChooseSoloNewGame(!Application.isMobilePlatform);
+                }
+            });
+            foreach (var chapter in Tables.Instance.DTRestaurantChapterConfig.DataList.OrderBy(row => row.Id))
+            {
+                int id = chapter.Id; int menu = (int)chapter.MenuVariant;
+                view.AddControl($"新开大关 {id} · {chapter.Name}", () =>
+                {
+                    SoloSavePresentation current = original;
+                    if (current != null)
+                    {
+                        current.NewMenuVariant = menu;
+                        current.ChooseSoloNewGame(!Application.isMobilePlatform, id);
+                    }
+                });
+            }
             view.AddControl("刷新记录", () => { SoloSavePresentation current = original; current?.BrowseSoloSelection(); });
+            view.AddControl("返回模式选择", () =>
+            {
+                SoloSavePresentation current = original;
+                if (current != null)
+                {
+                    ProductBootstrapBridge.ReturnToModeMenu(current.Root().GetComponent<ProductRuntimeComponent>().Config);
+                }
+            });
             for (int index = 0; index < self.Headers.Length; ++index)
             {
                 var header = self.Headers[index];
                 string slot = header.SlotId;
-                string label = $"{(header.RecordKind == SoloSaveRecordKind.ChapterCompleted ? "查看完成" : "继续")} 记录{index + 1} · {(header.RecordKind == SoloSaveRecordKind.ChapterCompleted ? "大关已完成" : "关" + header.NextLevelId)} · {header.Stars}星 · {new DateTime(header.SavedUtcTicks > 0 && header.SavedUtcTicks <= DateTime.MaxValue.Ticks ? header.SavedUtcTicks : 1).ToLocalTime():MM-dd HH:mm}";
+                string label = $"{(header.RecordKind == SoloSaveRecordKind.ChapterCompleted ? "查看完成" : "继续")} 记录{index + 1} · {(header.RecordKind == SoloSaveRecordKind.ChapterCompleted ? RestaurantChapters.Label(header.CompletedLevelId) + " · 已完成" : RestaurantChapters.Label(header.NextLevelId))} · {header.Stars}星 · {new DateTime(header.SavedUtcTicks > 0 && header.SavedUtcTicks <= DateTime.MaxValue.Ticks ? header.SavedUtcTicks : 1).ToLocalTime():MM-dd HH:mm}";
                 view.AddTarget(label, () => { SoloSavePresentation current = original; current?.ChooseSoloSave(slot); });
             }
             if (self.Headers.Length == 0) view.SettlementText.text += "\n当前没有可继续的记录";
         }
 
-        public static void ChooseSoloNewGame(this SoloSavePresentation self, bool persistent)
+        public static void ChooseSoloNewGame(this SoloSavePresentation self, bool persistent, int contentChapterId = 0)
         {
             if (self.Started || self.LoadingSelection || ((UIGridKitchen)self.Hud)?.Available != true) return;
             try
@@ -140,7 +206,14 @@ namespace ET.Client
                 ProductRuntimeComponent runtime = self.Root().GetComponent<ProductRuntimeComponent>();
                 string profile = persistent ? self.Repository().SaveProfile() : null;
                 self.Started = true; self.CloseSoloSelection();
-                if (persistent) runtime.InitializeSavedProduct(profile, menuVariant: self.NewMenuVariant); else runtime.InitializeProduct(menuVariant: self.NewMenuVariant);
+                if (persistent)
+                {
+                    runtime.InitializeSavedProduct(profile, menuVariant: self.NewMenuVariant, contentChapterId: contentChapterId);
+                }
+                else
+                {
+                    runtime.InitializeProduct(menuVariant: self.NewMenuVariant, contentChapterId: contentChapterId);
+                }
             }
             catch (Exception e) { self.Started = false; self.Failure = e.Message; self.OpenSoloSelection(); }
         }

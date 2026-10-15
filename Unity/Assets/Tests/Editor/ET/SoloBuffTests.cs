@@ -19,6 +19,7 @@ namespace ET
             buffer.WriteSize(source.AllowedRenovationIds.Count);foreach(int id in source.AllowedRenovationIds)buffer.WriteInt(id);
             buffer.WriteInt(source.ChapterId); buffer.WriteInt(source.ChapterStage); buffer.WriteBool(source.IsChapterTerminal);
             buffer.WriteInt(source.MenuVariant); buffer.WriteSize(source.AllowedDrinkIds.Count); foreach (int drink in source.AllowedDrinkIds) buffer.WriteInt(drink);
+            WriteLevelUnlockFixture(buffer, source);
             return new DRLevelConfig(buffer);
         }
         private void InstallBuffLevel(DRLevelConfig definition)
