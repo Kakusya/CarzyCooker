@@ -17,7 +17,7 @@ public sealed partial class DRBuffConfig : Luban.BeanBase
     {
         Id = _buf.ReadInt();
         Name = _buf.ReadString();
-        EffectKind = _buf.ReadInt();
+        EffectKind = (StationWorkKind)_buf.ReadInt();
         DurationNumerator = _buf.ReadInt();
         DurationDenominator = _buf.ReadInt();
         BatchRecipeId = _buf.ReadInt();
@@ -42,7 +42,7 @@ public sealed partial class DRBuffConfig : Luban.BeanBase
     /// <summary>
     /// EffectKind
     /// </summary>
-    public readonly int EffectKind;
+    public readonly StationWorkKind EffectKind;
     /// <summary>
     /// DurationNumerator
     /// </summary>

@@ -4,7 +4,8 @@ using MemoryPack;
 
 namespace ET
 {
-    public struct SoloSaveSelectionRequested { }
+    // 本端只读导航上下文；不序列化、不代表已读取或继续记录。
+    public struct SoloSaveSelectionRequested { public string SlotId; public int Revision; }
     public enum SoloSaveRecordKind { Continue = 0, ChapterCompleted = 1 }
     public static class SoloSaveFormat { public const int Current = 12; }
 
@@ -203,7 +204,7 @@ namespace ET
         public readonly System.Collections.Generic.Queue<SoloSaveCompletion> Completions = new();
     }
 
-    public enum SoloSaveState { Ready, Writing, Failed, Committed }
+    public enum SoloSaveState { Ready = 0, Writing = 1, Failed = 2, Committed = 3 }
 
     [ChildOf(typeof(Match))]
     public sealed class SoloSaveResult : Entity, IAwake<SoloSaveHeader, SoloSavePayload, ProductCommandContext>

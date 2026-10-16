@@ -52,7 +52,7 @@ namespace ET
                     return "RequiresSupplyPackageAction";
                 }
             }
-            if (Tables.Instance.DTGridItemConfig.Get(content.DefinitionId).Form != (int)GridMaterialForm.Solid)
+            if (Tables.Instance.DTGridItemConfig.Get(content.DefinitionId).Form != GridMaterialForm.Solid)
             {
                 return "RequiresSolidContent";
             }

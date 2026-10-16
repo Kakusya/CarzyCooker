@@ -18,7 +18,7 @@ namespace ET
             buffer.WriteInt(count??source.CandidateCount);buffer.WriteBool(required??source.RequireBuffChoice);
             buffer.WriteSize(source.AllowedRenovationIds.Count);foreach(int id in source.AllowedRenovationIds)buffer.WriteInt(id);
             buffer.WriteInt(source.ChapterId); buffer.WriteInt(source.ChapterStage); buffer.WriteBool(source.IsChapterTerminal);
-            buffer.WriteInt(source.MenuVariant); buffer.WriteSize(source.AllowedDrinkIds.Count); foreach (int drink in source.AllowedDrinkIds) buffer.WriteInt(drink);
+            buffer.WriteInt((int)(source.MenuVariant)); buffer.WriteSize(source.AllowedDrinkIds.Count); foreach (int drink in source.AllowedDrinkIds) buffer.WriteInt(drink);
             WriteLevelUnlockFixture(buffer, source);
             return new DRLevelConfig(buffer);
         }
@@ -50,10 +50,10 @@ namespace ET
         [Test]
         public void SoloBuffConfigActualSourceHasThreeCookingVariantsAndRequiredTwoCandidates()
         {
-            BuffConfig.ValidateAll();Assert.That(Tables.Instance.DTBuffConfig.DataList.Count,Is.EqualTo(5));
+            BuffConfig.ValidateAll();Assert.That(Tables.Instance.DTBuffConfig.DataList.Count,Is.EqualTo(18));
             foreach(DRBuffConfig row in Tables.Instance.DTBuffConfig.DataList.Where(row => row.Id <= 3))
             {Assert.That(row.EffectKind,Is.EqualTo(1));Assert.That(row.BatchRecipeId,Is.EqualTo(1));Assert.That(row.DurationNumerator,Is.LessThan(row.DurationDenominator));}
-            foreach(DRLevelConfig row in Tables.Instance.DTLevelConfig.DataList)
+            foreach(DRLevelConfig row in Tables.Instance.DTLevelConfig.DataList.Where(row => row.MenuVariant <= ProductMenuVariant.Drink))
             {Assert.That(row.RequireBuffChoice,Is.True);Assert.That(row.CandidateCount,Is.EqualTo(2));Assert.That(row.AllowedBuffIds,Is.EqualTo(new[]{1,2,3,4,5}));}
             StartSolo(liveBuff:true);Assert.That(Buff.Parent,Is.SameAs(CurrentLevel));Assert.That(Buff.SelectedId,Is.Zero);
         }
@@ -171,6 +171,7 @@ namespace ET
         public void SoloBuffCookingScaleRoundsUpAndKeepsAtLeastOneTick(int baseTicks,int numerator,int denominator,int expected)
         {Assert.That(BuffConfig.ScaleTicks(baseTicks,numerator,denominator),Is.EqualTo(expected));}
         [Test]
+        [Category("ProductSemanticEnums")]
         public void SoloBuffCookingNewRealSoupFreezesSelectedDurationAndPausesNormally()
         {
             InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(101), pool: new[] { 1, 2, 3 }));

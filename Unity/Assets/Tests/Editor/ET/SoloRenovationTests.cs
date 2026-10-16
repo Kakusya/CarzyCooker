@@ -104,6 +104,7 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductEnumDirectionAndLegacy")]
         public void SoloRenovationInstallKeepsContainerManualIdentityAndOnlyAddsOneStationOnReplay()
         {
             StartSolo(); ClientSessionComponent client = host.Client; long bowl = PrepEggBowl(client);

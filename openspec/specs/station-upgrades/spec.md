@@ -49,7 +49,20 @@ Solo 与已接入升级的合作非终关装修 SHALL 可提供匹配现有加�
 - **WHEN** Host 已完成升级，原成员随后合法恢复
 - **THEN** 恢复端读取同一等级和工位身份，不新增升级或重算作业
 
+### Requirement: 已交付加工工位可单级升级
+灶台、榨汁机、煎台、搅拌机、磨豆机、咖啡机和蒸汽机 SHALL 沿既有关间装修提供同占地单级升级，设备能力须匹配实际加工类别；升级只改变后续该设备上的匹配作业耗时。原工位身份、载具、内容、旧作业和合作权限保持。
+
+#### Scenario: 升级具有两种加工模式的蒸汽机
+- **WHEN** 合法选择并安装蒸汽机升级
+- **THEN** 新热奶和打泡均使用升级比例，已开始作业保持原冻结耗时
+
+#### Scenario: 升级后保存并恢复
+- **WHEN** 成功检查点或合作结果领取后恢复该餐厅
+- **THEN** 读取同一等级和物资状态，不重发奖励或再次缩短已保存作业
+
 ## Sources
+
+- [新增设备升级与保存验收](../../changes/archive/2026-10-16-extended-station-upgrades/execution-notes.md)。
 
 - [合作扩展与实际运行](../../changes/archive/2026-10-15-cooperative-station-upgrades/execution-notes.md)。
 - [升级设计](../../changes/archive/2026-10-14-interlevel-station-upgrade/design.md)。

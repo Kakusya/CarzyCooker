@@ -66,7 +66,7 @@ namespace ET
             long jug = batch.PotItemId; var juicer = PrepStation("榨汁机"); Pump(30);
             var view = remote.GetComponent<GridClientComponent>();
             Assert.That(view.AutoProcesses[batch.Id].LockContainer, Is.True);
-            Assert.That(view.AutoProcesses[batch.Id].RequiredCapability, Is.EqualTo((int)GridStationCapability.Juice));
+            Assert.That(view.AutoProcesses[batch.Id].RequiredCapability, Is.EqualTo(GridStationCapability.Juice));
             PrepDo(remote, GridAction.TakeCounter, juicer.Id, jug, rejection: "ProcessLocked");
             AdvanceTicks(batch.RequiredTicks + 1); Pump(30);
             PrepDo(remote, GridAction.TakeCounter, juicer.Id, jug); PrepDo(remote, GridAction.PlaceCounter, PrepStation("果汁壶台").Id, jug);

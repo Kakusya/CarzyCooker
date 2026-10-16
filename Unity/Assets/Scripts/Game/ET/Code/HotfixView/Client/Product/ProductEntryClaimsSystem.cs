@@ -19,6 +19,8 @@ namespace ET.Client
             self.ProgressVisible = false; self.Busy = false; self.Suspended = false;
             self.ProgressFeedback = self.Failure = null;
             self.ClaimRows = Array.Empty<ProgressTicketSummary>();
+            self.ClaimFilter = ClaimListFilter.All;
+            self.ClaimDetailTicketId = self.ClaimDestinationSlot = null;
             ClientSessionComponent client = self.Root().GetComponent<ProductRuntimeComponent>().Client;
             if (client != null)
             {
@@ -69,7 +71,9 @@ namespace ET.Client
             view.ClockText.text = "本机独立分支";
             view.HintText.text = "主动领取会新建记录；每个结果在本机只领取一次";
             view.StatusText.text = self.Failure ?? self.ProgressFeedback ?? "收到凭证后可领取；正常结束整个房间会关闭未领取资格";
-            view.SettlementText.text = self.ClaimRows.Length == 0 ? "暂无已持久化的合作凭证" : "已领取记录可从单机记录或房间的存档入口继续";
+            view.SettlementText.text = self.Failure != null ? "查询或操作未成功；请重试确认实际记录" :
+                self.ClaimRows.Length == 0 ? "暂无已持久化的合作凭证" : "已领取记录可从单机记录或房间的存档入口继续";
+            view.ClockText.text = self.ClaimInboxCaption();
             if (self.Busy)
             {
                 view.StatusText.text = "正在查询或保存…";
@@ -83,21 +87,50 @@ namespace ET.Client
                 return;
             }
             self.ClaimsButton(view, "刷新领取状态", current => current.BrowseClaims());
-            self.ClaimsButton(view, "身份与授权文件", current => { current.ProgressVisible = true; current.RenderProductEntry(); });
+            self.ClaimsButton(view, "身份与授权文件", current => current.NavigateAuthorizationTask(AuthorizationViewTask.Home));
+            if (self.ClaimInboxState == ClaimInboxDisplayState.Failed)
+            {
+                self.ClaimsButton(view, "返回经营或房间", current => current.CloseClaims());
+                return;
+            }
+            if (self.ClaimDetailTicketId != null && self.RenderClaimDetail(view))
+            {
+                return;
+            }
+            self.AddClaimFilters(view);
+            if (self.AuthorizationTask == AuthorizationViewTask.ReplaceRecord)
+            {
+                view.SettlementText.text = "替换我的记录 · 第1步\n选择仍可领取的合作结果，再查看目标和当前修订；最后单独确认有损操作。";
+                if (self.AuthorizationResultSlot != null)
+                {
+                    view.SettlementText.text = "有损替换已提交\n目标归属：" + self.AuthorizationResultProfile + "\n本机记录：" + self.AuthorizationResultSlot +
+                        "\n当前修订：" + self.AuthorizationResultRevision + "\n旧进度不能恢复；可重新选择其他可领取结果。";
+                }
+                self.ClaimsButton(view, "返回任务选择", current => current.NavigateAuthorizationTask(AuthorizationViewTask.Home));
+            }
             foreach (var row in self.ClaimRows)
             {
+                if (!ClaimMatchesFilter(row, self.ClaimFilter))
+                {
+                    continue;
+                }
                 string ticketId = row.TicketId;
                 string title = "第 " + row.CompletedLevelId + " 关 · " + row.Score + " 分 · " + row.TicketId.Substring(0, 6);
+                self.ClaimsButton(view, "查看结果 " + title, current => current.OpenClaimDetail(ticketId), true);
                 switch (row.State)
                 {
                     case ProgressReceiptState.Available:
-                        self.ClaimsButton(view, "领取新档 " + title, current => current.ClaimProgress(ticketId), true);
+                        if (self.AuthorizationTask != AuthorizationViewTask.ReplaceRecord)
+                        {
+                            self.ClaimsButton(view, "领取新档 " + title, current => current.ClaimProgress(ticketId), true);
+                        }
                         self.ClaimsButton(view, "选择有损替换 " + title, current => current.ChooseReplaceTarget(ticketId), true);
                         break;
                     case ProgressReceiptState.Claimed:
                         self.ClaimsButton(view, "已领取 " + title, current =>
                         {
                             current.ProgressFeedback = "已领取至 " + row.SlotId;
+                            current.ClaimDetailTicketId = ticketId;
                             current.RenderProductEntry();
                         }, true);
                         break;
@@ -105,6 +138,7 @@ namespace ET.Client
                         self.ClaimsButton(view, "已关闭 " + title, current =>
                         {
                             current.ProgressFeedback = "本机已记录整个房间正常结束，此资格已关闭";
+                            current.ClaimDetailTicketId = ticketId;
                             current.RenderProductEntry();
                         }, true);
                         break;
@@ -135,6 +169,7 @@ namespace ET.Client
             }
             hud.GetAsyncOwner().Run(async context =>
             {
+                bool querying = false;
                 try
                 {
                     if (operation == ProgressRepositoryOperation.Claim)
@@ -143,15 +178,27 @@ namespace ET.Client
                             { value.Operation = (int)ProgressRepositoryOperation.Claim; value.Id = ticket; }), response => ProgressClaimCodec.Decode<ProgressCommitReceipt>(((ProgressRepositoryResponse)response).Receipt));
                         Current().ProgressFeedback = "已领取至 " + header.SlotId;
                     }
+                    querying = true;
                     var rows = await Current().ProgressRepositoryCall(context, ProductMessages.Create<ProgressRepositoryRequest>(value => value.Operation = (int)ProgressRepositoryOperation.Browse),
                         response => ((ProgressRepositoryResponse)response).Documents.Select(ProgressClaimCodec.Decode<ProgressTicketSummary>).ToArray());
                     Current().ClaimRows = rows;
                     Current().ClaimsNeedsRefresh = false;
+                    Current().AcceptClaimInboxRows(rows);
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception exception)
                 {
-                    try { Current().Failure = ProgressError(exception.Message); }
+                    try
+                    {
+                        var current = Current();
+                        current.Failure = ProgressError(exception.Message);
+                        if (querying)
+                        {
+                            current.ClaimRows = Array.Empty<ProgressTicketSummary>();
+                            current.ClaimDetailTicketId = null;
+                            current.FailClaimInbox(exception.Message);
+                        }
+                    }
                     catch (OperationCanceledException) { }
                 }
                 finally
@@ -241,7 +288,7 @@ namespace ET.Client
                     self = original;
                     if (self != null && self.Epoch == epoch)
                     {
-                        self.Busy = self.ClosingMatch = false;
+                        self.Busy = self.ClosingMatch = self.LeavePending = false;
                         self.RenderProductEntry();
                     }
                 }
@@ -256,6 +303,7 @@ namespace ET.Client
         protected override UniTask Run(Scene scene, ProgressInboxChanged args)
         {
             var entry = scene.GetComponent<ProductEntryPresentation>();
+            entry?.InvalidateClaimInbox();
             if (entry?.ClaimsVisible == true)
             {
                 entry.ClaimsNeedsRefresh = true;

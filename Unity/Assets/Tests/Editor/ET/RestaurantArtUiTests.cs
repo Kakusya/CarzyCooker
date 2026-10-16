@@ -21,7 +21,7 @@ namespace ET
         [Category("RestaurantArtFinal")]
         public IEnumerator RestaurantArtAllDefinitionsDirectionsAndLayeredContentsFollowProjection()
         {
-            yield return StartLauncher(menuVariant:1);
+            yield return StartLauncher(menuVariant:ProductMenuVariant.Drink);
             yield return null;
             Assert.That(ArtMap<long>("chairs").Count,Is.EqualTo(Grid.Tables.Count));
             foreach(GridTableProjection table in Grid.Tables.Values)
@@ -59,13 +59,13 @@ namespace ET
             {
                 for(int facing=0;facing<4;++facing)
                 {
-                    counters[7001]=new GridStationProjection(7001,cell,"美术工位",0,kind,orientation:facing);
+                    counters[7001]=new GridStationProjection(7001,cell,"美术工位",0,kind,orientation:(GridOrientation)facing);
                     Render(100);
                     Assert.That(stationRects.Add(ArtMap<long>("stations")[7001].sprite.rect),Is.True,"Each station direction uses its own view");
                 }
             }
             Assert.That(stationRects.Count,Is.EqualTo(64));
-            counters[7001]=new GridStationProjection(7001,cell,"美术灶台",8106,GridStationKind.Stove,orientation:1,
+            counters[7001]=new GridStationProjection(7001,cell,"美术灶台",8106,GridStationKind.Stove,orientation:GridOrientation.CounterClockwise90,
                 footprint:new[]{cell,new GridCell(4,12)},upgradeLevel:1);
             objects[8105]=new GridItemProjection(8105,"碗",GridItemLocation.Hand,1,cell,new long[]{8104},5);
             objects[8106]=new GridItemProjection(8106,"煮锅",GridItemLocation.Counter,7001,cell,new long[]{8102,8204},6,autoProcess:9001);
@@ -73,7 +73,7 @@ namespace ET
             objects[8102]=new GridItemProjection(8102,"番茄块",GridItemLocation.Container,8106,cell,Array.Empty<long>(),2);
             objects[8204]=new GridItemProjection(8204,"第二份蛋液",GridItemLocation.Container,8106,cell,Array.Empty<long>(),4);
             automatic[9001]=new GridAutoProcessProjection(9001,1,8106,7001,0,120,60,7,2,2,5,GridAutoState.Cooking,new long[]{8102,8204});
-            people[1]=new GridActorProjection(1,1,cell,new GridCell(4,12),100,GridMotion.Transit,1,8105,new GridCell(4,12),Array.Empty<GridCell>(),0,default,null);
+            people[1]=new GridActorProjection(1,1,cell,new GridCell(4,12),100,GridMotion.Transit,GridFacing.Right,8105,new GridCell(4,12),Array.Empty<GridCell>(),0,default,null);
             Render(101);
             var bowl=views[8105];var pot=views[8106];var actor=ArtMap<int>("actors")[1];var station=ArtMap<long>("stations")[7001];
             Assert.That(ArtMap<long>("contents")[8105].enabled,Is.True);

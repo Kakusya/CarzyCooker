@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace ET.Client
 {
+    [FriendOf(typeof(ProductEntryPresentation))]
     public static partial class GridPresentationSystem
     {
         // 逐项比较原结构键的字段，列表长度也参与比较；只保留显示依赖，不序列化世界状态。
@@ -41,7 +42,24 @@ namespace ET.Client
             Field(own.HandItemId);Field(own.WorkId);Field(own.FrontWorkId);Field(own.FrontClaimSerial);
             Flag(self.DetailsVisible);Flag(self.OrdersVisible);Field(self.RecipeDishId);Flag(self.RecipeVisible);Flag(self.FirstOrderGuideVisible);
             Field((int)self.CompanionChat);
+            Field((int)self.OverviewPage);
+            Field((int)self.HelpTopic); Field(self.HelpSerial);
+            Field(self.ActionAdviceSerial);
+            // 说明入口及其回调绑定当前反馈；终态变化即使未改变实物也需更新。
+            Field(grid.LastCommandId, grid.LastReason); Field((int)grid.LastStatus);
+            Flag(self.StationInspectionGeometryVisible); Flag(self.StationInspectionDetailsVisible);
+            Field(self.RenovationPreviewId); Field(self.RenovationPreviewStationId); Field(self.RenovationPreviewExpectedLevel);
+            Field(self.RenovationPreviewVersion); Field(self.RenovationPreviewLevelId); Field(self.RenovationPreviewGeneration);
+            Field(self.RecipeOrderId, self.OrderNavigationFeedback); Field(self.RecipeItemId); Flag(self.OrderRecipeDetailsVisible);
+            Field(0,self.ItemLocatorQuery); Flag(self.ItemLocatorKind.HasValue);
+            Flag(self.ItemLocatorDetailsVisible);
+            if (self.ItemLocatorKind.HasValue)
+            {
+                Field((int)self.ItemLocatorKind.Value);
+            }
+            Field(self.SupplyOverviewSourceId); Field(self.SupplyOverviewShipmentId);
             Flag(self.RoomControlPending);
+            Field(self.Root().GetComponent<ProductEntryPresentation>()?.ClaimInboxVersion ?? 0);
             Flag(grid.CanControlRestaurant);Field(grid.BuffDrawVersion);Field(grid.SelectedBuffId);Flag(grid.RequireBuffChoice);Flag(self.BuffCandidatesVisible);
             Field(grid.BuffCandidates.Count);for(int i=0;i<grid.BuffCandidates.Count;i++)Field(grid.BuffCandidates[i]);
             Field(grid.AllowedDishIds.Count);for(int i=0;i<grid.AllowedDishIds.Count;i++)Field(grid.AllowedDishIds[i]);
@@ -50,7 +68,7 @@ namespace ET.Client
             foreach(var station in grid.Stations.Values)
             {
                 Field(station.Id,station.Name);Field(station.ItemId);Field(station.Cell.X);Field(station.Cell.Y);Field((int)station.Kind);
-                Field(station.Orientation);Field(station.AutoProcessId);Field(station.BakeProcessId);Field((int)station.Capabilities);
+                Field((int)station.Orientation);Field(station.AutoProcessId);Field(station.BakeProcessId);Field((int)station.Capabilities);
                 Field(station.UpgradeDefinitionId);Field(station.UpgradeLevel);Field(station.WaterDefinitionId);Field(station.WaterUnits);
                 Field(station.PoolItemIds.Count);for(int i=0;i<station.PoolItemIds.Count;i++)Field(station.PoolItemIds[i]);
             }
@@ -85,7 +103,7 @@ namespace ET.Client
             Field(grid.AutoProcesses.Count);
             foreach(var work in grid.AutoProcesses.Values)
             {
-                Field(work.Id);Field((int)work.State);Field(work.RemainingPortions);Field(work.PotItemId);Flag(work.LockContainer);Field(work.RequiredCapability);
+                Field(work.Id);Field((int)work.State);Field(work.RemainingPortions);Field(work.PotItemId);Flag(work.LockContainer);Field((int)work.RequiredCapability);
             }
             Field(grid.BakeProcesses.Count);
             foreach(var work in grid.BakeProcesses.Values){Field(work.Id);Field((int)work.State);Field(work.StationId);Field(work.InputItemId);}
@@ -114,6 +132,7 @@ namespace ET.Client
             }
             Flag(grid.SaveEnabled);Field((int)grid.SaveState,grid.SaveResultId);
             Flag(grid.CooperativeSave);Flag(grid.RenovationSelectionFinalized);
+            Field(grid.NextLevelConfigId);
             return EndDisplayFields(self.HudActionFields,index,changed);
         }
 
@@ -122,6 +141,32 @@ namespace ET.Client
             int index=0;bool changed=actionsChanged || !self.HudInformationValid;
             void Field(long number,string text=null)=>DisplayField(self.HudInformationFields,ref index,ref changed,number,text);
             Field((int)grid.LastStatus,grid.LastReason);Field(0,self.Failure);Field(0,grid.SaveFailure);Field(0,grid.RenovationFailure);
+            Field(self.ItemLocatorSelectedId);
+            Field(self.FrontWorkboardSelectedId);
+            if (self.OverviewPage == GridOverviewPage.FrontWork)
+            {
+                Field(grid.Tables.Count);
+                foreach (var table in grid.Tables.Values)
+                {
+                    Field(table.Id); Field((int)table.State); Field(table.CustomerId);
+                }
+                Field(grid.Customers.Count);
+                foreach (var customer in grid.Customers.Values)
+                {
+                    Field(customer.Id); Field((int)customer.Phase); Field(customer.ArrivalSequence);
+                }
+                foreach (var work in grid.FrontWorks.Values)
+                {
+                    Field(work.FrozenTicks); Field((int)work.WorkerKind);
+                }
+            }
+            if (self.OverviewPage == GridOverviewPage.Items)
+            {
+                foreach (var actor in grid.Actors.Values)
+                {
+                    Field(actor.MemberId); Field(actor.Cell.X); Field(actor.Cell.Y);
+                }
+            }
             Field(grid.LevelScore);Field(grid.LevelStars);Field(grid.ServedOrders);Field(grid.UnfulfilledOrders);
             Field(grid.LevelOperatingTicks);Field(grid.TickMilliseconds);
             Field((long)Math.Round(Math.Max(0,grid.LevelOperatingTicks-grid.LevelElapsedTicks)*grid.TickMilliseconds/100d,MidpointRounding.AwayFromZero));

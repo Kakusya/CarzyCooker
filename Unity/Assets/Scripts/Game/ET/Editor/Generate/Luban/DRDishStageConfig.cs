@@ -18,6 +18,7 @@ public sealed class DRDishStageConfig :  Luban.EditorBeanBase
 {
     public DRDishStageConfig()
     {
+            Kind = DishStageKind.Raw;
             DependencyIds = new System.Collections.Generic.List<int>();
     }
 
@@ -35,7 +36,7 @@ public sealed class DRDishStageConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["Kind"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  Kind = _fieldJson;
+                if(_fieldJson.IsString) { Kind = (DishStageKind)System.Enum.Parse(typeof(DishStageKind), _fieldJson); } else if(_fieldJson.IsNumber) { Kind = (DishStageKind)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -79,7 +80,7 @@ public sealed class DRDishStageConfig :  Luban.EditorBeanBase
             _json["Id"] = new JSONNumber(Id);
         }
         {
-            _json["Kind"] = new JSONNumber(Kind);
+            _json["Kind"] = new JSONNumber((int)Kind);
         }
         {
             _json["RecipeId"] = new JSONNumber(RecipeId);
@@ -117,7 +118,7 @@ public sealed class DRDishStageConfig :  Luban.EditorBeanBase
     /// <summary>
     /// Kind
     /// </summary>
-    public int Kind;
+    public DishStageKind Kind;
 
     /// <summary>
     /// RecipeId

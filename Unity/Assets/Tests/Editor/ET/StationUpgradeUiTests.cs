@@ -21,7 +21,7 @@ namespace ET
                 var header = SelectionHeader(profile); header.CompletedLevelId = 101; header.NextLevelId = 102;
                 repository.Commit(header, SelectionFixture()); Selection.OpenSoloSelection();
                 yield return Wait(() => ((UIGridKitchen)Selection.Hud)?.Available == true && Selection.Headers.Length == 1, "Actual upgrade fixture selector");
-                Pointer(SelectionSlotButton(header.SlotId)); yield return Wait(() => Presentation?.Ready == true, "Actual file begins second level");
+                yield return InspectAndContinueSave(header.SlotId); yield return Wait(() => Presentation?.Ready == true, "Actual file begins second level");
                 string buff = Hud.GetComponentsInChildren<Button>(false).First(b => b.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
                 yield return Command(buff); yield return Command("开始营业");
                 yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed && Grid.UpgradeTargets.Count > 0, "Actual upgrade targets arrive after natural drain", 75);

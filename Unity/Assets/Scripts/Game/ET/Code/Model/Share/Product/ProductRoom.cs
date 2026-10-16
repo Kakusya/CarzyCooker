@@ -3,20 +3,16 @@ using System;
 
 namespace ET
 {
-    public enum ProductRoomAction
-    {
-        StartRestaurant = 1,
-        CloseRestaurant = 2
-    }
+    public enum ProductRoomAction { StartRestaurant = 1, CloseRestaurant = 2 }
 
     public readonly struct ProductRoomIntent : IEquatable<ProductRoomIntent>
     {
         public readonly long Version;
         public readonly ProductRoomAction Action;
-        public readonly int MenuVariant;
+        public readonly ProductMenuVariant MenuVariant;
         public readonly int ContentChapterId;
 
-        public ProductRoomIntent(long version, ProductRoomAction action, int menuVariant, int contentChapterId = 0)
+        public ProductRoomIntent(long version, ProductRoomAction action, ProductMenuVariant menuVariant, int contentChapterId = 0)
         {
             Version = version;
             Action = action;
@@ -32,7 +28,8 @@ namespace ET
     {
         public readonly string MatchId, WorldId;
         public readonly long BindingGeneration, Version, WorldGeneration;
-        public readonly int MemberId, MenuVariant;
+        public readonly int MemberId;
+        public readonly ProductMenuVariant MenuVariant;
         public readonly bool CanControlRoom;
         public readonly string VerifiedProfileId, BaselineOwnerId, BaselineSlotId;
         public readonly int BaselineRevision;
@@ -47,7 +44,7 @@ namespace ET
             Version = snapshot.RoomVersion;
             WorldId = snapshot.WorldId;
             WorldGeneration = snapshot.WorldGeneration;
-            MenuVariant = snapshot.MenuVariant;
+            MenuVariant = (ProductMenuVariant)snapshot.MenuVariant;
             CanControlRoom = snapshot.CanControlRoom;
             VerifiedProfileId = snapshot.VerifiedProfileId;
             BaselineOwnerId = snapshot.BaselineOwnerId;

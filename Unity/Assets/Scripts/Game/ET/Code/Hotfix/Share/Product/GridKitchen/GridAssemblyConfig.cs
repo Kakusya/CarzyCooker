@@ -68,11 +68,11 @@ namespace ET
                 recipe.InputDefinitionIds.Distinct().Count() != recipe.InputDefinitionIds.Count || recipe.InputCounts.Any(count => count <= 0) ||
                 recipe.InputDefinitionIds.Contains(recipe.OutputDefinitionId) ||
                 recipe.LastInputDefinitionId != 0 && (!recipe.InputDefinitionIds.Contains(recipe.LastInputDefinitionId) || recipe.InputCounts[recipe.InputDefinitionIds.IndexOf(recipe.LastInputDefinitionId)] != 1) ||
-                !items.TryGetValue(recipe.OutputDefinitionId, out var output) || output.Kind != 1 ||
-                !items.TryGetValue(recipe.ContainerDefinitionId, out var carrier) || carrier.Kind != 2 ||
+                !items.TryGetValue(recipe.OutputDefinitionId, out var output) || output.Kind != GridItemKind.Material ||
+                !items.TryGetValue(recipe.ContainerDefinitionId, out var carrier) || carrier.Kind != GridItemKind.Container ||
                 !carrier.AcceptedDefinitionIds.Contains(output.Id) || recipe.InputCounts.Sum() > carrier.ContainerCapacity ||
-                recipe.InputDefinitionIds.Any(id => !items.TryGetValue(id, out var input) || input.Kind != 1 ||
-                    (input.Form != (int)GridMaterialForm.Solid && !(carrier.Id == GridKitchenRules.HotDrinkCup && input.Form == (int)GridMaterialForm.Liquid)) || !carrier.AcceptedDefinitionIds.Contains(id)))
+                recipe.InputDefinitionIds.Any(id => !items.TryGetValue(id, out var input) || input.Kind != GridItemKind.Material ||
+                    (input.Form != GridMaterialForm.Solid && !(carrier.Id == GridKitchenRules.HotDrinkCup && input.Form == GridMaterialForm.Liquid)) || !carrier.AcceptedDefinitionIds.Contains(id)))
             {
                 throw new InvalidOperationException("Invalid assembly recipe / quantities / carrier");
             }

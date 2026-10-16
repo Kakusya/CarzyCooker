@@ -59,7 +59,7 @@ namespace ET
                     !peer.EntryOpen || peer.Closing ? "EntryClosed"
                 : authority.CommitRoom(peer, new ProductCommandContext(request.MatchId, string.Empty, 0, 0, 0,
                         request.BindingGeneration, request.CommandId),
-                    new ProductRoomIntent(request.ExpectedRoomVersion, (ProductRoomAction)request.Action, request.MenuVariant, request.ContentChapterId));
+                    new ProductRoomIntent(request.ExpectedRoomVersion, (ProductRoomAction)request.Action, (ProductMenuVariant)request.MenuVariant, request.ContentChapterId));
             response.Error = error == null ? 0 : ProductError.InvalidRequest;
             response.Message = error ?? peer.LastCommandReason;
             response.Status = (int)(error == null ? peer.LastCommandStatus : GridResultStatus.Rejected);

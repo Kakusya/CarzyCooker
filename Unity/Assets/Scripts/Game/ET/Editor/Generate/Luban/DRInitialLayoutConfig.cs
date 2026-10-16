@@ -18,7 +18,9 @@ public sealed class DRInitialLayoutConfig :  Luban.EditorBeanBase
 {
     public DRInitialLayoutConfig()
     {
+            Orientation = GridOrientation.Unrotated;
             Name = "";
+            MenuVariant = ProductMenuVariant.Basic;
     }
 
     public override void LoadJson(JSONObject _json)
@@ -59,7 +61,7 @@ public sealed class DRInitialLayoutConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["Orientation"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  Orientation = _fieldJson;
+                if(_fieldJson.IsString) { Orientation = (GridOrientation)System.Enum.Parse(typeof(GridOrientation), _fieldJson); } else if(_fieldJson.IsNumber) { Orientation = (GridOrientation)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -83,7 +85,7 @@ public sealed class DRInitialLayoutConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["MenuVariant"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  MenuVariant = _fieldJson;
+                if(_fieldJson.IsString) { MenuVariant = (ProductMenuVariant)System.Enum.Parse(typeof(ProductMenuVariant), _fieldJson); } else if(_fieldJson.IsNumber) { MenuVariant = (ProductMenuVariant)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -104,7 +106,7 @@ public sealed class DRInitialLayoutConfig :  Luban.EditorBeanBase
             _json["Y"] = new JSONNumber(Y);
         }
         {
-            _json["Orientation"] = new JSONNumber(Orientation);
+            _json["Orientation"] = new JSONNumber((int)Orientation);
         }
         {
 
@@ -115,7 +117,7 @@ public sealed class DRInitialLayoutConfig :  Luban.EditorBeanBase
             _json["InitialItemDefinitionId"] = new JSONNumber(InitialItemDefinitionId);
         }
         {
-            _json["MenuVariant"] = new JSONNumber(MenuVariant);
+            _json["MenuVariant"] = new JSONNumber((int)MenuVariant);
         }
     }
 
@@ -154,7 +156,7 @@ public sealed class DRInitialLayoutConfig :  Luban.EditorBeanBase
     /// <summary>
     /// Orientation
     /// </summary>
-    public int Orientation;
+    public GridOrientation Orientation;
 
     /// <summary>
     /// Name
@@ -169,7 +171,7 @@ public sealed class DRInitialLayoutConfig :  Luban.EditorBeanBase
     /// <summary>
     /// MenuVariant
     /// </summary>
-    public int MenuVariant;
+    public ProductMenuVariant MenuVariant;
 
 }
 }

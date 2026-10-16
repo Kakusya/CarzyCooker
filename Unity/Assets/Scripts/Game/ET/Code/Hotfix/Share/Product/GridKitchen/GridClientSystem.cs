@@ -85,13 +85,24 @@ namespace ET
             if (self.LevelGeneration > 0 && (snapshot.LevelGeneration < self.LevelGeneration ||
                 snapshot.LevelGeneration == self.LevelGeneration && snapshot.LevelId != self.LevelId)) return;
             // 先完整复制再安装；不保留 wire DTO、Host EntityRef 或消息集合。
+            // Validate integer wire values before installing any part of the projection.
+            if (snapshot.Actors.Any(value => (GridFacing)value.Facing is < GridFacing.Up or > GridFacing.Left) ||
+                snapshot.Stations.Any(value => (GridOrientation)value.Orientation is < GridOrientation.Unrotated or > GridOrientation.CounterClockwise270 ||
+                    Tables.Instance.DTStationConfig.GetOrDefault(value.DefinitionId) is not { } definition ||
+                    (GridStationKind)value.Kind != definition.Kind || (GridStationCapability)value.Capabilities != definition.Capabilities) ||
+                snapshot.Items.Any(value => (GridMaterialForm)value.Form is not (GridMaterialForm.Solid or GridMaterialForm.Liquid or GridMaterialForm.Container)) ||
+                snapshot.AutoProcesses.Any(value => (GridStationCapability)value.RequiredCapability is not
+                    (GridStationCapability.Cook or GridStationCapability.Juice or GridStationCapability.Mixing or GridStationCapability.Extract or GridStationCapability.HeatMilk or GridStationCapability.FoamMilk)))
+            {
+                return;
+            }
             var actors = snapshot.Actors.ToDictionary(value => value.MemberId, value => new GridActorProjection(value.MemberId, value.Generation,
                 new GridCell(value.X, value.Y), new GridCell(value.NextX, value.NextY), value.StepStartTick, (GridMotion)value.Motion,
-                value.Facing, value.HandItemId, new GridCell(value.GoalX, value.GoalY),
+                (GridFacing)value.Facing, value.HandItemId, new GridCell(value.GoalX, value.GoalY),
                 Array.AsReadOnly(value.Path.Select(cell => new GridCell(cell.X, cell.Y)).ToArray()), value.LastCommandId, (GridResultStatus)value.LastStatus, value.LastReason, value.WorkId, value.FrontWorkId, value.FrontClaimSerial));
             var stations = snapshot.Stations.ToDictionary(value => value.StationId, value => new GridStationProjection(value.StationId,
                 new GridCell(value.X, value.Y), value.Name, value.ItemId, (GridStationKind)value.Kind, value.AutoProcessId,
-                value.DefinitionId, value.Orientation, value.ItemSlotCapacity, (GridStationCapability)value.Capabilities,
+                value.DefinitionId, (GridOrientation)value.Orientation, value.ItemSlotCapacity, (GridStationCapability)value.Capabilities,
                 Array.AsReadOnly(value.Footprint.Select(cell => new GridCell(cell.X, cell.Y)).ToArray()),
                 Array.AsReadOnly(value.Approaches.Select(cell => new GridCell(cell.X, cell.Y)).ToArray()), value.BakeProcessId, Array.AsReadOnly(value.PoolItemIds.ToArray()), value.WaterDefinitionId, value.WaterUnits, value.UpgradeDefinitionId, value.UpgradeLevel));
             var items = snapshot.Items.ToDictionary(value => value.ItemId, value => new GridItemProjection(value.ItemId, value.Name, (GridItemLocation)value.Location,
@@ -99,7 +110,7 @@ namespace ET
             var processes = snapshot.Processes.ToDictionary(v => v.ProcessId, v => new GridProcessProjection(v.ProcessId, v.RecipeId, v.InputItemId, v.TargetItemId, v.StationId, v.RequiredTicks, v.ProgressTicks, (GridWorkState)v.State, v.WorkerMemberId, v.WorkerGeneration, v.OutputItemId));
             var automatic = snapshot.AutoProcesses.ToDictionary(value => value.ProcessId, value => new GridAutoProcessProjection(value.ProcessId, value.RecipeId,
                 value.PotItemId, value.StartStationId, value.StartedTick, value.RequiredTicks, value.ProgressTicks, value.OutputDefinitionId,
-                value.TotalPortions, value.RemainingPortions, value.ServingContainerDefinitionId, (GridAutoState)value.State, Array.AsReadOnly(value.InputItemIds.ToArray()), value.RequiredCapability, value.LockContainer));
+                value.TotalPortions, value.RemainingPortions, value.ServingContainerDefinitionId, (GridAutoState)value.State, Array.AsReadOnly(value.InputItemIds.ToArray()), (GridStationCapability)value.RequiredCapability, value.LockContainer));
             var baking = snapshot.BakeProcesses.ToDictionary(value => value.ProcessId, value => new GridBakeProjection(value.ProcessId, value.RecipeId,
                 value.StationId, value.InputItemId, value.OutputDefinitionId, value.RequiredTicks, value.ProgressTicks, value.OutputItemId, (GridBakeState)value.State, value.StartedTick, value.CarrierItemId));
             var companions = snapshot.Companions.ToDictionary(value => value.RoleId, value => new GridCompanionProjection(value));
@@ -345,7 +356,7 @@ namespace ET
         public static string ItemDescription(this GridClientComponent self, long id)
         {
             if (!self.Items.TryGetValue(id, out GridItemProjection item)) return "空";
-            string description = item.Name + (Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Kind == 2 ? "（" + (item.Contents.Count == 0 ? "空" : string.Join("、", item.Contents.Select(value => self.Items.TryGetValue(value, out GridItemProjection material) ? material.Name : "?"))) + "）" : "");
+            string description = item.Name + (Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Kind == GridItemKind.Container ? "（" + (item.Contents.Count == 0 ? "空" : string.Join("、", item.Contents.Select(value => self.Items.TryGetValue(value, out GridItemProjection material) ? material.Name : "?"))) + "）" : "");
             if(item.Hygiene==ItemHygiene.Dirty)description+=" · 脏";
             if (item.BoundOrderId != 0) description += " · 已贴单";
             if (self.AutoProcesses.TryGetValue(item.AutoProcessId, out GridAutoProcessProjection automatic)) description += " · " + AutoWorkDescription(automatic);

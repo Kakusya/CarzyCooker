@@ -24,9 +24,9 @@ namespace ET
                     if (reward.Id <= 0 || !rewards.TryAdd(reward.Id, reward) || string.IsNullOrWhiteSpace(reward.Name) ||
                         !KitchenGeometryConfig.Bounded(reward.ExpansionWidth, reward.ExpansionHeight) ||
                         reward.ExpansionWidth == GridKitchenRules.Width && reward.ExpansionHeight == GridKitchenRules.Height ||
-                        reward.Quantity != 1 || reward.Orientation < 0 || reward.Orientation > 3 || reward.UpgradeDefinitionId != 0 ||
+                        reward.Quantity != 1 || reward.Orientation < GridOrientation.Unrotated || reward.Orientation > GridOrientation.CounterClockwise270 || reward.UpgradeDefinitionId != 0 ||
                         reward.UnlockDishIds.Count != 0 || reward.UnlockStationIds.Count != 0 || table == null || table.InitialLayoutId != 0 ||
-                        !definitions.TryGetValue(reward.StationDefinitionId, out var expandedStation) || expandedStation.Kind != (int)GridStationKind.Table)
+                        !definitions.TryGetValue(reward.StationDefinitionId, out var expandedStation) || expandedStation.Kind != GridStationKind.Table)
                     {
                         throw new InvalidOperationException("InvalidExpansionReward:" + reward.Id);
                     }
@@ -43,7 +43,7 @@ namespace ET
                 {
                     if (reward.Id <= 0 || !rewards.TryAdd(reward.Id, reward) || string.IsNullOrWhiteSpace(reward.Name) ||
                         reward.StationDefinitionId != 0 || reward.Quantity != 0 || reward.InstallX != 0 || reward.InstallY != 0 ||
-                        reward.Orientation != 0 || reward.UpgradeDefinitionId != 0 ||
+                        reward.Orientation != GridOrientation.Unrotated || reward.UpgradeDefinitionId != 0 ||
                         reward.UnlockDishIds.Count + reward.UnlockStationIds.Count == 0 ||
                         reward.UnlockDishIds.Distinct().Count() != reward.UnlockDishIds.Count ||
                         reward.UnlockStationIds.Distinct().Count() != reward.UnlockStationIds.Count ||
@@ -61,7 +61,7 @@ namespace ET
                 if (reward.RewardKind == RenovationRewardKind.UpgradeStation)
                 {
                     if (reward.Id <= 0 || !rewards.TryAdd(reward.Id, reward) || string.IsNullOrWhiteSpace(reward.Name) ||
-                        reward.StationDefinitionId != 0 || reward.Quantity != 0 || reward.InstallX != 0 || reward.InstallY != 0 || reward.Orientation != 0 ||
+                        reward.StationDefinitionId != 0 || reward.Quantity != 0 || reward.InstallX != 0 || reward.InstallY != 0 || reward.Orientation != GridOrientation.Unrotated ||
                         Tables.Instance.DTStationUpgradeConfig.GetOrDefault(reward.UpgradeDefinitionId) == null)
                         throw new InvalidOperationException("InvalidUpgradeReward:" + reward.Id);
                     continue;
@@ -69,9 +69,9 @@ namespace ET
                 if (reward.Id <= 0 || !rewards.TryAdd(reward.Id, reward) || string.IsNullOrWhiteSpace(reward.Name) ||
                     reward.RewardKind != RenovationRewardKind.InstallStation || reward.UpgradeDefinitionId != 0 ||
                     reward.Quantity <= 0 || reward.Quantity > (GridKitchenRules.Width - 2) * (GridKitchenRules.Height - 2) ||
-                    reward.Orientation < 0 || reward.Orientation > 3 ||
+                    reward.Orientation < GridOrientation.Unrotated || reward.Orientation > GridOrientation.CounterClockwise270 ||
                     !definitions.TryGetValue(reward.StationDefinitionId, out var station) ||
-                    station.Kind is not ((int)GridStationKind.Counter or (int)GridStationKind.Chopping))
+                    station.Kind is not (GridStationKind.Counter or GridStationKind.Chopping))
                     throw new InvalidOperationException($"Invalid renovation / station reference {reward.Id}");
                 var cells = Placements(reward).SelectMany(placement => GridStationGeometry.Cells(station.FootprintOffsets, placement.Cell, placement.Orientation)).ToArray();
                 if (cells.Any(cell => !GridStationGeometry.Inside(cell)) || cells.Distinct().Count() != cells.Length)

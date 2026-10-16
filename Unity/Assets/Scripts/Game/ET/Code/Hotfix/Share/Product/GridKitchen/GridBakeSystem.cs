@@ -55,7 +55,7 @@ namespace ET
                 return "DirtyUtensil";
             }
             var recipes = Tables.Instance.DTGridBakeRecipeConfig.DataList.Where(row => row.InputDefinitionId == input.DefinitionId &&
-                row.StationCapability == (int)capability && row.CarrierDefinitionId == (carrier?.DefinitionId ?? 0)).ToArray();
+                row.StationCapability == capability && row.CarrierDefinitionId == (carrier?.DefinitionId ?? 0)).ToArray();
             if (recipes.Length != 1)
             {
                 return "NoRecipe";

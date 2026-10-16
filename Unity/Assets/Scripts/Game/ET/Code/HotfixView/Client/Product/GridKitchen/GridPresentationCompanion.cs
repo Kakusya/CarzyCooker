@@ -93,6 +93,9 @@ namespace ET.Client
                 {
                     return;
                 }
+                current.ResetItemLocator();
+                current.ClearOrderNavigation();
+                current.OverviewPage = GridOverviewPage.None;
                 current.CompanionChat = topic;
                 current.RecipeVisible = false;
                 current.RefreshGridHud();

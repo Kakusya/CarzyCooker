@@ -83,7 +83,10 @@ namespace ET
             {
                 if (message.RoleId != role.Id || message.RoleInstanceId != role.InstanceId || message.LevelGeneration != role.LevelGeneration ||
                     message.RequestId != role.LastCommittedRequestId) return UniTask.CompletedTask;
-                role.LastNotificationKind = message.EventKind;
+                if ((CompanionNotificationKind)message.EventKind is CompanionNotificationKind.RequestResult or CompanionNotificationKind.Finished)
+                {
+                    role.LastNotificationKind = (CompanionNotificationKind)message.EventKind;
+                }
             }
             finally { message.Dispose(); }
             return UniTask.CompletedTask;

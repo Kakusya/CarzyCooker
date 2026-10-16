@@ -4,40 +4,11 @@ using Game;
 
 namespace ET
 {
-    public enum ProductStage
-    {
-        Initializing,
-        HostListening,
-        Joining,
-        HostReady,
-        ClientReady,
-        Failed,
-        Stopping,
-        Stopped,
-        SoloReady,
-        Disconnected,
-        Resuming
-    }
+    public enum ProductStage { Initializing = 0, HostListening = 1, Joining = 2, HostReady = 3, ClientReady = 4, Failed = 5, Stopping = 6, Stopped = 7, SoloReady = 8, Disconnected = 9, Resuming = 10 }
 
-    public enum ProductClientStage
-    {
-        Connecting,
-        Joining,
-        Joined,
-        Failed,
-        Stopping,
-        Stopped,
-        Disconnected
-    }
+    public enum ProductClientStage { Connecting = 0, Joining = 1, Joined = 2, Failed = 3, Stopping = 4, Stopped = 5, Disconnected = 6 }
 
-    public enum ProductControlAction
-    {
-        Join = 1,
-        Probe = 2,
-        Leave = 3,
-        Close = 4,
-        Resume = 5
-    }
+    public enum ProductControlAction { Join = 1, Probe = 2, Leave = 3, Close = 4, Resume = 5 }
 
     public static class ProductSessionRules
     {
@@ -99,7 +70,7 @@ namespace ET
         public int NextMemberId;
         public EntityRef<RestaurantRuntime> Restaurant;
         public long RoomVersion;
-        public int RoomMenuVariant;
+        public ProductMenuVariant RoomMenuVariant;
     }
 
     [ChildOf(typeof(Match))]

@@ -10,16 +10,12 @@ namespace ET.Client
         public static void OpenAuthorizationFiles(this ProductEntryPresentation self)
         {
             self.OpenClaims();
-            self.ProgressVisible = true; self.ClaimsNeedsRefresh = false;
-            if (((UIGridKitchen)self.Hud)?.Available == true)
-            {
-                self.RenderProductEntry();
-            }
+            self.NavigateAuthorizationTask(AuthorizationViewTask.Home);
         }
 
         private static void RenderImportConfirmation(this ProductEntryPresentation self, MonoUIGridKitchen view)
         {
-            view.SettlementText.text = self.InspectedSummary + "\n确认后新建归本机Profile的独立记录，源档不变；已导入分支不能由源Owner远程撤回。";
+            view.SettlementText.text = ReadableAuthorizationSummary(self.InspectedSummary) + "\n确认后新建归本机身份的独立记录，源档保留；原档主不能远程撤回已导入的分支。";
             self.AddProgressControl(view, "确认导入独立分支", current => current.CommitInspectedImport());
             self.AddProgressControl(view, "取消导入", current =>
             {
@@ -45,6 +41,7 @@ namespace ET.Client
                 }), response => ProgressClaimCodec.Decode<ProgressCommitReceipt>(((SaveAuthorizationResponse)response).Receipt));
                 active = current(); active.ConfirmImport = false;
                 active.ProgressFeedback = "已导入独立分支：" + receipt.SlotId;
+                active.AuthorizationResultSlot = receipt.SlotId; active.AuthorizationResultProfile = receipt.ProfileId; active.AuthorizationResultRevision = receipt.Revision;
                 active.ProgressHeaders = await active.ProgressRepositoryCall(context, ProductMessages.Create<SoloSaveBrowseRequest>(_ => { }),
                     response => ((SoloSaveBrowseResponse)response).Headers.Select(ProgressClaimCodec.Decode<SoloSaveHeader>).ToArray());
             });
@@ -56,11 +53,13 @@ namespace ET.Client
                 ? OfflineProfiles.EncodeIdentity(self.InspectedIdentity) : null;
             self.RunProgress(async (context, current) =>
             {
+                current().ProgressCommitting = true; current().RenderProductEntry();
                 string output = await current().ProgressRepositoryCall(context, ProductMessages.Create<SaveAuthorizationRequest>(request =>
                 {
                     request.Action = (int)action; request.SlotId = slot; request.RecipientIdentity = recipient;
                 }), response => ((SaveAuthorizationResponse)response).OutputPath);
                 var active = current(); active.ProgressFeedback = "已导出：" + output; active.ProgressPath = output;
+                active.AuthorizationOutputPath = output;
                 ((UIGridKitchen)active.Hud).View.ShowEntryAddress(output, 2048);
             });
         }
@@ -70,6 +69,7 @@ namespace ET.Client
             byte[] document = (byte[])self.InspectedAuthorization.Clone();
             self.RunProgress(async (context, current) =>
             {
+                current().ProgressCommitting = true; current().RenderProductEntry();
                 await current().ProgressRepositoryCall(context, ProductMessages.Create<SaveAuthorizationRequest>(request =>
                 {
                     request.Action = (int)SaveAuthorizationAction.RejectUnusedGrant; request.Document = document;
@@ -80,6 +80,7 @@ namespace ET.Client
 
         private static void ChooseReplaceTarget(this ProductEntryPresentation self, string ticket)
         {
+            self.AuthorizationResultSlot = self.AuthorizationResultProfile = null; self.AuthorizationResultRevision = 0;
             self.ReplaceTicketId = ticket; self.ReplacePreview = null; self.ReplaceGrant = null;
             self.ProgressHeaders = Array.Empty<SoloSaveHeader>();
             self.RunReplacementOperation(async (context, current) =>
@@ -99,7 +100,17 @@ namespace ET.Client
             view.SettlementText.text = "请选择本机拥有的目标，或已核对的外部替换许可。";
             if (self.Busy)
             {
-                view.StatusText.text = "正在验证或提交…";
+                view.StatusText.text = self.ProgressCommitting ? "正在提交，请等待实际结果…" : "正在验证，可以取消等待";
+                if (!self.ProgressCommitting)
+                {
+                    self.ClaimsButton(view, "取消读取", current =>
+                    {
+                        ++current.ProgressSerial; current.Busy = false;
+                        current.ReplacePreview = null; current.ReplaceGrant = null;
+                        current.ProgressFeedback = "读取已取消，请重新选择当前目标";
+                        current.RenderProductEntry();
+                    });
+                }
                 return;
             }
             if (self.ReplacePreview != null)
@@ -128,6 +139,10 @@ namespace ET.Client
                 current.ClaimsNeedsRefresh = true;
                 current.RenderProductEntry();
             });
+            if (self.AuthorizationTask == AuthorizationViewTask.ReplaceRecord)
+            {
+                self.ClaimsButton(view, "返回任务选择", current => current.NavigateAuthorizationTask(AuthorizationViewTask.Home));
+            }
         }
 
         private static void PrepareReplacement(this ProductEntryPresentation self, SaveAuthorizationAction action, string slot = null)
@@ -166,17 +181,18 @@ namespace ET.Client
                 }), response => ProgressClaimCodec.Decode<ProgressCommitReceipt>(((SaveAuthorizationResponse)response).Receipt));
                 var active = current(); active.ReplacePreview = null; active.ReplaceGrant = null; active.ReplaceTicketId = null;
                 active.ProgressFeedback = $"已替换：{receipt.ProfileId}/{receipt.SlotId} · 修订 {receipt.Revision}";
+                active.AuthorizationResultSlot = receipt.SlotId; active.AuthorizationResultProfile = receipt.ProfileId; active.AuthorizationResultRevision = receipt.Revision;
                 active.ClaimsNeedsRefresh = true;
-            });
+            }, true);
         }
 
-        private static void RunReplacementOperation(this ProductEntryPresentation self, Func<AsyncContext, Func<ProductEntryPresentation>, UniTask> action)
+        private static void RunReplacementOperation(this ProductEntryPresentation self, Func<AsyncContext, Func<ProductEntryPresentation>, UniTask> action, bool committing = false)
         {
             if (self.Busy || !self.ClaimsVisible || self.Suspended || self.ReplaceTicketId == null)
             {
                 return;
             }
-            self.Busy = true; self.Failure = null;
+            self.Busy = true; self.Failure = null; self.ProgressCommitting = committing;
             long serial = ++self.ProgressSerial, epoch = self.Epoch;
             EntityRef<ProductEntryPresentation> original = self;
             string ticket = self.ReplaceTicketId;
@@ -207,7 +223,7 @@ namespace ET.Client
                 }
                 finally
                 {
-                    try { var active = Current(); active.Busy = false; active.RenderProductEntry(); }
+                    try { var active = Current(); active.Busy = false; active.ProgressCommitting = false; active.RenderProductEntry(); }
                     catch (OperationCanceledException) { }
                 }
             });

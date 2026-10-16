@@ -5,6 +5,7 @@ namespace ET
 {
     [EntitySystemOf(typeof(LevelBuff))]
     [FriendOf(typeof(LevelBuff))]
+    [FriendOf(typeof(Level))]
     public static partial class LevelBuffSystem
     {
         [EntitySystem]
@@ -12,7 +13,14 @@ namespace ET
         {
             BuffConfig.ValidateLevel(definition);
             self.Seed=seed;self.DrawVersion=0;self.SelectedId=0;self.RequireChoice=definition.RequireBuffChoice;
-            self.AllowedIds = definition.AllowedBuffIds.ToArray(); self.CandidateCount = definition.CandidateCount;
+            self.AllowedIds = definition.MenuVariant >= ProductMenuVariant.Salad
+                ? definition.AllowedBuffIds.Where(id => BuffConfig.CanAffectMenu(Tables.Instance.DTBuffConfig.Get(id), ((Level)self.Parent).ProductionPermit)).ToArray()
+                : definition.AllowedBuffIds.ToArray();
+            self.CandidateCount = definition.CandidateCount;
+            if (self.RequireChoice && self.AllowedIds.Length == 0)
+            {
+                throw new InvalidOperationException("No applicable level buff: " + definition.Id);
+            }
             self.Candidates=Array.Empty<int>();self.Choices.Clear();
             self.Preparations.Clear();
             self.PreparationSerial = 1; self.Prepared = self.PreparationQueued = self.NotifyPrepared = false;
@@ -67,24 +75,24 @@ namespace ET
     {
         private static int FrozenCookingTicks(this GridKitchenComponent kitchen,DRGridAutoRecipeConfig recipe, GridStation station)
         {
-            return kitchen.FrozenStationTicks(station, recipe.RequiredTicks, 1, recipe.Id);
+            return kitchen.FrozenStationTicks(station, recipe.RequiredTicks, StationWorkKind.Batch, recipe.Id);
         }
 
         private static int FrozenManualTicks(this GridKitchenComponent kitchen, DRGridManualRecipeConfig recipe, GridStation station)
         {
-            return kitchen.FrozenStationTicks(station, recipe.RequiredTicks, 2, recipe.Id);
+            return kitchen.FrozenStationTicks(station, recipe.RequiredTicks, StationWorkKind.Chop, recipe.Id);
         }
 
         private static int FrozenBakingTicks(this GridKitchenComponent kitchen, DRGridBakeRecipeConfig recipe, GridStation station)
         {
-            return kitchen.FrozenStationTicks(station, recipe.RequiredTicks, 3, recipe.Id);
+            return kitchen.FrozenStationTicks(station, recipe.RequiredTicks, StationWorkKind.Bake, recipe.Id);
         }
 
-        private static int FrozenStationTicks(this GridKitchenComponent kitchen, GridStation station, int basis, int workKind, int recipeId)
+        private static int FrozenStationTicks(this GridKitchenComponent kitchen, GridStation station, int basis, StationWorkKind workKind, int recipeId)
         {
             LevelBuff buff = kitchen.ProductLevel()?.GetComponent<LevelBuff>();
             DRBuffConfig choice = buff == null || buff.SelectedId == 0 ? null : Tables.Instance.DTBuffConfig.Get(buff.SelectedId);
-            int target = choice == null ? 0 : workKind switch { 1 => choice.BatchRecipeId, 2 => choice.ManualRecipeId, 3 => choice.BakeRecipeId, _ => 0 };
+            int target = choice == null ? 0 : workKind switch { StationWorkKind.Batch => choice.BatchRecipeId, StationWorkKind.Chop => choice.ManualRecipeId, StationWorkKind.Bake => choice.BakeRecipeId, _ => 0 };
             bool matched = choice?.EffectKind == workKind && target == recipeId;
             var upgrade = station?.UpgradeLevel > 0 ? Tables.Instance.DTStationUpgradeConfig.Get(station.UpgradeDefinitionId) : null;
             bool upgraded = upgrade?.WorkKind == workKind;

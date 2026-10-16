@@ -58,6 +58,7 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductSemanticEnums")]
         public void GridPrepContainerDefinitionsAndUniqueContents()
         {
             GridKitchenSystem.ValidateGridDefinitions(Tables.Instance.DTGridItemConfig.DataList,Tables.Instance.DTGridManualRecipeConfig.DataList);
@@ -113,6 +114,7 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductSemanticEnums")]
         public void GridPrepWorkChoppingStopsResumesMovesAndProducesOnce()
         {
             StartHost();ClientSessionComponent first=host.Client, second=GridJoin();
@@ -153,6 +155,7 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductSemanticEnums")]
         public void GridPrepWorkHeldBowlHandoffDisconnectLeaveAndNewWorld()
         {
             StartHost();ClientSessionComponent first=host.Client, second=GridJoin();
@@ -190,6 +193,7 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductSemanticEnums")]
         public void GridPrepWireLocalKcpDuplicateAndIndependentVersionedGraph()
         {
             StartHost();ClientSessionComponent local=host.Client,remote=CreateRemoteClient();remote.JoinProduct().Forget();Pump(100);

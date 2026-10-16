@@ -19,10 +19,10 @@ namespace ET
             {
                 int ticks = row.EffectKind switch
                 {
-                    1 when row.ManualRecipeId == 0 && row.BakeRecipeId == 0 => Tables.Instance.DTGridAutoRecipeConfig.GetOrDefault(row.BatchRecipeId)?.RequiredTicks ?? 0,
-                    2 when row.BatchRecipeId == 0 && row.BakeRecipeId == 0 && Tables.Instance.DTGridManualRecipeConfig.GetOrDefault(row.ManualRecipeId)?.Mode == GridManualMode.Chop
+                    StationWorkKind.Batch when row.ManualRecipeId == 0 && row.BakeRecipeId == 0 => Tables.Instance.DTGridAutoRecipeConfig.GetOrDefault(row.BatchRecipeId)?.RequiredTicks ?? 0,
+                    StationWorkKind.Chop when row.BatchRecipeId == 0 && row.BakeRecipeId == 0 && Tables.Instance.DTGridManualRecipeConfig.GetOrDefault(row.ManualRecipeId)?.Mode == GridManualMode.Chop
                         => Tables.Instance.DTGridManualRecipeConfig.Get(row.ManualRecipeId).RequiredTicks,
-                    3 when row.BatchRecipeId == 0 && row.ManualRecipeId == 0 => Tables.Instance.DTGridBakeRecipeConfig.GetOrDefault(row.BakeRecipeId)?.RequiredTicks ?? 0,
+                    StationWorkKind.Bake when row.BatchRecipeId == 0 && row.ManualRecipeId == 0 => Tables.Instance.DTGridBakeRecipeConfig.GetOrDefault(row.BakeRecipeId)?.RequiredTicks ?? 0,
                     _ => 0
                 };
                 if(row.Id<=0 || string.IsNullOrWhiteSpace(row.Name) || row.DurationNumerator<=0 || row.DurationDenominator<=0 || ticks <= 0)
@@ -37,6 +37,16 @@ namespace ET
                 level.AllowedBuffIds.Any(id=>Tables.Instance.DTBuffConfig.GetOrDefault(id)==null) ||
                 level.RequireBuffChoice && (level.AllowedBuffIds.Count==0 || level.CandidateCount==0))
                 throw new InvalidOperationException("Invalid level buff pool: "+level.Id);
+        }
+        public static bool CanAffectMenu(DRBuffConfig effect, ProductionPermit permit)
+        {
+            return effect.EffectKind switch
+            {
+                StationWorkKind.Batch => permit.AutoRecipes.Contains(effect.BatchRecipeId),
+                StationWorkKind.Chop => permit.ManualRecipes.Contains(effect.ManualRecipeId),
+                StationWorkKind.Bake => permit.BakeRecipes.Contains(effect.BakeRecipeId),
+                _ => false
+            };
         }
         public static int[] Draw(IEnumerable<int> allowed,int count,int seed)
         {

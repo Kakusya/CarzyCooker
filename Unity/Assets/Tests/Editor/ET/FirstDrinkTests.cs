@@ -57,7 +57,7 @@ namespace ET
             PrepDo(client, GridAction.PlaceCounter, juicer.Id, jug);
             PrepDo(client, GridAction.StartJuice, juicer.Id, jug, jug);
             GridAutoProcess batch = Grid.AutoProcess(Grid.Item(jug).AutoProcessId);
-            Assert.That(batch.LockContainer, Is.True); Assert.That(batch.RequiredCapability, Is.EqualTo((int)GridStationCapability.Juice));
+            Assert.That(batch.LockContainer, Is.True); Assert.That(batch.RequiredCapability, Is.EqualTo(GridStationCapability.Juice));
             Assert.That(batch.TotalPortions, Is.EqualTo(2)); Assert.That(batch.RequiredTicks, Is.EqualTo(120));
             return batch;
         }

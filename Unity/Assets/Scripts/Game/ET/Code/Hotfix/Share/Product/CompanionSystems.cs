@@ -74,7 +74,7 @@ namespace ET
             self.Motion = GridMotion.Standing; self.StepStartTick = 0; self.Path.Clear(); self.PathIndex = 0;
             self.WorkId = 0; self.ClaimSerial = 0; self.RequestInFlight = false;
             self.NextRequestId = 0; self.LastSubmittedRequestId = 0; self.LastCommittedRequestId = 0; self.LastWorkReason = null;
-            self.LastSubmittedIntent = default; self.LastResultStatus = default; self.LastNotificationKind = 0;
+            self.LastSubmittedIntent = default; self.LastResultStatus = default; self.LastNotificationKind = CompanionNotificationKind.None;
             self.NextScheduleTick = 0;
             self.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
             self.GetAsyncOwner();

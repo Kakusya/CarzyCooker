@@ -20,6 +20,8 @@ namespace ET.Client
             self.Epoch = 0;
             self.LoadingHud = self.Busy = false;
             self.Suspended = false;
+            self.Page = ProductEntryPage.Home;
+            self.ClearLeaveConfirmation();
             ProductRuntimeComponent runtime = self.Root().GetComponent<ProductRuntimeComponent>();
             self.ChoosingSolo = runtime.Config.Role == RuntimeInstanceRole.Solo && !runtime.Config.ShowModeMenu;
             self.Failure = runtime.Config.EntryFeedback;
@@ -29,6 +31,10 @@ namespace ET.Client
             self.DisplayedRuntimeFailure = null;
             self.ProgressVisible = self.ProgressCommitting = false;
             self.ProgressSerial = self.ProgressRenderVersion = 0;
+            self.AuthorizationTask = AuthorizationViewTask.Home;
+            self.AuthorizationExport = AuthorizationExportPurpose.IndependentBranch;
+            self.AuthorizationResultSlot = self.AuthorizationResultProfile = self.AuthorizationOutputPath = null; self.AuthorizationResultRevision = 0;
+            self.AuthorizationIdentityExpanded = false; self.AuthorizationInspectedPath = null;
             self.InspectedTrusted = false;
             self.ProgressPath = self.ProgressFeedback = self.InspectedSummary = null;
             self.ProgressHeaders = Array.Empty<SoloSaveHeader>();
@@ -36,6 +42,13 @@ namespace ET.Client
             self.InspectedAuthorization = null;
             self.ClaimsVisible = self.ClaimsNeedsRefresh = self.ClosingMatch = false;
             self.ClaimRows = Array.Empty<ProgressTicketSummary>();
+            self.ClaimInboxState = ClaimInboxDisplayState.Unknown;
+            self.ClaimInboxDirty = true;
+            self.ClaimInboxRunning = false;
+            self.ClaimInboxSerial = self.ClaimInboxVersion = self.ClaimInboxInvalidation = self.ClaimInboxRepository = 0;
+            self.AvailableClaimCount = 0; self.ClaimInboxError = null;
+            self.ClaimFilter = ClaimListFilter.All;
+            self.ClaimDetailTicketId = self.ClaimDestinationSlot = null;
             self.InspectedAuthorizationKind = SaveAuthorizationKind.None;
             self.ConfirmImport = false; self.ReplaceTicketId = null; self.ReplacePreview = null; self.ReplaceGrant = null;
             self.RefreshProductEntry();
@@ -49,7 +62,13 @@ namespace ET.Client
 
         public static void CloseProductEntry(this ProductEntryPresentation self)
         {
+            self.ClearLeaveConfirmation();
+            self.AuthorizationResultSlot = self.AuthorizationResultProfile = self.AuthorizationOutputPath = null; self.AuthorizationResultRevision = 0;
+            self.AuthorizationTask = AuthorizationViewTask.Home;
+            self.AuthorizationIdentityExpanded = false; self.AuthorizationInspectedPath = null;
+            self.ClaimDetailTicketId = self.ClaimDestinationSlot = null;
             self.Suspended = true;
+            self.Page = ProductEntryPage.Home;
             self.ConfirmImport = false; self.ReplaceTicketId = null; self.ReplacePreview = null; self.ReplaceGrant = null;
             self.InspectedAuthorizationKind = SaveAuthorizationKind.None;
             self.InspectedIdentity = null; self.InspectedAuthorization = null;
@@ -73,6 +92,11 @@ namespace ET.Client
 
         public static void RefreshProductEntry(this ProductEntryPresentation self)
         {
+            self.RefreshClaimInbox();
+            if (self.RefreshLeaveConfirmation())
+            {
+                return;
+            }
             if (self.ClaimsVisible)
             {
                 if (((UIGridKitchen)self.Hud)?.Available != true)
@@ -180,7 +204,7 @@ namespace ET.Client
             ProductRoomClient room = client?.GetComponent<ProductRoomClient>();
             bool modes = runtime.Config.ShowModeMenu;
             MonoUIGridKitchen view = hud.View;
-            if (modes && !self.ClaimsVisible && view.EntryAddress.Length > 0)
+            if (modes && !self.ClaimsVisible && self.Page == ProductEntryPage.Cooperation && view.EntryAddressVisible)
             {
                 self.JoinAddress = view.EntryAddress;
             }
@@ -206,26 +230,31 @@ namespace ET.Client
             long epoch = self.Epoch;
             long clientInstance = client?.InstanceId ?? 0;
             long roomVersion = room?.Current.Version ?? 0;
+            long renderVersion = self.ProgressRenderVersion;
             view.SetInputGuard(() =>
             {
                 ProductEntryPresentation current = original;
                 ProductRuntimeComponent owner = current?.Root().GetComponent<ProductRuntimeComponent>();
                 ClientSessionComponent active = owner?.Client ?? default;
-                return current != null && current.Epoch == epoch && !current.ChoosingSolo && ((UIGridKitchen)hudRef)?.Available == true &&
+                return current != null && current.Epoch == epoch && current.ProgressRenderVersion == renderVersion &&
+                    !current.ChoosingSolo && ((UIGridKitchen)hudRef)?.Available == true &&
                     (active?.InstanceId ?? 0) == clientInstance && (active?.GetComponent<ProductRoomClient>()?.Current.Version ?? 0) == roomVersion;
             });
-            if (self.ClaimsVisible)
+            if (self.LeaveAction != ProductLeaveAction.None)
+            {
+                self.RenderLeaveConfirmation(view);
+            }
+            else if (self.ClaimsVisible)
             {
                 self.RenderClaimsEntry(view);
             }
+            else if (self.Page == ProductEntryPage.ConnectionHelp)
+            {
+                self.RenderConnectionHelp(view, runtime.Config.ShowModeMenu);
+            }
             else if (modes)
             {
-                view.ShowEntryAddress(self.JoinAddress);
-                view.AddControl("单机餐厅", () => { ProductEntryPresentation current = original; current?.ChooseSoloEntry(); });
-                view.AddControl("创建合作房间", () => { ProductEntryPresentation current = original; current?.ChooseCooperativeEntry(false); });
-                view.AddControl("加入合作房间", () => { ProductEntryPresentation current = original; current?.ChooseCooperativeEntry(true); });
-                view.AddControl("合作进度领取", () => { ProductEntryPresentation current = original; current?.OpenClaims(); });
-                view.AddControl("存档与授权", () => { ProductEntryPresentation current = original; current?.OpenAuthorizationFiles(); });
+                self.RenderModeNavigation(view);
             }
             else
             {
@@ -242,53 +271,22 @@ namespace ET.Client
                     if (runtime.Config.Role == RuntimeInstanceRole.Host)
                     {
                         view.HintText.text = "加入地址：" + runtime.ListenEndpoint;
+                        self.AddEndpointCopy(view, runtime.ListenEndpoint);
                     }
-                    if (!self.Busy && !room.Current.HasRestaurant && room.Current.CanControlRoom)
+                    self.AddEntryNavigation(view, "连接帮助", ProductEntryPage.ConnectionHelp);
+                    if (!room.Current.HasRestaurant && (!self.Busy || self.Page == ProductEntryPage.StartPreview))
                     {
-                        view.AddControl("开启内存餐厅", () => { ProductEntryPresentation current = original; current?.SendRoomEntry(ProductRoomAction.StartRestaurant, roomVersion, clientInstance); });
-                        view.AddControl("开启沙拉餐厅", () =>
-                        {
-                            ProductEntryPresentation current = original;
-                            current?.SendRoomEntry(ProductRoomAction.StartRestaurant, roomVersion, clientInstance, ProductMenuVariant.Salad);
-                        });
-                        view.AddControl("开启经营成长餐厅", () =>
-                        {
-                            ProductEntryPresentation current = original;
-                            current?.SendRoomEntry(ProductRoomAction.StartRestaurant, roomVersion, clientInstance, ProductMenuVariant.Growth);
-                        });
-                        view.AddControl("开启热餐餐厅", () =>
-                        {
-                            ProductEntryPresentation current = original;
-                            current?.SendRoomEntry(ProductRoomAction.StartRestaurant, roomVersion, clientInstance, ProductMenuVariant.Hot);
-                        });
-                        view.AddControl("开启甜品餐厅", () =>
-                        {
-                            ProductEntryPresentation current = original;
-                            current?.SendRoomEntry(ProductRoomAction.StartRestaurant, roomVersion, clientInstance, ProductMenuVariant.Dessert);
-                        });
-                        view.AddControl("开启咖啡餐厅", () =>
-                        {
-                            ProductEntryPresentation current = original;
-                            current?.SendRoomEntry(ProductRoomAction.StartRestaurant, roomVersion, clientInstance, ProductMenuVariant.Cafe);
-                        });
-                        foreach (var chapter in Tables.Instance.DTRestaurantChapterConfig.DataList.OrderBy(row => row.Id))
-                        {
-                            int id = chapter.Id; ProductMenuVariant menu = chapter.MenuVariant;
-                            view.AddControl($"开启大关 {id} · {chapter.Name}", () =>
-                            {
-                                ProductEntryPresentation current = original;
-                                current?.SendRoomEntry(ProductRoomAction.StartRestaurant, roomVersion, clientInstance, menu, id);
-                            });
-                        }
+                        self.AddRoomStartNavigation(view, roomVersion, clientInstance);
                     }
                     if (!self.Busy && !room.Current.HasRestaurant)
                     {
                         self.AddProgressControl(view, "合作进度领取", current => current.OpenClaims());
+                        self.AddClaimInboxControl(view);
                         self.AddProgressControl(view, "存档与身份", current =>
                         {
                             current.ProgressVisible = true;
                             current.ProgressPath = "";
-                            current.RenderProductEntry();
+                            current.NavigateAuthorizationTask(AuthorizationViewTask.Home);
                         });
                     }
                 }
@@ -297,12 +295,26 @@ namespace ET.Client
                     view.StatusText.text = "连接已断开，可以恢复原成员或返回选择";
                     view.AddControl("恢复房间连接", () => { ProductEntryPresentation current = original; current?.ResumeRoomEntry(); });
                 }
+                else if (client?.Stage == ProductClientStage.Joining)
+                {
+                    view.StatusText.text = "正在等待目标确认加入";
+                    view.SettlementText.text = "目标：" + runtime.Config.Address + ":" + runtime.Config.Port +
+                        "\n尚未加入房间，可以取消。\n取消后可以修改地址重试，或选择单机。";
+                }
                 view.AddControl(client?.Stage == ProductClientStage.Joining ? "取消加入" : "返回模式选择", () =>
                 {
                     ProductEntryPresentation current = original;
                     if (current != null)
                     {
-                        current.LeaveRoomNormally();
+                        if (client?.Stage == ProductClientStage.Joining || client == null)
+                        {
+                            current.LeaveRoomNormally();
+                        }
+                        else
+                        {
+                            current.RequestProductLeave(runtime.Config.Role == RuntimeInstanceRole.Host
+                                ? ProductLeaveAction.HostEndRoom : ProductLeaveAction.ClientLeave);
+                        }
                     }
                 });
             }
@@ -365,7 +377,7 @@ namespace ET.Client
             {
                 try
                 {
-                    string error = await client.CallProductValueAsync(context, client.CreateRoomCommand(action, (int)menuVariant, contentChapterId), response => response.Error == 0 ? null : response.Message);
+                    string error = await client.CallProductValueAsync(context, client.CreateRoomCommand(action, menuVariant, contentChapterId), response => response.Error == 0 ? null : response.Message);
                     context.ThrowIfStopped();
                     self = original;
                     if (self != null && self.Epoch == epoch)

@@ -11,7 +11,7 @@ namespace ET
         public int RecipeId, RequiredTicks, ProgressTicks, OutputDefinitionId, TotalPortions, RemainingPortions, ServingContainerDefinitionId;
         public long PotItemId, StartStationId, StartedTick;
         public GridAutoState State;
-        public int RequiredCapability;
+        public GridStationCapability RequiredCapability;
         public bool LockContainer;
         public readonly List<long> InputItemIds = new();
     }

@@ -83,7 +83,7 @@ namespace ET
             grid.ConfirmGridProjection();
         }
 
-        public static ProductRoomControlRequest CreateRoomCommand(this ClientSessionComponent client, ProductRoomAction action, int menuVariant = 1, int contentChapterId = 0)
+        public static ProductRoomControlRequest CreateRoomCommand(this ClientSessionComponent client, ProductRoomAction action, ProductMenuVariant menuVariant = ProductMenuVariant.Drink, int contentChapterId = 0)
         {
             ProductRoomClient room = client.GetComponent<ProductRoomClient>();
             if (client.Stage != ProductClientStage.Joined || room == null || room.Current.Version <= 0)
@@ -99,7 +99,7 @@ namespace ET
                 request.CommandId = context.CommandId;
                 request.ExpectedRoomVersion = room.Current.Version;
                 request.Action = (int)action;
-                request.MenuVariant = menuVariant;
+                request.MenuVariant = (int)menuVariant;
                 request.ContentChapterId = contentChapterId;
             });
         }

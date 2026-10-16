@@ -49,7 +49,7 @@ namespace ET
                     Scene hostScene = EntitySceneFactory.CreateScene(fiber.Root, IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(), SceneType.ProductHost, "EntryUiHost");
                     runtime.HostScene = hostScene;
                     Match match = hostScene.AddChild<Match>();
-                    match.RoomMenuVariant = 1;
+                    match.RoomMenuVariant = ProductMenuVariant.Drink;
                     HostSessionComponent authority = hostScene.AddComponent<HostSessionComponent, Match, ProductRuntimeComponent>(match, runtime);
                     authority.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
                     runtime.Authority = authority;
@@ -157,7 +157,7 @@ namespace ET
             yield return Wait(() => Runtime.Root().GetComponent<SoloSavePresentation>() is SoloSavePresentation selection &&
                 ((UIGridKitchen)selection.Hud)?.Available == true, "Failed join leaves a working Solo choice");
             var selector = Runtime.Root().GetComponent<SoloSavePresentation>();
-            Pointer(((UIGridKitchen)selector.Hud).View.GetComponentsInChildren<Button>(false)
+            StartPreviewAndConfirm(((UIGridKitchen)selector.Hud).View.GetComponentsInChildren<Button>(false)
                 .Single(button => button.GetComponentInChildren<Text>().text == "内存试玩"));
             yield return Wait(() => Presentation?.Ready == true, "Solo starts after the actual timeout");
             Assert.That(((Scene)Runtime.HostScene).GetComponent<NetComponent>(), Is.Null);

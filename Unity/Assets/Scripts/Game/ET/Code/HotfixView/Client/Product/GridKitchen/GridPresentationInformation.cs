@@ -38,7 +38,7 @@ namespace ET.Client
             {
                 position += "\n餐具：" + string.Join("、", station.PoolItemIds.Select(grid.ItemDescription));
             }
-            return position;
+            return position + StationCapabilityDetails(grid, station);
         }
 
         private static bool IsSelectedTarget(this GridPresentationComponent self, long stationId)

@@ -16,7 +16,7 @@ namespace ET
             self.NextMemberId = 0;
             self.Restaurant = default;
             self.RoomVersion = 1;
-            self.RoomMenuVariant = 0;
+            self.RoomMenuVariant = ProductMenuVariant.Basic;
         }
     }
 

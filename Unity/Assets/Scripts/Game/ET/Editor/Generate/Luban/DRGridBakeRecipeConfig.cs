@@ -18,6 +18,7 @@ public sealed class DRGridBakeRecipeConfig :  Luban.EditorBeanBase
 {
     public DRGridBakeRecipeConfig()
     {
+            StationCapability = GridStationCapability.None;
     }
 
     public override void LoadJson(JSONObject _json)
@@ -50,7 +51,7 @@ public sealed class DRGridBakeRecipeConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["StationCapability"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  StationCapability = _fieldJson;
+                if(_fieldJson.IsString) { StationCapability = (GridStationCapability)System.Enum.Parse(typeof(GridStationCapability), _fieldJson); } else if(_fieldJson.IsNumber) { StationCapability = (GridStationCapability)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -84,7 +85,7 @@ public sealed class DRGridBakeRecipeConfig :  Luban.EditorBeanBase
             _json["OutputDefinitionId"] = new JSONNumber(OutputDefinitionId);
         }
         {
-            _json["StationCapability"] = new JSONNumber(StationCapability);
+            _json["StationCapability"] = new JSONNumber((int)StationCapability);
         }
         {
             _json["RequiredTicks"] = new JSONNumber(RequiredTicks);
@@ -124,7 +125,7 @@ public sealed class DRGridBakeRecipeConfig :  Luban.EditorBeanBase
     /// <summary>
     /// StationCapability
     /// </summary>
-    public int StationCapability;
+    public GridStationCapability StationCapability;
 
     /// <summary>
     /// RequiredTicks

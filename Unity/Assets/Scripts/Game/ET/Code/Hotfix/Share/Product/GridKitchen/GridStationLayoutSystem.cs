@@ -19,7 +19,7 @@ namespace ET
             if (identity != null) return identity;
             string prior = peer.CheckProductCommand(context, ProductCommandKind.Layout, intent.Equals(peer.LastLayoutCommand), out bool replay);
             if (prior != null || replay) return prior;
-            if (intent.ExpectedLayoutVersion <= 0 || intent.Orientation < 0 || intent.Orientation > 3) return "InvalidLayout";
+            if (intent.ExpectedLayoutVersion <= 0 || intent.Orientation < GridOrientation.Unrotated || intent.Orientation > GridOrientation.CounterClockwise270) return "InvalidLayout";
             peer.RecordProductCommand(context, ProductCommandKind.Layout); peer.LastLayoutCommand = intent;
             self.LayoutCommands.Enqueue(new GridStationLayoutEnvelope(context, intent, peer));
             return null;

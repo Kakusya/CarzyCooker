@@ -12,7 +12,7 @@ namespace ET
         {
             var rows = Tables.Instance.DTLevelConfig.DataList;
             RestaurantConfig.ValidateLevelDefinitions(rows, GridKitchenSystem.IsInitialGridWalkable);
-            foreach (int variant in new[] { 0, 1 })
+            foreach (ProductMenuVariant variant in new[] { ProductMenuVariant.Basic, ProductMenuVariant.Drink })
             {
                 var first = RestaurantConfig.FirstCooperativeLevel(variant);
                 var chain = rows.Where(row => row.ChapterId == first.ChapterId && row.MenuVariant == variant).OrderBy(row => row.ChapterStage).ToArray();

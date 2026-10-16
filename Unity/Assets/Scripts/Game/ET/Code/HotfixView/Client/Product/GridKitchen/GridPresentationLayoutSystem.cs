@@ -13,7 +13,7 @@ namespace ET.Client
             self.LayoutStationId=station;self.LayoutLevelId=level;self.LayoutLevelGeneration=generation;self.RefreshGridHud();
         }
 
-        public static void SendStationLayout(this GridPresentationComponent self,long station,GridCell cell,int orientation,
+        public static void SendStationLayout(this GridPresentationComponent self,long station,GridCell cell,GridOrientation orientation,
             long layoutVersion,long level,long generation)
         {
             var owner=self.GridCommandOwner();if(owner==null)return;

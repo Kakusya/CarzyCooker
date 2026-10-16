@@ -19,6 +19,9 @@ public sealed class DRStationUpgradeConfig :  Luban.EditorBeanBase
     public DRStationUpgradeConfig()
     {
             Name = "";
+            StationKind = GridStationKind.Counter;
+            StationCapability = GridStationCapability.None;
+            WorkKind = StationWorkKind.Batch;
     }
 
     public override void LoadJson(JSONObject _json)
@@ -43,7 +46,7 @@ public sealed class DRStationUpgradeConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["StationKind"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  StationKind = _fieldJson;
+                if(_fieldJson.IsString) { StationKind = (GridStationKind)System.Enum.Parse(typeof(GridStationKind), _fieldJson); } else if(_fieldJson.IsNumber) { StationKind = (GridStationKind)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -51,7 +54,7 @@ public sealed class DRStationUpgradeConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["StationCapability"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  StationCapability = _fieldJson;
+                if(_fieldJson.IsString) { StationCapability = (GridStationCapability)System.Enum.Parse(typeof(GridStationCapability), _fieldJson); } else if(_fieldJson.IsNumber) { StationCapability = (GridStationCapability)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -59,7 +62,7 @@ public sealed class DRStationUpgradeConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["WorkKind"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  WorkKind = _fieldJson;
+                if(_fieldJson.IsString) { WorkKind = (StationWorkKind)System.Enum.Parse(typeof(StationWorkKind), _fieldJson); } else if(_fieldJson.IsNumber) { WorkKind = (StationWorkKind)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -100,13 +103,13 @@ public sealed class DRStationUpgradeConfig :  Luban.EditorBeanBase
             _json["Name"] = new JSONString(Name);
         }
         {
-            _json["StationKind"] = new JSONNumber(StationKind);
+            _json["StationKind"] = new JSONNumber((int)StationKind);
         }
         {
-            _json["StationCapability"] = new JSONNumber(StationCapability);
+            _json["StationCapability"] = new JSONNumber((int)StationCapability);
         }
         {
-            _json["WorkKind"] = new JSONNumber(WorkKind);
+            _json["WorkKind"] = new JSONNumber((int)WorkKind);
         }
         {
             _json["TargetLevel"] = new JSONNumber(TargetLevel);
@@ -144,17 +147,17 @@ public sealed class DRStationUpgradeConfig :  Luban.EditorBeanBase
     /// <summary>
     /// StationKind
     /// </summary>
-    public int StationKind;
+    public GridStationKind StationKind;
 
     /// <summary>
     /// StationCapability
     /// </summary>
-    public int StationCapability;
+    public GridStationCapability StationCapability;
 
     /// <summary>
     /// WorkKind
     /// </summary>
-    public int WorkKind;
+    public StationWorkKind WorkKind;
 
     /// <summary>
     /// TargetLevel

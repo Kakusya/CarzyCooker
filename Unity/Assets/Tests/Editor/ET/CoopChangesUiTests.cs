@@ -15,7 +15,14 @@ namespace ET
         [Category("RestaurantArtRegression")]
         public IEnumerator CoopMemberResumeUiRealDisconnectManualButtonReopenAndRetiredInput()
         {
-            yield return StartCoopHostLauncher(); ((Scene)Client.IScene).RemoveComponent<GridPresentationComponent>(); yield return null;
+            yield return StartCoopHostLauncher();
+            Presentation.CloseGridHud();
+            // Keep the real display owner: fresh Host snapshots recreate a removed
+            // presentation and otherwise contend with the remote HUD for the same asset.
+            GridKitchenBoard hostBoard = Presentation.Board;
+            hostBoard.Visible = false;
+            yield return null;
+            yield return Wait(() => !Game.GameEntry.UI.HasUIForm("Assets/Res/UI/UIForm/Product/UIGridKitchen.prefab"), "Host display releases the shared UI asset before remote handover");
             using (var remote = new CoopUiRemote(Runtime.ListenEndpoint))
             {
                 ownedCoopUiRemotes.Add(remote);

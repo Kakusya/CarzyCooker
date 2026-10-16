@@ -15,7 +15,7 @@ namespace ET
             _ => GridStationCapability.Cook
         };
 
-        private static bool IsBeverageCapability(int capability) => (GridStationCapability)capability is
+        private static bool IsBeverageCapability(GridStationCapability capability) => capability is
             GridStationCapability.Extract or GridStationCapability.HeatMilk or GridStationCapability.FoamMilk;
 
         private static int AutoContainer(GridStationCapability capability) => capability switch

@@ -21,6 +21,7 @@ namespace ET
 
         [UnityTest]
         [Category("CooperativeClaimsUiStates")]
+        [Category("EntryInbox")]
         public IEnumerator CooperativeClaimsUiOfflineMenuShowsClaimedAndClosedFactsFromActualFiles()
         {
             yield return StartModeLauncher();
@@ -58,13 +59,15 @@ namespace ET
             Assert.That(Entry.ClaimRows.Select(row => row.State), Is.EquivalentTo(new[] { ProgressReceiptState.Claimed, ProgressReceiptState.Closed }));
             Pointer(EntryProgressButton("已关闭 ", true));
             Assert.That(Entry.ProgressFeedback, Does.Contain("资格已关闭"));
+            Assert.That(EntryHud.SettlementText.text, Does.Contain("已关闭").And.Contain("整个房间正常结束"));
+            Pointer(EntryProgressButton("返回领取列表"));
             Pointer(EntryProgressButton("已领取 ", true));
             Assert.That(Entry.ProgressFeedback, Does.Contain("已领取至"));
             Assert.That(repository.Browse().Length, Is.EqualTo(1));
             Assert.That((ClientSessionComponent)Runtime.Client, Is.Null);
             Pointer(EntryProgressButton("返回经营或房间"));
             yield return Wait(() => !Entry.ClaimsVisible && ((UIGridKitchen)Entry.Hud)?.Available == true, "Offline menu resumes its managed form");
-            Assert.That(EntryHud.GetComponentsInChildren<Button>(false).Any(button => button.GetComponentInChildren<Text>().text == "创建合作房间"), Is.True);
+            Assert.That(EntryHud.GetComponentsInChildren<Button>(false).Any(button => button.GetComponentInChildren<Text>().text == "合作房间"), Is.True);
         }
 
         [UnityTest]
@@ -89,6 +92,7 @@ namespace ET
                 OfflineProfiles.TrustIdentity(repository, OfflineProfiles.OwnIdentity(other));
                 OfflineProfiles.TrustIdentity(other, OfflineProfiles.OwnIdentity(repository));
                 Pointer(ClaimUiButton(RemoteEntryHud(), "存档与身份"));
+                Pointer(ClaimUiButton(RemoteEntryHud(), "身份与高级操作"));
                 Pointer(ClaimUiButton(RemoteEntryHud(), "验证本机身份"));
                 yield return WaitCoopUi(remote, () => !RemoteEntry().Busy && remote.Client.GetComponent<ProductRoomClient>().Current.VerifiedProfileId == otherProfile,
                     "Remote actively proves its own private key through managed UI");
@@ -97,7 +101,7 @@ namespace ET
                 yield return null;
                 Entry.OpenProductEntry();
                 yield return WaitCoopUi(remote, () => ((UIGridKitchen)Entry.Hud)?.Available == true, "Host room form resumes");
-                Pointer(EntryButton("开启内存餐厅"));
+                StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
                 yield return WaitCoopUi(remote, () => Presentation != null && remote.Presentation != null && Grid.Confirmed && remote.Grid.Confirmed,
                     "Both independent world projections exist");
                 remote.Presentation.CloseGridHud();
@@ -161,7 +165,7 @@ namespace ET
                 remote.Presentation.CloseGridHud();
                 Presentation.OpenGridHud();
                 yield return WaitCoopUi(remote, () => Presentation.Ready, "Host resumes settlement");
-                Pointer(Button("返回房间"));
+                yield return ReturnToRoomThroughConfirmation();
                 yield return WaitCoopUi(remote, () => (RestaurantRuntime)match.Restaurant == null && Entry != null && ((UIGridKitchen)Entry.Hud)?.Available == true,
                     "Retiring restaurant preserves the same Match");
                 RemoteEntry().CloseProductEntry();
@@ -169,6 +173,7 @@ namespace ET
                 Entry.OpenProductEntry();
                 Assert.That(match.GetComponent<CooperativeClaimState>().Closing, Is.False);
                 Pointer(EntryProgressButton("存档与身份"));
+                Pointer(EntryProgressButton("身份与高级操作"));
                 Pointer(EntryProgressButton("本机成功记录"));
                 yield return WaitCoopUi(remote, () => !Entry.Busy && Entry.ProgressHeaders.Length == 1, "Claimed file appears in the original progress browser");
                 Pointer(EntryProgressButton("读取 记录 ", true));
@@ -182,13 +187,14 @@ namespace ET
                 retired();
                 Assert.That(Client.NextCommandId, Is.EqualTo(commands));
                 Assert.That(repository.Browse().Length, Is.EqualTo(1));
-                Pointer(Button("返回房间"));
+                yield return ReturnToRoomThroughConfirmation();
                 yield return WaitCoopUi(remote, () => (RestaurantRuntime)match.Restaurant == null && ((UIGridKitchen)Entry.Hud)?.Available == true, "Return from restored restaurant");
                 RemoteEntry().CloseProductEntry();
                 yield return null;
                 Entry.OpenProductEntry();
                 string savedFile = Path.Combine(repository.DirectoryPath, saved.SlotId + ".ccsave");
                 Pointer(EntryButton("返回模式选择"));
+                Pointer(EntryProgressButton("确认结束整个房间"));
                 yield return WaitCoopUi(remote, () => Runtime != runtime && Runtime?.Config.ShowModeMenu == true && Entry != null && ((UIGridKitchen)Entry.Hud)?.Available == true,
                     "Explicit normal whole-Match end waits for receipts then returns to ordinary mode menu", 30);
                 ownedInit = Init.Instance;

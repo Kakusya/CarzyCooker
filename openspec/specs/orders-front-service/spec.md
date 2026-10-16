@@ -119,9 +119,31 @@ Host 本地与远端成员 SHALL 能在当前关按相同资格询问、交付�
 - **WHEN** 远端收到订单与工作状态且原通知对象被回收
 - **THEN** 已安装数据独立有效，界面能提交一次当前目标请求；旧界面的回调不能替代当前身份
 
+
+### Requirement: 前厅工作与收尾看板可访问
+
+系统 SHALL 提供以下入口行为：增加前厅任务看板，按询问／清桌／洗碗展示当前工作、关联桌位／餐具、可用／前往／执行状态及真实执行者；收尾时显示仍在进行的顾客和必要工作。
+
+#### Scenario: 前厅工作与收尾看板的正常使用
+- **WHEN** 队友或小麦正在洗碗，餐厅进入收尾
+- **THEN** 看板指出当前执行者和真实进度，并解释仍有用餐／清理活动；最后活动完成后随阶段切换
+
+### Requirement: 前厅工作与收尾看板保持事实与操作边界
+
+系统 MUST 遵守以下边界：按已有生命周期解释收尾，不要求排空后厨；阅读不认领、抢占或修改伙伴调度。对可认领任务提供原显式入口，已被占用任务只说明事实。
+
+#### Scenario: 前厅工作与收尾看板的取消或状态变化
+- **WHEN** 两端同时点可用任务或原桌位换客
+- **THEN** 原共同裁决只成立一个认领，旧任务按钮不作用新工作，失败不修改进度
+
+#### Scenario: 前厅工作与收尾看板关闭重开与旧回调
+- **WHEN** 玩家关闭并重开本入口，随后旧页面回调或迟到结果到达
+- **THEN** 页面只作用于当前有效上下文，原操作不因重开重复提交，旧结果不覆盖新选择，原合法入口仍可使用
+
 ## Sources
 
 - [当前实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridFrontWorkSystem.cs)。
 - [solo-customer-order-service 执行与验收记录](../../changes/archive/2026-10-13-solo-customer-order-service/execution-notes.md)。
 
 - [cooperative-front-service 逐功能运行与验收](../../changes/archive/2026-10-14-cooperative-front-service/execution-notes.md)。
+- [front-service-workboard 逐项验收](../../changes/archive/2026-10-16-front-service-workboard/execution-notes.md)?

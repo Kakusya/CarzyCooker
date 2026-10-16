@@ -84,7 +84,7 @@ namespace ET
             Companion identity = role.Companion; var growth = CurrentLevel.GetComponent<CompanionGrowth>().CompletedByCompanion;
             Assert.That(growth.TryGetValue(identity.Id, out int count) ? count : 0, Is.EqualTo(npcFirst ? 1 : 0));
             Assert.That(Grid.Actor(((ClientSessionComponent)host.Client).MemberId).FrontWorkId, Is.Zero);
-            if (npcFirst) Assert.That(role.LastNotificationKind, Is.EqualTo(2));
+            if (npcFirst) Assert.That(role.LastNotificationKind, Is.EqualTo(CompanionNotificationKind.Finished));
         }
 
         [TestCase("instance", "RoleChanged")]
@@ -241,16 +241,20 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductSemanticEnums")]
         public void SoloCompanionGrowthCancellationAndDuplicateNotificationsNeverAddCompletion()
         {
             StartSolo(); LevelDo(LevelControlAction.Start); Customer customer = InitialSeatedCustomer();
             FrontWork work = CurrentLevel.GetChild<FrontWork>(customer.AskWorkId); CompanionRole role = FrontRole;
             FrontNpcReply(role, new FrontWorkIntent(FrontWorkAction.Claim, work.Id)); AdvanceTicks(1); FrontWait(() => work.State == FrontWorkState.Working); AdvanceTicks(7);
+            Assert.That(role.LastNotificationKind, Is.EqualTo(CompanionNotificationKind.RequestResult));
             double progress = work.Progress;
             FrontNpcReply(role, new FrontWorkIntent(FrontWorkAction.Stop, work.Id, work.ClaimSerial)); AdvanceTicks(1);
             Assert.That(work.Progress, Is.EqualTo(progress)); Assert.That(CurrentLevel.GetComponent<CompanionGrowth>().CompletedByCompanion, Is.Empty);
             long expectedSerial = work.ClaimSerial;
             FrontNpcReply(role, new FrontWorkIntent(FrontWorkAction.Claim, work.Id, expectedSerial)); AdvanceTicks(1); FrontWait(() => work.State == FrontWorkState.Completed);
+            PumpMessages(8);
+            Assert.That(role.LastNotificationKind, Is.EqualTo(CompanionNotificationKind.Finished));
             Companion identity = role.Companion; var growth = CurrentLevel.GetComponent<CompanionGrowth>();
             Assert.That(growth.CompletedByCompanion[identity.Id], Is.EqualTo(1));
             var replay = role.CreateCompanionWorkRequest(new FrontWorkIntent(FrontWorkAction.Claim, work.Id, expectedSerial)); replay.RequestId = role.LastSubmittedRequestId;

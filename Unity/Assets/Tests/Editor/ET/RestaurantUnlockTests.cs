@@ -12,7 +12,7 @@ namespace ET
             var config = RuntimeInstanceConfig.Create("unlock-test", "test", cooperative ? "host" : "solo", cooperative ? "127.0.0.1:0" : null);
             RuntimeInstanceContext.Prepare(config); var fiber = CreateFiber(); UseOptionalBuffFixture();
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
-            host.InitializeProduct(menuVariant: (int)ProductMenuVariant.Growth); Pump(12);
+            host.InitializeProduct(menuVariant: ProductMenuVariant.Growth); Pump(12);
             Assert.That(host.Stage, Is.Not.EqualTo(ProductStage.Failed), host.Failure);
         }
 

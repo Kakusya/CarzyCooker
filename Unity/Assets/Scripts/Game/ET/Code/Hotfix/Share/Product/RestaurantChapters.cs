@@ -7,7 +7,7 @@ namespace ET
 {
     public static class RestaurantChapters
     {
-        public static DRLevelConfig First(int contentChapterId, RuntimeInstanceRole role, int menuVariant)
+        public static DRLevelConfig First(int contentChapterId, RuntimeInstanceRole role, ProductMenuVariant menuVariant)
         {
             if (role is not (RuntimeInstanceRole.Solo or RuntimeInstanceRole.Host))
             {
@@ -19,7 +19,7 @@ namespace ET
                     row.ChapterId == 1 && row.ChapterStage == 1 && row.MenuVariant == menuVariant) : RestaurantConfig.FirstCooperativeLevel(menuVariant);
             }
             var chapter = Tables.Instance.DTRestaurantChapterConfig.GetOrDefault(contentChapterId);
-            if (chapter == null || (int)chapter.MenuVariant != menuVariant)
+            if (chapter == null || chapter.MenuVariant != menuVariant)
             {
                 throw new InvalidOperationException("InvalidContentChapter");
             }
@@ -52,7 +52,7 @@ namespace ET
             }
             foreach (var chapter in chapters)
             {
-                if (chapter.Id <= 0 || string.IsNullOrWhiteSpace(chapter.Name) || !ProductMenuCatalog.IsValid((int)chapter.MenuVariant) ||
+                if (chapter.Id <= 0 || string.IsNullOrWhiteSpace(chapter.Name) || !ProductMenuCatalog.IsValid(chapter.MenuVariant) ||
                     chapter.SoloChapterId <= 2 || chapter.CooperativeChapterId <= 2)
                 {
                     throw new InvalidOperationException("InvalidContentChapter");
@@ -64,7 +64,7 @@ namespace ET
 
         private static void ValidateRoute(DRRestaurantChapterConfig chapter, int chain, int firstId)
         {
-            var levels = Tables.Instance.DTLevelConfig.DataList.Where(row => row.ChapterId == chain && row.MenuVariant == (int)chapter.MenuVariant)
+            var levels = Tables.Instance.DTLevelConfig.DataList.Where(row => row.ChapterId == chain && row.MenuVariant == chapter.MenuVariant)
                 .OrderBy(row => row.ChapterStage).ToArray();
             if (levels.Length != 3 || levels[0].Id != firstId)
             {

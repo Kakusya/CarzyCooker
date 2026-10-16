@@ -55,6 +55,7 @@ namespace ET
 
         [Test]
         [Category("ProductRoom")]
+        [Category("ProductSemanticEnums")]
         public void ProductRoomRealKcpJoinWithoutWorldStartCloseAndRestartKeepMembersSessionsAndSender()
         {
             StartRoomFixture();
@@ -133,7 +134,7 @@ namespace ET
             var request = client.CreateRoomCommand(ProductRoomAction.StartRestaurant, 0);
             var replay = RoomCopy(request);
             var conflict = RoomCopy(request);
-            conflict.MenuVariant = 1;
+            conflict.MenuVariant = (int)ProductMenuVariant.Drink;
             using (var reply = RoomReply(client, request))
             {
                 Assert.That(reply.Error, Is.Zero);

@@ -15,7 +15,7 @@ namespace ET
             self.RemainingPackages.Clear(); self.Commands.Clear();
             self.Transitions.Clear(); self.Outcomes.Clear();
             var kitchen = self.GetParent<GridKitchenComponent>(); RestaurantRuntime restaurant = kitchen.Restaurant;
-            int variant = restaurant?.MenuVariant ?? 0;
+            ProductMenuVariant variant = restaurant?.MenuVariant ?? ProductMenuVariant.Basic;
             foreach (DRSupplyConfig source in Tables.Instance.DTSupplyConfig.DataList.Where(source => ProductMenuCatalog.Includes(variant, source.MenuVariant)))
                 self.RemainingPackages.Add(source.Id, source.AvailablePackages);
         }

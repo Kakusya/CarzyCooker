@@ -24,6 +24,7 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductSemanticEnums")]
         public void SoloCompanionOwnershipUsesActualGeneratedConfigAndOrderedRoleMailbox()
         {
             StartSolo();
@@ -151,7 +152,7 @@ namespace ET
             GridStation oven = Grid.Stations.Values.Select(value => (GridStation)value).Single(value => value.Name == "烤箱");
             GridCell original = oven.Cell; long version = Grid.LayoutVersion;
             var projection = ((ClientSessionComponent)host.Client).GetComponent<GridClientComponent>();
-            var request = projection.CreateStationLayout(oven.Id, target, transit ? 1 : 0);
+            var request = projection.CreateStationLayout(oven.Id, target, transit ? GridOrientation.CounterClockwise90 : GridOrientation.Unrotated);
             using (var receipt = LayoutReply(host.Client, request)) Assert.That(receipt.Error, Is.Zero);
             AdvanceTicks(1); PumpMessages(8);
             HostPeer peer = ((LocalMessageComponent)((ClientSessionComponent)host.Client).Local).Peer;

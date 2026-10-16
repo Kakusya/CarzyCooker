@@ -14,7 +14,7 @@ namespace ET
             var fiber = CreateFiber();
             UseOptionalBuffFixture();
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
-            host.InitializeProduct(menuVariant: (int)ProductMenuVariant.Hot);
+            host.InitializeProduct(menuVariant: ProductMenuVariant.Hot);
             Pump(15);
             Assert.That(host.Stage, Is.Not.EqualTo(ProductStage.Failed), host.Failure);
             Assert.That(CurrentLevel.ConfigId, Is.EqualTo(cooperative ? 1001 : 901));

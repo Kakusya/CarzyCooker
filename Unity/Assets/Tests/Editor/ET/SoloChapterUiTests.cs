@@ -11,7 +11,7 @@ namespace ET
 {
     public sealed partial class SoloRestaurantUiTests
     {
-        [UnityTest]
+        [UnityTest, Category("EntrySettlement")]
         public IEnumerator SoloChapterUiTerminalFailureRetryReturnReadOnlyCompletedFileAndIndependentNewRun()
         {
             yield return StartLauncher(false, false);
@@ -23,13 +23,20 @@ namespace ET
                 repository.Commit(checkpoint, SelectionFixture());
                 Selection.OpenSoloSelection();
                 yield return Wait(() => ((UIGridKitchen)Selection.Hud)?.Available == true && Selection.Headers.Length == 1, "Real terminal checkpoint visible");
-                Pointer(SelectionSlotButton(checkpoint.SlotId));
+                yield return InspectAndContinueSave(checkpoint.SlotId);
                 yield return Wait(() => Presentation?.Ready == true && Grid.LevelConfigId == 103, "Real file restores third level");
                 Assert.That(Hud.PhaseText.text, Does.Contain("第 3/3 关"));
                 string buff = Hud.GetComponentsInChildren<Button>(false).First(b => b.GetComponentInChildren<Text>().text.StartsWith("选择 ")).GetComponentInChildren<Text>().text;
                 yield return Command(buff); yield return Command("开始营业");
                 yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Terminal front naturally drains", 75);
                 Assert.That(Hud.SettlementText.text, Does.Contain("大关完成").And.Contain("未满足"));
+                Assert.That(Grid.LevelStars, Is.Zero);
+                Assert.That(Hud.SettlementText.text, Does.Contain("尚未保存").And.Contain("返回选档，无下一关"));
+                long readCommand = Client.NextCommandId;
+                Pointer(Button("结算详情"));
+                Assert.That(Hud.DetailsText.text, Does.Contain("零星不阻止完成").And.Not.Contain("下一关菜单："));
+                Pointer(Button("关闭结算详情"));
+                Assert.That(Client.NextCommandId, Is.EqualTo(readCommand));
                 Assert.That(Hud.GetComponentsInChildren<Button>(false).Any(b => b.GetComponentInChildren<Text>().text.StartsWith("装修 ")), Is.False);
                 string path = repository.DirectoryPath; string blocker = Path.Combine(path, "blocked"); File.WriteAllText(blocker, "owned UI test blocker");
                 repository.DirectoryPath = blocker; long terminalLevel = Grid.LevelId;
@@ -51,7 +58,7 @@ namespace ET
                 Selection.CloseSoloSelection(); Selection.OpenSoloSelection();
                 yield return Wait(() => ((UIGridKitchen)Selection.Hud)?.Available == true && Selection.Headers.Length == 2, "Selection reopens from durable records");
                 oldCallback(); Assert.That((Scene)runtime.HostScene, Is.Null); Assert.That(repository.Browse().Length, Is.EqualTo(2));
-                Pointer(SelectionButton("内存试玩"));
+                StartPreviewAndConfirm(SelectionButton("内存试玩"));
                 yield return Wait(() => Presentation?.Ready == true && Grid.LevelConfigId == 201, "New independent chapter starts with first drink menu");
                 Assert.That(Grid.SaveEnabled, Is.False); Assert.That(Grid.Items.Count, Is.EqualTo(10));
                 oldCallback(); Assert.That(Grid.LevelConfigId, Is.EqualTo(201)); Assert.That(repository.Browse().Length, Is.EqualTo(2));

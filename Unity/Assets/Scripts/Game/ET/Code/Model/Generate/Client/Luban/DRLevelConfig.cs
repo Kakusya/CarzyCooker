@@ -29,7 +29,7 @@ public sealed partial class DRLevelConfig : Luban.BeanBase
         ChapterId = _buf.ReadInt();
         ChapterStage = _buf.ReadInt();
         IsChapterTerminal = _buf.ReadBool();
-        MenuVariant = _buf.ReadInt();
+        MenuVariant = (ProductMenuVariant)_buf.ReadInt();
         {int n0 = _buf.ReadSize(); AllowedDrinkIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); AllowedDrinkIds.Add(_e0);}}
         UseInitialUnlockSet = _buf.ReadBool();
         {int n0 = _buf.ReadSize(); InitialUnlockedDishIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); InitialUnlockedDishIds.Add(_e0);}}
@@ -101,7 +101,7 @@ public sealed partial class DRLevelConfig : Luban.BeanBase
     /// <summary>
     /// MenuVariant
     /// </summary>
-    public readonly int MenuVariant;
+    public readonly ProductMenuVariant MenuVariant;
     /// <summary>
     /// AllowedDrinkIds
     /// </summary>

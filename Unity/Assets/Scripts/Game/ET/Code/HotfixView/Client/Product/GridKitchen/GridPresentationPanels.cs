@@ -11,9 +11,14 @@ namespace ET.Client
         {
             string target = definition.EffectKind switch
             {
-                1 => "煮汤",
-                2 => "切配 " + Tables.Instance.DTGridItemConfig.Get(Tables.Instance.DTGridManualRecipeConfig.Get(definition.ManualRecipeId).InputDefinitionId).Name,
-                3 => "烘焙 " + Tables.Instance.DTGridItemConfig.Get(Tables.Instance.DTGridBakeRecipeConfig.Get(definition.BakeRecipeId).InputDefinitionId).Name,
+                StationWorkKind.Batch => "制作 " + Tables.Instance.DTGridItemConfig.Get(Tables.Instance.DTGridAutoRecipeConfig.Get(definition.BatchRecipeId).OutputDefinitionId).Name,
+                StationWorkKind.Chop => "切配 " + Tables.Instance.DTGridItemConfig.Get(Tables.Instance.DTGridManualRecipeConfig.Get(definition.ManualRecipeId).InputDefinitionId).Name,
+                StationWorkKind.Bake => ((GridStationCapability)Tables.Instance.DTGridBakeRecipeConfig.Get(definition.BakeRecipeId).StationCapability switch
+                    {
+                        GridStationCapability.Fry => "煎制 ",
+                        GridStationCapability.Grind => "研磨 ",
+                        _ => "烘焙 "
+                    }) + Tables.Instance.DTGridItemConfig.Get(Tables.Instance.DTGridBakeRecipeConfig.Get(definition.BakeRecipeId).InputDefinitionId).Name,
                 _ => "未知效果"
             };
             return target + "耗时 " + definition.DurationNumerator + "/" + definition.DurationDenominator;

@@ -112,6 +112,32 @@ namespace ET
             return own;
         }
 
+        // 被动查询必须保留缺失/损坏事实，不能借OwnIdentity补建密钥、公钥或自身信任。
+        public static void RequireExistingOwnIdentity(SoloSaveRepository repository)
+        {
+            string directory = Path.Combine(repository.DirectoryPath, "Identity");
+            if (!File.Exists(Path.Combine(directory, "own.cckey")))
+            {
+                throw new InvalidOperationException("ProfilePrivateKeyMissing");
+            }
+            if (!File.Exists(Path.Combine(directory, "own.ccidentity")))
+            {
+                throw new InvalidOperationException("ProfileIdentityMissing");
+            }
+            var own = ReadPrivate(repository, out _);
+            var published = DecodeIdentity(ReadLimited(Path.Combine(directory, "own.ccidentity"), MaxIdentityBytes));
+            if (own.ProfileId != published.ProfileId || own.KeyId != published.KeyId ||
+                own.PublicKeyXml != published.PublicKeyXml || own.DisplayName != published.DisplayName)
+            {
+                throw new InvalidOperationException("ProfileKeyConflict");
+            }
+            if (!File.Exists(Path.Combine(directory, "Trusted", own.ProfileId + ".ccidentity")))
+            {
+                throw new InvalidOperationException("ProfileIdentityMissing");
+            }
+            RequireTrusted(repository, own);
+        }
+
         public static byte[] AvailablePublicIdentity(SoloSaveRepository repository)
         {
             if (repository == null)

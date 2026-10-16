@@ -64,7 +64,7 @@ namespace ET
                     initial = level; replay = CopyReplayRequest(level); break;
                 case ProductCommandKind.Layout:
                     GridStation oven = PrepStation("烤箱");
-                    var layout = projection.CreateStationLayout(oven.Id, oven.Cell, 1);
+                    var layout = projection.CreateStationLayout(oven.Id, oven.Cell, GridOrientation.CounterClockwise90);
                     initial = layout; replay = CopyReplayRequest(layout); break;
                 case ProductCommandKind.FrontWork:
                     var work = projection.CreateFrontWorkCommand(FrontWorkAction.Claim, long.MaxValue);
@@ -136,7 +136,7 @@ namespace ET
                 buffer.WriteInt(row.CandidateCount);buffer.WriteBool(false);
                 buffer.WriteSize(row.AllowedRenovationIds.Count);foreach(int id in row.AllowedRenovationIds)buffer.WriteInt(id);
                 buffer.WriteInt(row.ChapterId); buffer.WriteInt(row.ChapterStage); buffer.WriteBool(row.IsChapterTerminal);
-                buffer.WriteInt(row.MenuVariant); buffer.WriteSize(row.AllowedDrinkIds.Count); foreach (int drink in row.AllowedDrinkIds) buffer.WriteInt(drink);
+                buffer.WriteInt((int)(row.MenuVariant)); buffer.WriteSize(row.AllowedDrinkIds.Count); foreach (int drink in row.AllowedDrinkIds) buffer.WriteInt(drink);
                 WriteLevelUnlockFixture(buffer, row);
                 rows[i]=new DRLevelConfig(buffer);map[row.Id]=rows[i];
             }

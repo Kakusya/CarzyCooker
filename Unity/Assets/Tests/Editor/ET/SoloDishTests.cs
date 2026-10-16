@@ -10,7 +10,7 @@ namespace ET
     {
         private static DRDishStageConfig DishStage(DRDishStageConfig row, int? output=null, params int[] dependencies)
         {
-            var buffer=new Luban.ByteBuf();buffer.WriteInt(row.Id);buffer.WriteInt(row.Kind);buffer.WriteInt(row.RecipeId);
+            var buffer=new Luban.ByteBuf();buffer.WriteInt(row.Id);buffer.WriteInt((int)(row.Kind));buffer.WriteInt(row.RecipeId);
             buffer.WriteInt(output??row.OutputDefinitionId);buffer.WriteInt(row.ContainerDefinitionId);
             buffer.WriteSize(dependencies.Length);foreach(int id in dependencies)buffer.WriteInt(id);
             return new DRDishStageConfig(buffer);
@@ -46,7 +46,7 @@ namespace ET
         {
             GridDishConfig.ValidateAllMenus();StartSolo();ClientSessionComponent client=host.Client;
             Assert.That(CurrentLevel.AllowedDishIds,Is.EqualTo(new[]{1,2}));
-            Assert.That(Tables.Instance.DTLevelConfig.DataList.Where(row=>row.ChapterId is 1 or 2 && row.MenuVariant is 0 or 1).All(row=>row.AllowedDishIds.SequenceEqual(new[]{1,2})),Is.True);
+            Assert.That(Tables.Instance.DTLevelConfig.DataList.Where(row=>row.ChapterId is 1 or 2 && row.MenuVariant is ProductMenuVariant.Basic or ProductMenuVariant.Drink).All(row=>row.AllowedDishIds.SequenceEqual(new[]{1,2})),Is.True);
             Assert.That(Tables.Instance.DTDishConfig.DataList.Where(row=>row.Id is 1 or 2).Select(row=>row.Name),Is.EqualTo(new[]{"番茄蛋花汤","盘装吐司"}));
             Assert.That(Grid.Items.Values.Count(value=>((GridItem)value).DefinitionId==GridKitchenRules.Bread),Is.EqualTo(1));
             Assert.That(Grid.Items.Values.Count(value=>((GridItem)value).DefinitionId==GridKitchenRules.Plate),Is.EqualTo(1));
@@ -99,6 +99,7 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductSemanticEnums")]
         public void SoloDishBakeLocalReplayLocksInputAndProducesOneNewIdentity()
         {
             StartSolo();ClientSessionComponent client=host.Client;var process=DishBegin(client);GridStation oven=PrepStation("烤箱");long input=process.InputItemId;
@@ -135,7 +136,7 @@ namespace ET
         {
             StartSolo();ClientSessionComponent client=host.Client;var process=DishBegin(client);var oven=PrepStation("烤箱");
             PrepDo(client,GridAction.Move,cell:new GridCell(3,13));int progress=process.ProgressTicks;long input=process.InputItemId,processId=process.Id;
-            LayoutDo(oven,new GridCell(5,12),1);
+            LayoutDo(oven,new GridCell(5,12),GridOrientation.CounterClockwise90);
             Assert.That(process.Id,Is.EqualTo(processId));Assert.That(process.ProgressTicks,Is.EqualTo(progress+1));Assert.That(process.RequiredTicks,Is.EqualTo(80));
             Assert.That(process.StationId,Is.EqualTo(oven.Id));Assert.That(oven.ItemId,Is.EqualTo(input));Assert.That(Grid.Item(input).Cell,Is.EqualTo(oven.Cell));
             AdvanceTicks(process.RequiredTicks + 1);Assert.That(process.State,Is.EqualTo(GridBakeState.Completed));Assert.That(Grid.Item(process.OutputItemId).Cell,Is.EqualTo(oven.Cell));

@@ -38,4 +38,5 @@ Check 不写产物且跳过本地化输出。缺工具说明前置，不把构�
 - Design/Proto/*/proto.conf 选择 active/codeType/起始 Opcode/输出；Proto2CS 排序和消息顺序影响 Opcode。当前配置只有 ET 生成域，使用 ET/MemoryPack。工具保留 UGF 生成器不等于客户端仍有 GF Network packet 运行时；不恢复已删除模式。见 [Proto手册](../Book/Proto生成工具.md)。
 - 本地化源 Design/Excel/Localization.xlsx，由 ExcelExporter.Localization.cs 生成资源与常量。见 [多语言](../Book/多语言.md)。
 - CodeBind 在 prefab 上生成 Mono partial 引用；ET 骨架工具不会自动填表。STATE_CONTROLLER_CODE_BIND 按依赖配置启用，不由宏推断绑定完成。
+- 产品分类统一在 `Design/Excel/ET/Datas/__enums__.xlsx` 维护，group 为 `c,s,e`。表字段使用生成枚举，单值写成员名；`GridStationCapability` 是 Flags，例如洗碗池使用 `Wash|FillWater|DrainLiquid`（原值 400），蒸汽机使用 `HeatMilk|FoamMilk`。`StationWorkKind` 的 Batch／Chop／Bake 是加成与升级的加工管线分类，不能与 `KitchenProcessKind` 混用。角色 `GridFacing` 为运行域方向；工位 `GridOrientation` 为配置生成的逆时针旋转，两者各自使用。整数仅保留在消息／存档格式与索引边界，先验证再转换；生成代码不可手改。
 - 检查源改动、生成 diff、重复 ID、资源名/分组与目标编译。Editor 刷新需环境和授权，未运行写 NotRun。禁止 SHA/hash 与状态/证据副本。

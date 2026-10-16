@@ -31,7 +31,7 @@ namespace ET.Client
         // 只缓存派生显示与同步待删 ID；不持有权威实体或跨帧消息。ReleaseBoard 清有效内容。
         private readonly List<long> removedIds = new(32);
         private readonly List<int> removedMembers = new(8);
-        private readonly Dictionary<long, (string Name, int Kind, int Progress, int Count, int Extra)> labelStates = new(32);
+        private readonly Dictionary<long, (string Name, FrontWorkKind? Work, CustomerPhase? Phase, GridAutoState? Batch, GridBakeState? Bake, int Progress, int Count)> labelStates = new(32);
         private Dictionary<GridCell, Color> previousTints = new(128), nextTints = new(128);
         private readonly Dictionary<long,(GridCell Cell,IReadOnlyList<GridCell> Footprint)> stationGeometry = new(24);
         private readonly Dictionary<long,(GridCell Cell,int Ordinal)> groundPositions = new(32);
@@ -190,7 +190,7 @@ namespace ET.Client
                 bool working = person.WorkId != 0 && manual != null && manual.TryGetValue(person.WorkId, out GridProcessProjection process) && process.State == GridWorkState.Working;
                 working |= person.FrontWorkId != 0 && frontWorks.TryGetValue(person.FrontWorkId, out GridFrontWorkProjection frontWork) && frontWork.State == FrontWorkState.Working;
                 ApplyCharacterArt(renderer, person.MemberId == ownMember ? 0 : 1, person.Facing, person.Motion, person.HandItemId != 0, working, tick);
-                Vector3 facing = person.Facing == 0 ? Vector3.up : person.Facing == 1 ? Vector3.right : person.Facing == 2 ? Vector3.down : Vector3.left;
+                Vector3 facing = person.Facing == GridFacing.Up ? Vector3.up : person.Facing == GridFacing.Right ? Vector3.right : person.Facing == GridFacing.Down ? Vector3.down : Vector3.left;
                 directions[person.MemberId].transform.localPosition = renderer.transform.localPosition + facing * .2f;
                 directions[person.MemberId].sortingOrder = renderer.sortingOrder + 1;
                 directions[person.MemberId].enabled = person.MemberId == ownMember;
@@ -212,7 +212,7 @@ namespace ET.Client
                 RenderFrontPerson(companion.Id, companion.Cell, companion.NextCell, companion.Motion, companion.StepStartTick,
                     tick, stepTicks, new Color(.69f,.43f,.89f));
                 ApplyCharacterArt(frontPeople[companion.Id], 1, FacingFromMotion(companion.Cell,companion.NextCell), companion.Motion, false, work.State == FrontWorkState.Working, tick);
-                var state=(companion.Name,work.Id==0?-1:(int)work.Kind,(int)Math.Round(work.Progress*100),companion.CompletedCount,0);
+                var state=(companion.Name,work.Id==0?(FrontWorkKind?)null:work.Kind,(CustomerPhase?)null,(GridAutoState?)null,(GridBakeState?)null,(int)Math.Round(work.Progress*100),companion.CompletedCount);
                 if(LabelChanged(companion.Id,state))
                 {
                     string action=work.Id==0?"待命":work.Kind switch{FrontWorkKind.Ask=>"询问",FrontWorkKind.Wash=>"洗碗",_=>"清桌"};
@@ -225,7 +225,7 @@ namespace ET.Client
                 RenderFrontPerson(customer.Id, customer.Cell, customer.NextCell, customer.Motion, customer.StepStartTick,
                     tick, stepTicks, new Color(.93f,.67f,.33f));
                 ApplyCharacterArt(frontPeople[customer.Id], 2 + (customer.ArrivalSequence & 1), FacingFromMotion(customer.Cell,customer.NextCell), customer.Motion, false, false, tick);
-                if(LabelChanged(customer.Id,(null,(int)customer.Phase,0,customer.ArrivalSequence,1)))
+                if(LabelChanged(customer.Id,(null,null,customer.Phase,null,null,0,customer.ArrivalSequence)))
                 {
                     string phase=customer.Phase switch{CustomerPhase.WaitingAsk=>"等询问",CustomerPhase.Ordered=>"等餐",CustomerPhase.Eating=>"用餐",CustomerPhase.Leaving=>"离店",CustomerPhase.Queued=>"排队",_=>"走位"};
                     labels[customer.Id].text=$"顾客 {customer.ArrivalSequence}\n{phase}";
@@ -291,7 +291,7 @@ namespace ET.Client
                     caption.transform.parent.localPosition=labelPosition;
                 }
                 // 地图保留短名称与进度；容器内容在选中目标详情中展开。
-                if(LabelChanged(counter.Id,(counter.Name,batch.Id==0?-1:(int)batch.State,batchProgress,bake.Id==0?-1:(int)bake.State,bakeProgress)))
+                if(LabelChanged(counter.Id,(counter.Name,null,null,batch.Id==0?(GridAutoState?)null:batch.State,bake.Id==0?(GridBakeState?)null:bake.State,batchProgress,bakeProgress)))
                 {
                     string progress=batch.Id==0?"":batch.State==GridAutoState.Cooking?$"\n煮制 {batchProgress}%":$"\n已熟 · {batch.RemainingPortions} 份";
                     if(bake.Id!=0)
@@ -428,7 +428,7 @@ namespace ET.Client
             (previousTints,nextTints)=(nextTints,previousTints);
         }
 
-        private bool LabelChanged(long id,(string Name,int Kind,int Progress,int Count,int Extra) state)
+        private bool LabelChanged(long id,(string Name, FrontWorkKind? Work, CustomerPhase? Phase, GridAutoState? Batch, GridBakeState? Bake, int Progress, int Count) state)
         {
             if(labelStates.TryGetValue(id,out var previous) && previous.Equals(state))
             {
@@ -478,6 +478,7 @@ namespace ET.Client
             tiles.Clear();stations.Clear();actors.Clear();directions.Clear();items.Clear();labels.Clear();frontPeople.Clear();
             labelStates.Clear();removedIds.Clear();removedMembers.Clear();previousTints.Clear();nextTints.Clear();
             stationGeometry.Clear();groundPositions.Clear();
+            ReleaseStationInspection();
             ReleaseArt();
             if(labelFont!=null)Destroy(labelFont);labelFont=null;
             originalCamera=null;

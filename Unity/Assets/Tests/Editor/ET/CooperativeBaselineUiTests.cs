@@ -30,6 +30,7 @@ namespace ET
         private IEnumerator VerifyProgressHostIdentity(string profile)
         {
             Pointer(EntryProgressButton("存档与身份"));
+            Pointer(EntryProgressButton("身份与高级操作"));
             Pointer(EntryProgressButton("验证本机身份"));
             yield return Wait(() => !Entry.Busy && Client.GetComponent<ProductRoomClient>().Current.VerifiedProfileId == profile,
                 "Ordinary UI proves repository private-key possession", 30);
@@ -38,6 +39,7 @@ namespace ET
 
         [UnityTest]
         [Category("CooperativeBaselineUi")]
+        [Category("EntryAuthorization")]
         public IEnumerator CooperativeBaselineUiOrdinaryBrowseCancelLoadExportAndKcpWorkKeepOriginalFile()
         {
             yield return StartProgressHostRoom();
@@ -54,6 +56,33 @@ namespace ET
             string identityPath = EntryHud.EntryAddress;
             Assert.That(File.Exists(identityPath), Is.True);
             Assert.That(OfflineProfiles.DecodeIdentity(File.ReadAllBytes(identityPath)).PublicKeyXml, Does.Not.Contain("<D>"));
+            Pointer(EntryProgressButton("返回任务选择"));
+            Pointer(EntryProgressButton("导出给朋友"));
+            Pointer(EntryProgressButton("导出房间只读许可"));
+            var otherScene = EntitySceneFactory.CreateScene(runtime.Root(), IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(),
+                SceneType.ProductRoot, "OwnedOtherRecipient");
+            var otherRepository = otherScene.AddComponent<SoloSaveRepository, string, string>(directory, Guid.NewGuid().ToString("N"));
+            string otherIdentityPath = OfflineProfiles.Export(otherRepository, "other.ccidentity", OfflineProfiles.EncodeIdentity(OfflineProfiles.OwnIdentity(otherRepository)));
+            EntryHud.ShowEntryAddress(otherIdentityPath, 2048);
+            Pointer(EntryProgressButton("查看接收者身份"));
+            yield return Wait(() => !Entry.Busy && Entry.InspectedIdentity?.ProfileId == otherRepository.ProfileId, "A valid public identity can belong to someone other than the current Host");
+            Pointer(EntryProgressButton("确认信任此身份"));
+            yield return Wait(() => !Entry.Busy && Entry.InspectedTrusted, "Explicit trust does not make a different identity the current room Host");
+            Pointer(EntryProgressButton("本机成功记录"));
+            yield return Wait(() => !Entry.Busy && Entry.ProgressHeaders.Length == 1, "Original metadata browser settles for the mismatched recipient");
+            Assert.That(EntryHud.SettlementText.text, Does.Contain("所查身份不是当前已验证房主"));
+            Assert.That(EntryHud.GetComponentsInChildren<Button>(false).Any(button => button.GetComponentInChildren<Text>().text.StartsWith("授权导出 记录 ")), Is.False);
+            Assert.That(File.ReadAllBytes(path), Is.EqualTo(original));
+            otherScene.Dispose();
+            // Reset only the task view; both identity trust and source file remain real repository facts.
+            Pointer(EntryProgressButton("返回任务选择"));
+            Pointer(EntryProgressButton("导出给朋友"));
+            Pointer(EntryProgressButton("导出房间只读许可"));
+            EntryHud.ShowEntryAddress(identityPath, 2048);
+            Pointer(EntryProgressButton("查看接收者身份"));
+            yield return Wait(() => !Entry.Busy && Entry.InspectedIdentity?.ProfileId == profile, "Recipient identity is explicitly inspected for the chosen export purpose");
+            Pointer(EntryProgressButton("确认信任此身份"));
+            yield return Wait(() => !Entry.Busy && Entry.InspectedTrusted, "Recipient trust is a separate original operation");
             var browse = EntryProgressButton("本机成功记录");
             var retiredBrowse = CaptureButtonCallback(browse);
             Pointer(browse);
@@ -75,6 +104,10 @@ namespace ET
             string grantPath = EntryHud.EntryAddress;
             var signed = OfflineProfiles.Verify(File.ReadAllBytes(grantPath), OfflineProfiles.BaselineReadRun, repository);
             Assert.That(CooperativeBaselineSystem.ReadValue(signed, out _, out _).MatchId, Is.EqualTo(Client.MatchId));
+            Pointer(EntryProgressButton("返回任务选择"));
+            Pointer(EntryProgressButton("身份与高级操作"));
+            Pointer(EntryProgressButton("本机成功记录"));
+            yield return Wait(() => !Entry.Busy && Entry.ProgressHeaders.Length == 1, "Original readonly record browser remains available");
             var read = EntryProgressButton("读取 记录 ", true);
             var retiredRead = CaptureButtonCallback(read);
             Pointer(read);
@@ -127,11 +160,29 @@ namespace ET
                 Assert.That(Grid.Items.Count, Is.EqualTo(SelectionFixture().Items.Length));
                 Assert.That(File.ReadAllBytes(path), Is.EqualTo(original));
                 Assert.That(repository.Browse().Length, Is.EqualTo(1));
+                var other = remote.Client.Root().AddComponent<SoloSaveRepository, string, string>(directory, Guid.NewGuid().ToString("N"));
+                var otherEntry = remote.Client.Root().GetComponent<ProductEntryPresentation>();
+                Pointer(ClaimUiButton(remote.Hud, "合作进度领取"));
+                yield return WaitCoopUi(remote, () => otherEntry.ClaimsVisible && !otherEntry.Busy && ((UIGridKitchen)otherEntry.Hud)?.Available == true,
+                    "Real KCP Client opens original progress overlay");
+                MonoUIGridKitchen OtherHud() => ((UIGridKitchen)otherEntry.Hud).View;
+                Pointer(ClaimUiButton(OtherHud(), "身份与授权文件"));
+                Pointer(ClaimUiButton(OtherHud(), "继续他人餐厅"));
+                OtherHud().ShowEntryAddress(grantPath, 2048);
+                Pointer(ClaimUiButton(OtherHud(), "查看导入文件"));
+                yield return WaitCoopUi(remote, () => !otherEntry.Busy && otherEntry.InspectedAuthorization != null, "Client inspects actual room read permission without becoming Host");
+                Pointer(ClaimUiButton(OtherHud(), "确认信任此身份"));
+                yield return WaitCoopUi(remote, () => !otherEntry.Busy && otherEntry.InspectedTrusted, "Client trusts only through original explicit operation");
+                Assert.That(OtherHud().GetComponentsInChildren<Button>(false).Any(button => button.GetComponentInChildren<Text>().text == "载入此授权餐厅"), Is.False);
+                Assert.That(other.Browse(), Is.Empty); Assert.That(remote.Grid.WorldId, Is.EqualTo(world));
+                Assert.That(File.ReadAllBytes(path), Is.EqualTo(original));
             }
         }
 
         [UnityTest]
         [Category("CooperativeBaselineUi")]
+        [Category("EntryAuthorization")]
+        [Category("AuthorizationFlowEdges")]
         public IEnumerator CooperativeBaselineUiForeignFileTrustRejectsWrongMatchThenLoadsWithoutTakingOwnership()
         {
             yield return StartProgressHostRoom();
@@ -155,12 +206,28 @@ namespace ET
                 string source = Path.Combine(owner.DirectoryPath, header.SlotId + ".ccsave");
                 byte[] original = File.ReadAllBytes(source);
                 var match = (Match)((HostSessionComponent)Runtime.Authority).Match;
+                Pointer(EntryProgressButton("返回任务选择"));
+                Pointer(EntryProgressButton("导入独立进度"));
+                EntryHud.ShowEntryAddress(validPath, 2048);
+                Pointer(EntryProgressButton("查看导入文件"));
+                yield return Wait(() => !Entry.Busy && Entry.InspectedAuthorization != null, "Import task inspects actual ReadRun file without promoting its purpose");
+                Assert.That(EntryHud.SettlementText.text, Does.Contain("文件用途不符").And.Contain("房间只读许可"));
+                Assert.That(EntryHud.GetComponentsInChildren<Button>(false).Any(button => button.GetComponentInChildren<Text>().text == "导入为独立分支" ||
+                    button.GetComponentInChildren<Text>().text == "确认信任此身份"), Is.False);
+                Assert.Throws<InvalidOperationException>(() => SaveAuthorizationFiles.Import(repository, valid));
+                Assert.That(repository.Browse(), Is.Empty); Assert.That(File.ReadAllBytes(source), Is.EqualTo(original));
+                Pointer(EntryProgressButton("返回任务选择"));
+                Pointer(EntryProgressButton("继续他人餐厅"));
                 foreach (var input in new[] { wrongPath, validPath })
                 {
                     EntryHud.GetComponentInChildren<InputField>(false).text = input;
                     Pointer(EntryProgressButton("查看导入文件"));
                     yield return Wait(() => !Entry.Busy && Entry.InspectedIdentity?.ProfileId == ownerProfile, "Inspect actual external authorization without trusting it yet");
-                    Assert.That(EntryHud.SettlementText.text, Does.Contain(ownerProfile).And.Contain(input).And.Contain("目标房间"));
+                    Assert.That(EntryHud.SettlementText.text, Does.Contain("目标房间"));
+                    Pointer(EntryProgressButton("展开身份明细"));
+                    Assert.That(EntryHud.DetailsText.text, Does.Contain(ownerProfile).And.Contain(Path.GetFileName(input)));
+                    Assert.That(EntryHud.EntryAddress, Is.EqualTo(input), "The full inspected path remains available in its original input field");
+                    Pointer(EntryProgressButton("收起身份明细"));
                     Assert.That((RestaurantRuntime)match.Restaurant, Is.Null);
                     Pointer(EntryProgressButton("确认信任此身份"));
                     yield return Wait(() => !Entry.Busy && Entry.InspectedTrusted, "Explicit identity pinning preserves existing keys");

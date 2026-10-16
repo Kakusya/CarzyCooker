@@ -24,13 +24,13 @@ namespace ET
                     row.AvailablePackages <= 0 || row.TransitTicks <= 0 || (long)row.PackageUnits * row.AvailablePackages > int.MaxValue ||
                     !raw.Add(row.MaterialDefinitionId) || !packages.Add(row.PackageDefinitionId) ||
                     !ProductMenuCatalog.IsValid(row.MenuVariant) || !items.TryGetValue(row.MaterialDefinitionId, out var material) ||
-                    !(material.Kind == 1 && material.Form == (int)GridMaterialForm.Solid || material.Kind == 2 && material.Disposable && material.Form == (int)GridMaterialForm.Container) ||
+                    !(material.Kind == GridItemKind.Material && material.Form == GridMaterialForm.Solid || material.Kind == GridItemKind.Container && material.Disposable && material.Form == GridMaterialForm.Container) ||
                     produced.Contains(material.Id) || !items.TryGetValue(row.PackageDefinitionId, out var package) ||
-                    package.Kind != 2 || package.Form != (int)GridMaterialForm.Container || !package.Discardable ||
+                    package.Kind != GridItemKind.Container || package.Form != GridMaterialForm.Container || !package.Discardable ||
                     package.ContainerCapacity < row.PackageUnits || !package.AcceptedDefinitionIds.SequenceEqual(new[] { material.Id }) ||
-                    package.MenuVariant != row.MenuVariant || material.MenuVariant != row.MenuVariant || material.Kind == 2 && !package.AllowsEmptyContainers ||
+                    package.MenuVariant != row.MenuVariant || material.MenuVariant != row.MenuVariant || material.Kind == GridItemKind.Container && !package.AllowsEmptyContainers ||
                     !layouts.TryGetValue(row.ReceivingLayoutId, out var receiving) ||
-                    !stations.TryGetValue(receiving.StationDefinitionId, out var station) || station.Kind != (int)GridStationKind.Counter || station.ItemSlotCapacity != 1)
+                    !stations.TryGetValue(receiving.StationDefinitionId, out var station) || station.Kind != GridStationKind.Counter || station.ItemSlotCapacity != 1)
                     throw new InvalidOperationException($"Invalid supply / package / receiving reference {row.Id}");
             }
             foreach (int id in new[] { GridKitchenRules.Tomato, GridKitchenRules.Egg, GridKitchenRules.Bread })

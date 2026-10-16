@@ -24,14 +24,14 @@ namespace ET
             SoloSaveRepository repository = null;
             if (cooperative)
             {
-                yield return StartProgressHostRoom(); Pointer(EntryButton("开启经营成长餐厅"));
+                yield return StartProgressHostRoom(); StartPreviewAndConfirm(EntryButton("开启经营成长餐厅"));
             }
             else
             {
                 yield return StartModeLauncher(); repository = CreateSaveUiRepository(Runtime, out _, out _);
                 Pointer(EntryButton("单机餐厅"));
                 yield return Wait(() => Selection != null && ((UIGridKitchen)Selection.Hud)?.Available == true, "Ordinary selector before growth restaurant");
-                Pointer(SelectionButton("新开经营成长餐厅"));
+                StartPreviewAndConfirm(SelectionButton("新开经营成长餐厅"));
             }
             yield return Wait(() => Presentation?.Ready == true && Grid.Confirmed, "Ordinary growth restaurant");
             Assert.That(Grid.Width, Is.EqualTo(7)); Assert.That(Grid.Tables.Count, Is.EqualTo(2));
@@ -133,7 +133,7 @@ namespace ET
                 yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Third stage naturally closes after added table service", 90);
                 Pointer(Button("保存完成并返回选档"));
                 yield return Wait(() => Selection != null && ((UIGridKitchen)Selection.Hud)?.Available == true && Selection.Headers.Any(header => header.SlotId == savedSlot), "Ordinary terminal action returns the selector", 30);
-                Pointer(SelectionSlotButton(savedSlot));
+                yield return InspectAndContinueSave(savedSlot);
                 yield return Wait(() => Presentation?.Ready == true && Grid.Confirmed && Grid.LevelConfigId == checkpoint.NextLevelId, "Ordinary selector restores the checkpoint containing installed expansion", 20);
                 Assert.That(Grid.Width, Is.EqualTo(9)); Assert.That(Grid.Tables.Count, Is.EqualTo(3));
                 Assert.That(Grid.Stations.Count, Is.EqualTo(saved.Stations.Length)); Assert.That(Grid.Items.Count, Is.EqualTo(saved.Items.Length));

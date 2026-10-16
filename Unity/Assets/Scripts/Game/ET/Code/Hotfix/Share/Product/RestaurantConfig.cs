@@ -7,7 +7,7 @@ namespace ET
 {
     public static class RestaurantConfig
     {
-        public static DRLevelConfig FirstCooperativeLevel(int menuVariant)
+        public static DRLevelConfig FirstCooperativeLevel(ProductMenuVariant menuVariant)
         {
             return Tables.Instance.DTLevelConfig.DataList.Single(row => row.ChapterId == 2 && row.ChapterStage == 1 && row.MenuVariant == menuVariant);
         }
@@ -47,7 +47,7 @@ namespace ET
                 {
                     throw new InvalidOperationException("No initially producible dish:" + row.Id);
                 }
-                if (!ProductMenuCatalog.IsValid(row.MenuVariant) || row.MenuVariant == 0 && row.AllowedDrinkIds.Count != 0 ||
+                if (!ProductMenuCatalog.IsValid(row.MenuVariant) || row.MenuVariant == ProductMenuVariant.Basic && row.AllowedDrinkIds.Count != 0 ||
                     row.AllowedDrinkIds.Distinct().Count() != row.AllowedDrinkIds.Count || row.AllowedDrinkIds.Intersect(row.AllowedDishIds).Any())
                     throw new InvalidOperationException("Invalid level menu variant:" + row.Id);
                 if ((row.IsChapterTerminal ? row.NextLevelConfigId != 0 || row.ChapterId <= 0 || row.AllowedRenovationIds.Count != 0

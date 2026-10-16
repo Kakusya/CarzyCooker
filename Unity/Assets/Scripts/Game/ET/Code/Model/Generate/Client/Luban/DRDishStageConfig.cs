@@ -16,7 +16,7 @@ public sealed partial class DRDishStageConfig : Luban.BeanBase
     public DRDishStageConfig(ByteBuf _buf) 
     {
         Id = _buf.ReadInt();
-        Kind = _buf.ReadInt();
+        Kind = (DishStageKind)_buf.ReadInt();
         RecipeId = _buf.ReadInt();
         OutputDefinitionId = _buf.ReadInt();
         ContainerDefinitionId = _buf.ReadInt();
@@ -36,7 +36,7 @@ public sealed partial class DRDishStageConfig : Luban.BeanBase
     /// <summary>
     /// Kind
     /// </summary>
-    public readonly int Kind;
+    public readonly DishStageKind Kind;
     /// <summary>
     /// RecipeId
     /// </summary>

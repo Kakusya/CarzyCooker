@@ -13,7 +13,7 @@ namespace ET
             buffer.WriteInt(material ?? source.MaterialDefinitionId); buffer.WriteInt(package ?? source.PackageDefinitionId);
             buffer.WriteInt(units ?? source.PackageUnits); buffer.WriteInt(quota ?? source.AvailablePackages);
             buffer.WriteInt(transit ?? source.TransitTicks); buffer.WriteInt(receiving ?? source.ReceivingLayoutId);
-            buffer.WriteInt(source.MenuVariant);
+            buffer.WriteInt((int)(source.MenuVariant));
             return new DRSupplyConfig(buffer);
         }
 
@@ -40,8 +40,8 @@ namespace ET
                 {
                     int index = layouts.FindIndex(value => value.Id == row.Id);
                     var buffer = new Luban.ByteBuf(); buffer.WriteInt(row.Id); buffer.WriteInt(row.StationDefinitionId);
-                    buffer.WriteInt(row.X); buffer.WriteInt(row.Y); buffer.WriteInt(row.Orientation); buffer.WriteString(row.Name); buffer.WriteInt(0);
-                    buffer.WriteInt(row.MenuVariant);
+                    buffer.WriteInt(row.X); buffer.WriteInt(row.Y); buffer.WriteInt((int)(row.Orientation)); buffer.WriteString(row.Name); buffer.WriteInt(0);
+                    buffer.WriteInt((int)(row.MenuVariant));
                     layouts[index] = new DRInitialLayoutConfig(buffer);
                 }
                 GridDishConfig.ValidateAllMenus(); StartSolo();

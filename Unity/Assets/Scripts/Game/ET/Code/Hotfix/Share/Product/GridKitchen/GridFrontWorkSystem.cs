@@ -146,7 +146,7 @@ namespace ET
                 work.SuccessorPending = work.Kind == FrontWorkKind.Clear && work.ItemId != 0;
                 self.ReleaseFrontClaim(level, work, FrontWorkState.Completed, true);
                 self.NotifyFrontFinished(level, work);
-                if (finisher != null) NotifyFrontResult(finisher, request, work.Id, serial, GridResultStatus.Executed, null, 2);
+                if (finisher != null) NotifyFrontResult(finisher, request, work.Id, serial, GridResultStatus.Executed, null, CompanionNotificationKind.Finished);
             }
             foreach (FrontWorkEnvelope command in commands.StepCommands)
             {
@@ -172,7 +172,7 @@ namespace ET
             {
                 role.LastCommittedRequestId = command.RequestId; role.LastResultStatus = status; role.LastWorkReason = error;
                 FrontWork work = level.GetChild<FrontWork>(command.Intent.WorkId);
-                NotifyFrontResult(role, command.RequestId, command.Intent.WorkId, work?.ClaimSerial ?? 0, status, error, 1);
+                NotifyFrontResult(role, command.RequestId, command.Intent.WorkId, work?.ClaimSerial ?? 0, status, error, CompanionNotificationKind.RequestResult);
             }
             self.Dirty = true;
         }
@@ -299,20 +299,20 @@ namespace ET
                 FrontWorkEnvelope command = commands.Pending.Dequeue(); HostPeer peer = command.Peer; CompanionRole role = command.Role;
                 peer?.RecordProductResult(command.Context, ProductCommandKind.FrontWork, GridResultStatus.Cancelled, "Paused");
                 if (role != null)
-                { role.LastCommittedRequestId = command.RequestId; role.LastResultStatus = GridResultStatus.Cancelled; role.LastWorkReason = "Paused"; NotifyFrontResult(role, command.RequestId, command.Intent.WorkId, 0, GridResultStatus.Cancelled, "Paused", 1); }
+                { role.LastCommittedRequestId = command.RequestId; role.LastResultStatus = GridResultStatus.Cancelled; role.LastWorkReason = "Paused"; NotifyFrontResult(role, command.RequestId, command.Intent.WorkId, 0, GridResultStatus.Cancelled, "Paused", CompanionNotificationKind.RequestResult); }
             }
             foreach (FrontWork work in level.Children.Values.OfType<FrontWork>().Where(value => value.State == FrontWorkState.Approaching || all && value.State == FrontWorkState.Working).ToArray())
                 self.ReleaseFrontClaim(level, work, FrontWorkState.Available, true);
             self.Dirty = true;
         }
 
-        private static void NotifyFrontResult(CompanionRole role, long request, long work, long serial, GridResultStatus status, string reason, int kind)
+        private static void NotifyFrontResult(CompanionRole role, long request, long work, long serial, GridResultStatus status, string reason, CompanionNotificationKind kind)
         {
             ProcessInnerSender sender = role.Root().GetComponent<ProcessInnerSender>();
             if (sender == null || sender.IsStopped) return;
             sender.Send(role.GetActorId(), ProductMessages.Create<CompanionWorkResult>(message =>
             { message.RoleId = role.Id; message.RoleInstanceId = role.InstanceId; message.LevelGeneration = role.LevelGeneration;
-                message.RequestId = request; message.WorkId = work; message.ClaimSerial = serial; message.Status = (int)status; message.Reason = reason; message.EventKind = kind; }));
+                message.RequestId = request; message.WorkId = work; message.ClaimSerial = serial; message.Status = (int)status; message.Reason = reason; message.EventKind = (int)kind; }));
         }
     }
 }

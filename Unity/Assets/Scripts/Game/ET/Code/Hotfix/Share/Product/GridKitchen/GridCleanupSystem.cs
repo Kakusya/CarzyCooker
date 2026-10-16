@@ -47,7 +47,7 @@ namespace ET
             contents = source.Contents.Select(self.Item).ToArray();
             if (contents.Any(item => item == null || item.Location != GridItemLocation.Container || item.HolderId != sourceId) ||
                 source.Contents.Distinct().Count() != source.Contents.Count) return "ContentsChanged";
-            if (contents.Any(item => Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Kind != 1 || item.Contents.Count != 0)) return "NestedContainer";
+            if (contents.Any(item => Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Kind != GridItemKind.Material || item.Contents.Count != 0)) return "NestedContainer";
             var prep = self.CleanupPrep(source);
             var baking = self.CleanupBakes(source);
             if (prep.Any(value => value.State == GridWorkState.Working || value.WorkerMemberId != 0)) return "WorkBusy";
@@ -66,7 +66,7 @@ namespace ET
             var definition = Tables.Instance.DTGridItemConfig.Get(source.DefinitionId);
             if (intent.Action == GridAction.FillWater)
             {
-                if (definition.Kind != 2) return "RequiresContainer";
+                if (definition.Kind != GridItemKind.Container) return "RequiresContainer";
                 if (source.Hygiene != ItemHygiene.Clean) return "DirtyUtensil";
                 if (source.Contents.Count != 0 || batch != null) return "ContainerFull";
                 var supply = Tables.Instance.DTStationConfig.Get(station.DefinitionId);
@@ -74,11 +74,11 @@ namespace ET
                 if (!definition.AcceptedDefinitionIds.Contains(supply.WaterDefinitionId)) return "IncompatibleContainer";
                 return null;
             }
-            int requiredForm = (int)(intent.Action == GridAction.DrainLiquid ? GridMaterialForm.Liquid : GridMaterialForm.Solid);
+            GridMaterialForm requiredForm = (intent.Action == GridAction.DrainLiquid ? GridMaterialForm.Liquid : GridMaterialForm.Solid);
             if (batch != null)
                 return Tables.Instance.DTGridItemConfig.Get(batch.OutputDefinitionId).Form != requiredForm
                     ? intent.Action == GridAction.DrainLiquid ? "RequiresLiquid" : "RequiresSolid" : null;
-            if (definition.Kind == 1)
+            if (definition.Kind == GridItemKind.Material)
             {
                 if (source.Contents.Count != 0) return "ContentsChanged";
                 if (definition.Form != requiredForm) return intent.Action == GridAction.DrainLiquid ? "RequiresLiquid" : "RequiresSolid";
@@ -126,7 +126,7 @@ namespace ET
             self.ProductLevel()?.DrinkBindings.Remove(source.Id);
             source.Contents.Clear();
             var definition = Tables.Instance.DTGridItemConfig.Get(source.DefinitionId);
-            if (definition.Kind == 1 || contents.Length == 0 && batch == null && definition.Discardable)
+            if (definition.Kind == GridItemKind.Material || contents.Length == 0 && batch == null && definition.Discardable)
             {
                 actor.HandItemId = 0; self.Items.Remove(source.Id); source.Dispose();
             }

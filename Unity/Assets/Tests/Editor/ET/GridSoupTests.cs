@@ -108,7 +108,7 @@ namespace ET
                 if (fault != 1) buffer.WriteInt(1);
                 buffer.WriteInt(120); buffer.WriteInt(fault == 4 ? GridKitchenRules.Tomato : GridKitchenRules.Soup);
                 buffer.WriteInt(2); buffer.WriteInt(GridKitchenRules.Bowl);
-                buffer.WriteInt((int)GridStationCapability.Cook); buffer.WriteBool(false); buffer.WriteInt(0);
+                buffer.WriteInt((int)(GridStationCapability.Cook)); buffer.WriteBool(false); buffer.WriteInt(0);
                 var malformed = new DRGridAutoRecipeConfig(buffer);
                 Assert.Throws<InvalidOperationException>(() => GridKitchenSystem.ValidateGridSoupDefinitions(items, new[] { malformed }), $"Fault {fault}");
             }

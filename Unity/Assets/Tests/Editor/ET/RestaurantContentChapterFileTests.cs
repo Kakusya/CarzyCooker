@@ -55,7 +55,7 @@ namespace ET
                 Assert.That(Assert.Throws<InvalidOperationException>(() => host.InitializeSavedProduct(SaveProfileId, completed, completePayload)).Message, Is.EqualTo("ChapterCompleted"));
                 Assert.That((Scene)host.HostScene, Is.Null);
                 Assert.That(File.ReadAllBytes(path), Is.EqualTo(original));
-                host.InitializeSavedProduct(SaveProfileId, menuVariant: (int)ProductMenuVariant.Growth, contentChapterId: 1); Pump(15);
+                host.InitializeSavedProduct(SaveProfileId, menuVariant: ProductMenuVariant.Growth, contentChapterId: 1); Pump(15);
                 Assert.That(CurrentLevel.ConfigId, Is.EqualTo(1101)); Assert.That(Grid.Width, Is.EqualTo(7)); Assert.That(Renovation.AppliedStations, Is.Empty);
             }
             finally { repository.Dispose(); RemoveOwnSaveTestDirectory(directory); }

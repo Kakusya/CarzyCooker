@@ -16,8 +16,8 @@ namespace ET
             buffer.WriteSize(source.InputCounts.Count);
             foreach (int count in source.InputCounts) { buffer.WriteInt(count); }
             buffer.WriteInt(ticks); buffer.WriteInt(source.OutputDefinitionId); buffer.WriteInt(source.OutputPortions);
-            buffer.WriteInt(source.ServingContainerDefinitionId); buffer.WriteInt(source.StationCapability);
-            buffer.WriteBool(source.LockContainer); buffer.WriteInt(source.MenuVariant); return new DRGridAutoRecipeConfig(buffer);
+            buffer.WriteInt(source.ServingContainerDefinitionId); buffer.WriteInt((int)(source.StationCapability));
+            buffer.WriteBool(source.LockContainer); buffer.WriteInt((int)(source.MenuVariant)); return new DRGridAutoRecipeConfig(buffer);
         }
 
         private void BeverageLongFoamBases(ClientSessionComponent client)
@@ -75,7 +75,7 @@ namespace ET
                 host.StopProduct(); repository.Dispose(); StartSavedFixture(header, payload);
                 foam = Grid.AutoProcesses.Values.Select(value => (GridAutoProcess)value).Single(value => value.RecipeId == 6);
                 Assert.That(foam.ProgressTicks, Is.EqualTo(progress)); Assert.That(foam.RequiredTicks, Is.EqualTo(5000));
-                Assert.That(foam.RequiredCapability, Is.EqualTo((int)GridStationCapability.FoamMilk));
+                Assert.That(foam.RequiredCapability, Is.EqualTo(GridStationCapability.FoamMilk));
                 Assert.That(Grid.AutoProcesses.Values.Select(value => (GridAutoProcess)value).Where(value => value.RecipeId is 4 or 5).All(value => value.RemainingPortions == 1), Is.True);
                 Assert.That(Grid.Items.Count, Is.EqualTo(count)); Assert.That(CurrentLevel.DrinkBindings, Is.Empty);
                 Assert.That(Supply.RemainingPackages[13], Is.EqualTo(3)); Assert.That(Supply.RemainingPackages[14], Is.EqualTo(4));
@@ -129,7 +129,7 @@ namespace ET
         public void BeverageActualOldSecondChapterFileFollowsOriginal1202RouteAfterNewChapterMenuChanges()
         {
             var table = Tables.Instance.DTRestaurantChapterConfig; var source = table.Get(2);
-            var buffer = new Luban.ByteBuf(); buffer.WriteInt(source.Id); buffer.WriteString(source.Name); buffer.WriteInt((int)ProductMenuVariant.Growth);
+            var buffer = new Luban.ByteBuf(); buffer.WriteInt(source.Id); buffer.WriteString(source.Name); buffer.WriteInt((int)(ProductMenuVariant.Growth));
             buffer.WriteInt(source.SoloChapterId); buffer.WriteInt(source.CooperativeChapterId); buffer.WriteInt(1201); buffer.WriteInt(2201);
             var old = new DRRestaurantChapterConfig(buffer);
             var map = (Dictionary<int, DRRestaurantChapterConfig>)table.DataMap; var rows = (List<DRRestaurantChapterConfig>)table.DataList; int index = rows.IndexOf(source);
@@ -143,7 +143,7 @@ namespace ET
                 string path = Path.Combine(repository.DirectoryPath, header.SlotId + ".ccsave"); byte[] original = SoloSaveFile.Encode(header, payload);
                 File.WriteAllBytes(path, original); payload = repository.Select(header.SlotId, out header);
                 host.StopProduct(); repository.Dispose(); StartSavedFixture(header, payload);
-                Assert.That(CurrentLevel.ConfigId, Is.EqualTo(1202)); Assert.That(CurrentLevel.MenuVariant, Is.EqualTo((int)ProductMenuVariant.Growth));
+                Assert.That(CurrentLevel.ConfigId, Is.EqualTo(1202)); Assert.That(CurrentLevel.MenuVariant, Is.EqualTo(ProductMenuVariant.Growth));
                 Assert.That(CurrentLevel.NextLevelConfigId, Is.EqualTo(1203)); Assert.That(RestaurantChapters.Find(Tables.Instance.DTLevelConfig.Get(1202)).Id, Is.EqualTo(2));
                 Assert.That(Grid.Items.Values.Any(value => ((GridItem)value).DefinitionId >= 32), Is.False);
                 Assert.That(Grid.Items.Count, Is.EqualTo(payload.Items.Length)); Assert.That(File.ReadAllBytes(path), Is.EqualTo(original));

@@ -5,7 +5,8 @@ namespace ET
 {
     public readonly struct GridActorProjection
     {
-        public readonly int MemberId, Facing;
+        public readonly int MemberId;
+        public readonly GridFacing Facing;
         public readonly long Generation, StepStartTick, HandItemId, LastCommandId, WorkId;
         public readonly long FrontWorkId, FrontClaimSerial;
         public readonly GridCell Cell, NextCell, Goal;
@@ -14,7 +15,7 @@ namespace ET
         public readonly string LastReason;
         public readonly IReadOnlyList<GridCell> Path;
         public GridActorProjection(int member, long generation, GridCell cell, GridCell next, long start,
-            GridMotion motion, int facing, long hand, GridCell goal, IReadOnlyList<GridCell> path, long command, GridResultStatus status, string reason, long work = 0, long frontWork = 0, long frontClaim = 0)
+            GridMotion motion, GridFacing facing, long hand, GridCell goal, IReadOnlyList<GridCell> path, long command, GridResultStatus status, string reason, long work = 0, long frontWork = 0, long frontClaim = 0)
         { MemberId = member; Generation = generation; Cell = cell; NextCell = next; StepStartTick = start; Motion = motion;
             Facing = facing; HandItemId = hand; Goal = goal; Path = path; LastCommandId = command; LastStatus = status; LastReason = reason; WorkId = work; FrontWorkId=frontWork;FrontClaimSerial=frontClaim; }
     }
@@ -25,14 +26,15 @@ namespace ET
         public readonly string Name;
         public readonly GridStationKind Kind;
         public readonly long AutoProcessId, BakeProcessId;
-        public readonly int DefinitionId, Orientation, ItemSlotCapacity;
+        public readonly int DefinitionId, ItemSlotCapacity;
+        public readonly GridOrientation Orientation;
         public readonly int UpgradeDefinitionId, UpgradeLevel;
         public readonly int WaterDefinitionId, WaterUnits;
         public readonly GridStationCapability Capabilities;
         public readonly IReadOnlyList<GridCell> Footprint, Approaches;
         public readonly IReadOnlyList<long> PoolItemIds;
         public GridStationProjection(long id, GridCell cell, string name, long item, GridStationKind kind = GridStationKind.Counter,
-            long autoProcess = 0, int definition = 0, int orientation = 0, int capacity = 1, GridStationCapability capabilities = default,
+            long autoProcess = 0, int definition = 0, GridOrientation orientation = GridOrientation.Unrotated, int capacity = 1, GridStationCapability capabilities = default,
             IReadOnlyList<GridCell> footprint = null, IReadOnlyList<GridCell> approaches = null, long bakeProcess = 0, IReadOnlyList<long> pool = null,
             int waterDefinition = 0, int waterUnits = 0, int upgradeDefinition = 0, int upgradeLevel = 0)
         {
@@ -79,10 +81,10 @@ namespace ET
         public readonly int RecipeId, RequiredTicks, ProgressTicks, OutputDefinitionId, TotalPortions, RemainingPortions, ServingContainerDefinitionId;
         public readonly GridAutoState State;
         public readonly IReadOnlyList<long> InputItemIds;
-        public readonly int RequiredCapability;
+        public readonly GridStationCapability RequiredCapability;
         public readonly bool LockContainer;
         public GridAutoProcessProjection(long id, int recipe, long pot, long station, long started, int required, int progress,
-            int output, int total, int remaining, int serving, GridAutoState state, IReadOnlyList<long> inputs, int capability = (int)GridStationCapability.Cook, bool lockContainer = false)
+            int output, int total, int remaining, int serving, GridAutoState state, IReadOnlyList<long> inputs, GridStationCapability capability = GridStationCapability.Cook, bool lockContainer = false)
         {
             Id=id; RecipeId=recipe; PotItemId=pot; StartStationId=station; StartedTick=started; RequiredTicks=required; ProgressTicks=progress;
             OutputDefinitionId=output; TotalPortions=total; RemainingPortions=remaining; ServingContainerDefinitionId=serving; State=state; InputItemIds=inputs;

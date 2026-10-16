@@ -635,11 +635,9 @@
       5
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      7,
+      8
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -674,11 +672,9 @@
       5
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      7,
+      8
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -713,11 +709,9 @@
       5
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      7,
+      8
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -747,11 +741,9 @@
       5
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      7,
+      8
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -786,11 +778,9 @@
       5
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      7,
+      8
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -825,11 +815,9 @@
       5
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      7,
+      8
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -865,13 +853,19 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      7,
+      8,
+      9
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
       7,
-      8
+      8,
+      9,
+      10
     ],
     "ChapterId": 1,
     "ChapterStage": 1,
@@ -922,13 +916,19 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      7,
+      8,
+      9
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
       7,
-      8
+      8,
+      9,
+      10
     ],
     "ChapterId": 1,
     "ChapterStage": 2,
@@ -972,11 +972,9 @@
       4
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      7,
+      8
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -1028,13 +1026,19 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      7,
+      8,
+      9
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
       7,
-      8
+      8,
+      9,
+      10
     ],
     "ChapterId": 2,
     "ChapterStage": 1,
@@ -1085,13 +1089,19 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      7,
+      8,
+      9
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
       7,
-      8
+      8,
+      9,
+      10
     ],
     "ChapterId": 2,
     "ChapterStage": 2,
@@ -1135,11 +1145,9 @@
       4
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      7,
+      8
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -1187,13 +1195,13 @@
       1,
       2,
       3,
-      4,
-      5
+      4
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      9
     ],
     "ChapterId": 11,
     "ChapterStage": 1,
@@ -1243,7 +1251,9 @@
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      9
+    ],
     "ChapterId": 11,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -1289,7 +1299,9 @@
       2,
       3,
       4,
-      5
+      5,
+      7,
+      8
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -1336,13 +1348,13 @@
       1,
       2,
       3,
-      4,
-      5
+      4
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      9
     ],
     "ChapterId": 21,
     "ChapterStage": 1,
@@ -1392,7 +1404,9 @@
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      9
+    ],
     "ChapterId": 21,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -1438,7 +1452,9 @@
       2,
       3,
       4,
-      5
+      5,
+      7,
+      8
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -1483,16 +1499,17 @@
       5
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      6,
+      7,
+      8,
+      9
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      10
     ],
     "ChapterId": 12,
     "ChapterStage": 1,
@@ -1544,11 +1561,17 @@
       2,
       3,
       4,
-      5
+      6,
+      7,
+      8,
+      9
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      9,
+      10
+    ],
     "ChapterId": 12,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -1600,7 +1623,11 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      7,
+      8,
+      9
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -1650,16 +1677,17 @@
       5
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      6,
+      7,
+      8,
+      9
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      10
     ],
     "ChapterId": 22,
     "ChapterStage": 1,
@@ -1711,11 +1739,17 @@
       2,
       3,
       4,
-      5
+      6,
+      7,
+      8,
+      9
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      9,
+      10
+    ],
     "ChapterId": 22,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -1767,7 +1801,11 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      7,
+      8,
+      9
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -1817,16 +1855,16 @@
       7
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      5,
+      10,
+      11,
+      12
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      11
     ],
     "ChapterId": 1,
     "ChapterStage": 1,
@@ -1869,15 +1907,16 @@
       7
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      5,
+      10,
+      11,
+      12
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      11
+    ],
     "ChapterId": 1,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -1919,11 +1958,10 @@
       7
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      5,
+      10,
+      11,
+      12
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -1969,16 +2007,16 @@
       7
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      5,
+      10,
+      11,
+      12
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      11
     ],
     "ChapterId": 2,
     "ChapterStage": 1,
@@ -2021,15 +2059,16 @@
       7
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      5,
+      10,
+      11,
+      12
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      11
+    ],
     "ChapterId": 2,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -2071,11 +2110,10 @@
       7
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      5,
+      10,
+      11,
+      12
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -2120,16 +2158,14 @@
       8
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      13,
+      14
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      12
     ],
     "ChapterId": 1,
     "ChapterStage": 1,
@@ -2168,15 +2204,14 @@
       8
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      13,
+      14
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      12
+    ],
     "ChapterId": 1,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -2214,11 +2249,8 @@
       8
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      13,
+      14
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -2260,16 +2292,14 @@
       8
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      13,
+      14
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      12
     ],
     "ChapterId": 2,
     "ChapterStage": 1,
@@ -2308,15 +2338,14 @@
       8
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      13,
+      14
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      12
+    ],
     "ChapterId": 2,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -2354,11 +2383,8 @@
       8
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      13,
+      14
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -2398,16 +2424,18 @@
     "SpawnY": 10,
     "AllowedDishIds": [],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      15,
+      16,
+      17,
+      18
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      14,
+      15,
+      13
     ],
     "ChapterId": 1,
     "ChapterStage": 1,
@@ -2464,15 +2492,18 @@
     "SpawnY": 10,
     "AllowedDishIds": [],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      15,
+      16,
+      17,
+      18
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      14,
+      15,
+      13
+    ],
     "ChapterId": 1,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -2528,11 +2559,10 @@
     "SpawnY": 10,
     "AllowedDishIds": [],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      15,
+      16,
+      17,
+      18
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -2592,16 +2622,18 @@
     "SpawnY": 10,
     "AllowedDishIds": [],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      15,
+      16,
+      17,
+      18
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      14,
+      15,
+      13
     ],
     "ChapterId": 2,
     "ChapterStage": 1,
@@ -2658,15 +2690,18 @@
     "SpawnY": 10,
     "AllowedDishIds": [],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      15,
+      16,
+      17,
+      18
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      14,
+      15,
+      13
+    ],
     "ChapterId": 2,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -2722,11 +2757,10 @@
     "SpawnY": 10,
     "AllowedDishIds": [],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
-      4,
-      5
+      15,
+      16,
+      17,
+      18
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -2790,16 +2824,23 @@
       6
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      6,
+      7,
+      8,
+      9,
+      10,
+      15,
+      16
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      10,
+      11,
+      14,
+      13
     ],
     "ChapterId": 12,
     "ChapterStage": 1,
@@ -2866,11 +2907,31 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      9,
+      10,
+      11,
+      12,
+      14,
+      15,
+      13
+    ],
     "ChapterId": 12,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -2938,7 +2999,20 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
@@ -3003,16 +3077,23 @@
       6
     ],
     "AllowedBuffIds": [
-      1,
-      2,
-      3,
       4,
-      5
+      6,
+      7,
+      8,
+      9,
+      10,
+      15,
+      16
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
     "AllowedRenovationIds": [
-      8
+      8,
+      10,
+      11,
+      14,
+      13
     ],
     "ChapterId": 22,
     "ChapterStage": 1,
@@ -3079,11 +3160,31 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,
-    "AllowedRenovationIds": [],
+    "AllowedRenovationIds": [
+      9,
+      10,
+      11,
+      12,
+      14,
+      15,
+      13
+    ],
     "ChapterId": 22,
     "ChapterStage": 2,
     "IsChapterTerminal": false,
@@ -3151,7 +3252,20 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
     ],
     "CandidateCount": 2,
     "RequireBuffChoice": true,

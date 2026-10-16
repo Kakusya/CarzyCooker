@@ -19,7 +19,10 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
     public DRGridItemConfig()
     {
             Name = "";
+            Kind = GridItemKind.Material;
             AcceptedDefinitionIds = new System.Collections.Generic.List<int>();
+            Form = GridMaterialForm.Solid;
+            MenuVariant = ProductMenuVariant.Basic;
             ExclusiveDefinitionIds = new System.Collections.Generic.List<int>();
     }
 
@@ -45,7 +48,7 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["Kind"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  Kind = _fieldJson;
+                if(_fieldJson.IsString) { Kind = (GridItemKind)System.Enum.Parse(typeof(GridItemKind), _fieldJson); } else if(_fieldJson.IsNumber) { Kind = (GridItemKind)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -69,7 +72,7 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["Form"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  Form = _fieldJson;
+                if(_fieldJson.IsString) { Form = (GridMaterialForm)System.Enum.Parse(typeof(GridMaterialForm), _fieldJson); } else if(_fieldJson.IsNumber) { Form = (GridMaterialForm)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -101,7 +104,7 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["MenuVariant"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  MenuVariant = _fieldJson;
+                if(_fieldJson.IsString) { MenuVariant = (ProductMenuVariant)System.Enum.Parse(typeof(ProductMenuVariant), _fieldJson); } else if(_fieldJson.IsNumber) { MenuVariant = (ProductMenuVariant)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -126,7 +129,7 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
             _json["Name"] = new JSONString(Name);
         }
         {
-            _json["Kind"] = new JSONNumber(Kind);
+            _json["Kind"] = new JSONNumber((int)Kind);
         }
         {
             _json["ContainerCapacity"] = new JSONNumber(ContainerCapacity);
@@ -137,7 +140,7 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
             { var __cjson0 = new JSONArray(); _json["AcceptedDefinitionIds"] = __cjson0; foreach(var _e0 in AcceptedDefinitionIds) { JSONNode __v0; __v0 = new JSONNumber(_e0); __cjson0.Add(__v0); } }
         }
         {
-            _json["Form"] = new JSONNumber(Form);
+            _json["Form"] = new JSONNumber((int)Form);
         }
         {
             _json["Discardable"] = new JSONBool(Discardable);
@@ -149,7 +152,7 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
             _json["Disposable"] = new JSONBool(Disposable);
         }
         {
-            _json["MenuVariant"] = new JSONNumber(MenuVariant);
+            _json["MenuVariant"] = new JSONNumber((int)MenuVariant);
         }
         {
 
@@ -183,7 +186,7 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
     /// <summary>
     /// Kind
     /// </summary>
-    public int Kind;
+    public GridItemKind Kind;
 
     /// <summary>
     /// ContainerCapacity
@@ -198,7 +201,7 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
     /// <summary>
     /// Form
     /// </summary>
-    public int Form;
+    public GridMaterialForm Form;
 
     /// <summary>
     /// Discardable
@@ -218,7 +221,7 @@ public sealed class DRGridItemConfig :  Luban.EditorBeanBase
     /// <summary>
     /// MenuVariant
     /// </summary>
-    public int MenuVariant;
+    public ProductMenuVariant MenuVariant;
 
     /// <summary>
     /// 必须独占容器的成品内容

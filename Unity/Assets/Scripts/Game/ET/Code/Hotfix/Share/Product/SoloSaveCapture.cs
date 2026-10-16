@@ -47,7 +47,7 @@ namespace ET
                     return new SoloSavedStation
                     {
                         Key = StationKey(station.Id), DefinitionId = station.DefinitionId, InitialLayoutId = station.InitialLayoutId,
-                        X = station.Cell.X, Y = station.Cell.Y, Orientation = station.Orientation, ItemKey = ItemKey(station.ItemId),
+                        X = station.Cell.X, Y = station.Cell.Y, Orientation = (int)station.Orientation, ItemKey = ItemKey(station.ItemId),
                         PoolItemKeys = station.PoolItemIds.Select(ItemKey).ToArray(), TableDefinitionId = table?.DefinitionId ?? 0,
                         TableDirty = table?.State == FrontTableState.Dirty,
                         UpgradeDefinitionId = station.UpgradeDefinitionId, UpgradeLevel = station.UpgradeLevel
@@ -80,7 +80,7 @@ namespace ET
                     PotKey = ItemKey(p.PotItemId), StationKey = StationKey(p.StartStationId), State = (int)p.State,
                     OutputDefinitionId = p.OutputDefinitionId, TotalPortions = p.TotalPortions, RemainingPortions = p.RemainingPortions,
                     ServingContainerDefinitionId = p.ServingContainerDefinitionId, InputKeys = p.InputItemIds.Select(ItemKey).ToArray(),
-                    RequiredCapability = p.RequiredCapability, LockContainer = p.LockContainer
+                    RequiredCapability = (int)p.RequiredCapability, LockContainer = p.LockContainer
                 }).ToArray(),
                 Baking = kitchen.BakeProcesses.Values.Select(value => (GridBakeProcess)value).Where(p => p.State != GridBakeState.Completed)
                     .OrderBy(p => p.Id).Select((p, index) => new SoloSavedBake

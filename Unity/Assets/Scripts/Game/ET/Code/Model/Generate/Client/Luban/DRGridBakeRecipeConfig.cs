@@ -18,7 +18,7 @@ public sealed partial class DRGridBakeRecipeConfig : Luban.BeanBase
         Id = _buf.ReadInt();
         InputDefinitionId = _buf.ReadInt();
         OutputDefinitionId = _buf.ReadInt();
-        StationCapability = _buf.ReadInt();
+        StationCapability = (GridStationCapability)_buf.ReadInt();
         RequiredTicks = _buf.ReadInt();
         CarrierDefinitionId = _buf.ReadInt();
         PostInit();
@@ -44,7 +44,7 @@ public sealed partial class DRGridBakeRecipeConfig : Luban.BeanBase
     /// <summary>
     /// StationCapability
     /// </summary>
-    public readonly int StationCapability;
+    public readonly GridStationCapability StationCapability;
     /// <summary>
     /// RequiredTicks
     /// </summary>

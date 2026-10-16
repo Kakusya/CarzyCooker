@@ -13,14 +13,14 @@ namespace ET
         {
             if (cooperative)
             {
-                yield return StartProgressHostRoom(); Pointer(EntryButton("开启咖啡餐厅"));
+                yield return StartProgressHostRoom(); StartPreviewAndConfirm(EntryButton("开启咖啡餐厅"));
             }
             else
             {
                 yield return StartModeLauncher(); CreateSaveUiRepository(Runtime, out _, out _);
                 Pointer(EntryButton("单机餐厅"));
                 yield return Wait(() => Selection != null && ((UIGridKitchen)Selection.Hud)?.Available == true, "Ordinary coffee menu selection");
-                Pointer(SelectionButton("新开咖啡餐厅"));
+                StartPreviewAndConfirm(SelectionButton("新开咖啡餐厅"));
             }
             yield return Wait(() => Presentation?.Ready == true && Grid.Confirmed, "Actual coffee restaurant opens");
             Assert.That(Grid.AllowedDishIds, Is.EqualTo(new[] { 9, 10, 11 }));
@@ -56,7 +56,7 @@ namespace ET
                 yield return HotUiBuyRaw(remote, 13, "瓶装牛奶", remaining: 3);
                 yield return HotUiCommand(remote, "添加 蒸汽机 ·", true); yield return HotUiDiscardPackage(remote);
                 yield return HotUiCommand(remote, "打泡 蒸汽机 ·", true);
-                yield return HotUiWait(remote, () => view.AutoProcesses.Values.Any(work => work.RequiredCapability == (int)GridStationCapability.FoamMilk && work.State == GridAutoState.Ready), "Explicit foam mode produces foam");
+                yield return HotUiWait(remote, () => view.AutoProcesses.Values.Any(work => work.RequiredCapability == GridStationCapability.FoamMilk && work.State == GridAutoState.Ready), "Explicit foam mode produces foam");
                 yield return HotUiCommand(remote, "拿 切配台 ·", true); yield return HotUiCommand(remote, "取一份 咖啡机 ·", true);
                 Assert.That(view.Items[firstCup].Contents.Select(id => view.Items[id].DefinitionId), Is.EqualTo(new[] { 56 }));
                 yield return HotUiCommand(remote, "放 第二奶缸台 ·", true);

@@ -65,12 +65,13 @@ namespace ET.Client
         private static void AddRecipeTargets(this GridPresentationComponent self,MonoUIGridKitchen view,GridClientComponent grid)
         {
             EntityRef<GridPresentationComponent> original=self;
+            self.AddOrderNavigation(view, grid);
             foreach(int dish in grid.AllowedDishIds)
             {
                 view.AddTarget("菜谱 "+Tables.Instance.DTDishConfig.Get(dish).Name,()=>
                 {
                     GridPresentationComponent current=original;if(current==null)return;
-                    current.CompanionChat=CompanionChatTopic.None;current.RecipeDishId=dish;current.RecipeVisible=true;current.RefreshGridHud();
+                    current.ResetItemLocator();current.ClearOrderNavigation();current.OverviewPage=GridOverviewPage.None;current.CompanionChat=CompanionChatTopic.None;current.RecipeDishId=dish;current.RecipeVisible=true;current.RefreshGridHud();
                 });
             }
             if(self.RecipeVisible)
@@ -78,7 +79,7 @@ namespace ET.Client
                 view.AddTarget("关闭菜谱",()=>
                 {
                     GridPresentationComponent current=original;if(current==null)return;
-                    current.RecipeVisible=false;current.RefreshGridHud();
+                    current.RecipeVisible=false;current.ClearOrderNavigation();current.RefreshGridHud();
                 });
             }
             if(HasSoloRecipeGuide(grid))
@@ -90,7 +91,7 @@ namespace ET.Client
                     view.AddTarget("查看首单步骤",()=>
                     {
                         GridPresentationComponent current=original;if(current==null)return;
-                        current.CompanionChat=CompanionChatTopic.None;current.RecipeDishId=dish;current.RecipeVisible=true;current.RefreshGridHud();
+                        current.ResetItemLocator();current.ClearOrderNavigation();current.OverviewPage=GridOverviewPage.None;current.CompanionChat=CompanionChatTopic.None;current.RecipeDishId=dish;current.RecipeVisible=true;current.RefreshGridHud();
                     },self.SelectedStationId==0);
                 }
                 view.AddTarget(shown?"跳过首单引导":"重看首单引导",()=>

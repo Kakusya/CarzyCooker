@@ -52,13 +52,15 @@ namespace ET
             if (lockContainer) value.LockContainer = true;
             else value.RequiredCapability = (int)GridStationCapability.Juice;
             Assert.That(Assert.Throws<InvalidOperationException>(() => SoloSaveValidation.Payload(header, payload, SaveProfileId)).Message, Is.EqualTo("InvalidBatchLock"));
-            Assert.That(batch.LockContainer, Is.False); Assert.That(batch.RequiredCapability, Is.EqualTo((int)GridStationCapability.Cook));
+            Assert.That(batch.LockContainer, Is.False); Assert.That(batch.RequiredCapability, Is.EqualTo(GridStationCapability.Cook));
             Assert.That(batch.RemainingPortions, Is.EqualTo(2));
         }
 
         [TestCase(1)]
         [TestCase(2)]
         [TestCase(3)]
+        [Category("ProductSemanticEnums")]
+        [Category("ProductEnumDirectionAndLegacy")]
         public void FirstDrinkLegacyActualTwelveMemberSoupBatchFileRestoresWithoutAddingDrinksOrRewriting(int version)
         {
             StartSolo(); long pot = SoupFillPot(host.Client); var batch = SoupBegin(host.Client, pot);
@@ -89,10 +91,10 @@ namespace ET
                 Assert.That(copy.Batches.Single().RequiredCapability, Is.Zero); Assert.That(copy.Batches.Single().LockContainer, Is.False);
                 host.StopProduct(); StartSavedFixture(selected, copy); Pump(8);
                 var restored = Grid.AutoProcesses.Values.Select(p => (GridAutoProcess)p).Single();
-                Assert.That(restored.RequiredCapability, Is.EqualTo((int)GridStationCapability.Cook)); Assert.That(restored.LockContainer, Is.False);
+                Assert.That(restored.RequiredCapability, Is.EqualTo(GridStationCapability.Cook)); Assert.That(restored.LockContainer, Is.False);
                 Assert.That(restored.RemainingPortions, Is.EqualTo(2)); Assert.That(Supply.RemainingPackages.Keys, Is.EquivalentTo(new[] { 1, 2, 3 }));
-                Assert.That(CurrentLevel.MenuVariant, Is.Zero); Assert.That(CurrentLevel.DrinkBindings, Is.Empty);
-                Assert.That(Grid.Items.Values.Select(i => (GridItem)i).All(i => Tables.Instance.DTGridItemConfig.Get(i.DefinitionId).MenuVariant == 0), Is.True);
+                Assert.That(CurrentLevel.MenuVariant, Is.EqualTo(ProductMenuVariant.Basic)); Assert.That(CurrentLevel.DrinkBindings, Is.Empty);
+                Assert.That(Grid.Items.Values.Select(i => (GridItem)i).All(i => Tables.Instance.DTGridItemConfig.Get(i.DefinitionId).MenuVariant == ProductMenuVariant.Basic), Is.True);
                 Assert.That(File.ReadAllBytes(path), Is.EqualTo(original));
             }
             finally { RemoveOwnSaveTestDirectory(directory); }

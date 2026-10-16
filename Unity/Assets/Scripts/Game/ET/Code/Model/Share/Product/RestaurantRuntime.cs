@@ -39,7 +39,7 @@ namespace ET
         public long LastFrameTime;
         public long Accumulator;
         public bool Stopped;
-        public int MenuVariant;
+        public ProductMenuVariant MenuVariant;
         public readonly Queue<LevelControlEnvelope> Controls = new();
         public readonly Queue<LevelTransitionValue> Transitions = new();
         public readonly Queue<ProductTransitionIdentity> FinishedTransitions = new();
@@ -64,7 +64,7 @@ namespace ET
         public int[] AllowedDishIds;
         public readonly ProductionPermit ProductionPermit = new();
         public int[] AllowedRenovationIds;
-        public int MenuVariant;
+        public ProductMenuVariant MenuVariant;
         public GridCell SpawnCell;
         public readonly Dictionary<long, long> DrinkBindings = new();
         public long DrainingStartedTick;

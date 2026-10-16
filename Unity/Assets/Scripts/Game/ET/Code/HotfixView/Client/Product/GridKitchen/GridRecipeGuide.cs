@@ -28,7 +28,7 @@ namespace ET.Client
         private static string ItemName(int definition)=>Tables.Instance.DTGridItemConfig.Get(definition).Name;
 
         private static string Equipment(GridStationCapability capability)=>string.Join("／",Tables.Instance.DTStationConfig.DataList
-            .Where(row=>(row.Capabilities&(int)capability)==(int)capability).Select(row=>row.Name));
+            .Where(row=>(row.Capabilities&capability)==capability).Select(row=>row.Name));
 
         private static string Step(DRDishStageConfig stage,int tickMilliseconds)
         {
@@ -45,7 +45,7 @@ namespace ET.Client
                 case DishStageKind.Batch:
                     var batch=Tables.Instance.DTGridAutoRecipeConfig.Get(stage.RecipeId);
                     string inputs=string.Join("、",batch.InputDefinitionIds.Select((id,index)=>$"{ItemName(id)} ×{batch.InputCounts[index]}"));
-                    return $"把{inputs}放入{ItemName(batch.ContainerDefinitionId)}{(batch.LockContainer ? "；加工期间锁定载具" : "；蛋液从碗倒入")}。在{Equipment((GridStationCapability)batch.StationCapability)}显式{(batch.StationCapability == (int)GridStationCapability.Extract ? "萃取" : batch.StationCapability == (int)GridStationCapability.HeatMilk ? "热奶" : batch.StationCapability == (int)GridStationCapability.FoamMilk ? "打泡" : batch.StationCapability == (int)GridStationCapability.Mixing ? "搅拌" : batch.LockContainer ? "榨汁" : "煮制")} → {output}（基础 {batch.RequiredTicks*tickMilliseconds/1000f:0.0} 秒，{batch.OutputPortions} 份）";
+                    return $"把{inputs}放入{ItemName(batch.ContainerDefinitionId)}{(batch.LockContainer ? "；加工期间锁定载具" : "；蛋液从碗倒入")}。在{Equipment((GridStationCapability)batch.StationCapability)}显式{(batch.StationCapability == GridStationCapability.Extract ? "萃取" : batch.StationCapability == GridStationCapability.HeatMilk ? "热奶" : batch.StationCapability == GridStationCapability.FoamMilk ? "打泡" : batch.StationCapability == GridStationCapability.Mixing ? "搅拌" : batch.LockContainer ? "榨汁" : "煮制")} → {output}（基础 {batch.RequiredTicks*tickMilliseconds/1000f:0.0} 秒，{batch.OutputPortions} 份）";
                 case DishStageKind.Grind:
                 case DishStageKind.Bake:
                 case DishStageKind.Fry:
@@ -81,28 +81,76 @@ namespace ET.Client
             }
         }
 
-        public static string CurrentNeed(GridClientComponent grid,int dishId)
+        public static string CurrentNeed(GridClientComponent grid,int dishId,long selectedOrderId=0)
         {
             DRDishConfig dish=Tables.Instance.DTDishConfig.Get(dishId);
-            bool HasItem(int definition)=>grid.Items.Values.Any(item=>item.DefinitionId==definition && item.Hygiene==ItemHygiene.Clean);
-            bool EmptyContainer(int definition)=>grid.Items.Values.Any(item=>item.DefinitionId==definition && item.Hygiene==ItemHygiene.Clean && item.Contents.Count==0 && item.AutoProcessId==0);
+            if (selectedOrderId != 0 && (!grid.Orders.TryGetValue(selectedOrderId, out var selected) ||
+                selected.State != OrderState.Waiting || selected.DishId != dishId))
+            {
+                return "所选订单已结束，请重新选择，不会自动改为其他顾客。";
+            }
+            bool Available(GridItemProjection item)
+            {
+                if (item.Hygiene != ItemHygiene.Clean || item.AutoProcessId != 0 || item.BakeProcessId != 0 ||
+                    grid.Processes.Values.Any(process => process.State != GridWorkState.Completed &&
+                        (process.InputItemId == item.Id || process.TargetItemId == item.Id)))
+                {
+                    return false;
+                }
+                if (item.Location == GridItemLocation.Container)
+                {
+                    return grid.Items.TryGetValue(item.HolderId, out var holder) && holder.DefinitionId != GridKitchenRules.BakingMold &&
+                        holder.BoundOrderId == 0 && Available(holder);
+                }
+                return true;
+            }
+            bool HasItem(int definition)=>grid.Items.Values.Any(item=>item.DefinitionId==definition && Available(item));
+            bool EmptyContainer(int definition)=>grid.Items.Values.Any(item=>item.DefinitionId==definition && Available(item) && item.Contents.Count==0);
             bool ContainerWith(int container,int content)=>grid.Items.Values.Any(item=>item.DefinitionId==container && item.Hygiene==ItemHygiene.Clean &&
                 item.Contents.Any(id=>grid.Items.TryGetValue(id,out GridItemProjection value) && value.DefinitionId==content));
-            GridItemProjection prepared=grid.Items.Values.FirstOrDefault(item=>item.DefinitionId==dish.ContainerDefinitionId && item.Hygiene==ItemHygiene.Clean && item.Contents.Count==1 &&
+            GridItemProjection prepared=grid.Items.Values.Where(item=>item.DefinitionId==dish.ContainerDefinitionId && item.Hygiene==ItemHygiene.Clean && item.Contents.Count==1 &&
                 grid.Items.TryGetValue(item.Contents[0],out GridItemProjection content) && content.DefinitionId==dish.ContentDefinitionId &&
-                content.Location==GridItemLocation.Container && content.HolderId==item.Id);
+                content.Location==GridItemLocation.Container && content.HolderId==item.Id)
+                .OrderByDescending(item=>item.Location==GridItemLocation.Hand && item.HolderId==grid.MemberId)
+                .ThenByDescending(item=>selectedOrderId!=0 && item.BoundOrderId==selectedOrderId)
+                .ThenBy(item=>item.Id).FirstOrDefault();
             string pause=grid.LevelPaused?"已暂停：只查看现状，恢复后再操作。\n":"";
             if(grid.LevelPhase==LevelPhase.Completed)return pause+"本关已结算。可以继续查看菜谱，旧订单不能再交付。";
             if(prepared.Id!=0)
             {
                 if(prepared.Location==GridItemLocation.Hand && prepared.HolderId!=grid.MemberId)
                     return pause+$"{dish.Name}已备好，由玩家{prepared.HolderId}持有；请交接，无需重做。";
-                GridOrderProjection order=grid.Orders.Values.Where(value=>value.State==OrderState.Waiting && value.DishId==dishId).OrderBy(value=>value.Id).FirstOrDefault();
+                GridOrderProjection order = default;
+                if (dish.RequiresOrderBinding && prepared.BoundOrderId != 0)
+                {
+                    if (!grid.Orders.TryGetValue(prepared.BoundOrderId, out order) || order.State != OrderState.Waiting || order.DishId != dishId)
+                    {
+                        return pause+$"{dish.Name}已备好，但原订单已失效；先到贴单台解绑，再选择当前有效订单。无需重做。";
+                    }
+                }
+                else
+                {
+                    if (selectedOrderId != 0)
+                    {
+                        if (dish.RequiresOrderBinding && grid.Items.Values.Any(item => item.BoundOrderId == selectedOrderId))
+                        {
+                            return pause + "所选订单已有贴单饮品，请查看原杯；阅读不换绑，也无需重复制作。";
+                        }
+                        order = grid.Orders[selectedOrderId];
+                    }
+                    else
+                    {
+                        order=grid.Orders.Values.Where(value=>value.State==OrderState.Waiting && value.DishId==dishId &&
+                        (!dish.RequiresOrderBinding || !grid.Items.Values.Any(item=>item.BoundOrderId==value.Id))).OrderBy(value=>value.Id).FirstOrDefault();
+                    }
+                }
                 if(order.Id!=0 && grid.Stations.TryGetValue(order.TableStationId,out GridStationProjection table))
                 {
                     if (dish.RequiresOrderBinding && prepared.BoundOrderId != order.Id)
                         return pause+$"{dish.Name}已备好，无需重做。放到贴单台，绑定{table.Name}的当前订单，再拿起交付。";
-                    return pause+$"{dish.Name}已备好，无需重做。拿起成品，前往{table.Name}并交付对应订单。";
+                    string binding = selectedOrderId != 0 && prepared.BoundOrderId != 0 && prepared.BoundOrderId != selectedOrderId
+                        ? "此杯已贴另一有效订单，仍按原贴单交付；阅读不换绑。\n" : "";
+                    return pause+binding+$"{dish.Name}已备好，无需重做。拿起成品，前往{table.Name}并交付对应订单。";
                 }
                 return pause+$"{dish.Name}已备好，无需重做；可先暂存。"+(grid.LevelPhase==LevelPhase.Preparing?"选择加成并开店，再询问顾客取得有效订单。":"等待顾客询问与对应有效订单。");
             }
@@ -148,6 +196,29 @@ namespace ET.Client
                 {
                     var batch=grid.AutoProcesses.Values.FirstOrDefault(value=>value.RecipeId==stage.RecipeId && (value.State==GridAutoState.Cooking || value.RemainingPortions>0));
                     if(batch.Id!=0)return batch.State==GridAutoState.Ready?null:GridClientSystem.AutoWorkDescription(batch)+"；等待真实完成。";
+                    var recipe = Tables.Instance.DTGridAutoRecipeConfig.Get(stage.RecipeId);
+                    var carrier = grid.Items.Values.Where(item => item.DefinitionId == recipe.ContainerDefinitionId && Available(item) &&
+                        item.Contents.Any(key => grid.Items.TryGetValue(key, out var content) && recipe.InputDefinitionIds.Contains(content.DefinitionId)))
+                        .OrderBy(item => item.Id).FirstOrDefault();
+                    if (carrier.Id != 0)
+                    {
+                        var missing = recipe.InputDefinitionIds.Select((definition, index) =>
+                            (definition, count: recipe.InputCounts[index] - carrier.Contents.Count(key => grid.Items[key].DefinitionId == definition)))
+                            .Where(value => value.count > 0).Select(value => ItemName(value.definition) + " ×" + value.count).ToArray();
+                        if (missing.Length > 0)
+                        {
+                            return ItemName(recipe.ContainerDefinitionId) + "还缺：" + string.Join("、", missing) + "。补入原载具，不必重复已有材料。";
+                        }
+                        bool exact = carrier.Contents.Count == recipe.InputCounts.Sum() && carrier.Contents.All(key =>
+                            recipe.InputDefinitionIds.Contains(grid.Items[key].DefinitionId));
+                        return exact ? "材料齐备；" + Step(stage, grid.TickMilliseconds) : "原载具有多料或错料；请核对配方并到对应设施清理。";
+                    }
+                }
+                if (kind == DishStageKind.Unmold && grid.Items.Values.Any(item => item.DefinitionId == GridKitchenRules.BakingMold &&
+                    item.Contents.Any(key => grid.Items.TryGetValue(key, out var content) && content.DefinitionId == stage.OutputDefinitionId)))
+                {
+                    return EmptyContainer(stage.ContainerDefinitionId) ? Step(stage, grid.TickMilliseconds) :
+                        $"蛋糕已烤熟，保留原模具；需要干净空{ItemName(stage.ContainerDefinitionId)}后脱模，脏餐具先洗净。";
                 }
                 if(kind is DishStageKind.Grind or DishStageKind.Bake or DishStageKind.Fry or DishStageKind.BakeInCarrier)
                 {

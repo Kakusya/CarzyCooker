@@ -22,6 +22,7 @@ public sealed class DRLevelConfig :  Luban.EditorBeanBase
             AllowedDishIds = new System.Collections.Generic.List<int>();
             AllowedBuffIds = new System.Collections.Generic.List<int>();
             AllowedRenovationIds = new System.Collections.Generic.List<int>();
+            MenuVariant = ProductMenuVariant.Basic;
             AllowedDrinkIds = new System.Collections.Generic.List<int>();
             InitialUnlockedDishIds = new System.Collections.Generic.List<int>();
             InitialUnlockedStationIds = new System.Collections.Generic.List<int>();
@@ -145,7 +146,7 @@ public sealed class DRLevelConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["MenuVariant"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  MenuVariant = _fieldJson;
+                if(_fieldJson.IsString) { MenuVariant = (ProductMenuVariant)System.Enum.Parse(typeof(ProductMenuVariant), _fieldJson); } else if(_fieldJson.IsNumber) { MenuVariant = (ProductMenuVariant)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -236,7 +237,7 @@ public sealed class DRLevelConfig :  Luban.EditorBeanBase
             _json["IsChapterTerminal"] = new JSONBool(IsChapterTerminal);
         }
         {
-            _json["MenuVariant"] = new JSONNumber(MenuVariant);
+            _json["MenuVariant"] = new JSONNumber((int)MenuVariant);
         }
         {
 
@@ -343,7 +344,7 @@ public sealed class DRLevelConfig :  Luban.EditorBeanBase
     /// <summary>
     /// MenuVariant
     /// </summary>
-    public int MenuVariant;
+    public ProductMenuVariant MenuVariant;
 
     /// <summary>
     /// AllowedDrinkIds

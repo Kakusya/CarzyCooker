@@ -5,7 +5,7 @@ namespace ET
 {
     public static partial class GridKitchenSystem
     {
-        private static KitchenProcessKind AutoWorkKind(int capability) => (GridStationCapability)capability switch
+        private static KitchenProcessKind AutoWorkKind(GridStationCapability capability) => capability switch
         {
             GridStationCapability.Mixing => KitchenProcessKind.Mix,
             GridStationCapability.Extract or GridStationCapability.HeatMilk or GridStationCapability.FoamMilk => KitchenProcessKind.Beverage,

@@ -19,8 +19,10 @@ public sealed class DRStationConfig :  Luban.EditorBeanBase
     public DRStationConfig()
     {
             Name = "";
+            Kind = GridStationKind.Counter;
             FootprintOffsets = new System.Collections.Generic.List<int>();
             ApproachOffsets = new System.Collections.Generic.List<int>();
+            Capabilities = GridStationCapability.None;
     }
 
     public override void LoadJson(JSONObject _json)
@@ -45,7 +47,7 @@ public sealed class DRStationConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["Kind"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  Kind = _fieldJson;
+                if(_fieldJson.IsString) { Kind = (GridStationKind)System.Enum.Parse(typeof(GridStationKind), _fieldJson); } else if(_fieldJson.IsNumber) { Kind = (GridStationKind)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -77,7 +79,7 @@ public sealed class DRStationConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["Capabilities"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  Capabilities = _fieldJson;
+                if(_fieldJson.IsString) { Capabilities = (GridStationCapability)System.Enum.Parse(typeof(GridStationCapability), _fieldJson); } else if(_fieldJson.IsNumber) { Capabilities = (GridStationCapability)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -110,7 +112,7 @@ public sealed class DRStationConfig :  Luban.EditorBeanBase
             _json["Name"] = new JSONString(Name);
         }
         {
-            _json["Kind"] = new JSONNumber(Kind);
+            _json["Kind"] = new JSONNumber((int)Kind);
         }
         {
 
@@ -126,7 +128,7 @@ public sealed class DRStationConfig :  Luban.EditorBeanBase
             _json["ItemSlotCapacity"] = new JSONNumber(ItemSlotCapacity);
         }
         {
-            _json["Capabilities"] = new JSONNumber(Capabilities);
+            _json["Capabilities"] = new JSONNumber((int)Capabilities);
         }
         {
             _json["WaterDefinitionId"] = new JSONNumber(WaterDefinitionId);
@@ -161,7 +163,7 @@ public sealed class DRStationConfig :  Luban.EditorBeanBase
     /// <summary>
     /// Kind
     /// </summary>
-    public int Kind;
+    public GridStationKind Kind;
 
     /// <summary>
     /// FootprintOffsets
@@ -181,7 +183,7 @@ public sealed class DRStationConfig :  Luban.EditorBeanBase
     /// <summary>
     /// Capabilities
     /// </summary>
-    public int Capabilities;
+    public GridStationCapability Capabilities;
 
     /// <summary>
     /// WaterDefinitionId

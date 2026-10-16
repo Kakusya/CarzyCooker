@@ -17,14 +17,14 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
     {
         Id = _buf.ReadInt();
         Name = _buf.ReadString();
-        Kind = _buf.ReadInt();
+        Kind = (GridItemKind)_buf.ReadInt();
         ContainerCapacity = _buf.ReadInt();
         {int n0 = _buf.ReadSize(); AcceptedDefinitionIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); AcceptedDefinitionIds.Add(_e0);}}
-        Form = _buf.ReadInt();
+        Form = (GridMaterialForm)_buf.ReadInt();
         Discardable = _buf.ReadBool();
         AllowsEmptyContainers = _buf.ReadBool();
         Disposable = _buf.ReadBool();
-        MenuVariant = _buf.ReadInt();
+        MenuVariant = (ProductMenuVariant)_buf.ReadInt();
         {int n0 = _buf.ReadSize(); ExclusiveDefinitionIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); ExclusiveDefinitionIds.Add(_e0);}}
         PostInit();
     }
@@ -45,7 +45,7 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
     /// <summary>
     /// Kind
     /// </summary>
-    public readonly int Kind;
+    public readonly GridItemKind Kind;
     /// <summary>
     /// ContainerCapacity
     /// </summary>
@@ -57,7 +57,7 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
     /// <summary>
     /// Form
     /// </summary>
-    public readonly int Form;
+    public readonly GridMaterialForm Form;
     /// <summary>
     /// Discardable
     /// </summary>
@@ -73,7 +73,7 @@ public sealed partial class DRGridItemConfig : Luban.BeanBase
     /// <summary>
     /// MenuVariant
     /// </summary>
-    public readonly int MenuVariant;
+    public readonly ProductMenuVariant MenuVariant;
     /// <summary>
     /// 必须独占容器的成品内容
     /// </summary>

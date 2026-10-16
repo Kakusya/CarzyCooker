@@ -11,6 +11,16 @@ namespace ET.Client
         {
             return grid.RenovationLevelId == grid.LevelId && grid.RenovationLevelGeneration == grid.LevelGeneration && grid.RenovationChoiceVersion > 0;
         }
+        private static string RenovationFailureDescription(string failure) => failure switch
+        {
+            "RenovationOccupied" => "安装位置仍有角色或落物",
+            "RenovationBlocked" => "安装会重叠或堵住通路",
+            "RenovationRelationshipsChanged" => "厨房物品或加工关系已变化",
+            "UpgradeTargetChanged" => "升级目标工位已失效",
+            "UpgradeLevelChanged" => "目标等级已变化，升级未安装",
+            "UpgradeCapabilityMismatch" => "目标工位不支持该升级",
+            _ => "请检查布局后重试"
+        };
         private static void RefreshRenovationStatus(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
             if (grid.RenovationApplied.Count > 0)
@@ -25,16 +35,7 @@ namespace ET.Client
             if (grid.RenovationLevelId != grid.LevelId || grid.RenovationLevelGeneration != grid.LevelGeneration) return;
             if (grid.RenovationFailure != null)
             {
-                string reason = grid.RenovationFailure switch
-                {
-                    "RenovationOccupied" => "安装位置仍有角色或落物",
-                    "RenovationBlocked" => "安装会重叠或堵住通路",
-                    "RenovationRelationshipsChanged" => "厨房物品或加工关系已变化",
-                    "UpgradeTargetChanged" => "升级目标工位已失效",
-                    "UpgradeLevelChanged" => "目标等级已变化，升级未安装",
-                    "UpgradeCapabilityMismatch" => "目标工位不支持该升级",
-                    _ => "请检查布局后重试"
-                };
+                string reason = RenovationFailureDescription(grid.RenovationFailure);
                 view.SettlementText.text += "\n装修未安装：" + reason;
             }
             if (grid.SelectedRenovationId != 0)
@@ -65,10 +66,11 @@ namespace ET.Client
 
         private static void AddRenovationTargets(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
-            if (!grid.CanControlRestaurant || grid.LevelPhase != LevelPhase.Completed || grid.RenovationLevelId != grid.LevelId || grid.RenovationLevelGeneration != grid.LevelGeneration ||
+            if (grid.LevelPhase != LevelPhase.Completed || grid.RenovationLevelId != grid.LevelId || grid.RenovationLevelGeneration != grid.LevelGeneration ||
                 grid.SelectedRenovationId != 0 || grid.RenovationSelectionFinalized) return;
             EntityRef<GridPresentationComponent> selfRef = self;
             long level = grid.LevelId, generation = grid.LevelGeneration, version = grid.RenovationChoiceVersion;
+            string prefix = grid.CanControlRestaurant ? "装修 " : "查看装修 ";
             foreach (int id in grid.RenovationCandidates)
             {
                 string name = Tables.Instance.DTRenovationConfig.Get(id).Name;
@@ -77,12 +79,12 @@ namespace ET.Client
                     foreach (var target in grid.UpgradeTargets.Where(target => target.DefinitionId == id))
                     {
                         if (!grid.Stations.TryGetValue(target.StationId, out var station)) continue;
-                        view.AddTarget($"装修 {name} → {station.Name} ({station.Cell.X},{station.Cell.Y}) · 等级 {target.ExpectedLevel}→1",
-                            () => { GridPresentationComponent current = selfRef; current?.SendRenovationChoice(id, version, level, generation, target.StationId, target.ExpectedLevel); });
+                        view.AddTarget($"{prefix}{name} → {station.Name} ({station.Cell.X},{station.Cell.Y}) · 等级 {target.ExpectedLevel}→1",
+                            () => { GridPresentationComponent current = selfRef; current?.OpenRenovationPreview(id, target.StationId, target.ExpectedLevel, version, level, generation); });
                     }
                     continue;
                 }
-                view.AddTarget("装修 " + name, () => { GridPresentationComponent current = selfRef; current?.SendRenovationChoice(id, version, level, generation); });
+                view.AddTarget(prefix + name, () => { GridPresentationComponent current = selfRef; current?.OpenRenovationPreview(id, 0, 0, version, level, generation); });
             }
         }
 

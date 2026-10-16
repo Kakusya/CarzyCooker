@@ -12,7 +12,7 @@ namespace ET
             var config = RuntimeInstanceConfig.Create("beverage-test", "test", cooperative ? "host" : "solo", cooperative ? "127.0.0.1:0" : null);
             RuntimeInstanceContext.Prepare(config); var fiber = CreateFiber(); UseOptionalBuffFixture();
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
-            host.InitializeProduct(menuVariant: (int)ProductMenuVariant.Cafe); Pump(15);
+            host.InitializeProduct(menuVariant: ProductMenuVariant.Cafe); Pump(15);
             Assert.That(host.Stage, Is.Not.EqualTo(ProductStage.Failed), host.Failure);
             Assert.That(CurrentLevel.ConfigId, Is.EqualTo(cooperative ? 2401 : 1401));
             Assert.That(CurrentLevel.AllowedDishIds, Is.EqualTo(new[] { 9, 10, 11 }));

@@ -17,7 +17,9 @@ namespace ET.Client
         {
             self.Hud = default; self.Headers = Array.Empty<SoloSaveHeader>(); self.Failure = null; self.Epoch = 0;
             self.ViewedResult = null;
-            self.NewMenuVariant = 1;
+            self.NewMenuVariant = ProductMenuVariant.Drink;
+            self.RenderVersion = 0; self.StartPreviewVisible = false;
+            self.ClearSaveInspection(); self.SaveFilter = SoloSaveListFilter.All; self.BrowseSerial = 0;
             self.LoadingHud = false; self.LoadingSelection = false; self.Started = false;
             self.OpenSoloSelection();
         }
@@ -37,6 +39,8 @@ namespace ET.Client
 
         public static void CloseSoloSelection(this SoloSavePresentation self)
         {
+            self.RequestedSlotId = null; self.RequestedRevision = 0;
+            self.StartPreviewVisible = false; self.ClearSaveInspection();
             ++self.Epoch; self.LoadingHud = false; self.LoadingSelection = false;
             ((Scene)self.IScene).GetComponent<UIComponent>()?.RemoveComponent<UIGridKitchen>(); self.Hud = default;
         }
@@ -77,10 +81,20 @@ namespace ET.Client
             return self.Root().AddComponent<SoloSaveRepository, string, string>(directory, profile);
         }
 
+        public static void NavigateSoloRecord(this SoloSavePresentation self, string slot, int revision)
+        {
+            self.RequestedSlotId = slot;
+            self.RequestedRevision = revision;
+            if (((UIGridKitchen)self.Hud)?.Available == true)
+            {
+                self.BrowseSoloSelection();
+            }
+        }
+
         private static void BrowseSoloSelection(this SoloSavePresentation self)
         {
             UIGridKitchen hud = self.Hud; if (hud?.Available != true) return;
-            EntityRef<SoloSavePresentation> original = self; long epoch = self.Epoch;
+            EntityRef<SoloSavePresentation> original = self; long epoch = self.Epoch, serial = ++self.BrowseSerial;
             hud.GetAsyncOwner().Run(async context =>
             {
                 try
@@ -88,20 +102,39 @@ namespace ET.Client
                     var repository = self.Repository();
                     using var reply = (SoloSaveBrowseResponse)await self.Root().GetComponent<ProcessInnerSender>().Call(repository.GetActorId(), ProductMessages.Create<SoloSaveBrowseRequest>(_ => { }), false);
                     context.ThrowIfStopped(); self = original;
-                    if (self == null || self.Epoch != epoch || self.Started) return;
+                    if (self == null || self.Epoch != epoch || self.BrowseSerial != serial || self.Started) return;
                     if (reply.Error != 0) throw new InvalidOperationException(reply.Message);
-                    self.Headers = reply.Headers.Select(bytes => (SoloSaveHeader)MemoryPackHelper.Deserialize(typeof(SoloSaveHeader), bytes, 0, bytes.Length)).ToArray();
-                    self.Failure = null; self.RenderSoloSelection();
+                    self.Headers = reply.Headers.Select(bytes => (SoloSaveHeader)MemoryPackHelper.Deserialize(typeof(SoloSaveHeader), bytes, 0, bytes.Length))
+                        .OrderBy(header => header.RecordKind).ThenByDescending(header => header.SavedUtcTicks).ToArray();
+                    if (self.InspectedSave != null && !self.Headers.Any(header => SameSelectedSave(self.InspectedSave, header)))
+                    {
+                        self.ClearSaveInspection();
+                    }
+                    self.Failure = null;
+                    if (self.RequestedSlotId != null)
+                    {
+                        string slot = self.RequestedSlotId;
+                        int revision = self.RequestedRevision;
+                        self.RequestedSlotId = null; self.RequestedRevision = 0;
+                        if (self.Headers.Any(header => header.SlotId == slot && header.Revision == revision))
+                        {
+                            self.ChooseSoloSave(slot);
+                            return;
+                        }
+                        self.Failure = "RecordChanged";
+                    }
+                    self.RenderSoloSelection();
                 }
                 catch (OperationCanceledException) { }
-                catch (Exception e) { self = original; if (self != null && self.Epoch == epoch) { self.Failure = e.Message; self.RenderSoloSelection(); } }
+                catch (Exception e) { self = original; if (self != null && self.Epoch == epoch && self.BrowseSerial == serial) { self.Failure = e.Message; self.RenderSoloSelection(); } }
             });
         }
 
         private static void RenderSoloSelection(this SoloSavePresentation self)
         {
             UIGridKitchen hud = self.Hud; if (hud?.Available != true || self.Started) return;
-            var view = hud.View; view.ClearTargets(); view.ShowPanels(false, true); view.CameraDragAreaRectTransform.gameObject.SetActive(false);
+            long render = ++self.RenderVersion;
+            var view = hud.View; view.ClearTargets(); view.SetInformation("", "", false, false); view.ShowPanels(false, true); view.CameraDragAreaRectTransform.gameObject.SetActive(false);
             view.PhaseText.text = "单机餐厅"; view.ClockText.text = "选择开始方式"; view.ScoreText.text = "成功后保存";
             view.StatusText.text = self.LoadingSelection ? "正在读取并校验检查点…" : "选择新开餐厅，或继续一份本机记录";
             view.HandText.text = "保存只新建，不覆盖原记录"; view.WorkText.text = ""; view.HintText.text = "本机 PC 单机 · 内存试玩退出后不保留";
@@ -116,18 +149,20 @@ namespace ET.Client
                 _ => "无法读取检查点，请刷新或选择其他记录"
             };
             EntityRef<SoloSavePresentation> original = self; EntityRef<UIGridKitchen> hudRef = hud; long epoch = self.Epoch;
-            view.SetInputGuard(() => { SoloSavePresentation current = original; return current != null && current.Epoch == epoch && !current.Started && ((UIGridKitchen)hudRef)?.Available == true; });
+            view.SetInputGuard(() => { SoloSavePresentation current = original; return current != null && current.Epoch == epoch && current.RenderVersion == render && !current.Started && ((UIGridKitchen)hudRef)?.Available == true; });
             if (self.LoadingSelection) { view.AddControl("取消加载", () => { SoloSavePresentation current = original; current?.CancelSoloSelection(); }); return; }
+            if (self.InspectedSave != null) { self.RenderSaveInspection(view); return; }
+            if (self.StartPreviewVisible) { self.RenderSoloStartPreview(view); return; }
+            self.AddSaveFilters(view);
             if (!Application.isMobilePlatform)
-                view.AddControl("新开餐厅", () => { SoloSavePresentation current = original; current?.ChooseSoloNewGame(true); });
-            view.AddControl("内存试玩", () => { SoloSavePresentation current = original; current?.ChooseSoloNewGame(false); });
+                view.AddControl("新开餐厅", () => { SoloSavePresentation current = original; current?.PreviewSoloStart(true, current.NewMenuVariant); });
+            view.AddControl("内存试玩", () => { SoloSavePresentation current = original; current?.PreviewSoloStart(false, current.NewMenuVariant); });
             view.AddControl("新开沙拉餐厅", () =>
             {
                 SoloSavePresentation current = original;
                 if (current != null)
                 {
-                    current.NewMenuVariant = (int)ProductMenuVariant.Salad;
-                    current.ChooseSoloNewGame(!Application.isMobilePlatform);
+                    current.PreviewSoloStart(!Application.isMobilePlatform, ProductMenuVariant.Salad);
                 }
             });
             view.AddControl("新开经营成长餐厅", () =>
@@ -135,8 +170,7 @@ namespace ET.Client
                 SoloSavePresentation current = original;
                 if (current != null)
                 {
-                    current.NewMenuVariant = (int)ProductMenuVariant.Growth;
-                    current.ChooseSoloNewGame(!Application.isMobilePlatform);
+                    current.PreviewSoloStart(!Application.isMobilePlatform, ProductMenuVariant.Growth);
                 }
             });
             view.AddControl("新开热餐餐厅", () =>
@@ -144,8 +178,7 @@ namespace ET.Client
                 SoloSavePresentation current = original;
                 if (current != null)
                 {
-                    current.NewMenuVariant = (int)ProductMenuVariant.Hot;
-                    current.ChooseSoloNewGame(!Application.isMobilePlatform);
+                    current.PreviewSoloStart(!Application.isMobilePlatform, ProductMenuVariant.Hot);
                 }
             });
             view.AddControl("新开甜品餐厅", () =>
@@ -153,8 +186,7 @@ namespace ET.Client
                 SoloSavePresentation current = original;
                 if (current != null)
                 {
-                    current.NewMenuVariant = (int)ProductMenuVariant.Dessert;
-                    current.ChooseSoloNewGame(!Application.isMobilePlatform);
+                    current.PreviewSoloStart(!Application.isMobilePlatform, ProductMenuVariant.Dessert);
                 }
             });
             view.AddControl("新开咖啡餐厅", () =>
@@ -162,20 +194,18 @@ namespace ET.Client
                 SoloSavePresentation current = original;
                 if (current != null)
                 {
-                    current.NewMenuVariant = (int)ProductMenuVariant.Cafe;
-                    current.ChooseSoloNewGame(!Application.isMobilePlatform);
+                    current.PreviewSoloStart(!Application.isMobilePlatform, ProductMenuVariant.Cafe);
                 }
             });
             foreach (var chapter in Tables.Instance.DTRestaurantChapterConfig.DataList.OrderBy(row => row.Id))
             {
-                int id = chapter.Id; int menu = (int)chapter.MenuVariant;
+                int id = chapter.Id; ProductMenuVariant menu = chapter.MenuVariant;
                 view.AddControl($"新开大关 {id} · {chapter.Name}", () =>
                 {
                     SoloSavePresentation current = original;
                     if (current != null)
                     {
-                        current.NewMenuVariant = menu;
-                        current.ChooseSoloNewGame(!Application.isMobilePlatform, id);
+                        current.PreviewSoloStart(!Application.isMobilePlatform, menu, id);
                     }
                 });
             }
@@ -191,6 +221,11 @@ namespace ET.Client
             for (int index = 0; index < self.Headers.Length; ++index)
             {
                 var header = self.Headers[index];
+                if (self.SaveFilter == SoloSaveListFilter.Continue && header.RecordKind != SoloSaveRecordKind.Continue ||
+                    self.SaveFilter == SoloSaveListFilter.Completed && header.RecordKind != SoloSaveRecordKind.ChapterCompleted)
+                {
+                    continue;
+                }
                 string slot = header.SlotId;
                 string label = $"{(header.RecordKind == SoloSaveRecordKind.ChapterCompleted ? "查看完成" : "继续")} 记录{index + 1} · {(header.RecordKind == SoloSaveRecordKind.ChapterCompleted ? RestaurantChapters.Label(header.CompletedLevelId) + " · 已完成" : RestaurantChapters.Label(header.NextLevelId))} · {header.Stars}星 · {new DateTime(header.SavedUtcTicks > 0 && header.SavedUtcTicks <= DateTime.MaxValue.Ticks ? header.SavedUtcTicks : 1).ToLocalTime():MM-dd HH:mm}";
                 view.AddTarget(label, () => { SoloSavePresentation current = original; current?.ChooseSoloSave(slot); });
@@ -218,10 +253,18 @@ namespace ET.Client
             catch (Exception e) { self.Started = false; self.Failure = e.Message; self.OpenSoloSelection(); }
         }
 
-        public static void ChooseSoloSave(this SoloSavePresentation self, string slot)
+        public static void ChooseSoloSave(this SoloSavePresentation self, string slot) => self.ReadSoloSave(slot, false);
+
+        private static void ReadSoloSave(this SoloSavePresentation self, string slot, bool continuing)
         {
             UIGridKitchen hud = self.Hud;
             if (self.Started || self.LoadingSelection || hud?.Available != true) return;
+            SoloSaveHeader expected = self.InspectedSave;
+            if (continuing && (expected?.SlotId != slot || expected.RecordKind != SoloSaveRecordKind.Continue))
+            {
+                return;
+            }
+            ++self.BrowseSerial;
             self.LoadingSelection = true; self.Failure = null; self.RenderSoloSelection();
             EntityRef<SoloSavePresentation> original = self; long epoch = self.Epoch;
             hud.GetAsyncOwner().Run(async context =>
@@ -238,22 +281,43 @@ namespace ET.Client
                     ProductRuntimeComponent runtime = self.Root().GetComponent<ProductRuntimeComponent>();
                     // Guard all value data again after await, before closing the selector or creating Host.
                     SoloSaveValidation.Payload(header, payload, repository.SaveProfile());
-                    if (header.RecordKind == SoloSaveRecordKind.ChapterCompleted)
+                    if (!continuing || !SameSelectedSave(expected, header) || header.RecordKind == SoloSaveRecordKind.ChapterCompleted)
                     {
-                        self.ViewedResult = header; self.LoadingSelection = false; self.RenderSoloSelection(); return;
+                        self.InspectedSave = header;
+                        self.SaveInspectionRows = SaveInspectionRows(header, payload);
+                        self.ViewedResult = header.RecordKind == SoloSaveRecordKind.ChapterCompleted ? header : null;
+                        self.Failure = continuing ? "RecordChanged" : null;
+                        self.LoadingSelection = false;
+                        self.RenderSoloSelection();
+                        return;
                     }
                     self.Started = true; self.CloseSoloSelection(); runtime.InitializeSavedProduct(repository.SaveProfile(), header, payload);
                 }
                 catch (OperationCanceledException) { }
-                catch (Exception e) { self = original; if (self != null && self.Epoch == epoch) { self.LoadingSelection = false; self.Failure = e.Message; self.RenderSoloSelection(); } }
+                catch (Exception e) { self = original; if (self != null && self.Epoch == epoch) { self.ClearSaveInspection(); self.LoadingSelection = false; self.Failure = e.Message; self.RenderSoloSelection(); } }
             });
         }
     }
 
     [Event(SceneType.ProductRoot)]
+    [FriendOf(typeof(ProductRuntimeComponent))]
     public sealed class SoloSaveSelectionView : AEvent<Scene, SoloSaveSelectionRequested>
     {
         protected override UniTask Run(Scene scene, SoloSaveSelectionRequested args)
-        { scene.RemoveComponent<SoloSavePresentation>(); scene.AddComponent<SoloSavePresentation>(); return UniTask.CompletedTask; }
+        {
+            ProductRuntimeComponent runtime = scene.GetComponent<ProductRuntimeComponent>();
+            if (args.SlotId != null && (runtime.Config.Role != RuntimeInstanceRole.Solo ||
+                (ClientSessionComponent)runtime.Client != null || (Scene)runtime.HostScene != null))
+            {
+                return UniTask.CompletedTask;
+            }
+            scene.RemoveComponent<SoloSavePresentation>();
+            var selection = scene.AddComponent<SoloSavePresentation>();
+            if (args.SlotId != null)
+            {
+                selection.NavigateSoloRecord(args.SlotId, args.Revision);
+            }
+            return UniTask.CompletedTask;
+        }
     }
 }

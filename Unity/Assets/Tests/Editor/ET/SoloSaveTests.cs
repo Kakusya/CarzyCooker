@@ -292,6 +292,7 @@ namespace ET
         }
 
         [Test]
+        [Category("AndroidSolo")]
         public void SoloSaveRestoreHalfSoupAndBakingFrozenProgressDoNotRefillOrRecalculate()
         {
             StartSolo(); ClientSessionComponent client = host.Client;

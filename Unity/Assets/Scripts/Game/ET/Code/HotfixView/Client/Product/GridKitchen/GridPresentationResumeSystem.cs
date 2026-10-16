@@ -23,6 +23,8 @@ namespace ET.Client
                 }
                 return false;
             }
+            self.ClearStationInspection();
+            self.ClearRenovationPreview();
             self.Ready = false; self.PointerHeld = false; self.Highlight = null; self.HudTargetsValid=false;self.HudInformationValid=false;
             UIGridKitchen hud = self.Hud;
             if (hud?.View == null) { return true; }

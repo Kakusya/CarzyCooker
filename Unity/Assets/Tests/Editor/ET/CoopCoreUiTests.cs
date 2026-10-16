@@ -53,6 +53,31 @@ namespace ET
             public GridPresentationComponent Presentation => ((Scene)Client.IScene).GetComponent<GridPresentationComponent>();
             public MonoUIGridKitchen Hud => ((UIGridKitchen)Presentation.Hud).View;
 
+            public void KeepMapHeadlessWhileHostOwnsDisplay()
+            {
+                object previous = CurrentFiber.GetValue(null);
+                SynchronizationContext previousContext = SynchronizationContext.Current;
+                try
+                {
+                    CurrentFiber.SetValue(null, fiber);
+                    SynchronizationContext.SetSynchronizationContext(fiber.ThreadSynchronizationContext);
+                    Scene scene = (Scene)Client.IScene;
+                    var display = scene.GetComponent<GridPresentationComponent>() ?? scene.AddComponent<GridPresentationComponent>();
+                    display.GetAsyncOwner().AsyncScope.Stop();
+                    display.CloseGridHud();
+                    GridKitchenBoard board = display.Board;
+                    if (board != null)
+                    {
+                        board.Visible = false;
+                    }
+                }
+                finally
+                {
+                    CurrentFiber.SetValue(null, previous);
+                    SynchronizationContext.SetSynchronizationContext(previousContext);
+                }
+            }
+
             public CoopUiRemote(string endpoint)
             {
                 fiber = (Fiber)Activator.CreateInstance(typeof(Fiber), BindingFlags.NonPublic | BindingFlags.Instance, null,

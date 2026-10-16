@@ -22,6 +22,14 @@ namespace ET
             return SelectionHud.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text.StartsWith($"继续 记录{index} ·"));
         }
 
+        private IEnumerator InspectAndContinueSave(string slot)
+        {
+            Pointer(SelectionSlotButton(slot));
+            yield return Wait(() => Selection.InspectedSave?.SlotId == slot && !Selection.LoadingSelection,
+                "Actual file inspection precedes explicit continuation");
+            Pointer(SelectionButton("确认继续此记录"));
+        }
+
         private static SoloSavePayload SelectionFixture()
         {
             // Actual config supplies the file fixture; this test targets selection rather than world simulation.
@@ -34,14 +42,14 @@ namespace ET
                     DishIds = tables.DTDishConfig.DataList.Select(row => row.Id).ToArray(),
                     StationIds = tables.DTStationConfig.DataList.Select(row => row.Id).ToArray()
                 },
-                Stations = tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == 0).Select(row => new SoloSavedStation
+                Stations = tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == ProductMenuVariant.Basic).Select(row => new SoloSavedStation
                 {
-                    Key = row.Id, InitialLayoutId = row.Id, DefinitionId = row.StationDefinitionId, X = row.X, Y = row.Y, Orientation = row.Orientation,
+                    Key = row.Id, InitialLayoutId = row.Id, DefinitionId = row.StationDefinitionId, X = row.X, Y = row.Y, Orientation = (int)row.Orientation,
                     ItemKey = row.InitialItemDefinitionId == 0 ? 0 : row.Id, TableDefinitionId = tables.DTTableConfig.DataList.FirstOrDefault(t => t.InitialLayoutId == row.Id)?.Id ?? 0
                 }).ToArray(),
-                Items = tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == 0 && row.InitialItemDefinitionId != 0).Select(row => new SoloSavedItem
+                Items = tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == ProductMenuVariant.Basic && row.InitialItemDefinitionId != 0).Select(row => new SoloSavedItem
                     { Key = row.Id, DefinitionId = row.InitialItemDefinitionId, X = row.X, Y = row.Y, Location = (int)GridItemLocation.Counter, HolderKey = row.Id }).ToArray(),
-                Supply = tables.DTSupplyConfig.DataList.Where(row => row.MenuVariant == 0).Select(row => new SoloSavedSupplyBalance { SourceId = row.Id, RemainingPackages = row.AvailablePackages }).ToArray()
+                Supply = tables.DTSupplyConfig.DataList.Where(row => row.MenuVariant == ProductMenuVariant.Basic).Select(row => new SoloSavedSupplyBalance { SourceId = row.Id, RemainingPackages = row.AvailablePackages }).ToArray()
             };
         }
 
@@ -90,7 +98,7 @@ namespace ET
                 Pointer(SelectionSlotButton(damaged.SlotId));
                 yield return Wait(() => !Selection.LoadingSelection && Selection.Failure != null, "Damaged complete data rejects before world");
                 Assert.That((Scene)runtime.HostScene, Is.Null); Assert.That((HostSessionComponent)runtime.Authority, Is.Null);
-                Pointer(SelectionSlotButton(valid.SlotId));
+                yield return InspectAndContinueSave(valid.SlotId);
                 yield return Wait(() => Presentation?.Ready == true, "Valid selected file creates one real restaurant");
                 Assert.That(Grid.SaveEnabled, Is.True); Assert.That(Grid.LevelConfigId, Is.EqualTo(valid.NextLevelId));
                 Assert.That(Grid.Items.Count, Is.EqualTo(payload.Items.Length)); Assert.That(Grid.Stations.Count, Is.EqualTo(payload.Stations.Length));

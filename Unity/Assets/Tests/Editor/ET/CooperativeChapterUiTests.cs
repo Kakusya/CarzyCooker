@@ -29,7 +29,7 @@ namespace ET
             ownedInit = Init.Instance;
             var match = (Match)((HostSessionComponent)Runtime.Authority).Match;
             string matchId = match.MatchId;
-            Pointer(EntryButton("开启内存餐厅"));
+            StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
             yield return Wait(() => Presentation?.Ready == true, "Ordinary Host begins cooperative chapter");
             Presentation.CloseGridHud();
             yield return null;
@@ -72,7 +72,7 @@ namespace ET
                 ((Scene)remote.Client.IScene).RemoveComponent<GridPresentationComponent>();
                 ((Scene)remote.Client.IScene).AddComponent<GridPresentationComponent>();
                 yield return WaitCoopUi(remote, () => remote.Presentation?.Ready == true, "Client reopens terminal result through managed owner");
-                Assert.That(remote.Hud.SettlementText.text, Does.Contain("大关完成").And.Contain("等待 Host 返回房间"));
+                Assert.That(remote.Hud.SettlementText.text, Does.Contain("大关完成").And.Contain("等待 Host").And.Contain("返回房间"));
                 Assert.That(remote.Hud.GetComponentsInChildren<Button>(false).Any(button =>
                     button.GetComponentInChildren<Text>().text.Contains("返回房间")), Is.False);
                 remote.Presentation.CloseGridHud();
@@ -90,7 +90,7 @@ namespace ET
                 Assert.That(match.MatchId, Is.EqualTo(matchId));
                 Assert.That(Client.Roster.Count, Is.EqualTo(2));
                 Assert.That(((ProcessInnerSender)Runtime.Sender).IsStopped, Is.False);
-                Pointer(EntryButton("开启内存餐厅"));
+                StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
                 yield return WaitCoopUi(remote, () => Presentation?.Ready == true && remote.Grid.Confirmed, "Same members reopen a fresh chapter");
                 Assert.That(Grid.WorldId, Is.Not.EqualTo(world));
                 Assert.That(Grid.LevelConfigId, Is.EqualTo(401));

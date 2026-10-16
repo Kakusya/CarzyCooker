@@ -7,10 +7,7 @@ namespace ET
     public enum ProgressCommitKind { Claim = 1, ImportBranch = 2 }
     public enum SaveAuthorizationKind { None = 0, ImportBranch = 1, Replace = 2 }
     public enum ProgressFileAction { ExportIdentity = 1, Inspect = 2, TrustIdentity = 3, ExportReadRun = 4 }
-    public enum SaveAuthorizationAction
-    {
-        ExportImport = 1, ImportBranch = 2, ExportReplace = 3, PreviewReplace = 4, Replace = 5, RejectUnusedGrant = 6, PrepareOwnReplace = 7
-    }
+    public enum SaveAuthorizationAction { ExportImport = 1, ImportBranch = 2, ExportReplace = 3, PreviewReplace = 4, Replace = 5, RejectUnusedGrant = 6, PrepareOwnReplace = 7 }
 
     // 这是已经提交的元数据，不是可恢复旧载荷；目标后来变化也保留最初修订。
     [MemoryPackable]

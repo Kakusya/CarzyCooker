@@ -17,9 +17,9 @@ public sealed partial class DRStationUpgradeConfig : Luban.BeanBase
     {
         Id = _buf.ReadInt();
         Name = _buf.ReadString();
-        StationKind = _buf.ReadInt();
-        StationCapability = _buf.ReadInt();
-        WorkKind = _buf.ReadInt();
+        StationKind = (GridStationKind)_buf.ReadInt();
+        StationCapability = (GridStationCapability)_buf.ReadInt();
+        WorkKind = (StationWorkKind)_buf.ReadInt();
         TargetLevel = _buf.ReadInt();
         DurationNumerator = _buf.ReadInt();
         DurationDenominator = _buf.ReadInt();
@@ -42,15 +42,15 @@ public sealed partial class DRStationUpgradeConfig : Luban.BeanBase
     /// <summary>
     /// StationKind
     /// </summary>
-    public readonly int StationKind;
+    public readonly GridStationKind StationKind;
     /// <summary>
     /// StationCapability
     /// </summary>
-    public readonly int StationCapability;
+    public readonly GridStationCapability StationCapability;
     /// <summary>
     /// WorkKind
     /// </summary>
-    public readonly int WorkKind;
+    public readonly StationWorkKind WorkKind;
     /// <summary>
     /// TargetLevel
     /// </summary>

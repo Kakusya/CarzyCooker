@@ -21,7 +21,7 @@ public sealed partial class DRRenovationConfig : Luban.BeanBase
         Quantity = _buf.ReadInt();
         InstallX = _buf.ReadInt();
         InstallY = _buf.ReadInt();
-        Orientation = _buf.ReadInt();
+        Orientation = (GridOrientation)_buf.ReadInt();
         RewardKind = (RenovationRewardKind)_buf.ReadInt();
         UpgradeDefinitionId = _buf.ReadInt();
         {int n0 = _buf.ReadSize(); UnlockDishIds = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); UnlockDishIds.Add(_e0);}}
@@ -64,7 +64,7 @@ public sealed partial class DRRenovationConfig : Luban.BeanBase
     /// <summary>
     /// Orientation
     /// </summary>
-    public readonly int Orientation;
+    public readonly GridOrientation Orientation;
     /// <summary>
     /// RewardKind
     /// </summary>

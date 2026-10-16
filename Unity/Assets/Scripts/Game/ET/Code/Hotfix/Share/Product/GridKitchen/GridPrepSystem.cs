@@ -19,14 +19,14 @@ namespace ET
             foreach (int id in new[] { GridKitchenRules.Tomato, GridKitchenRules.TomatoChunks, GridKitchenRules.Egg, GridKitchenRules.EggLiquid, GridKitchenRules.Bowl })
                 if (!items.ContainsKey(id)) throw new InvalidOperationException($"Missing grid item definition {id}");
             foreach (DRGridItemConfig item in items.Values)
-                if (string.IsNullOrWhiteSpace(item.Name) || item.Kind is not (1 or 2) ||
-                    (item.Kind == 1 && (item.ContainerCapacity != 0 || item.AcceptedDefinitionIds.Count != 0)) ||
-                    (item.Kind == 2 && (item.ContainerCapacity <= 0 || item.AcceptedDefinitionIds.Count == 0)) ||
-                    !ProductMenuCatalog.IsValid(item.MenuVariant) || item.Disposable && (item.Kind != 2 || item.ContainerCapacity != (item.Id == GridKitchenRules.HotDrinkCup ? 3 : 1)) ||
-                    item.AllowsEmptyContainers && (item.Kind != 2 || !item.Discardable) ||
-                    item.AcceptedDefinitionIds.Any(id => !items.ContainsKey(id) || items[id].Kind != 1 &&
-                        !(item.AllowsEmptyContainers && items[id].Kind == 2 && items[id].Disposable)) ||
-                    item.ExclusiveDefinitionIds.Any(id => item.Kind != 2 || !item.AcceptedDefinitionIds.Contains(id)))
+                if (string.IsNullOrWhiteSpace(item.Name) || item.Kind is not (GridItemKind.Material or GridItemKind.Container) ||
+                    (item.Kind == GridItemKind.Material && (item.ContainerCapacity != 0 || item.AcceptedDefinitionIds.Count != 0)) ||
+                    (item.Kind == GridItemKind.Container && (item.ContainerCapacity <= 0 || item.AcceptedDefinitionIds.Count == 0)) ||
+                    !ProductMenuCatalog.IsValid(item.MenuVariant) || item.Disposable && (item.Kind != GridItemKind.Container || item.ContainerCapacity != (item.Id == GridKitchenRules.HotDrinkCup ? 3 : 1)) ||
+                    item.AllowsEmptyContainers && (item.Kind != GridItemKind.Container || !item.Discardable) ||
+                    item.AcceptedDefinitionIds.Any(id => !items.ContainsKey(id) || items[id].Kind != GridItemKind.Material &&
+                        !(item.AllowsEmptyContainers && items[id].Kind == GridItemKind.Container && items[id].Disposable)) ||
+                    item.ExclusiveDefinitionIds.Any(id => item.Kind != GridItemKind.Container || !item.AcceptedDefinitionIds.Contains(id)))
                     throw new InvalidOperationException($"Invalid grid item definition {item.Id}");
             foreach (DRGridManualRecipeConfig recipe in recipes)
             {
@@ -37,7 +37,7 @@ namespace ET
                 }
                 if (recipe.RequiredTicks <= 0 || recipe.Mode is not (GridManualMode.Chop or GridManualMode.Beat) ||
                     !items.ContainsKey(recipe.InputDefinitionId) || !items.ContainsKey(recipe.OutputDefinitionId) ||
-                    items[recipe.InputDefinitionId].Kind != 1 || items[recipe.OutputDefinitionId].Kind != 1 ||
+                    items[recipe.InputDefinitionId].Kind != GridItemKind.Material || items[recipe.OutputDefinitionId].Kind != GridItemKind.Material ||
                     recipe.InputDefinitionId == recipe.OutputDefinitionId || recipe.InputDefinitionIds.Count != 0 ||
                     recipe.InputCounts.Count != 0 || recipe.ContainerDefinitionId != 0 || recipe.LastInputDefinitionId != 0)
                 {
@@ -46,7 +46,7 @@ namespace ET
             }
             if (recipes.Count(r => r.Mode == GridManualMode.Chop && r.InputDefinitionId == GridKitchenRules.Tomato && r.OutputDefinitionId == GridKitchenRules.TomatoChunks) != 1 ||
                 recipes.Count(r => r.Mode == GridManualMode.Beat && r.InputDefinitionId == GridKitchenRules.Egg && r.OutputDefinitionId == GridKitchenRules.EggLiquid) != 1 ||
-                items[GridKitchenRules.Bowl].Kind != 2 || !items[GridKitchenRules.Bowl].AcceptedDefinitionIds.Contains(GridKitchenRules.Egg) ||
+                items[GridKitchenRules.Bowl].Kind != GridItemKind.Container || !items[GridKitchenRules.Bowl].AcceptedDefinitionIds.Contains(GridKitchenRules.Egg) ||
                 !items[GridKitchenRules.Bowl].AcceptedDefinitionIds.Contains(GridKitchenRules.EggLiquid))
                 throw new InvalidOperationException("Missing or incompatible grid prep recipes / bowl");
         }
@@ -90,8 +90,8 @@ namespace ET
             if (target.Hygiene != ItemHygiene.Clean || input.Hygiene != ItemHygiene.Clean) return "DirtyUtensil";
             if (target.AutoProcessId != 0) return "ProcessLocked";
             DRGridItemConfig source = Tables.Instance.DTGridItemConfig.Get(input.DefinitionId), bowl = Tables.Instance.DTGridItemConfig.Get(target.DefinitionId);
-            if (source.Kind == 2) return "NestedContainer";
-            if (bowl.Kind != 2 || !bowl.AcceptedDefinitionIds.Contains(input.DefinitionId)) return "IncompatibleMaterial";
+            if (source.Kind == GridItemKind.Container) return "NestedContainer";
+            if (bowl.Kind != GridItemKind.Container || !bowl.AcceptedDefinitionIds.Contains(input.DefinitionId)) return "IncompatibleMaterial";
             if (!GridAssemblyConfig.AllowsContainerContents(target.DefinitionId,
                 target.Contents.Select(id => self.Item(id).DefinitionId).Append(input.DefinitionId).ToArray()))
             {

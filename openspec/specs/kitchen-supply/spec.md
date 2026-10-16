@@ -69,9 +69,31 @@ Preparing 和 Operating SHALL 允许合法采购；Draining 禁止新申请但�
 - **WHEN** 玩家查看运输、到货、收货状态并关闭重开供应面板
 - **THEN** 展示当前已提交事实，重开不重复采购，一次收货点击仅提交一次请求
 
+
+### Requirement: 补货与收货业务总览可访问
+
+系统 SHALL 提供以下入口行为：增加按来源查看的供应页，分区展示剩余外部配额、运输／待接收、实际包装和可用拆份入口，解释满收货台及当前阶段限制。
+
+#### Scenario: 补货与收货业务总览的正常使用
+- **WHEN** 采购运输到货时打开供应页，收货台满后腾空并接收
+- **THEN** 各阶段分开显示，满槽保留同一货物，合法一次接收与拆份仍守恒
+
+### Requirement: 补货与收货业务总览保持事实与操作边界
+
+系统 MUST 遵守以下边界：不把配额、未到货、包装内材料合并为可用库存；不自动建议采购数量或批量补货。选择采购／接收／拆份仍使用原逐次显式命令和实时资格。
+
+#### Scenario: 补货与收货业务总览的取消或状态变化
+- **WHEN** 暂停、收尾、配额用尽或旧货物行被点击
+- **THEN** 显示可理解限制：暂停时运输冻结，收尾仅禁止新采购并继续已有货物运输；配额用尽不再受理采购，旧货物行不重复生成包装
+
+#### Scenario: 补货与收货业务总览关闭重开与旧回调
+- **WHEN** 玩家关闭并重开本入口，随后旧页面回调或迟到结果到达
+- **THEN** 页面只作用于当前有效上下文，原操作不因重开重复提交，旧结果不覆盖新选择，原合法入口仍可使用
+
 ## Sources
 
 - [供应目标](../../../Docs/Product/specs/supply-layout-recipes/spec.md)、[当前初始化](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridKitchenSystem.cs)。
 - [本案设计](../../changes/archive/2026-10-14-solo-supply-delivery/design.md)、[清空交接](../../changes/archive/2026-10-14-solo-kitchen-clear-and-discard/specs/kitchen-item-processing/spec.md)。
 
 - [solo-supply-delivery 逐功能运行与验收](../../changes/archive/2026-10-14-solo-supply-delivery/execution-notes.md)。
+- [kitchen-supply-overview 逐项验收](../../changes/archive/2026-10-16-kitchen-supply-overview/execution-notes.md)?

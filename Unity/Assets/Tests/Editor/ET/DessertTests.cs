@@ -13,7 +13,7 @@ namespace ET
             RuntimeInstanceContext.Prepare(config);
             var fiber = CreateFiber(); UseOptionalBuffFixture();
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
-            host.InitializeProduct(menuVariant: (int)ProductMenuVariant.Dessert); Pump(15);
+            host.InitializeProduct(menuVariant: ProductMenuVariant.Dessert); Pump(15);
             Assert.That(CurrentLevel.ConfigId, Is.EqualTo(cooperative ? 2301 : 1301));
             Assert.That(CurrentLevel.AllowedDishIds, Is.EqualTo(new[] { 8 }));
         }
@@ -56,7 +56,7 @@ namespace ET
             DessertAddSupply(client, 13);
             PrepDo(client, GridAction.StartMix, mixer.Id, mixer.ItemId, mixer.ItemId);
             var batch = Grid.AutoProcess(Grid.Item(mixer.ItemId).AutoProcessId);
-            Assert.That(batch.RequiredCapability, Is.EqualTo((int)GridStationCapability.Mixing));
+            Assert.That(batch.RequiredCapability, Is.EqualTo(GridStationCapability.Mixing));
             Assert.That(batch.TotalPortions, Is.EqualTo(2));
             if (finish)
             {

@@ -47,7 +47,7 @@ namespace ET
             self.ActorRouteBuffer.Clear();Array.Clear(self.SearchQueue,0,self.SearchQueue.Length);Array.Clear(self.SearchPrevious,0,self.SearchPrevious.Length);
             if (!self.RestoreKitchenBaseline())
             {
-                int variant = restaurant?.MenuVariant ?? 0;
+                ProductMenuVariant variant = restaurant?.MenuVariant ?? ProductMenuVariant.Basic;
                 var layout = Tables.Instance.DTInitialLayoutConfig.DataList.Where(row => ProductMenuCatalog.Includes(variant, row.MenuVariant)).ToArray();
                 self.Blocked.UnionWith(GridStationConfig.ValidateInitialLayout(Tables.Instance.DTStationConfig.DataList, layout,
                     Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTLevelConfig.DataList.Where(row => row.MenuVariant == variant).Select(row => new GridCell(row.SpawnX, row.SpawnY))));
@@ -181,7 +181,7 @@ namespace ET
             GridActor actor = self.Actor(memberId);
             if (self.Stopped || !self.HasBinding(memberId, generation) || actor == null || actor.Generation != generation) return "EntryClosed";
             if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.PortionDrinkBase) return "InvalidCommand";
-            if (IsDrinkAction(intent.Action) && !ProductMenuCatalog.Includes(((RestaurantRuntime)self.Restaurant)?.MenuVariant ?? 0, (int)ProductMenuVariant.Drink)) return "DrinkMenuRequired";
+            if (IsDrinkAction(intent.Action) && !ProductMenuCatalog.Includes(((RestaurantRuntime)self.Restaurant)?.MenuVariant ?? ProductMenuVariant.Basic, ProductMenuVariant.Drink)) return "DrinkMenuRequired";
             Match match = self.Match;
             Participant member = match.GetChild<Participant>(memberId);
             HostPeer peer = member.BoundPeer;
@@ -366,7 +366,7 @@ namespace ET
             actor.Facing = Direction(actor.Cell, next); self.Dirty = true;
         }
 
-        private static int Direction(GridCell from, GridCell to) => to.X > from.X ? 1 : to.X < from.X ? 3 : to.Y > from.Y ? 0 : 2;
+        private static GridFacing Direction(GridCell from, GridCell to) => to.X > from.X ? GridFacing.Right : to.X < from.X ? GridFacing.Left : to.Y > from.Y ? GridFacing.Up : GridFacing.Down;
         public static int GridDistance(GridCell a, GridCell b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
         public static GridCell[] Neighbours(GridCell cell) => GridStationGeometry.Neighbours(cell);
 
@@ -544,7 +544,7 @@ namespace ET
         private static void Awake(this GridActor self)
         {
             self.MemberId = 0; self.Generation = 0; self.Cell = default; self.NextCell = default;
-            self.StepStartTick = 0; self.Motion = GridMotion.Standing; self.Facing = 2; self.HandItemId = 0; self.WorkId = 0;
+            self.StepStartTick = 0; self.Motion = GridMotion.Standing; self.Facing = GridFacing.Down; self.HandItemId = 0; self.WorkId = 0;
             self.FrontWorkId = 0; self.FrontClaimSerial = 0;
             self.Goal = default; self.StopCell = default; self.HasStopReservation = false;
             self.Path.Clear(); self.PathIndex = 0; self.ActiveIntent = default; self.HasIntent = false;

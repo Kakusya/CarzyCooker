@@ -42,7 +42,7 @@ namespace ET
                 : match.ProductKitchen() == null ? "RestaurantUnavailable"
                 : match.ProductKitchen().QueueStationLayout(peer, new ProductCommandContext(request.MatchId, request.WorldId,
                     request.WorldGeneration, request.LevelId, request.LevelGeneration, request.BindingGeneration, request.CommandId),
-                    new GridStationLayoutIntent(request.StationId, request.ExpectedLayoutVersion, new GridCell(request.X, request.Y), request.Orientation));
+                    new GridStationLayoutIntent(request.StationId, request.ExpectedLayoutVersion, new GridCell(request.X, request.Y), (GridOrientation)request.Orientation));
             response.CommandId = request.CommandId; response.Error = reason == null ? 0 : ProductError.InvalidRequest;
             response.Message = reason ?? peer.LastCommandReason; response.Status = (int)(reason == null ? peer.LastCommandStatus : GridResultStatus.Rejected);
             return UniTask.CompletedTask;
@@ -53,7 +53,7 @@ namespace ET
     public static class LayoutClientCommands
     {
         public static StationLayoutRequest CreateStationLayout(this GridClientComponent self, long station, GridCell cell,
-            int orientation, long? expectedVersion = null)
+            GridOrientation orientation, long? expectedVersion = null)
         {
             ClientSessionComponent client = self.GetParent<ClientSessionComponent>();
             var context = client.CreateProductCommandContext(self.WorldId, self.WorldGeneration, self.LevelId, self.LevelGeneration);
@@ -65,7 +65,7 @@ namespace ET
                 value.WorldGeneration = context.WorldGeneration; value.BindingGeneration = context.BindingGeneration;
                 value.LevelId = context.LevelId; value.LevelGeneration = context.LevelGeneration; value.CommandId = context.CommandId;
                 value.StationId = station; value.ExpectedLayoutVersion = expectedVersion ?? self.LayoutVersion;
-                value.X = cell.X; value.Y = cell.Y; value.Orientation = orientation;
+                value.X = cell.X; value.Y = cell.Y; value.Orientation = (int)orientation;
             });
         }
     }

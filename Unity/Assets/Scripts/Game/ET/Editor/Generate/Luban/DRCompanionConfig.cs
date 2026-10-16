@@ -19,6 +19,7 @@ public sealed class DRCompanionConfig :  Luban.EditorBeanBase
     public DRCompanionConfig()
     {
             Name = "";
+            Post = CompanionPost.FrontService;
             PreparationChat = "";
             CooperationChat = "";
             ClosingChat = "";
@@ -48,7 +49,7 @@ public sealed class DRCompanionConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["Post"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  Post = _fieldJson;
+                if(_fieldJson.IsString) { Post = (CompanionPost)System.Enum.Parse(typeof(CompanionPost), _fieldJson); } else if(_fieldJson.IsNumber) { Post = (CompanionPost)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -145,7 +146,7 @@ public sealed class DRCompanionConfig :  Luban.EditorBeanBase
             _json["Name"] = new JSONString(Name);
         }
         {
-            _json["Post"] = new JSONNumber(Post);
+            _json["Post"] = new JSONNumber((int)Post);
         }
         {
             _json["SpawnX"] = new JSONNumber(SpawnX);
@@ -214,7 +215,7 @@ public sealed class DRCompanionConfig :  Luban.EditorBeanBase
     /// <summary>
     /// Post
     /// </summary>
-    public int Post;
+    public CompanionPost Post;
 
     /// <summary>
     /// SpawnX

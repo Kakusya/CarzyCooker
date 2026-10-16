@@ -14,7 +14,7 @@ namespace ET
             RuntimeInstanceContext.Prepare(config);
             var fiber = CreateFiber(); UseOptionalBuffFixture();
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
-            host.InitializeProduct(menuVariant: (int)ProductMenuVariant.Salad); Pump(12);
+            host.InitializeProduct(menuVariant: ProductMenuVariant.Salad); Pump(12);
             Assert.That(host.Stage, Is.Not.EqualTo(ProductStage.Failed), host.Failure);
             Assert.That(CurrentLevel.AllowedDishIds, Is.EqualTo(new[] { 4, 5 }));
         }

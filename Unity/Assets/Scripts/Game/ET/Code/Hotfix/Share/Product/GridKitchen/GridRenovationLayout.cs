@@ -18,8 +18,8 @@ namespace ET
             if (additions.Count == 0 || self.LayoutVersion == long.MaxValue) return "InvalidRenovationPlan";
             var definitions = GridStationConfig.ValidateDefinitions(Tables.Instance.DTStationConfig.DataList);
             if (additions.Any(value => !definitions.ContainsKey(value.DefinitionId) ||
-                definitions[value.DefinitionId].Kind is not ((int)GridStationKind.Counter or (int)GridStationKind.Chopping) &&
-                !(allowTable && definitions[value.DefinitionId].Kind == (int)GridStationKind.Table))) return "InvalidRenovationPlan";
+                definitions[value.DefinitionId].Kind is not (GridStationKind.Counter or GridStationKind.Chopping) &&
+                !(allowTable && definitions[value.DefinitionId].Kind == GridStationKind.Table))) return "InvalidRenovationPlan";
             var footprint = additions.SelectMany(value => GridStationGeometry.Cells(definitions[value.DefinitionId].FootprintOffsets, value.Cell, value.Orientation)).ToHashSet();
             Level level = self.ProductLevel();
             CompanionRole[] roles = level?.Children.Values.OfType<CompanionRole>().ToArray() ?? Array.Empty<CompanionRole>();

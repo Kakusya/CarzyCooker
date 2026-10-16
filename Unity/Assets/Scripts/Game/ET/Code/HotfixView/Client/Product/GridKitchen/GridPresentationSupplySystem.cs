@@ -8,6 +8,7 @@ namespace ET.Client
     {
         private static void AddSupplyTargets(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
+            self.AddSupplyOverview(view, grid);
             if (grid.LevelPaused || grid.LevelPhase == LevelPhase.Completed) return;
             EntityRef<GridPresentationComponent> selfRef = self;
             long level = grid.LevelId, generation = grid.LevelGeneration, layout = grid.LayoutVersion;
@@ -52,6 +53,7 @@ namespace ET.Client
                 GridClientComponent grid = client.GetComponent<GridClientComponent>(); EntityRef<GridClientComponent> gridRef = grid;
                 if (grid.LevelId != expectedLevel || grid.LevelGeneration != expectedGeneration) return;
                 SupplyCommandRequest request = grid.CreateSupplyCommand(intent);
+                self.RememberAdviceRequest(grid, request.CommandId, intent.StationId);
                 long command = request.CommandId, worldGeneration = grid.WorldGeneration;
                 try
                 {

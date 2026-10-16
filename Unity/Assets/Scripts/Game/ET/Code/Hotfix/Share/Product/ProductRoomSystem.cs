@@ -68,7 +68,7 @@ namespace ET
             if (intent.Action == ProductRoomAction.StartRestaurant)
             {
                 var selected = intent.ContentChapterId == 0 ? null : Tables.Instance.DTRestaurantChapterConfig.GetOrDefault(intent.ContentChapterId);
-                if (intent.ContentChapterId != 0 && (selected == null || (int)selected.MenuVariant != intent.MenuVariant))
+                if (intent.ContentChapterId != 0 && (selected == null || selected.MenuVariant != intent.MenuVariant))
                 {
                     return "InvalidContentChapter";
                 }
@@ -170,7 +170,7 @@ namespace ET
                     message.RoomVersion = match.RoomVersion;
                     message.WorldId = kitchen?.WorldId;
                     message.WorldGeneration = kitchen?.WorldGeneration ?? 0;
-                    message.MenuVariant = match.RoomMenuVariant;
+                    message.MenuVariant = (int)match.RoomMenuVariant;
                     message.CanControlRoom = ((ProductRuntimeComponent)authority.Runtime).Config.Role == RuntimeInstanceRole.Host && peer.CanControlRestaurant();
                     message.VerifiedProfileId = peer.ProfileProved ? match.GetChild<Participant>(peer.MemberId)?.ProfileId : null;
                     message.HostIdentity = hostIdentity == null ? null : (byte[])hostIdentity.Clone();

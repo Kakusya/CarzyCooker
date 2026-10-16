@@ -32,7 +32,7 @@ namespace ET
             var stations = new Dictionary<int, GridStation>(); var items = new Dictionary<int, GridItem>();
             foreach (var saved in payload.Stations)
             {
-                var station = self.RestoreSaveStation(saved.DefinitionId, saved.InitialLayoutId, new GridCell(saved.X, saved.Y), saved.Orientation);
+                var station = self.RestoreSaveStation(saved.DefinitionId, saved.InitialLayoutId, new GridCell(saved.X, saved.Y), (GridOrientation)saved.Orientation);
                 stations.Add(saved.Key, station);
                 station.UpgradeDefinitionId = saved.UpgradeDefinitionId; station.UpgradeLevel = saved.UpgradeLevel;
                 if (saved.TableDefinitionId != 0)
@@ -75,7 +75,7 @@ namespace ET
                 process.PotItemId = pot.Id; process.StartStationId = stations[saved.StationKey].Id; process.State = (GridAutoState)saved.State;
                 process.OutputDefinitionId = saved.OutputDefinitionId; process.TotalPortions = saved.TotalPortions; process.RemainingPortions = saved.RemainingPortions;
                 process.ServingContainerDefinitionId = saved.ServingContainerDefinitionId; process.InputItemIds.AddRange(saved.InputKeys.Select(key => items[key].Id));
-                process.RequiredCapability = saved.RequiredCapability == 0 ? (int)GridStationCapability.Cook : saved.RequiredCapability;
+                process.RequiredCapability = saved.RequiredCapability == 0 ? GridStationCapability.Cook : (GridStationCapability)saved.RequiredCapability;
                 process.LockContainer = saved.LockContainer;
                 process.StartedTick = -1; pot.AutoProcessId = process.Id; self.AutoProcesses.Add(process.Id, process);
                 if (process.State == GridAutoState.Cooking) stations[saved.StationKey].AutoProcessId = process.Id;
@@ -138,7 +138,7 @@ namespace ET
             return true;
         }
 
-        private static GridStation RestoreSaveStation(this GridKitchenComponent self, int definitionId, int initialId, GridCell cell, int orientation)
+        private static GridStation RestoreSaveStation(this GridKitchenComponent self, int definitionId, int initialId, GridCell cell, GridOrientation orientation)
         {
             var definition = Tables.Instance.DTStationConfig.Get(definitionId); var station = self.AddChild<GridStation>();
             station.InitialLayoutId = initialId; station.DefinitionId = definitionId; station.Cell = cell; station.Orientation = orientation;

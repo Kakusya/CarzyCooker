@@ -55,10 +55,7 @@ namespace ET
 
     public enum ProgressReceiptState { Available = 0, Claimed = 1, Closed = 2 }
     public enum ProgressDeliveryKind { Ticket = 1, NormalClose = 2 }
-    public enum ProgressRepositoryOperation
-    {
-        PrepareResult = 1, PersistTicket = 2, PersistClose = 3, Claim = 4, Browse = 5, SignClose = 6
-    }
+    public enum ProgressRepositoryOperation { PrepareResult = 1, PersistTicket = 2, PersistClose = 3, Claim = 4, Browse = 5, SignClose = 6 }
 
     [MemoryPackable]
     public sealed partial class ProgressTicketSummary : Object

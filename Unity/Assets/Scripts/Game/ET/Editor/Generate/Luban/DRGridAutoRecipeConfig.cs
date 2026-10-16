@@ -20,6 +20,8 @@ public sealed class DRGridAutoRecipeConfig :  Luban.EditorBeanBase
     {
             InputDefinitionIds = new System.Collections.Generic.List<int>();
             InputCounts = new System.Collections.Generic.List<int>();
+            StationCapability = GridStationCapability.None;
+            MenuVariant = ProductMenuVariant.Basic;
     }
 
     public override void LoadJson(JSONObject _json)
@@ -92,7 +94,7 @@ public sealed class DRGridAutoRecipeConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["StationCapability"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  StationCapability = _fieldJson;
+                if(_fieldJson.IsString) { StationCapability = (GridStationCapability)System.Enum.Parse(typeof(GridStationCapability), _fieldJson); } else if(_fieldJson.IsNumber) { StationCapability = (GridStationCapability)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -108,7 +110,7 @@ public sealed class DRGridAutoRecipeConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["MenuVariant"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  MenuVariant = _fieldJson;
+                if(_fieldJson.IsString) { MenuVariant = (ProductMenuVariant)System.Enum.Parse(typeof(ProductMenuVariant), _fieldJson); } else if(_fieldJson.IsNumber) { MenuVariant = (ProductMenuVariant)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -145,13 +147,13 @@ public sealed class DRGridAutoRecipeConfig :  Luban.EditorBeanBase
             _json["ServingContainerDefinitionId"] = new JSONNumber(ServingContainerDefinitionId);
         }
         {
-            _json["StationCapability"] = new JSONNumber(StationCapability);
+            _json["StationCapability"] = new JSONNumber((int)StationCapability);
         }
         {
             _json["LockContainer"] = new JSONBool(LockContainer);
         }
         {
-            _json["MenuVariant"] = new JSONNumber(MenuVariant);
+            _json["MenuVariant"] = new JSONNumber((int)MenuVariant);
         }
     }
 
@@ -210,7 +212,7 @@ public sealed class DRGridAutoRecipeConfig :  Luban.EditorBeanBase
     /// <summary>
     /// StationCapability
     /// </summary>
-    public int StationCapability;
+    public GridStationCapability StationCapability;
 
     /// <summary>
     /// LockContainer
@@ -220,7 +222,7 @@ public sealed class DRGridAutoRecipeConfig :  Luban.EditorBeanBase
     /// <summary>
     /// MenuVariant
     /// </summary>
-    public int MenuVariant;
+    public ProductMenuVariant MenuVariant;
 
 }
 }

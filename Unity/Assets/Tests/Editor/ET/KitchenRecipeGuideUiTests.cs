@@ -66,6 +66,8 @@ namespace ET
             yield return Wait(()=>Grid.Orders.Values.Any(value=>value.State==OrderState.Waiting && value.DishId==1),"Actual first soup order");
             var order=Grid.Orders.Values.First(value=>value.State==OrderState.Waiting && value.DishId==1);
             string table=Grid.Stations[order.TableStationId].Name;yield return Command("前往 "+table);
+            Pointer(Button(OrderNavigationCaption(Grid, order)));
+            Assert.That(Presentation.RecipeOrderId, Is.EqualTo(order.Id));
             long command=Client.NextCommandId+1;Pointer(Button("交付 番茄蛋花汤 → "+table));
             yield return Wait(()=>Grid.LastCommandId==command && Grid.LastStatus==GridResultStatus.Rejected,"Actual empty-dish rejection");
             Assert.That(Grid.LastReason,Is.EqualTo("WrongDish"));Assert.That(GridRecipeGuide.CurrentNeed(Grid,1),Is.EqualTo(before));
@@ -74,6 +76,7 @@ namespace ET
             yield return Wait(()=>Grid.RenovationLevelId==Grid.LevelId && Grid.RenovationChoiceVersion>0,"Continue prepared");
             long old=Grid.LevelId;yield return Command("下一关");command=Client.NextCommandId;
             Assert.That(Grid.LevelId,Is.Not.EqualTo(old));retiredRecipe();yield return null;
+            Assert.That(Presentation.RecipeOrderId, Is.Zero);
             Assert.That(Presentation.RecipeVisible,Is.False);Assert.That(Client.NextCommandId,Is.EqualTo(command));
             Assert.That(Hud.HintText.text,Does.Not.Contain(table));Assert.That(Grid.Orders,Is.Empty);
             Assert.That(GridRecipeGuide.CurrentNeed(Grid,1),Does.Not.Contain("旧订单"));

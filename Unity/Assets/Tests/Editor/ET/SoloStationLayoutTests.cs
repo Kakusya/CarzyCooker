@@ -13,7 +13,7 @@ namespace ET
             return (StationLayoutResponse)task.GetAwaiter().GetResult();
         }
 
-        private void LayoutDo(GridStation station, GridCell cell, int orientation = 0, string rejection = null, long? version = null)
+        private void LayoutDo(GridStation station, GridCell cell, GridOrientation orientation = GridOrientation.Unrotated, string rejection = null, long? version = null)
         {
             ClientSessionComponent client = host.Client;
             using (var receipt = LayoutReply(client, client.GetComponent<GridClientComponent>().CreateStationLayout(station.Id, cell, orientation, version)))
@@ -32,22 +32,24 @@ namespace ET
         });
 
         [Test]
+        [Category("ProductSemanticEnums")]
+        [Category("ProductEnumDirectionAndLegacy")]
         public void SoloStationLayoutRealMailboxRotatesOnceAndReplaysOnlySamePayload()
         {
             StartSolo(); ClientSessionComponent client = host.Client; var projection = client.GetComponent<GridClientComponent>();
             GridStation oven = PrepStation("烤箱"); long version = Grid.LayoutVersion, tick = Grid.Tick;
-            var request=projection.CreateStationLayout(oven.Id,oven.Cell,1);
+            var request=projection.CreateStationLayout(oven.Id,oven.Cell,GridOrientation.CounterClockwise90);
             var queuedReplay=CopyLayout(request);var finalReplay=CopyLayout(request);var conflict=CopyLayout(request);conflict.Orientation=2;
             using(var receipt=LayoutReply(client,request)) Assert.That(receipt.Status,Is.EqualTo((int)GridResultStatus.Accepted));
             using(var receipt=LayoutReply(client,queuedReplay)) Assert.That(receipt.Status,Is.EqualTo((int)GridResultStatus.Accepted));
-            Assert.That(Grid.LayoutCommands.Count,Is.EqualTo(1)); Assert.That(Grid.Tick,Is.EqualTo(tick)); Assert.That(oven.Orientation,Is.Zero);
+            Assert.That(Grid.LayoutCommands.Count,Is.EqualTo(1)); Assert.That(Grid.Tick,Is.EqualTo(tick)); Assert.That(oven.Orientation,Is.EqualTo(GridOrientation.Unrotated));
             AdvanceTicks(1);PumpMessages(8);
-            Assert.That(oven.Orientation,Is.EqualTo(1));Assert.That(Grid.LayoutVersion,Is.EqualTo(version+1));
+            Assert.That(oven.Orientation,Is.EqualTo(GridOrientation.CounterClockwise90));Assert.That(Grid.LayoutVersion,Is.EqualTo(version+1));
             Assert.That(Grid.Blocked.Contains(new GridCell(4,14)),Is.True);Assert.That(Grid.Blocked.Contains(new GridCell(5,15)),Is.False);
             using(var receipt=LayoutReply(client,finalReplay)) Assert.That(receipt.Status,Is.EqualTo((int)GridResultStatus.Executed));
             using(var receipt=LayoutReply(client,conflict)) Assert.That(receipt.Message,Is.EqualTo("CommandConflict"));
             Assert.That(Grid.LayoutCommands,Is.Empty);Assert.That(projection.LayoutVersion,Is.EqualTo(version+1));
-            Assert.That(projection.Stations[oven.Id].Orientation,Is.EqualTo(1));
+            Assert.That(projection.Stations[oven.Id].Orientation,Is.EqualTo(GridOrientation.CounterClockwise90));
         }
 
         [TestCase(0,12)]
@@ -149,7 +151,7 @@ namespace ET
             StartSolo();ClientSessionComponent client=host.Client;long pot=SoupFillPot(client);GridAutoProcess process=SoupBegin(client,pot);
             GridStation station=PrepStation("灶台");var contents=Grid.Item(pot).Contents.ToArray();var allItems=Grid.Items.Keys.ToArray();
             long processId=process.Id;int progress=process.ProgressTicks;
-            LayoutDo(station,new GridCell(1,7),1);
+            LayoutDo(station,new GridCell(1,7),GridOrientation.CounterClockwise90);
             Assert.That(station.ItemId,Is.EqualTo(pot));Assert.That(station.AutoProcessId,Is.EqualTo(processId));Assert.That(process.StartStationId,Is.EqualTo(station.Id));
             Assert.That(process.ProgressTicks,Is.EqualTo(progress+1));Assert.That(Grid.Item(pot).Contents,Is.EqualTo(contents));Assert.That(Grid.Items.Keys,Is.EquivalentTo(allItems));
             Assert.That(Grid.Item(pot).Cell,Is.EqualTo(station.Cell));Assert.That(contents.All(id=>Grid.Item(id).HolderId==pot && Grid.Item(id).Cell==station.Cell),Is.True);

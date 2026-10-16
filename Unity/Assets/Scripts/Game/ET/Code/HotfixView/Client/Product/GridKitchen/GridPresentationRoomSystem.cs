@@ -1,4 +1,3 @@
-using System;
 using Game;
 
 namespace ET.Client
@@ -17,95 +16,56 @@ namespace ET.Client
 
         private static void AddRoomControls(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
+            ClientSessionComponent client = grid.GetParent<ClientSessionComponent>();
             if (IsCooperativeRestaurant(grid))
             {
-                EntityRef<GridPresentationComponent> presentation = self;
-                string currentWorld = grid.WorldId;
-                view.AddControl("合作进度领取", () =>
+                self.Root().GetComponent<ProductEntryPresentation>()?.AddClaimInboxControl(view);
+                Add("合作进度领取", null);
+            }
+            ProductRuntimeComponent runtime = client.Runtime;
+            if (runtime.Config.Role == RuntimeInstanceRole.Solo)
+            {
+                Add("返回模式选择", ProductLeaveAction.SoloReturnModes);
+            }
+            else if (runtime.Config.Role == RuntimeInstanceRole.Client)
+            {
+                Add("离开房间", ProductLeaveAction.ClientLeave);
+            }
+            else if (client.GetComponent<ProductRoomClient>()?.Current.CanControlRoom == true)
+            {
+                Add("返回房间", ProductLeaveAction.HostReturnRoom);
+                Add("结束整个房间", ProductLeaveAction.HostEndRoom);
+            }
+
+            void Add(string caption, ProductLeaveAction? action)
+            {
+                EntityRef<GridPresentationComponent> original = self;
+                string world = grid.WorldId;
+                long generation = grid.WorldGeneration, level = grid.LevelId, levelGeneration = grid.LevelGeneration;
+                long binding = client?.BindingGeneration ?? grid.BindingGeneration;
+                long epoch = self.HudLoadEpoch;
+                view.AddControl(caption, () =>
                 {
-                    GridPresentationComponent active = presentation;
-                    var current = ((Scene)active?.IScene)?.GetComponent<ClientSessionComponent>()?.GetComponent<GridClientComponent>();
-                    if (active?.Ready == true && current?.WorldId == currentWorld)
+                    GridPresentationComponent current = original;
+                    var activeClient = ((Scene)current?.IScene)?.GetComponent<ClientSessionComponent>();
+                    var active = activeClient?.GetComponent<GridClientComponent>();
+                    if (current?.Ready != true || current.HudLoadEpoch != epoch || active?.Confirmed != true ||
+                        active.WorldId != world || active.WorldGeneration != generation || active.LevelId != level ||
+                        active.LevelGeneration != levelGeneration || activeClient.BindingGeneration != binding)
                     {
-                        active.Root().GetComponent<ProductEntryPresentation>()?.OpenClaims();
+                        return;
+                    }
+                    var entry = current.Root().GetComponent<ProductEntryPresentation>();
+                    if (action.HasValue)
+                    {
+                        entry?.RequestProductLeave(action.Value, true);
+                    }
+                    else
+                    {
+                        entry?.OpenClaims();
                     }
                 });
             }
-            if (grid.LevelPhase == LevelPhase.Completed && Tables.Instance.DTLevelConfig.Get(grid.LevelConfigId).IsChapterTerminal)
-            {
-                return;
-            }
-            ClientSessionComponent client = grid.GetParent<ClientSessionComponent>();
-            ProductRoomClient room = client.GetComponent<ProductRoomClient>();
-            if (room == null || !room.Current.CanControlRoom || room.Current.WorldId != grid.WorldId)
-            {
-                return;
-            }
-            if (self.RoomControlPending)
-            {
-                view.StatusText.text = "正在返回房间…";
-                return;
-            }
-            EntityRef<GridPresentationComponent> original = self;
-            long version = room.Current.Version;
-            string world = grid.WorldId;
-            view.AddControl("返回房间", () =>
-            {
-                GridPresentationComponent current = original;
-                current?.CloseRoomRestaurant(version, world);
-            });
-        }
-
-        private static void CloseRoomRestaurant(this GridPresentationComponent self, long expectedVersion, string expectedWorld)
-        {
-            var owner = self.GridCommandOwner();
-            if (owner == null || self.RoomControlPending)
-            {
-                return;
-            }
-            ClientSessionComponent client = ((Scene)self.IScene).GetComponent<ClientSessionComponent>();
-            ProductRoomClient room = client.GetComponent<ProductRoomClient>();
-            if (room?.Current.Version != expectedVersion || room.Current.WorldId != expectedWorld || !room.Current.CanControlRoom)
-            {
-                return;
-            }
-            self.RoomControlPending = true;
-            self.RefreshGridHud();
-            long epoch = self.HudLoadEpoch;
-            EntityRef<GridPresentationComponent> original = self;
-            owner.Run(async context =>
-            {
-                try
-                {
-                    string error = await client.CallProductValueAsync(context,
-                        client.CreateRoomCommand(ProductRoomAction.CloseRestaurant, room.Current.MenuVariant),
-                        response => response.Error == 0 ? null : response.Message);
-                    context.ThrowIfStopped();
-                    self = original;
-                    if (self != null && self.HudLoadEpoch == epoch && error != null)
-                    {
-                        self.Failure = error;
-                    }
-                }
-                catch (OperationCanceledException) { }
-                catch (Exception exception)
-                {
-                    self = original;
-                    if (self != null && self.HudLoadEpoch == epoch)
-                    {
-                        self.Failure = exception.Message;
-                    }
-                }
-                finally
-                {
-                    self = original;
-                    if (self != null && self.HudLoadEpoch == epoch)
-                    {
-                        self.RoomControlPending = false;
-                        self.RefreshGridHud();
-                    }
-                }
-            });
         }
     }
 }

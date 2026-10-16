@@ -54,8 +54,40 @@ Host 显式选择保存并继续或保存结束 MUST 等待本端合法提交成
 - **WHEN** 队友已合法领取，Host 本端保存失败后重试
 - **THEN** Host 保持原结算且不宣称已保存；重试成功后只前进一次，不重复队友记录
 
+
+### Requirement: 合作进度待办与领取详情可访问
+
+系统 SHALL 提供以下入口行为：在模式页、房间和结算入口显示已持久化本端可领数量，提供结果详情、状态分类和已领取记录去向；个人领取仍显式操作。
+
+#### Scenario: 合作进度待办与领取详情的正常使用
+- **WHEN** 有效凭证持久化后返回房间，随后主动领取并重开页面
+- **THEN** 入口计数从真实可领变为已领取，详情能说明结果与本机记录去向，重复不另建档
+
+### Requirement: 合作进度待办与领取详情保持事实与操作边界
+
+系统 MUST 遵守以下边界：只统计 repository 实际可用凭证；网络收到但未持久化不能计为可领取。刷新不发 ACK／领取或关闭资格，状态未知／查询失败不显示零；不跨设备承诺唯一领取。
+
+只读查询 MUST 在缺少既有本机身份资料时报告查询失败，不补建密钥、公钥或自身信任；显式身份操作仍沿原入口。已领去向按当前Slot/修订定位；离线进入原单机选档后仍需明确确认才开局，合作查看不得替玩家退役房间或取得Host控制。
+
+#### Scenario: 查询时本机身份资料缺失
+- **WHEN** 原凭证存在，但本机密钥/公钥或自身信任资料缺失
+- **THEN** 待办显示查询失败，不新建替代身份或信任文件；恢复自有资料后显式重试读取实际状态
+
+#### Scenario: 从已领去向进入离线选档
+- **WHEN** 空闲Solo玩家明确选择按Slot和当前修订前往单机选档
+- **THEN** 原选择页先完整只读检查，明确确认前不创建餐厅；修订不符显示记录已变化，旧跳转不重复创建页面
+
+#### Scenario: 合作进度待办与领取详情的取消或状态变化
+- **WHEN** 查询失败、凭证已关闭或只收到未完成持久化的通知
+- **THEN** 不把未知当零或可领，不恢复被关闭资格，旧刷新不能覆盖新 owner
+
+#### Scenario: 合作进度待办与领取详情关闭重开与旧回调
+- **WHEN** 玩家关闭并重开本入口，随后旧页面回调或迟到结果到达
+- **THEN** 页面只作用于当前有效上下文，原操作不因重开重复提交，旧结果不覆盖新选择，原合法入口仍可使用
+
 ## Sources
 
 - [资格和结果](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/CooperativeResultSystem.cs)、[投递与ACK](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/CooperativeClaimMessages.cs)、[关闭](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProgressCloseMessages.cs)。
 - [本端文件](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/ProgressClaimFiles.cs)、[领取界面](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/ProductEntryClaimsSystem.cs)、[离线协议](../../../Docs/Product/offline-progress-protocol.md)。
 - [逐功能运行及限制](../../changes/archive/2026-10-15-cooperative-result-claims/execution-notes.md)。
+- [cooperative-progress-inbox 逐项验收](../../changes/archive/2026-10-16-cooperative-progress-inbox/execution-notes.md)?

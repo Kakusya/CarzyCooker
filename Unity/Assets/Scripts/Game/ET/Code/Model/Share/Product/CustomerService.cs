@@ -4,10 +4,10 @@ using System;
 
 namespace ET
 {
-    public enum CustomerPhase { Entering, Queued, WalkingToSeat, WaitingAsk, Ordered, Eating, Leaving, Gone }
-    public enum OrderState { Waiting, Served, Expired }
-    public enum FrontTableState { Free, Reserved, Occupied, Dirty }
-    public enum ItemHygiene { Clean, Dirty }
+    public enum CustomerPhase { Entering = 0, Queued = 1, WalkingToSeat = 2, WaitingAsk = 3, Ordered = 4, Eating = 5, Leaving = 6, Gone = 7 }
+    public enum OrderState { Waiting = 0, Served = 1, Expired = 2 }
+    public enum FrontTableState { Free = 0, Reserved = 1, Occupied = 2, Dirty = 3 }
+    public enum ItemHygiene { Clean = 0, Dirty = 1 }
 
     public readonly struct ServeOrderIntent : IEquatable<ServeOrderIntent>
     {

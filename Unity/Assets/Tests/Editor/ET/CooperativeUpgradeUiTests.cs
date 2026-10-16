@@ -12,6 +12,7 @@ namespace ET
     {
         [UnityTest]
         [Category("CooperativeUpgrade")]
+        [Category("SettlementNetwork")]
         public IEnumerator CoopUpgradeUiOrdinaryHostChoiceRemoteTargetsAndNewWorkKeepStation()
         {
             yield return StartCoopHostLauncher();
@@ -28,20 +29,25 @@ namespace ET
                 "Ordinary cooperative settlement offers upgrades", 90);
             Assert.That(Grid.RenovationCandidates, Has.Member(3));
             var retired = CaptureButtonCallback(Button("装修 升级切配台", true));
-            ((Scene)Client.IScene).RemoveComponent<GridPresentationComponent>();
-            yield return null;
+            Presentation.CloseGridHud();
+            yield return Wait(() => !Game.GameEntry.UI.HasUIForm("Assets/Res/UI/UIForm/Product/UIGridKitchen.prefab"), "Retain Host owner while releasing singleton HUD");
             using (var remote = new CoopUiRemote(Runtime.ListenEndpoint))
             {
                 ownedCoopUiRemotes.Add(remote);
                 yield return WaitCoopUi(remote, () => remote.Presentation?.Ready == true, "Remote reads current upgrade targets");
-                Assert.That(remote.Hud.SettlementText.text, Does.Contain("可升级目标：").And.Contain("切配台").And.Contain("等级 0→1"));
+                long readCommand = remote.Client.NextCommandId;
+                Pointer(ClaimUiButton(remote.Hud, "结算详情"));
+                Assert.That(remote.Hud.DetailsText.text, Does.Contain("可升级目标：").And.Contain("切配台").And.Contain("等级 0→1"));
+                Assert.That(remote.Client.NextCommandId, Is.EqualTo(readCommand));
                 Assert.That(remote.Hud.GetComponentsInChildren<Button>(false).Any(button =>
                     button.GetComponentInChildren<Text>().text.StartsWith("装修 ") ||
                     button.GetComponentInChildren<Text>().text == "下一关"), Is.False);
                 Assert.That(remote.Grid.UpgradeTargets.Any(target => target.DefinitionId == 3 && target.StationId == station), Is.True);
                 remote.Presentation.CloseGridHud();
-                ((Scene)Client.IScene).AddComponent<GridPresentationComponent>();
-                yield return WaitCoopUi(remote, () => Presentation?.Ready == true, "Host managed controls reopen");
+                yield return WaitCoopUi(remote, () => !Game.GameEntry.UI.HasUIForm("Assets/Res/UI/UIForm/Product/UIGridKitchen.prefab"), "Remote releases singleton HUD");
+                Presentation.OpenGridHud();
+                yield return WaitCoopUi(remote, () => Presentation?.Ready == true && Hud.GetComponentsInChildren<Button>(false).Any(button =>
+                    button.GetComponentInChildren<Text>().text.StartsWith("装修 升级切配台")), "Host managed controls reopen");
                 long before = Client.NextCommandId;
                 retired();
                 Assert.That(Client.NextCommandId, Is.EqualTo(before));
@@ -57,6 +63,7 @@ namespace ET
                 Assert.That(Grid.Stations[station].ItemId, Is.EqualTo(tomato));
                 Assert.That(Grid.Stations[station].DefinitionId, Is.EqualTo(original.DefinitionId));
                 Assert.That(Grid.SelectedBuffId, Is.Zero);
+                Pointer(Button("全部动作"));
                 yield return Command("切配 切配台 ·", true);
                 var work = Grid.Processes.Values.Single(value => value.InputItemId == tomato);
                 Assert.That(work.RequiredTicks, Is.EqualTo(45), "First new work uses the installed 3/4 upgrade");

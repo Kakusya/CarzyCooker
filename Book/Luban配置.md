@@ -243,6 +243,16 @@ if (table != null)
 
 ![Luban 配置示例](png/luban_genconfig.png)
 
+## 产品分类枚举
+
+分类统一在 `Design/Excel/ET/Datas/__enums__.xlsx` 定义，显式保留数值并配置 `c,s,e`。产品字段使用枚举类型，数据填写 `Material`、`Liquid`、`Chop`、`Cafe` 等成员名；不再填写对应分类数字。当前共核对 14 张产品表的 22 个字段，运行时与 Editor 类型由同一次导出生成，不重复手写声明。
+
+`GridStationCapability` 启用 Flags。洗碗池填写 `Wash|FillWater|DrainLiquid`，生成原值 400；蒸汽机填写 `HeatMilk|FoamMilk`。启动验证继续拒绝未知位、工位与能力不匹配、配方与加工类别不匹配。`StationWorkKind.Batch/Chop/Bake` 分别是 Buff／升级的三类加工管线，与 `KitchenProcessKind` 的数字含义不同。
+
+`ProductMenuVariant.Basic`、`GridStationKind.Counter`、`DishStageKind.Raw`、`GridOrientation.Unrotated` 的零值均合法。人物方向由运行域 `GridFacing` 表示，工位旋转使用生成 `GridOrientation`；不要混用两种方向。消息与存档继续使用原整数格式，在现有读写边界验证并转换；不需要升级格式或重写旧文件。
+
+修改后仍先执行五目标 Check，通过后正常导出；未知成员名会在导表时失败。生成 C#、bytes、JSON 和 ID 均不手改。
+
 ## 相关文档
 
 临时格子备料配置源为 `Design/Excel/ET/Datas/Product/GridItemConfig.xlsx` 和 `GridManualRecipeConfig.xlsx`，注册使用 c,s,e，正常输出 ET Client／ClientServer bytes、Config/Luban 副本及 Editor JSON。五种物品及两条手工配方由启动已加载的 `Tables.Instance` 使用；碗容量 1、切配／打蛋各 60 Tick 是样机初值。修改源后仍须五目标 Check 通过再正常导出，不修改生成的 DT／DR。验收范围见 [备料执行说明](../openspec/changes/archive/2026-10-11-grid-kitchen-prep-processing/execution-notes.md)。
@@ -265,7 +275,11 @@ if (table != null)
 
 前厅源为 `Product/CustomerFlowConfig.xlsx`、`OrderConfig.xlsx` 与 `TableConfig.xlsx`，注册 c,s,e。客流按 LevelConfigId 关联，首客 20／间隔 60／订单等待 200／用餐 60 Tick、队列容量 2；两种订单轮换、各 10 分，仍是样机参数。餐桌通过 InitialLayoutId 关联原工位与相对座位；初始布局追加两桌、一个洗碗位及各 4 槽的脏／干净池，总计 15 个工位、16 格占地，原一锅两碗一盘和材料不补充。启动前检查引用、菜单、座位可达和池容量，运行目标接口只转移原餐具身份；真实洗碗推进已接入伙伴工作引擎；自动客流已接入；真实交付、卫生限制和同餐具取回已接入并验收，验收边界见 [前厅执行说明](../openspec/changes/archive/2026-10-13-solo-customer-order-service/execution-notes.md)。
 
-随机加成源为 `Product/BuffConfig.xlsx`（c,s,e，第31条注册）：Id、Name、EffectKind、DurationNumerator／Denominator、BatchRecipeId；首版 EffectKind=1 只支持煮制耗时比例。三种样机倍率为3/4、2/3、1/2，两关 AllowedBuffIds=1,2,3、CandidateCount=2、RequireBuffChoice=true。启动拒绝非法比例／配方／池和必选空池，可选空池可开店。候选只在 Level 创建时抽取，选择只改变本关选定定义，新适用锅在 Begin 冻结 ceil 后至少一 Tick，旧锅／材料不改。标准 Check／导出5目标和四语言成功；20项 Buff UTF 各 Passed，真实Launcher两局及已通过的实际UI重开UTF见 [加成记录](../openspec/changes/archive/2026-10-13-solo-random-level-buffs/execution-notes.md)。
+随机加成源为 `Product/BuffConfig.xlsx`（c,s,e）：Id、Name、EffectKind、DurationNumerator／Denominator、BatchRecipeId、ManualRecipeId、BakeRecipeId。EffectKind 的既有三类为批次、切配、烘焙管线；批次实际覆盖煮制、榨汁、搅拌、萃取、热奶与打泡，烘焙管线覆盖烤箱、煎台和磨豆机。只填写对应类别的一个配方目标，其他目标为0。原五项定义保持，新内容关卡允许池按菜单依赖闭包配置，共18项定义；CandidateCount=2，必选空池拒绝启动。候选只在当前 Level 创建时抽取，新作业启动时冻结向上取整后的耗时，旧作业/材料保持。初版历史验证见[原记录](../openspec/changes/archive/2026-10-13-solo-random-level-buffs/execution-notes.md)，新菜单范围见[业务补齐路线](../Docs/Product/remaining-business-roadmap.md)。
+
+工位升级源为 `Product/StationUpgradeConfig.xlsx`，装修候选源为 `Product/RenovationConfig.xlsx`，关卡通过 AllowedRenovationIds 引用。原切配/烤箱升级ID不变，新增灶台、榨汁机、煎台、搅拌机、磨豆机、咖啡机和蒸汽机单级升级。WorkKind 按既有三类加工管线配置，StationCapability 为该设备实际支持的能力或组合；蒸汽机同时包含热奶/打泡。只有兼容工位的新作业受益，升级和 Buff 从基础耗时合并后只取整一次；检查点保留原已冻结值。修改这些工作簿后仍先 Check，再正常五目标导出，禁止手改生成物。
+
+新菜单在 Level 的生产许可安装后，按已解锁的实际配方一次筛选 Buff 允许池再抽取；尚未开放饮品的经营分支不会抽到切橙/榨汁专用效果。刷新界面不重抽；必选却没有可用目标时明确失败。旧基础/饮品0/1菜单继续原配置池，既有定义和旧作业不因此变化。
 
 - [多语言](多语言.md)
 - [UI 开发](UI开发.md)

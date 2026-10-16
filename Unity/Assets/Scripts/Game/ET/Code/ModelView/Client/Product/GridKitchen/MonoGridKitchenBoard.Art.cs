@@ -55,27 +55,27 @@ namespace ET.Client
             }
         }
 
-        private void ApplyCharacterArt(SpriteRenderer renderer, int skin, int facing, GridMotion motion,
+        private void ApplyCharacterArt(SpriteRenderer renderer, int skin, GridFacing facing, GridMotion motion,
             bool carrying, bool working, float tick)
         {
             int frame = Mathf.FloorToInt(tick / 3) & 1;
             int pose = working ? 4 + frame : carrying ? motion == GridMotion.Transit ? 6 + frame : 3 : motion == GridMotion.Transit ? 1 + frame : 0;
-            renderer.sprite = artSprites[ArtCharacterStart + skin * 4 * ArtPoseCount + (facing & 3) * ArtPoseCount + pose];
+            renderer.sprite = artSprites[ArtCharacterStart + skin * 4 * ArtPoseCount + (int)facing * ArtPoseCount + pose];
             renderer.color = Color.white;
             renderer.transform.localScale = new Vector3(.82f, .82f, 1);
         }
 
-        private static int FacingFromMotion(GridCell cell, GridCell next)
+        private static GridFacing FacingFromMotion(GridCell cell, GridCell next)
         {
             if (next.X > cell.X)
             {
-                return 1;
+                return GridFacing.Right;
             }
             if (next.X < cell.X)
             {
-                return 3;
+                return GridFacing.Left;
             }
-            return next.Y > cell.Y ? 0 : 2;
+            return next.Y > cell.Y ? GridFacing.Up : GridFacing.Down;
         }
 
         private Sprite ItemArt(int definition)
@@ -87,7 +87,7 @@ namespace ET.Client
         private void ApplyStationArt(GridStationProjection station, SpriteRenderer renderer,
             GridAutoProcessProjection batch, GridBakeProjection bake, float tick)
         {
-            renderer.sprite = artSprites[ArtStationStart + (int)station.Kind * 4 + (station.Orientation & 3)];
+            renderer.sprite = artSprites[ArtStationStart + (int)station.Kind * 4 + (int)station.Orientation];
             renderer.color = Color.white;
             int minY = station.Cell.Y, maxY = minY;
             for (int i = 0; i < station.Footprint.Count; ++i)
@@ -162,7 +162,7 @@ namespace ET.Client
             caption.transform.parent.localPosition = position + new Vector3(.23f, -.03f, 0);
             caption.fontSize = 14;
             caption.color = new Color(.12f, .26f, .23f);
-            if (LabelChanged(id, (null, 0, portions, 0, 0)))
+            if (LabelChanged(id, (null, null, null, null, null, portions, 0)))
             {
                 caption.text = portions + "份";
             }

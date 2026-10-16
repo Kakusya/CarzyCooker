@@ -42,7 +42,7 @@ namespace ET
         {
             var rows = Tables.Instance.DTLevelConfig.DataList;
             RestaurantConfig.ValidateLevelDefinitions(rows, GridKitchenSystem.IsInitialGridWalkable);
-            var chapter = rows.Where(row => row.ChapterId == 1 && row.MenuVariant == 0).OrderBy(row => row.ChapterStage).ToArray();
+            var chapter = rows.Where(row => row.ChapterId == 1 && row.MenuVariant == ProductMenuVariant.Basic).OrderBy(row => row.ChapterStage).ToArray();
             Assert.That(chapter.Select(row => row.Id), Is.EqualTo(new[] { 101, 102, 103 }));
             Assert.That(chapter.Select(row => row.NextLevelConfigId), Is.EqualTo(new[] { 102, 103, 0 }));
             Assert.That(chapter.Select(row => row.IsChapterTerminal), Is.EqualTo(new[] { false, false, true }));

@@ -66,6 +66,10 @@ namespace ET.Client
             view.StatusText.text = self.Failure ?? self.ProgressFeedback ?? "导入前请核对签发者、来源和目标房间";
             view.SettlementText.text = !joined ? "离线可以导入授权、查询与导出本机记录。" :
                 room.Current.VerifiedProfileId == null ? "身份通过后，房主可载入成功记录。" : "当前身份：" + room.Current.VerifiedProfileId;
+            if (self.RenderAuthorizationTask(view, client, room))
+            {
+                return;
+            }
             view.ShowEntryAddress(self.ProgressPath ?? "", 2048);
             if (self.Busy)
             {
@@ -86,6 +90,10 @@ namespace ET.Client
             {
                 self.RenderImportConfirmation(view);
                 return;
+            }
+            if (self.ClaimDestinationSlot == null)
+            {
+                self.AddProgressControl(view, "返回任务选择", current => current.NavigateAuthorizationTask(AuthorizationViewTask.Home));
             }
             if (joined)
             {
@@ -124,8 +132,26 @@ namespace ET.Client
                     self.AddProgressControl(view, "本端拒绝未使用许可", current => current.RejectInspectedGrant());
                 }
             }
+            if (self.ClaimDestinationSlot != null)
+            {
+                var destination = self.ProgressHeaders.SingleOrDefault(header => header.SlotId == self.ClaimDestinationSlot);
+                view.SettlementText.text = destination == null ? "本机记录选择\n当前未找到记录，请刷新确认；原提交事实不会因此撤回" :
+                    "本机记录选择 · 尚未加载\n本机记录：" + destination.SlotId + "\n当前修订：" + destination.Revision +
+                    "\n归属：" + destination.ProfileId + "\n" + (destination.RecordKind == SoloSaveRecordKind.Continue
+                        ? "可继续：关卡 " + destination.NextLevelId : "大关完成记录，仅供查看") + "\n只有明确选择原读取入口才会开局。";
+                var runtime = self.Root().GetComponent<ProductRuntimeComponent>();
+                if (destination != null && runtime.Config.Role == RuntimeInstanceRole.Solo &&
+                    (ClientSessionComponent)runtime.Client == null && (Scene)runtime.HostScene == null)
+                {
+                    self.AddProgressControl(view, "前往单机选档", current => current.NavigateClaimedSoloRecord(destination.SlotId, destination.Revision));
+                }
+            }
             foreach (var header in self.ProgressHeaders)
             {
+                if (self.ClaimDestinationSlot != null && header.SlotId != self.ClaimDestinationSlot)
+                {
+                    continue;
+                }
                 string slot = header.SlotId;
                 string title = "记录 " + slot.Substring(0, 8) + " · 修订 " + header.Revision;
                 self.AddProgressControl(view, "导出分支许可 " + title, current => current.ExportProgressGrant(SaveAuthorizationAction.ExportImport, slot), true);
@@ -154,6 +180,8 @@ namespace ET.Client
             self.AddProgressControl(view, self.ClaimsVisible ? "返回领取列表" : "返回房间", current =>
             {
                 current.ProgressVisible = false;
+                current.ClaimDestinationSlot = null;
+                current.ClaimDetailTicketId = null;
                 current.RenderProductEntry();
             });
         }
@@ -216,6 +244,7 @@ namespace ET.Client
             "ProfileProofRequired" => "请先验证本机身份",
             "ProfileKeyConflict" => "该身份已绑定另一公钥，未替换原绑定",
             "ProfilePrivateKeyMissing" => "本机身份私钥缺失，无法代替原身份签名",
+            "ProfileIdentityMissing" => "本机身份资料不完整，请先核对身份文件",
             "InvalidSignature" => "文件签名无效，未载入餐厅",
             "GrantScopeDenied" => "此授权不适用于当前房主或房间",
             "WrongPlatform" => "此文件属于另一平台",
@@ -324,6 +353,11 @@ namespace ET.Client
                 {
                     throw new InvalidOperationException("请房主先验证本机身份，并导入其身份文件");
                 }
+                if (action != ProgressFileAction.Inspect)
+                {
+                    current().ProgressCommitting = true;
+                    current().RenderProductEntry();
+                }
                 ClientSessionComponent client = current().Root().GetComponent<ProductRuntimeComponent>().Client;
                 var values = await current().ProgressRepositoryCall(context, ProductMessages.Create<ProgressFileRequest>(request =>
                 {
@@ -342,6 +376,7 @@ namespace ET.Client
                 var active = current();
                 if (action == ProgressFileAction.Inspect)
                 {
+                    active.AuthorizationOutputPath = null;
                     active.InspectedIdentity = OfflineProfiles.DecodeIdentity(values.Identity);
                     active.InspectedAuthorization = values.Authorization;
                     active.InspectedAuthorizationKind = values.Kind;
@@ -349,6 +384,7 @@ namespace ET.Client
                     active.InspectedTrusted = false;
                     active.InspectedSummary = values.Summary;
                     active.ProgressPath = input;
+                    active.AuthorizationInspectedPath = input;
                     active.ProgressFeedback = "请核对来源与身份，再明确确认信任";
                 }
                 else if (action == ProgressFileAction.TrustIdentity)
@@ -359,6 +395,7 @@ namespace ET.Client
                 else
                 {
                     active.ProgressFeedback = "已导出：" + values.OutputPath;
+                    active.AuthorizationOutputPath = values.OutputPath;
                     active.ProgressPath = values.OutputPath;
                     ((UIGridKitchen)active.Hud).View.ShowEntryAddress(values.OutputPath, 2048);
                 }

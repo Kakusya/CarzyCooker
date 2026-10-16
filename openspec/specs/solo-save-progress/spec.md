@@ -60,9 +60,31 @@
 - **WHEN** 程序结束后重新启动并选择此前成功记录
 - **THEN** 使用新运行身份进入下一准备态，原实物关系、进度和份数恢复，旧命令无效且初始库存不叠加
 
+
+### Requirement: 选档详情与只读检查可访问
+
+系统 SHALL 提供以下入口行为：提供记录详情与显式继续，展示章节／关序、结果类型、时间／修订／来源和已校验厨房摘要；按继续／完成分类及时间排序，刷新保留有效选择。
+
+#### Scenario: 选档详情与只读检查的正常使用
+- **WHEN** 选择含半批次和在途货的有效记录并查看详情
+- **THEN** 看到已校验剩余份数和运输摘要，查看不创建餐厅，明确继续后按同一合法记录恢复
+
+### Requirement: 选档详情与只读检查保持事实与操作边界
+
+系统 MUST 遵守以下边界：详情通过原只读 Select 路径完整校验后派生，不安装世界、不写记录；完成记录只查看。确认继续前重新读取并核对 Slot／revision 等本次选择事实；文件变化时更新预览并要求重新确认。
+
+#### Scenario: 选档详情与只读检查的取消或状态变化
+- **WHEN** 详情后源记录修订变化、损坏或取消加载再点旧按钮
+- **THEN** 不按旧预览启动，不改原文件；变化需重新确认，失败保留可操作选档页
+
+#### Scenario: 选档详情与只读检查关闭重开与旧回调
+- **WHEN** 玩家关闭并重开本入口，随后旧页面回调或迟到结果到达
+- **THEN** 页面只作用于当前有效上下文，原操作不因重开重复提交，旧结果不覆盖新选择，原合法入口仍可使用
+
 ## Sources
 
 - [目标持久合同](../../../Docs/Product/specs/save-progress-claims/spec.md)、[原内存边界](../../changes/archive/2026-10-13-solo-restaurant-level-flow/specs/restaurant-level-lifecycle/spec.md)。
 - [供应载荷前置](../../changes/archive/2026-10-14-solo-supply-delivery/specs/kitchen-supply/spec.md)、[装修前置](../../changes/archive/2026-10-14-solo-interlevel-renovation/specs/restaurant-renovation/spec.md)、[本案设计](../../changes/archive/2026-10-14-solo-success-checkpoint/design.md)。
 
 - [solo-success-checkpoint 逐功能运行与验收](../../changes/archive/2026-10-14-solo-success-checkpoint/execution-notes.md)。
+- [solo-save-inspection 逐项验收](../../changes/archive/2026-10-16-solo-save-inspection/execution-notes.md)?

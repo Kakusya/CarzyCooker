@@ -19,6 +19,7 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
     public DRRenovationConfig()
     {
             Name = "";
+            Orientation = GridOrientation.Unrotated;
             RewardKind = RenovationRewardKind.InstallStation;
             UnlockDishIds = new System.Collections.Generic.List<int>();
             UnlockStationIds = new System.Collections.Generic.List<int>();
@@ -78,7 +79,7 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["Orientation"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  Orientation = _fieldJson;
+                if(_fieldJson.IsString) { Orientation = (GridOrientation)System.Enum.Parse(typeof(GridOrientation), _fieldJson); } else if(_fieldJson.IsNumber) { Orientation = (GridOrientation)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -163,7 +164,7 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
             _json["InstallY"] = new JSONNumber(InstallY);
         }
         {
-            _json["Orientation"] = new JSONNumber(Orientation);
+            _json["Orientation"] = new JSONNumber((int)Orientation);
         }
         {
             _json["RewardKind"] = new JSONNumber((int)RewardKind);
@@ -237,7 +238,7 @@ public sealed class DRRenovationConfig :  Luban.EditorBeanBase
     /// <summary>
     /// Orientation
     /// </summary>
-    public int Orientation;
+    public GridOrientation Orientation;
 
     /// <summary>
     /// RewardKind

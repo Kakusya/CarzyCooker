@@ -40,6 +40,7 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductSemanticEnums")]
         public void SoloSinkWaterRealApproachFillDrainAndRefillKeepSameBowl()
         {
             StartSolo(); ClientSessionComponent client = host.Client;

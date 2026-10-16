@@ -147,7 +147,7 @@ namespace ET
             RuntimeInstanceContext.Prepare(config);
             Fiber fiber = CreateFiber();
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
-            host.InitializeProduct(join, menuVariant: liveDrinks ? 1 : 0);
+            host.InitializeProduct(join, menuVariant: liveDrinks ? ProductMenuVariant.Drink : ProductMenuVariant.Basic);
             Pump(8);
             return host;
         }
@@ -159,7 +159,7 @@ namespace ET
             Fiber fiber = CreateFiber();
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
             if(!liveBuff)UseOptionalBuffFixture();
-            host.InitializeProduct(join, menuVariant: liveDrinks ? 1 : 0);
+            host.InitializeProduct(join, menuVariant: liveDrinks ? ProductMenuVariant.Drink : ProductMenuVariant.Basic);
             if (!liveFront)
             {
                 RestaurantRuntime restaurant = ((Match)((HostSessionComponent)host.Authority).Match).Restaurant;

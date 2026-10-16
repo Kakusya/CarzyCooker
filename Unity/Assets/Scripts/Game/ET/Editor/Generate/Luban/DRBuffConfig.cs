@@ -19,6 +19,7 @@ public sealed class DRBuffConfig :  Luban.EditorBeanBase
     public DRBuffConfig()
     {
             Name = "";
+            EffectKind = StationWorkKind.Batch;
     }
 
     public override void LoadJson(JSONObject _json)
@@ -43,7 +44,7 @@ public sealed class DRBuffConfig :  Luban.EditorBeanBase
             var _fieldJson = _json["EffectKind"];
             if (_fieldJson != null)
             {
-                if(!_fieldJson.IsNumber) { throw new SerializationException(); }  EffectKind = _fieldJson;
+                if(_fieldJson.IsString) { EffectKind = (StationWorkKind)System.Enum.Parse(typeof(StationWorkKind), _fieldJson); } else if(_fieldJson.IsNumber) { EffectKind = (StationWorkKind)(int)_fieldJson; } else { throw new SerializationException(); }  
             }
         }
         
@@ -100,7 +101,7 @@ public sealed class DRBuffConfig :  Luban.EditorBeanBase
             _json["Name"] = new JSONString(Name);
         }
         {
-            _json["EffectKind"] = new JSONNumber(EffectKind);
+            _json["EffectKind"] = new JSONNumber((int)EffectKind);
         }
         {
             _json["DurationNumerator"] = new JSONNumber(DurationNumerator);
@@ -144,7 +145,7 @@ public sealed class DRBuffConfig :  Luban.EditorBeanBase
     /// <summary>
     /// EffectKind
     /// </summary>
-    public int EffectKind;
+    public StationWorkKind EffectKind;
 
     /// <summary>
     /// DurationNumerator

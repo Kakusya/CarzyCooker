@@ -17,11 +17,11 @@ public sealed partial class DRStationConfig : Luban.BeanBase
     {
         Id = _buf.ReadInt();
         Name = _buf.ReadString();
-        Kind = _buf.ReadInt();
+        Kind = (GridStationKind)_buf.ReadInt();
         {int n0 = _buf.ReadSize(); FootprintOffsets = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); FootprintOffsets.Add(_e0);}}
         {int n0 = _buf.ReadSize(); ApproachOffsets = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); ApproachOffsets.Add(_e0);}}
         ItemSlotCapacity = _buf.ReadInt();
-        Capabilities = _buf.ReadInt();
+        Capabilities = (GridStationCapability)_buf.ReadInt();
         WaterDefinitionId = _buf.ReadInt();
         WaterUnits = _buf.ReadInt();
         PostInit();
@@ -43,7 +43,7 @@ public sealed partial class DRStationConfig : Luban.BeanBase
     /// <summary>
     /// Kind
     /// </summary>
-    public readonly int Kind;
+    public readonly GridStationKind Kind;
     /// <summary>
     /// FootprintOffsets
     /// </summary>
@@ -59,7 +59,7 @@ public sealed partial class DRStationConfig : Luban.BeanBase
     /// <summary>
     /// Capabilities
     /// </summary>
-    public readonly int Capabilities;
+    public readonly GridStationCapability Capabilities;
     /// <summary>
     /// WaterDefinitionId
     /// </summary>

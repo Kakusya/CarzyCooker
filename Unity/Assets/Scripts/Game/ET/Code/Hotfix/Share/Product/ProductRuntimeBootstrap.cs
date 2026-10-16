@@ -12,10 +12,10 @@ namespace ET
     [FriendOf(typeof(Match))]
     public static class ProductRuntimeBootstrap
     {
-        public static void InitializeProduct(this ProductRuntimeComponent self, bool joinLocal = true, int menuVariant = 0, int contentChapterId = 0) =>
+        public static void InitializeProduct(this ProductRuntimeComponent self, bool joinLocal = true, ProductMenuVariant menuVariant = ProductMenuVariant.Basic, int contentChapterId = 0) =>
             self.InitializeProductCore(joinLocal, null, null, null, menuVariant, contentChapterId: contentChapterId);
 
-        public static void InitializeProductRoom(this ProductRuntimeComponent self, bool joinLocal = true, int menuVariant = 1)
+        public static void InitializeProductRoom(this ProductRuntimeComponent self, bool joinLocal = true, ProductMenuVariant menuVariant = ProductMenuVariant.Drink)
         {
             if (self.Config.Role != RuntimeInstanceRole.Host)
             {
@@ -24,7 +24,7 @@ namespace ET
             self.InitializeProductCore(joinLocal, null, null, null, menuVariant, roomOnly: true);
         }
 
-        public static void InitializeSavedProduct(this ProductRuntimeComponent self, string profile, SoloSaveHeader header = null, SoloSavePayload payload = null, bool joinLocal = true, int menuVariant = 0, int contentChapterId = 0)
+        public static void InitializeSavedProduct(this ProductRuntimeComponent self, string profile, SoloSaveHeader header = null, SoloSavePayload payload = null, bool joinLocal = true, ProductMenuVariant menuVariant = ProductMenuVariant.Basic, int contentChapterId = 0)
         {
             if (self.Config.Role != RuntimeInstanceRole.Solo || !SoloSaveValidation.IsIdentifier(profile)) throw new InvalidOperationException("SoloSaveOnly");
             if (header != null) SoloSaveValidation.Payload(header, payload, profile);
@@ -48,7 +48,7 @@ namespace ET
             });
         }
 
-        private static void InitializeProductCore(this ProductRuntimeComponent self, bool joinLocal, string profile, SoloSaveHeader header, SoloSavePayload payload, int menuVariant, bool roomOnly = false, int contentChapterId = 0)
+        private static void InitializeProductCore(this ProductRuntimeComponent self, bool joinLocal, string profile, SoloSaveHeader header, SoloSavePayload payload, ProductMenuVariant menuVariant, bool roomOnly = false, int contentChapterId = 0)
         {
             if ((Scene)self.HostScene != null || (Scene)self.ClientScene != null || self.Stage is ProductStage.Stopping or ProductStage.Stopped)
                 throw new InvalidOperationException("ProductAlreadyStarted");

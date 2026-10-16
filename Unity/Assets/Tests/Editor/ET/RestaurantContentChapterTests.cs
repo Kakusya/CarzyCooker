@@ -11,7 +11,7 @@ namespace ET
         private void ContentRoomStart(int chapter)
         {
             using var reply = RoomReply(host.Client, ((ClientSessionComponent)host.Client).CreateRoomCommand(ProductRoomAction.StartRestaurant,
-                (int)Tables.Instance.DTRestaurantChapterConfig.Get(chapter).MenuVariant, chapter));
+                Tables.Instance.DTRestaurantChapterConfig.Get(chapter).MenuVariant, chapter));
             Assert.That(reply.Error, Is.Zero, reply.Message); Assert.That(reply.Status, Is.EqualTo((int)GridResultStatus.Executed)); Pump(20);
         }
 
@@ -20,7 +20,7 @@ namespace ET
             if (cooperative)
             {
                 StartRoomFixture(); UseOptionalBuffFixture(); var remote = JoinRoomFixture();
-                using (var denied = RoomReply(remote, remote.CreateRoomCommand(ProductRoomAction.StartRestaurant, (int)Tables.Instance.DTRestaurantChapterConfig.Get(chapter).MenuVariant, chapter)))
+                using (var denied = RoomReply(remote, remote.CreateRoomCommand(ProductRoomAction.StartRestaurant, Tables.Instance.DTRestaurantChapterConfig.Get(chapter).MenuVariant, chapter)))
                 {
                     Assert.That(denied.Message, Is.EqualTo("HostControlOnly"));
                 }
@@ -31,7 +31,7 @@ namespace ET
             var config = RuntimeInstanceConfig.Create("content-chapter-test", "solo", "solo");
             RuntimeInstanceContext.Reset(); RuntimeInstanceContext.Prepare(config); var fiber = CreateFiber(); UseOptionalBuffFixture();
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
-            host.InitializeProduct(menuVariant: (int)Tables.Instance.DTRestaurantChapterConfig.Get(chapter).MenuVariant, contentChapterId: chapter); Pump(15);
+            host.InitializeProduct(menuVariant: Tables.Instance.DTRestaurantChapterConfig.Get(chapter).MenuVariant, contentChapterId: chapter); Pump(15);
             return null;
         }
 
@@ -63,7 +63,7 @@ namespace ET
             {
                 foreach (var role in new[] { RuntimeInstanceRole.Solo, RuntimeInstanceRole.Host })
                 {
-                    var first = RestaurantChapters.First(chapter.Id, role, (int)chapter.MenuVariant);
+                    var first = RestaurantChapters.First(chapter.Id, role, chapter.MenuVariant);
                     Assert.That(RestaurantConfig.ChapterLevelCount(first), Is.EqualTo(3));
                     Assert.That(RestaurantChapters.Find(first).Id, Is.EqualTo(chapter.Id));
                 }
@@ -75,7 +75,7 @@ namespace ET
                 Assert.That(Tables.Instance.DTLevelConfig.Get(first + 2).NextLevelConfigId, Is.Zero);
             }
             Assert.That(RestaurantChapters.Find(Tables.Instance.DTLevelConfig.Get(101)), Is.Null);
-            Assert.Throws<InvalidOperationException>(() => RestaurantChapters.First(99, RuntimeInstanceRole.Solo, 3));
+            Assert.Throws<InvalidOperationException>(() => RestaurantChapters.First(99, RuntimeInstanceRole.Solo, ProductMenuVariant.Growth));
             Assert.Throws<InvalidOperationException>(() => RestaurantChapters.First(1, RuntimeInstanceRole.Solo, 0));
         }
 

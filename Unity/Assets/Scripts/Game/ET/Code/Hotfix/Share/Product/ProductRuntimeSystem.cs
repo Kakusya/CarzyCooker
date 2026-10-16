@@ -201,7 +201,7 @@ namespace ET
                     }
                     else
                     {
-                        runtime.InitializeProduct(menuVariant: 1);
+                        runtime.InitializeProduct(menuVariant: ProductMenuVariant.Drink);
                     }
                     if (RuntimeInstanceContext.Config.StartInRoom)
                     {

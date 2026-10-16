@@ -10,9 +10,10 @@ namespace ET
     {
         [UnityTest]
         [Category("RestaurantArtRegression")]
+        [Category("ProductSemanticEnums")]
         public IEnumerator FirstDrinkUiRealLauncherRecipePreparationLabelAndOrderDeliveryUseActualButtons()
         {
-            yield return StartLauncher(menuVariant: 1);
+            yield return StartLauncher(menuVariant: ProductMenuVariant.Drink);
             Assert.That(Grid.LevelConfigId, Is.EqualTo(201)); Assert.That(Grid.AllowedDishIds, Is.EqualTo(new[] { 1, 2, 3 }));
             long initial = Client.NextCommandId;
             Pointer(Button("菜谱 鲜榨橙汁"));

@@ -18,5 +18,75 @@
     "TargetLevel": 1,
     "DurationNumerator": 3,
     "DurationDenominator": 4
+  },
+  {
+    "Id": 3,
+    "Name": "高效灶台",
+    "StationKind": 2,
+    "StationCapability": 2,
+    "WorkKind": 1,
+    "TargetLevel": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4
+  },
+  {
+    "Id": 4,
+    "Name": "高效榨汁机",
+    "StationKind": 9,
+    "StationCapability": 1024,
+    "WorkKind": 1,
+    "TargetLevel": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4
+  },
+  {
+    "Id": 5,
+    "Name": "高效煎台",
+    "StationKind": 11,
+    "StationCapability": 4096,
+    "WorkKind": 3,
+    "TargetLevel": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4
+  },
+  {
+    "Id": 6,
+    "Name": "高效搅拌机",
+    "StationKind": 12,
+    "StationCapability": 8192,
+    "WorkKind": 1,
+    "TargetLevel": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4
+  },
+  {
+    "Id": 7,
+    "Name": "高效磨豆机",
+    "StationKind": 13,
+    "StationCapability": 16384,
+    "WorkKind": 3,
+    "TargetLevel": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4
+  },
+  {
+    "Id": 8,
+    "Name": "高效咖啡机",
+    "StationKind": 14,
+    "StationCapability": 32768,
+    "WorkKind": 1,
+    "TargetLevel": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4
+  },
+  {
+    "Id": 9,
+    "Name": "高效蒸汽机",
+    "StationKind": 15,
+    "StationCapability": 196608,
+    "WorkKind": 1,
+    "TargetLevel": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4
   }
 ]

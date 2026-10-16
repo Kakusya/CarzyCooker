@@ -10,19 +10,19 @@ namespace ET
         private static DRStationConfig StationDefinition(DRStationConfig source, int? capacity = null,
             int[] footprint = null, int[] approaches = null)
         {
-            var buffer = new Luban.ByteBuf(); buffer.WriteInt(source.Id); buffer.WriteString(source.Name); buffer.WriteInt(source.Kind);
+            var buffer = new Luban.ByteBuf(); buffer.WriteInt(source.Id); buffer.WriteString(source.Name); buffer.WriteInt((int)(source.Kind));
             var parts = footprint ?? source.FootprintOffsets.ToArray(); var points = approaches ?? source.ApproachOffsets.ToArray();
             buffer.WriteSize(parts.Length); foreach (var value in parts) buffer.WriteInt(value);
             buffer.WriteSize(points.Length); foreach (var value in points) buffer.WriteInt(value);
-            buffer.WriteInt(capacity ?? source.ItemSlotCapacity); buffer.WriteInt(source.Capabilities);
+            buffer.WriteInt(capacity ?? source.ItemSlotCapacity); buffer.WriteInt((int)(source.Capabilities));
             buffer.WriteInt(source.WaterDefinitionId); buffer.WriteInt(source.WaterUnits);
             return new DRStationConfig(buffer);
         }
 
-        private static DRInitialLayoutConfig InitialStation(int id, int definition, int x, int y, int orientation = 0, int item = 0)
+        private static DRInitialLayoutConfig InitialStation(int id, int definition, int x, int y, GridOrientation orientation = GridOrientation.Unrotated, int item = 0)
         {
             var buffer = new Luban.ByteBuf(); buffer.WriteInt(id); buffer.WriteInt(definition); buffer.WriteInt(x); buffer.WriteInt(y);
-            buffer.WriteInt(orientation); buffer.WriteString("测试工位" + id); buffer.WriteInt(item);
+            buffer.WriteInt((int)orientation); buffer.WriteString("测试工位" + id); buffer.WriteInt(item);
             buffer.WriteInt(0);
             return new DRInitialLayoutConfig(buffer);
         }
@@ -31,10 +31,10 @@ namespace ET
         public void SoloStationConfigActualDefinitionsHaveSingleSlotsAndFinitePools()
         {
             var definitions = GridStationConfig.ValidateDefinitions(Tables.Instance.DTStationConfig.DataList);
-            Assert.That(definitions.Values.Where(row => row.Kind < (int)GridStationKind.DirtyPool).All(row => row.ItemSlotCapacity == 1), Is.True);
-            Assert.That(definitions.Values.Where(row => row.Kind is (int)GridStationKind.DirtyPool or (int)GridStationKind.CleanPool).Select(row => row.ItemSlotCapacity), Is.EqualTo(new[] { 4, 4 }));
-            var oven = definitions.Values.Single(row => row.Kind == (int)GridStationKind.Oven);
-            Assert.That(oven.Capabilities, Is.EqualTo((int)GridStationCapability.Bake));
+            Assert.That(definitions.Values.Where(row => row.Kind < GridStationKind.DirtyPool).All(row => row.ItemSlotCapacity == 1), Is.True);
+            Assert.That(definitions.Values.Where(row => row.Kind is GridStationKind.DirtyPool or GridStationKind.CleanPool).Select(row => row.ItemSlotCapacity), Is.EqualTo(new[] { 4, 4 }));
+            var oven = definitions.Values.Single(row => row.Kind == GridStationKind.Oven);
+            Assert.That(oven.Capabilities, Is.EqualTo(GridStationCapability.Bake));
             Assert.That(oven.FootprintOffsets.Count, Is.EqualTo(4));
             var terrain = GridKitchenSystem.ValidateStationConfiguration();
             Assert.That(terrain.Count, Is.EqualTo(17));
@@ -107,11 +107,11 @@ namespace ET
         {
             var definitions = GridStationConfig.ValidateDefinitions(Tables.Instance.DTStationConfig.DataList);
             var placements = Tables.Instance.DTInitialLayoutConfig.DataList.Select(row => new GridStationPlacement(row.StationDefinitionId,
-                new GridCell(row.X, row.Y), row.Id == 8 ? 1 : row.Orientation));
+                new GridCell(row.X, row.Y), row.Id == 8 ? GridOrientation.CounterClockwise90 : row.Orientation));
             var terrain = GridStationConfig.ValidateTerrain(definitions, placements, new[] { new GridCell(1, 10) });
             Assert.That(terrain.Contains(new GridCell(4, 14)), Is.True);
             Assert.That(terrain.Contains(new GridCell(5, 15)), Is.False);
-            Assert.That(Tables.Instance.DTInitialLayoutConfig.Get(8).Orientation, Is.Zero);
+            Assert.That(Tables.Instance.DTInitialLayoutConfig.Get(8).Orientation, Is.EqualTo(GridOrientation.Unrotated));
             StartSolo();
             Assert.That(Grid.Blocked.Contains(new GridCell(5, 15)), Is.True, "A candidate map must not install itself");
             var path = Grid.FindGridPath(GridStationConfig.Entrance(), new GridCell(4, 15));

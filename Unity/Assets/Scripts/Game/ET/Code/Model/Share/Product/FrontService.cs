@@ -4,10 +4,10 @@ using System;
 
 namespace ET
 {
-    public enum CompanionPost { FrontService = 1 }
+    public enum CompanionNotificationKind { None = 0, RequestResult = 1, Finished = 2 }
     public enum FrontWorkKind { Ask = 1, Clear = 2, Wash = 3 }
-    public enum FrontWorkState { Available, Approaching, Working, Completed, Cancelled }
-    public enum FrontWorkerKind { None, Player, Companion }
+    public enum FrontWorkState { Available = 0, Approaching = 1, Working = 2, Completed = 3, Cancelled = 4 }
+    public enum FrontWorkerKind { None = 0, Player = 1, Companion = 2 }
     public enum FrontWorkAction { Claim = 1, Stop = 2 }
 
     public readonly struct FrontWorkIntent : IEquatable<FrontWorkIntent>
@@ -77,7 +77,7 @@ namespace ET
         public string LastWorkReason;
         public FrontWorkIntent LastSubmittedIntent;
         public GridResultStatus LastResultStatus;
-        public int LastNotificationKind;
+        public CompanionNotificationKind LastNotificationKind;
         public long NextScheduleTick;
     }
 

@@ -78,7 +78,13 @@ namespace ET
             {
                 return Array.Empty<ProgressTicketSummary>();
             }
-            return Directory.EnumerateFiles(directory, "*.ccticket").Select(path =>
+            string[] paths = Directory.GetFiles(directory, "*.ccticket");
+            if (paths.Length == 0)
+            {
+                return Array.Empty<ProgressTicketSummary>();
+            }
+            OfflineProfiles.RequireExistingOwnIdentity(repository);
+            return paths.Select(path =>
             {
                 string id = Path.GetFileNameWithoutExtension(path);
                 var verified = Read(repository, id);

@@ -19,14 +19,11 @@ namespace ET
     }
 
     public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4, AddToContainer = 5, StartStationWork = 6, StartHeldWork = 7, StopWork = 8, PourContents = 9, StartAutoWork = 10, PortionSoup = 11, StartBake = 12, FillWater = 13, DrainLiquid = 14, DiscardSolid = 15, ReceiveSupply = 16, TakeSupplyPortion = 17, StartJuice = 18, PortionJuice = 19, BindDrink = 20, UnbindDrink = 21, TakeContainerContent = 22, StartAssembly = 23, StartFry = 24, StartMix = 25, PortionBatter = 26, Unmold = 27, StartGrind = 28, StartExtract = 29, HeatMilk = 30, FoamMilk = 31, PortionDrinkBase = 32 }
-    public enum GridMotion { Standing, Transit, Waiting }
+    public enum GridFacing { Up = 0, Right = 1, Down = 2, Left = 3 }
+    public enum GridMotion { Standing = 0, Transit = 1, Waiting = 2 }
     public enum GridItemLocation { Counter = 1, Hand = 2, Ground = 3, Container = 4, Table = 5, DirtyPool = 6, CleanPool = 7 }
-    public enum GridStationKind { Counter, Chopping, Stove, Oven, Table, Wash, DirtyPool, CleanPool, Trash, Juicer, LabelDesk, Frying, Mixer, Grinder, CoffeeMachine, SteamMachine }
-    [Flags]
-    public enum GridStationCapability { None = 0, Chop = 1, Cook = 2, Bake = 4, Serve = 8, Wash = 16, DirtyPool = 32, CleanPool = 64, FillWater = 128, DrainLiquid = 256, Trash = 512, Juice = 1024, LabelDrink = 2048, Fry = 4096, Mixing = 8192, Grind = 16384, Extract = 32768, HeatMilk = 65536, FoamMilk = 131072 }
-    public enum GridMaterialForm { Solid = 1, Liquid = 2, Container = 3 }
-    public enum GridAutoState { Cooking, Ready }
-    public enum GridWorkState { Paused, Working, Completed }
+    public enum GridAutoState { Cooking = 0, Ready = 1 }
+    public enum GridWorkState { Paused = 0, Working = 1, Completed = 2 }
     public enum GridResultStatus { Accepted = 1, PendingApproach = 2, Executed = 3, Rejected = 4, Cancelled = 5 }
 
     public static class GridKitchenRules
@@ -148,7 +145,7 @@ namespace ET
         public GridCell NextCell;
         public long StepStartTick;
         public GridMotion Motion;
-        public int Facing;
+        public GridFacing Facing;
         public long HandItemId;
         public long WorkId;
         public long FrontWorkId, FrontClaimSerial;
@@ -171,7 +168,8 @@ namespace ET
     public sealed class GridStation : Entity, IAwake
     {
         public int InitialLayoutId;
-        public int DefinitionId, Orientation, ItemSlotCapacity;
+        public int DefinitionId, ItemSlotCapacity;
+        public GridOrientation Orientation;
         public int UpgradeDefinitionId, UpgradeLevel;
         public GridStationCapability Capabilities;
         public GridCell Cell;

@@ -62,6 +62,27 @@
 - **WHEN** 煎制启动后暂停再恢复
 - **THEN** 暂停不推进，恢复接续同一冻结耗时和输入，最终只产生一次熟料
 
+
+### Requirement: 工位能力与操作位置说明可访问
+
+系统 SHALL 提供以下入口行为：在选中工位详情展示可信能力、当前许可中的匹配工序、必要容器、当前实际占地与操作格；提供只读高亮帮助理解位置和旋转。
+
+#### Scenario: 工位能力与操作位置说明的正常使用
+- **WHEN** 选择蒸汽机或旋转后的加工工位查看详情
+- **THEN** 显示对应合法热奶／打泡等能力、实际容器与当前操作格，而非按名称推断
+
+### Requirement: 工位能力与操作位置说明保持事实与操作边界
+
+系统 MUST 遵守以下边界：显示当前已提交几何和有效定义，不能保证动态路线一定可达；不把预览当布局提交，不新增设备、加工规则或移动确认流程。Client 可查看而无布局控制权。
+
+#### Scenario: 工位能力与操作位置说明的取消或状态变化
+- **WHEN** 工位移位／扩建／菜单缩小或远端只读查看
+- **THEN** 说明和高亮随当前布局更新，不用旧操作格发动作，查看不改变位置或权限
+
+#### Scenario: 工位能力与操作位置说明关闭重开与旧回调
+- **WHEN** 玩家关闭并重开本入口，随后旧页面回调或迟到结果到达
+- **THEN** 页面只作用于当前有效上下文，原操作不因重开重复提交，旧结果不覆盖新选择，原合法入口仍可使用
+
 ## Sources
 
 - [当前实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridStationLayoutSystem.cs)。
@@ -70,3 +91,4 @@
 - [空间扩建逐功能记录](../../changes/archive/2026-10-15-restaurant-space-expansion/execution-notes.md)。
 
 - [首批热餐的配置、合同与逐功能运行](../../changes/archive/2026-10-15-kitchen-hot-food-batch/execution-notes.md)。
+- [workstation-capability-inspector 逐项验收](../../changes/archive/2026-10-16-workstation-capability-inspector/execution-notes.md)?

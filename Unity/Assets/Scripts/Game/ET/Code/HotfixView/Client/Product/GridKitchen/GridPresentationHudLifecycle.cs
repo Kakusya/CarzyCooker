@@ -32,6 +32,15 @@ namespace ET.Client
         }
         public static void CloseGridHud(this GridPresentationComponent self)
         {
+            self.ClearOperationHelp();
+            self.ResetActionAdvice();
+            self.OverviewPage = GridOverviewPage.None;
+            self.ClearOrderNavigation();
+            self.ResetItemLocator();
+            self.ResetSupplyOverview();
+            self.ResetFrontWorkboard();
+            self.ClearStationInspection();
+            self.ClearRenovationPreview();
             self.ResetCompanionDisplay();
             self.RoomControlPending=false;
             self.Ready=false;self.HudLoading=false;++self.HudLoadEpoch;self.PointerHeld=false;self.Highlight=null;self.HudTargetsValid=false;self.HudInformationValid=false;
@@ -42,6 +51,19 @@ namespace ET.Client
         public static void GridHudClosed(this GridPresentationComponent self,UIGridKitchen hud)
         {
             if((UIGridKitchen)self.Hud!=hud)return;
+            self.ClearOperationHelp();
+            self.ResetActionAdvice();
+            self.ClearRenovationPreview();
+            self.ClearStationInspection();
+            if (self.OverviewPage is GridOverviewPage.Stations or GridOverviewPage.Settlement)
+            {
+                self.OverviewPage = GridOverviewPage.None;
+            }
+            self.ResetFrontWorkboard();
+            if (self.OverviewPage == GridOverviewPage.FrontWork)
+            {
+                self.OverviewPage = GridOverviewPage.None;
+            }
             self.ResetCompanionDisplay();
             self.RecoveryDisplayed=false;self.RecoveryFeedback=null;self.RecoveryRuntime=default;self.RecoveryClient=default;self.RecoveryHud=default;
             self.HudActionFields.Clear();self.HudInformationFields.Clear();

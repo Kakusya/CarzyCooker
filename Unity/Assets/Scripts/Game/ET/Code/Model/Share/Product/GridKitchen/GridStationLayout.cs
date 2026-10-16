@@ -7,8 +7,8 @@ namespace ET
     {
         public readonly long StationId, ExpectedLayoutVersion;
         public readonly GridCell Cell;
-        public readonly int Orientation;
-        public GridStationLayoutIntent(long station, long version, GridCell cell, int orientation)
+        public readonly GridOrientation Orientation;
+        public GridStationLayoutIntent(long station, long version, GridCell cell, GridOrientation orientation)
         { StationId = station; ExpectedLayoutVersion = version; Cell = cell; Orientation = orientation; }
         public bool Equals(GridStationLayoutIntent other) => StationId == other.StationId && ExpectedLayoutVersion == other.ExpectedLayoutVersion &&
             Cell == other.Cell && Orientation == other.Orientation;

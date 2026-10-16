@@ -17,7 +17,7 @@ public sealed partial class DRCompanionConfig : Luban.BeanBase
     {
         Id = _buf.ReadInt();
         Name = _buf.ReadString();
-        Post = _buf.ReadInt();
+        Post = (CompanionPost)_buf.ReadInt();
         SpawnX = _buf.ReadInt();
         SpawnY = _buf.ReadInt();
         AskTicks = _buf.ReadInt();
@@ -47,7 +47,7 @@ public sealed partial class DRCompanionConfig : Luban.BeanBase
     /// <summary>
     /// Post
     /// </summary>
-    public readonly int Post;
+    public readonly CompanionPost Post;
     /// <summary>
     /// SpawnX
     /// </summary>

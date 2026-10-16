@@ -69,7 +69,7 @@ namespace ET
             var customers=new Dictionary<long,GridCustomerProjection>();
             var works=new Dictionary<long,GridFrontWorkProjection>();
             var path=new[]{new GridCell(2,13)};var origin=new GridCell(2,12);var next=new GridCell(3,12);
-            people[1]=new GridActorProjection(1,1,origin,next,100,GridMotion.Transit,1,8003,next,path,0,default,null);
+            people[1]=new GridActorProjection(1,1,origin,next,100,GridMotion.Transit,GridFacing.Right,8003,next,path,0,default,null);
             counters[7001]=new GridStationProjection(7001,new GridCell(4,12),"测试灶台",8004);
             objects[8002]=new GridItemProjection(8002,"后落物",GridItemLocation.Ground,0,origin,Array.Empty<long>());
             objects[8001]=new GridItemProjection(8001,"先落物",GridItemLocation.Ground,0,origin,Array.Empty<long>());
@@ -98,7 +98,8 @@ namespace ET
             Assert.That(ViewMap<int,SpriteRenderer>("actors")[1],Is.SameAs(stableActor));
             Render(102,new GridCell(4,12));
             Assert.That(actor.transform.localPosition.x,Is.EqualTo(2.5f).Within(.001f));
-            Assert.That(itemViews[8003].transform.localPosition.x,Is.EqualTo(actor.transform.localPosition.x+.22f).Within(.001f));
+            var socket=ViewMap<int,Vector3>("bistroHands")[1];
+            Assert.That(itemViews[8003].transform.localPosition,Is.EqualTo(actor.transform.localPosition+socket),"Interpolated holder and current animation socket place the held item");
             Assert.That(tiles[path[0]].color,Is.EqualTo(new Color(.62f,.81f,.82f)),"Old target becomes path colour");
             Assert.That(tiles[new GridCell(4,12)].color,Is.EqualTo(new Color(.95f,.82f,.3f)));
             automatic[9001]=new GridAutoProcessProjection(9001,1,8004,7001,0,100,35,1,2,2,0,GridAutoState.Cooking,Array.Empty<long>());

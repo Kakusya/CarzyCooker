@@ -119,7 +119,7 @@ namespace ET
                 {
                     state.MemberId = actor.MemberId; state.Generation = actor.Generation; state.X = actor.Cell.X; state.Y = actor.Cell.Y;
                     state.NextX = actor.NextCell.X; state.NextY = actor.NextCell.Y; state.StepStartTick = actor.StepStartTick;
-                    state.Motion = (int)actor.Motion; state.Facing = actor.Facing; state.HandItemId = actor.HandItemId;
+                    state.Motion = (int)actor.Motion; state.Facing = (int)actor.Facing; state.HandItemId = actor.HandItemId;
                     state.GoalX = actor.Goal.X; state.GoalY = actor.Goal.Y; state.LastCommandId = actor.LastResultCommandId;
                     state.LastStatus = (int)actor.LastResultStatus; state.LastReason = actor.LastResultReason; state.WorkId = actor.WorkId;
                     state.FrontWorkId = actor.FrontWorkId; state.FrontClaimSerial = actor.FrontClaimSerial;
@@ -133,7 +133,7 @@ namespace ET
                 {
                     value.StationId = station.Id; value.Name = station.Name; value.X = station.Cell.X; value.Y = station.Cell.Y;
                     value.ItemId = station.ItemId; value.Kind = (int)station.Kind; value.AutoProcessId = station.AutoProcessId;
-                    value.DefinitionId = station.DefinitionId; value.Orientation = station.Orientation;
+                    value.DefinitionId = station.DefinitionId; value.Orientation = (int)station.Orientation;
                     value.Capabilities = (int)station.Capabilities; value.ItemSlotCapacity = station.ItemSlotCapacity;
                     value.BakeProcessId = station.BakeProcessId;
                     value.UpgradeDefinitionId = station.UpgradeDefinitionId; value.UpgradeLevel = station.UpgradeLevel;
@@ -149,7 +149,7 @@ namespace ET
                 var state = ProductMessages.Create<GridItemState>(value => { value.ItemId = item.Id; value.Name = item.Name; value.DefinitionId = item.DefinitionId; value.Location = (int)item.Location; value.HolderId = item.HolderId; value.X = item.Cell.X; value.Y = item.Cell.Y; value.AutoProcessId = item.AutoProcessId; value.BakeProcessId = item.BakeProcessId; });
                 state.Contents.AddRange(item.Contents); snapshot.Items.Add(state);
                 var definition = Tables.Instance.DTGridItemConfig.Get(item.DefinitionId);
-                state.Form = definition.Form; state.Discardable = definition.Discardable;
+                state.Form = (int)definition.Form; state.Discardable = definition.Discardable;
                 state.BoundOrderId = world.ProductLevel()?.DrinkBindings.GetValueOrDefault(item.Id) ?? 0;
             }
             foreach (GridManualProcess p in world.Processes.Values.Select(value => (GridManualProcess)value))
@@ -167,7 +167,7 @@ namespace ET
                     value.StartedTick = process.StartedTick; value.RequiredTicks = process.RequiredTicks; value.ProgressTicks = process.ProgressTicks;
                     value.OutputDefinitionId = process.OutputDefinitionId; value.TotalPortions = process.TotalPortions; value.RemainingPortions = process.RemainingPortions;
                     value.ServingContainerDefinitionId = process.ServingContainerDefinitionId; value.State = (int)process.State;
-                    value.RequiredCapability = process.RequiredCapability; value.LockContainer = process.LockContainer;
+                    value.RequiredCapability = (int)process.RequiredCapability; value.LockContainer = process.LockContainer;
                 });
                 state.InputItemIds.AddRange(process.InputItemIds); snapshot.AutoProcesses.Add(state);
             }

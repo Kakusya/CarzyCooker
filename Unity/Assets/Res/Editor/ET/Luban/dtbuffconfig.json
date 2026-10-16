@@ -48,5 +48,135 @@
     "BatchRecipeId": 0,
     "ManualRecipeId": 0,
     "BakeRecipeId": 1
+  },
+  {
+    "Id": 6,
+    "Name": "利落切橙",
+    "EffectKind": 2,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 3,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 7,
+    "Name": "轻快切菜",
+    "EffectKind": 2,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 4,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 8,
+    "Name": "清脆切配",
+    "EffectKind": 2,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 5,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 9,
+    "Name": "高效果汁",
+    "EffectKind": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 2,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 10,
+    "Name": "均匀煎肉",
+    "EffectKind": 3,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 2
+  },
+  {
+    "Id": 11,
+    "Name": "香肠快煎",
+    "EffectKind": 3,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 3
+  },
+  {
+    "Id": 12,
+    "Name": "从容煎蛋",
+    "EffectKind": 3,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 4
+  },
+  {
+    "Id": 13,
+    "Name": "顺滑搅拌",
+    "EffectKind": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 3,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 14,
+    "Name": "蓬松烘焙",
+    "EffectKind": 3,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 5
+  },
+  {
+    "Id": 15,
+    "Name": "细致研磨",
+    "EffectKind": 3,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 6
+  },
+  {
+    "Id": 16,
+    "Name": "稳定萃取",
+    "EffectKind": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 4,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 17,
+    "Name": "暖心热奶",
+    "EffectKind": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 5,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 18,
+    "Name": "绵密奶泡",
+    "EffectKind": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 6,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 0
   }
 ]

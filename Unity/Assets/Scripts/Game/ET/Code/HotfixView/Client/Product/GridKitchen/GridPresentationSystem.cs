@@ -26,6 +26,15 @@ namespace ET.Client
             self.BuffCandidatesVisible=true;
             self.SelectedStationId=0;self.SelectedLevelId=0;self.SelectedLevelGeneration=0;
             self.DetailsVisible=false;self.OrdersVisible=true;
+            self.OverviewPage=GridOverviewPage.None;
+            self.ClearOperationHelp();
+            self.ClearActionAdvice();
+            self.ClearOrderNavigation();
+            self.ResetItemLocator();
+            self.ResetSupplyOverview();
+            self.ResetFrontWorkboard();
+            self.ClearStationInspection();
+            self.ClearRenovationPreview();
             self.RoomControlPending=false;
             self.RecipeDishId=0;self.RecipeVisible=false;
             ProductRuntimeComponent runtime=((Scene)self.IScene).GetComponent<ClientSessionComponent>().Runtime;
@@ -88,10 +97,15 @@ namespace ET.Client
             board.View.SetHudViewport(hud.View.MapViewport());
             float tick=grid.Tick+Mathf.Clamp(TimeInfo.Instance.FrameTime-grid.ReceivedFrameTime,0,grid.TickMilliseconds*grid.StepTicks)/(float)grid.TickMilliseconds;
             if (grid.LevelPaused || grid.LevelPhase == LevelPhase.Completed) tick = grid.Tick;
-            board.View.Render(grid.Actors,grid.Stations,grid.Items,grid.AutoProcesses,grid.BakeProcesses,grid.Companions,grid.Customers,grid.FrontWorks,grid.MemberId,tick,grid.StepTicks,self.Highlight,grid.Processes,grid.Tables);
+            GridCell? displayHighlight = self.OverviewPage == GridOverviewPage.Items ? self.ItemLocatorHighlight(grid) : self.Highlight;
+            board.View.Render(grid.Actors,grid.Stations,grid.Items,grid.AutoProcesses,grid.BakeProcesses,grid.Companions,grid.Customers,grid.FrontWorks,grid.MemberId,tick,grid.StepTicks,displayHighlight,grid.Processes,grid.Tables);
+            self.UpdateStationInspection(grid);
             if(grid.LastCommandId>=self.HighlightCommand && grid.LastStatus is GridResultStatus.Rejected or GridResultStatus.Cancelled)self.Highlight=null;
             if (grid.LastCommandKind == ProductCommandKind.Level) self.Highlight = null;
-            if(self.HudVersion!=grid.Version){self.RefreshGridHud();}
+            if(self.HudVersion!=grid.Version || self.DisplayedClaimInboxVersion != (self.Root().GetComponent<ProductEntryPresentation>()?.ClaimInboxVersion ?? 0))
+            {
+                self.RefreshGridHud();
+            }
             var touch=Touchscreen.current?.primaryTouch;
             if(touch!=null && (touch.press.isPressed || touch.press.wasReleasedThisFrame))
                 self.ProcessGridPointer(touch.position.ReadValue(),touch.press.wasPressedThisFrame,touch.press.isPressed,touch.press.wasReleasedThisFrame);
@@ -117,7 +131,7 @@ namespace ET.Client
             if(!self.PointerHeld)return;
             if(!self.PointerConsumed && (held||up))
             {
-                if(Mathf.Abs(point.y-self.PointerStart.y)>=DragThresholdPixels)self.PointerDragged=true;
+                if((point-self.PointerStart).sqrMagnitude>=DragThresholdPixels*DragThresholdPixels)self.PointerDragged=true;
                 if(self.PointerDragged)board.View.Pan(point.y-self.PointerLast.y);
                 self.PointerLast=point;
             }
@@ -155,6 +169,8 @@ namespace ET.Client
             if(!self.Ready)return;
             GridClientComponent grid=((Scene)self.IScene).GetComponent<ClientSessionComponent>().GetComponent<GridClientComponent>();
             if(!grid.Stations.TryGetValue(target,out GridStationProjection station) || !grid.Actors.TryGetValue(grid.MemberId,out GridActorProjection own))return;
+            self.OverviewPage=GridOverviewPage.None;
+            self.ResetItemLocator();
             self.SelectedStationId=target;self.SelectedLevelId=grid.LevelId;self.SelectedLevelGeneration=grid.LevelGeneration;
             self.RefreshGridHud();
             if(own.HandItemId==0 && station.Kind is GridStationKind.Wash or GridStationKind.Trash)return;
@@ -180,6 +196,7 @@ namespace ET.Client
                 }
                 EntityRef<GridClientComponent> gridRef=grid;
                 GridCommandRequest request=grid.CreateGridCommand(action,cell,target,expected,expectedTarget,process,expectedContents,expectedRemainingPortions,expectedLayoutVersion,expectedOrderId,recipeId);
+                self.RememberAdviceRequest(grid, request.CommandId, target);
                 long command=request.CommandId, generation=grid.WorldGeneration;
                 self.Highlight=cell;self.HighlightCommand=command;
                 try
@@ -228,6 +245,7 @@ namespace ET.Client
             ClientSessionComponent client=((Scene)self.IScene).GetComponent<ClientSessionComponent>();
             GridClientComponent grid=client.GetComponent<GridClientComponent>();
             MonoUIGridKitchen view=hud.View;
+            self.DisplayedClaimInboxVersion = self.Root().GetComponent<ProductEntryPresentation>()?.ClaimInboxVersion ?? 0;
             if(!grid.Actors.TryGetValue(grid.MemberId,out GridActorProjection own))
             {
                 return;
@@ -238,6 +256,15 @@ namespace ET.Client
             }
             if(self.SelectedLevelId!=grid.LevelId || self.SelectedLevelGeneration!=grid.LevelGeneration)
             {
+                self.ClearOperationHelp();
+                self.ResetActionAdvice();
+                self.OverviewPage=GridOverviewPage.None;
+                self.ClearOrderNavigation();
+                self.ResetItemLocator();
+                self.ResetSupplyOverview();
+                self.ResetFrontWorkboard();
+                self.ClearStationInspection();
+                self.ClearRenovationPreview();
                 self.SelectedStationId=0;self.DetailsVisible=false;
                 self.SelectedLevelId=grid.LevelId;self.SelectedLevelGeneration=grid.LevelGeneration;
             }
@@ -250,6 +277,17 @@ namespace ET.Client
                 self.RecipeDishId=0;self.RecipeVisible=false;
             }
             self.ObserveCompanion(grid);
+            self.ObserveOrderNavigation(grid);
+            self.ObserveRenovationPreview(grid);
+            self.ObserveActionAdvice(grid);
+            if (grid.LevelPhase != LevelPhase.Preparing && self.OverviewPage == GridOverviewPage.Preparation)
+            {
+                self.OverviewPage = GridOverviewPage.None;
+            }
+            if (self.OverviewPage == GridOverviewPage.Items && (self.ItemLocatorWorld != grid.WorldId || self.ItemLocatorGeneration != grid.WorldGeneration))
+            {
+                self.CloseItemLocator();
+            }
             bool actionsChanged=self.GridHudActionsChanged(grid,own,hud);
             if(actionsChanged)
             {
@@ -259,7 +297,10 @@ namespace ET.Client
             {
                 self.HudInformationValid=false;
                 self.RefreshRestaurantPanels(view,grid);
-                view.SetInformation(self.SelectedTargetDescription(grid),self.SelectedTargetDetails(grid),self.DetailsVisible,self.OrdersVisible);
+                if (self.OverviewPage is not (GridOverviewPage.Help or GridOverviewPage.ActionAdvice))
+                {
+                    view.SetInformation(self.SelectedTargetDescription(grid),self.SelectedTargetDetails(grid),self.DetailsVisible,self.OrdersVisible);
+                }
                 string state=grid.LastStatus switch {GridResultStatus.Accepted=>"已接收 · 等待执行",GridResultStatus.PendingApproach=>"等待到位",GridResultStatus.Executed=>"动作已执行",GridResultStatus.Cancelled=>"已取消",GridResultStatus.Rejected=>"无法操作",_=>"就绪"};
                 string reason=grid.LastReason switch {"HandFull"=>"手中已有物品", "TargetChanged"=>"台面或物品已变化", "PickupRequiresSameCell"=>"需要站在物品所在格", "BlockedCell"=>"此格不可行走", "Unreachable"=>"无法到达", "CounterNotAdjacent"=>"需要靠近台面", "WorkBusy"=>"正在工作，先停止或等待队友", "ContainerFull"=>"容器已满", "IncompatibleMaterial"=>"材料不兼容", "NestedContainer"=>"容器不能套容器", "NoRecipe"=>"没有对应配方", "ProcessChanged"=>"作业或批次已变化", "RequiresHeldEggBowl"=>"需要手持含鸡蛋的碗", "RequiresEggLiquidBowl"=>"需要碗中有一份打好的蛋液", "ProcessLocked"=>"这锅已开始加工，不能改动材料", "NotReady"=>"汤还没煮好", "RequiresStove"=>"需要把锅放在灶台上启动", "StationBusy"=>"灶台仍在加工上一锅", "RequiresEmptyBowl"=>"需要手持空碗", _=>grid.LastReason==null?"":grid.LastReason};
                 reason = grid.LastReason switch
@@ -320,6 +361,10 @@ namespace ET.Client
                     "ContentsChanged"=>"容器内容已变化，请重新选择设施","BatchChanged"=>"汤的剩余批次已变化，请重新选择",
                     "StationBusy"=>"工位正被占用，请稍后再试","ProcessLocked"=>"加工中的物品不能处理",_=>reason};
                 reason = ContainerExtractionReason(grid.LastReason, reason);
+                if (grid.LastStatus is GridResultStatus.Rejected or GridResultStatus.Cancelled && !string.IsNullOrEmpty(grid.LastReason) && reason == grid.LastReason)
+                {
+                    reason = "尚未识别原因，请查看处理说明";
+                }
                 view.StatusText.text=$"玩家 {grid.MemberId} · {state} {reason}";
                 string hand=own.HandItemId!=0 ? grid.ItemDescription(own.HandItemId):"空手";
                 view.HandText.text=$"手持：{hand}";
@@ -338,6 +383,16 @@ namespace ET.Client
                 self.RefreshSaveStatus(view,grid);
                 self.RefreshRecipeInformation(view,grid);
                 self.RefreshCompanionInformation(view,grid);
+                self.RefreshPreparationOverview(view,grid);
+                self.RefreshOrderNavigation(view,grid);
+                self.RefreshItemLocator(view,grid);
+                self.RefreshSupplyOverview(view,grid);
+                self.RefreshFrontWorkboard(view,grid);
+                self.RefreshStationInspection(view,grid);
+                self.RefreshRenovationPreview(view,grid);
+                self.RefreshSettlementGuidance(view,grid);
+                self.RefreshOperationHelp(view,grid);
+                self.RefreshActionAdvice(view,grid);
                 self.HudInformationValid=true;
             }
             if(!actionsChanged)
@@ -346,6 +401,10 @@ namespace ET.Client
                 return;
             }
             GridItemProjection[] drops=grid.Items.Values.Where(value=>value.Location==GridItemLocation.Ground && value.Cell==own.Cell).OrderBy(value=>value.Id).ToArray();
+            if (self.OverviewPage == GridOverviewPage.Items && view.EntryAddressVisible)
+            {
+                self.ItemLocatorInput = view.EntryAddress;
+            }
             view.ClearTargets();
             EntityRef<GridClientComponent> currentProjection=grid;EntityRef<UIGridKitchen> currentHud=hud;
             string inputWorld=grid.WorldId;long inputWorldGeneration=grid.WorldGeneration,inputBinding=grid.BindingGeneration,inputLevel=grid.LevelId,inputLevelGeneration=grid.LevelGeneration;
@@ -356,19 +415,48 @@ namespace ET.Client
                     projection.BindingGeneration==inputBinding && projection.LevelId==inputLevel && projection.LevelGeneration==inputLevelGeneration;
             });
             EntityRef<GridPresentationComponent> selfRef=self;
+            view.BeginActionGroup(GridActionGroup.Recipes);
             self.AddRecipeTargets(view,grid);
+            view.BeginActionGroup(GridActionGroup.Companions);
             self.AddCompanionTargets(view,grid);
+            view.BeginActionGroup(GridActionGroup.Kitchen);
             self.AddRoomControls(view,grid);
-            bool detailsVisible=self.DetailsVisible || self.RecipeVisible || self.CompanionChat!=CompanionChatTopic.None;
+            self.AddOperationHelp(view,grid);
+            self.AddActionAdvice(view,grid);
+            self.AddPreparationOverview(view,grid);
+            self.AddSettlementGuidance(view,grid);
+            bool detailsVisible=self.DetailsVisible || self.RecipeVisible || self.CompanionChat!=CompanionChatTopic.None ||
+                self.OverviewPage!=GridOverviewPage.None && self.OverviewPage!=GridOverviewPage.Items && self.OverviewPage!=GridOverviewPage.Stations ||
+                self.OverviewPage==GridOverviewPage.Stations && self.StationInspectionDetailsVisible ||
+                self.OverviewPage==GridOverviewPage.Items && self.ItemLocatorDetailsVisible || self.OrderNavigationFeedback!=null || self.RecipeItemId!=0;
             view.AddControl(detailsVisible?"收起详情":"查看详情",()=>
             {
                 GridPresentationComponent current=selfRef;
                 if(current!=null)
                 {
+                    if (current.OverviewPage == GridOverviewPage.Items)
+                    {
+                        current.ItemLocatorDetailsVisible = !detailsVisible;
+                        current.RefreshGridHud();
+                        return;
+                    }
+                    if (current.OverviewPage == GridOverviewPage.Stations)
+                    {
+                        current.StationInspectionDetailsVisible = !detailsVisible;
+                        current.RefreshGridHud();
+                        return;
+                    }
                     current.DetailsVisible=!detailsVisible;
                     if (detailsVisible)
                     {
                         current.RecipeVisible=false;
+                        current.OverviewPage=GridOverviewPage.None;
+                        current.ClearOrderNavigation();
+                        current.ResetItemLocator();
+                        current.ResetSupplyOverview();
+                        current.ResetFrontWorkboard();
+                        current.ClearStationInspection();
+                        current.ClearRenovationPreview();
                         current.CompanionChat=CompanionChatTopic.None;
                     }
                     current.RefreshGridHud();
@@ -386,8 +474,8 @@ namespace ET.Client
             if(self.LayoutStationId!=0 && grid.Stations.TryGetValue(self.LayoutStationId,out GridStationProjection adjusting))
             {
                 long layout=grid.LayoutVersion,level=grid.LevelId,generation=grid.LevelGeneration;
-                view.AddTarget("旋转 "+adjusting.Name,()=>{GridPresentationComponent current=selfRef;current?.SendStationLayout(adjusting.Id,adjusting.Cell,(adjusting.Orientation+1)%4,layout,level,generation);});
-                view.AddTarget("结束调整",()=>{GridPresentationComponent current=selfRef;if(current!=null){current.LayoutStationId=0;current.RefreshGridHud();}});
+                view.AddTarget("旋转 "+adjusting.Name,()=>{GridPresentationComponent current=selfRef;current?.SendStationLayout(adjusting.Id,adjusting.Cell,GridStationGeometry.NextOrientation(adjusting.Orientation),layout,level,generation);},group:GridActionGroup.Layout);
+                view.AddTarget("结束调整",()=>{GridPresentationComponent current=selfRef;if(current!=null){current.LayoutStationId=0;current.RefreshGridHud();}},group:GridActionGroup.Layout);
             }
             if (grid.LevelId != 0 && grid.CanControlRestaurant)
             {
@@ -395,14 +483,14 @@ namespace ET.Client
                 if (grid.LevelPhase == LevelPhase.Completed && Tables.Instance.DTLevelConfig.Get(grid.LevelConfigId).IsChapterTerminal)
                 {
                     if (grid.SaveState != SoloSaveState.Writing)
-                        view.AddControl(grid.CooperativeSave ? "保存完成并返回房间" : IsCooperativeRestaurant(grid) ? "完成大关并返回房间" : grid.SaveEnabled ? "保存完成并返回选档" : "结束试玩并返回选档", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.FinishChapter, level, levelGeneration); });
+                        view.AddControl(FinishChapterCaption(grid), () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.FinishChapter, level, levelGeneration); });
                 }
                 else if (grid.LevelPhase == LevelPhase.Completed && RenovationReadyForContinue(grid))
                 {
                     if (!grid.SaveEnabled)
-                        view.AddControl("下一关", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.Continue, level, levelGeneration); });
+                        view.AddControl(ContinueChapterCaption(grid), () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.Continue, level, levelGeneration); });
                     else if (grid.SaveState != SoloSaveState.Writing && (grid.RenovationCandidates.Count == 0 || grid.SelectedRenovationId != 0 || grid.RenovationSelectionFinalized))
-                        view.AddControl(grid.SaveState == SoloSaveState.Committed ? "继续下一关" : "保存并继续", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.SaveAndContinue, level, levelGeneration); });
+                        view.AddControl(ContinueChapterCaption(grid), () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.SaveAndContinue, level, levelGeneration); });
                     if (grid.CooperativeSave && !grid.RenovationSelectionFinalized)
                     {
                         view.AddControl("本关不选装修", () => { GridPresentationComponent current = selfRef; current?.SendLevelControl(LevelControlAction.SkipRenovation, level, levelGeneration); });
@@ -428,6 +516,8 @@ namespace ET.Client
                             ()=>{GridPresentationComponent current=selfRef;current?.SendBuffChoice(candidate,draw,level,generation);});
                     }
             }
+            view.BeginActionGroup(GridActionGroup.FrontService);
+            self.AddFrontWorkboard(view,grid);
             if (!grid.LevelPaused && grid.LevelPhase is LevelPhase.Operating or LevelPhase.Draining)
             {
                 long level=grid.LevelId,generation=grid.LevelGeneration;
@@ -454,8 +544,13 @@ namespace ET.Client
                         view.AddOrderAction("交付 "+dish+" → "+table.Name,()=>{GridPresentationComponent current=selfRef;current?.SendServeOrder(order.Id,order.CustomerId,order.TableStationId,item,level,generation);});
                     }
                 }
+            view.BeginActionGroup(GridActionGroup.Supply);
             self.AddSupplyTargets(view,grid);
+            view.BeginActionGroup(GridActionGroup.Layout);
+            self.AddStationInspection(view,grid);
             self.AddRenovationTargets(view,grid);
+            self.AddRenovationPreviewControls(view,grid);
+            view.BeginActionGroup(GridActionGroup.Kitchen);
             foreach(GridStationProjection station in grid.Stations.Values.OrderBy(value=>value.Kind is GridStationKind.Wash or GridStationKind.Trash?0:1).ThenBy(value=>value.Id))
             {
                 long id=station.Id; GridIntent intent=grid.CounterIntent(id);
@@ -483,7 +578,7 @@ namespace ET.Client
                 if(grid.CanControlRestaurant && grid.LevelPhase==LevelPhase.Preparing && !grid.LevelPaused)
                 {
                     long level=grid.LevelId,generation=grid.LevelGeneration;
-                    view.AddTarget("调整 "+station.Name,()=>{GridPresentationComponent current=selfRef;current?.ChooseLayoutStation(id,level,generation);});
+                    view.AddTarget("调整 "+station.Name,()=>{GridPresentationComponent current=selfRef;current?.ChooseLayoutStation(id,level,generation);},group:GridActionGroup.Layout);
                 }
                 if(station.Kind==GridStationKind.CleanPool && own.HandItemId==0)
                     foreach(long item in station.PoolItemIds)
@@ -569,6 +664,8 @@ namespace ET.Client
                 long id=item.Id;
                 view.AddTarget($"拾 {item.Name} {++dropIndex}",()=>{GridPresentationComponent current=selfRef;current?.SendGridAction(GridAction.PickupDrop,own.Cell,id);});
             }
+            self.AddItemLocator(view,grid);
+            self.AddActionNavigation(view,grid);
             // 仅在本次信息／结构成功展示后记录，下一次轮询才可跳过该投影。
             self.HudTargetsValid=true;self.HudVersion=grid.Version;
         }

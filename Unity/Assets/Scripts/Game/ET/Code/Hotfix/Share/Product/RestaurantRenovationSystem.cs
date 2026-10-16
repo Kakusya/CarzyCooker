@@ -147,7 +147,7 @@ namespace ET
                 {
                     var upgrade = Tables.Instance.DTStationUpgradeConfig.Get(definition.UpgradeDefinitionId);
                     foreach (GridStation station in kitchen.Stations.Values.Select(value => (GridStation)value).OrderBy(station => station.Id))
-                        if (station.UpgradeLevel == 0 && StationUpgradeConfig.Matches(upgrade, (int)station.Kind, station.Capabilities))
+                        if (station.UpgradeLevel == 0 && StationUpgradeConfig.Matches(upgrade, station.Kind, station.Capabilities))
                             renovation.UpgradeTargets.Add(new RenovationUpgradeTarget(id, station.Id, 0));
                     if (renovation.UpgradeTargets.Any(target => target.DefinitionId == id)) candidates.Add(id);
                 }
@@ -291,7 +291,7 @@ namespace ET
         {
             if (station == null) return "UpgradeTargetChanged";
             if (expectedLevel != 0 || station.UpgradeLevel != expectedLevel || station.UpgradeDefinitionId != 0) return "UpgradeLevelChanged";
-            return StationUpgradeConfig.Matches(Tables.Instance.DTStationUpgradeConfig.GetOrDefault(reward.UpgradeDefinitionId), (int)station.Kind, station.Capabilities)
+            return StationUpgradeConfig.Matches(Tables.Instance.DTStationUpgradeConfig.GetOrDefault(reward.UpgradeDefinitionId), station.Kind, station.Capabilities)
                 ? null : "UpgradeCapabilityMismatch";
         }
     }

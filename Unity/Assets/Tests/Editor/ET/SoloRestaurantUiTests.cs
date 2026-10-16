@@ -43,7 +43,7 @@ namespace ET
                 yield return null;
             }
         }
-        private IEnumerator StartLauncher(bool waitReady=true, bool chooseGame=true, int menuVariant=0)
+        private IEnumerator StartLauncher(bool waitReady=true, bool chooseGame=true, ProductMenuVariant menuVariant=0)
         {
             Assert.That(Init.Instance,Is.Null,"Do not replace another active ET entry");
             Assert.That(FiberManager.Instance,Is.Null,"Do not replace another active World");
@@ -63,14 +63,26 @@ namespace ET
             // This existing suite exercises the retained two-food configuration; drink tests opt into the new menu.
             selector.NewMenuVariant = menuVariant;
             var menu = ((UIGridKitchen)selector.Hud).View;
-            Pointer(menu.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "内存试玩"));
+            StartPreviewAndConfirm(menu.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "内存试玩"));
             if(waitReady)yield return Wait(()=>Presentation?.Ready==true,"Real managed HUD ready");
         }
-        private Button Button(string caption,bool prefix=false)=>Hud.GetComponentsInChildren<Button>(false)
-            .Single(value=>prefix?value.GetComponentInChildren<Text>().text.StartsWith(caption):value.GetComponentInChildren<Text>().text==caption);
+        private Button Button(string caption,bool prefix=false)
+        {
+            Button result = Hud.GetComponentsInChildren<Button>(false)
+                .SingleOrDefault(value=>prefix?value.GetComponentInChildren<Text>().text.StartsWith(caption):value.GetComponentInChildren<Text>().text==caption);
+            Assert.That(result, Is.Not.Null, "Missing actual button: " + caption + "; phase=" + Grid?.LevelPhase + "; group=" + Presentation?.ActionGroup);
+            return result;
+        }
         private void Pointer(Button button)
         {
             Assert.That(ExecuteEvents.Execute(button.gameObject,new PointerEventData(UiEventSystem.current){button=PointerEventData.InputButton.Left},ExecuteEvents.pointerClickHandler),Is.True);
+        }
+        private void StartPreviewAndConfirm(Button start)
+        {
+            MonoUIGridKitchen view = start.GetComponentInParent<MonoUIGridKitchen>();
+            Pointer(start);
+            Pointer(view.GetComponentsInChildren<Button>(false)
+                .Single(button => button.GetComponentInChildren<Text>().text == "确认开始"));
         }
         private UnityAction CaptureButtonCallback(Button button)
         {
@@ -86,11 +98,21 @@ namespace ET
         private IEnumerator Command(string caption,bool prefix=false)
         {
             long command=Client.NextCommandId+1;Pointer(Button(caption,prefix));
+            if (caption.StartsWith("装修 "))
+            {
+                // 既有业务旅程也沿新的真实预览/确认入口，只产生一个原装修命令。
+                Assert.That(Client.NextCommandId, Is.EqualTo(command - 1), "Opening renovation preview is read-only");
+                Assert.That(Presentation.OverviewPage, Is.EqualTo(GridOverviewPage.Renovation));
+                Pointer(Button("确认此装修"));
+            }
             Assert.That(Client.NextCommandId,Is.EqualTo(command),"One pointer click sends one command");
             yield return Wait(()=>Grid.LastCommandId==command && Grid.LastStatus==GridResultStatus.Executed,"Actual command executed: " + caption + "; expected=" + command);
         }
 
         [UnityTest]
+        [Category("AndroidSolo")]
+        [Category("EntrySettlement")]
+        [Category("EntryAdvice")]
         public IEnumerator SoloSaveUiOneClickCloseAndReopenKeepsResultOwnedCommit()
         {
             yield return StartLauncher();
@@ -105,16 +127,34 @@ namespace ET
                 yield return Command(buff); yield return Command("开始营业");
                 yield return Wait(() => Grid.LevelPhase == LevelPhase.Completed, "Actual natural save result", 75);
                 yield return Wait(() => Grid.RenovationLevelId == Grid.LevelId && Grid.RenovationChoiceVersion > 0, "Actual save renovation preparation ready");
+                Assert.That(Hud.SettlementText.text, Does.Contain("尚未保存").And.Contain("先查看并确认一项装修"));
+                long inspectCommand = Client.NextCommandId;
+                Pointer(Button("结算详情"));
+                Assert.That(Hud.DetailsText.text, Does.Contain("下一关菜单：").And.Contain("新增：").And.Contain("移出："));
+                Assert.That(Client.NextCommandId, Is.EqualTo(inspectCommand));
                 yield return Command("装修 新增台面");
                 string actualPath = repository.DirectoryPath, blocker = System.IO.Path.Combine(actualPath, "blocked");
                 System.IO.File.WriteAllText(blocker, "owned UI failure fixture"); repository.DirectoryPath = blocker;
                 long failedLevel = Grid.LevelId; Pointer(Button("保存并继续"));
                 yield return Wait(() => Grid.SaveState == SoloSaveState.Failed, "Actual save failure stays settled");
                 Assert.That(Grid.LevelId, Is.EqualTo(failedLevel)); Assert.That(Grid.LevelPhase, Is.EqualTo(LevelPhase.Completed));
-                Assert.That(Hud.SettlementText.text, Does.Contain("保存失败")); string resultId = Grid.SaveResultId;
+                Assert.That(Hud.SettlementText.text, Does.Contain("保存失败").And.Contain("原结算保留").And.Contain("重试“保存并继续”")); string resultId = Grid.SaveResultId;
+                inspectCommand = Client.NextCommandId;
+                Pointer(Button("查看处理说明"));
+                Assert.That(Hud.DetailsText.text, Does.Contain("成功检查点尚未保存").And.Contain("明确选择重试"));
+                Pointer(Button("查看保存状态"));
+                Assert.That(Presentation.OverviewPage, Is.EqualTo(GridOverviewPage.Settlement));
+                Assert.That(Client.NextCommandId, Is.EqualTo(inspectCommand));
+                Assert.That(Grid.SaveState, Is.EqualTo(SoloSaveState.Failed));
+                Assert.That(System.IO.File.ReadAllText(blocker), Is.EqualTo("owned UI failure fixture"));
                 repository.DirectoryPath = actualPath; Assert.That(repository.Browse(), Is.Empty);
                 Presentation.CloseGridHud(); yield return null; Presentation.OpenGridHud(); yield return Wait(() => Presentation.Ready, "Failed save HUD reopen");
                 Assert.That(Grid.SaveResultId, Is.EqualTo(resultId)); Assert.That(Hud.SettlementText.text, Does.Contain("保存失败"));
+                inspectCommand = Client.NextCommandId;
+                Pointer(Button("结算详情"));
+                var oldDetails = CaptureButtonCallback(Button("关闭结算详情"));
+                Pointer(Button("关闭结算详情"));
+                Assert.That(Client.NextCommandId, Is.EqualTo(inspectCommand));
                 long command = Client.NextCommandId, oldLevel = Grid.LevelId; int mono = Hud.GetInstanceID();
                 Button save = Button("保存并继续"); Pointer(save); Pointer(save);
                 Assert.That(Client.NextCommandId, Is.EqualTo(command + 1), "Repeated same-frame pointers issue one physical save command");
@@ -124,6 +164,9 @@ namespace ET
                 Presentation.OpenGridHud(); yield return Wait(() => Presentation.Ready, "Managed saved HUD reopen");
                 Assert.That(Hud.GetInstanceID(), Is.EqualTo(mono)); Assert.That(Grid.LastSavedSlotId, Is.EqualTo(repository.Browse().Single().SlotId));
                 Assert.That(Hud.HintText.text, Does.Contain("检查点"));
+                command = Client.NextCommandId; oldDetails();
+                Assert.That(Client.NextCommandId, Is.EqualTo(command));
+                Assert.That(Presentation.OverviewPage, Is.EqualTo(GridOverviewPage.None));
             }
             finally
             {
@@ -351,6 +394,8 @@ namespace ET
         [UnityTest]
         [NUnit.Framework.Category("PerFrameIntegration")]
         [Category("RestaurantArtRegression")]
+        [Category("ProductSemanticEnums")]
+        [Category("AndroidSolo")]
         public IEnumerator SoloRestaurantUiLifecycleInputAndProjectionWithSoloBuffDrawReopen()
         {
             yield return StartLauncher();GridPresentationComponent presentation=Presentation;

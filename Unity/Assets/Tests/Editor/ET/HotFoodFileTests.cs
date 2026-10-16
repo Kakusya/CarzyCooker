@@ -12,7 +12,7 @@ namespace ET
         {
             var buffer = new Luban.ByteBuf();
             buffer.WriteInt(source.Id); buffer.WriteInt(source.InputDefinitionId); buffer.WriteInt(source.OutputDefinitionId);
-            buffer.WriteInt(source.StationCapability); buffer.WriteInt(ticks); buffer.WriteInt(source.CarrierDefinitionId);
+            buffer.WriteInt((int)(source.StationCapability)); buffer.WriteInt(ticks); buffer.WriteInt(source.CarrierDefinitionId);
             return new DRGridBakeRecipeConfig(buffer);
         }
 

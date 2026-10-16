@@ -38,6 +38,7 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductSemanticEnums")]
         public void StationUpgradeRealManualNewWorkUsesCombinedTwentyThreeTicksAndOldWorkKeepsSixty()
         {
             InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(101), duration: 20));
@@ -107,6 +108,7 @@ namespace ET
         }
 
         [Test]
+        [Category("ProductSemanticEnums")]
         public void StationUpgradeRealBakingRetainsOldFrozenWorkAndNewCombinedBuffDurationAfterMove()
         {
             InstallBuffLevel(BuffLevel(Tables.Instance.DTLevelConfig.Get(101), duration: 20));
