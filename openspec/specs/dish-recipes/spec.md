@@ -106,7 +106,25 @@
 - **WHEN** 杯内前序咖啡/热奶尚未齐全而玩家加奶泡
 - **THEN** 拒绝该次加入，原杯及手持物不变，不自动补齐前序
 
+### Requirement: 自动匹配配方与成品身份无歧义
+
+系统 MUST 在建立厨房前拒绝自动匹配条件相同的多条手工、烘烤或批次配方，以及载具和内容定义相同的多条菜品。判断使用实际输入和动作，不依赖表顺序、输出或菜单标签；错误包含冲突定义编号。显式按配方编号选取的组装允许共享部分材料。
+
+#### Scenario: 手工或烘烤配方冲突
+- **WHEN** 两条手工配方方式和输入相同，或两条烘烤配方输入、载具和加工能力相同
+- **THEN** 初始化明确拒绝并列出冲突编号，不先开局再按第一条执行或报告无配方
+
+#### Scenario: 批次材料顺序不同但实际条件相同
+- **WHEN** 两条批次配方的容器、能力及各输入份数相同，仅定义列表顺序不同
+- **THEN** 初始化仍拒绝歧义；同容器使用不同加工能力的合法配方保持可用
+
+#### Scenario: 相同实物不能对应两个菜品身份
+- **WHEN** 两条菜品使用相同的最终容器和内容定义
+- **THEN** 初始化拒绝，不以表顺序决定订单能否接收该成品
+
 ## Sources
+
+- [配方歧义预检与逐功能验收](../../changes/archive/2026-10-17-fix-dish-workstation-contracts/execution-notes.md)。
 
 - [当前实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridDishConfig.cs)。
 - [solo-dish-recipe-chain 执行与验收记录](../../changes/archive/2026-10-13-solo-dish-recipe-chain/execution-notes.md)。

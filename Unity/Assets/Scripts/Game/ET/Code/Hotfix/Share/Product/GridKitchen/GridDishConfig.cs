@@ -28,6 +28,17 @@ namespace ET
             var items = itemRows.ToDictionary(row => row.Id); var manuals = manualRows.ToDictionary(row => row.Id);
             var batches = batchRows.ToDictionary(row => row.Id); var bakes = bakeRows.ToDictionary(row => row.Id);
             var stations = stationRows.ToDictionary(row => row.Id); var layouts = layoutRows.ToArray();
+            // 与运行时自动匹配条件一致；输出、表顺序和菜单标签不能消除歧义。
+            ValidateUniqueSelection(manuals.Values.Where(row => row.Mode != GridManualMode.Assembly),
+                row => (row.Mode, row.InputDefinitionId), row => row.Id, "manual recipes");
+            ValidateUniqueSelection(bakes.Values, row => (row.InputDefinitionId, row.CarrierDefinitionId, row.StationCapability),
+                row => row.Id, "bake recipes");
+            ValidateUniqueSelection(batches.Values, row => (row.ContainerDefinitionId, row.StationCapability,
+                string.Join(",", row.InputDefinitionIds.Zip(row.InputCounts, (definition, count) => (definition, count))
+                    .OrderBy(value => value.definition).Select(value => $"{value.definition}:{value.count}"))),
+                row => row.Id, "batch recipes");
+            ValidateUniqueSelection(dishes.Values, row => (row.ContainerDefinitionId, row.ContentDefinitionId),
+                row => row.Id, "dishes");
             var supplies = layouts.Where(row => row.InitialItemDefinitionId != 0).GroupBy(row => row.InitialItemDefinitionId).ToDictionary(group => group.Key, group => group.Count());
             var produced = manuals.Values.Select(row => row.OutputDefinitionId).Concat(batches.Values.Select(row => row.OutputDefinitionId)).Concat(bakes.Values.Select(row => row.OutputDefinitionId)).ToHashSet();
             if (supplyRows != null)
@@ -200,6 +211,18 @@ namespace ET
                 if (final.Kind is not (DishStageKind.Portion or DishStageKind.AddToContainer or DishStageKind.Assembly or DishStageKind.Unmold or DishStageKind.Blend) ||
                     final.OutputDefinitionId != dish.ContentDefinitionId || final.ContainerDefinitionId != dish.ContainerDefinitionId)
                     throw new InvalidOperationException("Dish requires its actual final container stage");
+            }
+        }
+
+        private static void ValidateUniqueSelection<TRow, TKey>(IEnumerable<TRow> rows, Func<TRow, TKey> key,
+            Func<TRow, int> id, string category)
+        {
+            foreach (var group in rows.GroupBy(key))
+            {
+                if (group.Skip(1).Any())
+                {
+                    throw new InvalidOperationException($"Ambiguous {category}: {string.Join(",", group.Select(id))}");
+                }
             }
         }
     }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using ET.Client;
 using NUnit.Framework;
+using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 
@@ -10,7 +11,7 @@ namespace ET
 {
     public sealed partial class SoloRestaurantUiTests
     {
-        private IEnumerator DessertUiJourney(bool cooperative)
+        private IEnumerator DessertUiJourney(bool cooperative, bool verifyBakingLayout = false)
         {
             if (cooperative)
             {
@@ -56,12 +57,42 @@ namespace ET
                 Assert.That(view.AutoProcesses.Values.Single().RemainingPortions, Is.EqualTo(1));
                 yield return HotUiCommand(remote, "放 烤箱 ·", true); yield return HotUiCommand(remote, "烘烤 烤箱 ·", true);
                 Assert.That(view.BakeProcesses.Values.Single(work => work.State == GridBakeState.Baking).CarrierItemId, Is.EqualTo(mold));
+                if (verifyBakingLayout)
+                {
+                    var oven = view.Stations.Values.Single(station => station.Name == "烤箱");
+                    var baking = view.BakeProcesses.Values.Single(work => work.State == GridBakeState.Baking);
+                    long version = view.LayoutVersion;
+                    // 旋转后的占地包含原操作格，先从原地图入口走开再调整。
+                    var destination = new GridCell(3, 13);
+                    Vector2 point = Board.BoardCamera.WorldToScreenPoint(Board.CellToWorld(destination));
+                    Assert.That(Board.InputScreenRect.Contains(point), Is.True);
+                    Presentation.ProcessGridPointer(point, true, true, false);
+                    Presentation.ProcessGridPointer(point, false, false, true);
+                    yield return Wait(() => view.Actors[client.MemberId].Cell == destination &&
+                        view.Actors[client.MemberId].Motion == GridMotion.Standing, "Move clear of the rotated footprint through the actual map");
+                    Pointer(Button("调整 烤箱"));
+                    yield return Command("旋转 烤箱"); Pointer(Button("结束调整"));
+                    Assert.That(view.Stations[oven.Id].Orientation, Is.EqualTo(GridOrientation.CounterClockwise90));
+                    yield return RenovationUiMoveStation("烤箱", new GridCell(5, 7));
+                    Assert.That(view.Stations[oven.Id].Cell, Is.EqualTo(new GridCell(5, 7)));
+                    Assert.That(view.LayoutVersion, Is.EqualTo(version + 2));
+                    Assert.That(view.Stations[oven.Id].ItemId, Is.EqualTo(mold));
+                    Assert.That(view.Items[mold].Contents, Is.EqualTo(new[] { baking.InputItemId }));
+                    Assert.That(view.BakeProcesses[baking.Id].RequiredTicks, Is.EqualTo(baking.RequiredTicks));
+                    Assert.That(view.BakeProcesses[baking.Id].State, Is.EqualTo(GridBakeState.Baking));
+                }
                 yield return HotUiWait(remote, () => view.Items[mold].Contents.Count == 1 && view.Items[view.Items[mold].Contents[0]].DefinitionId == 48, "Original mold contains its actually baked cake");
                 long firstCake = view.Items[mold].Contents.Single();
                 yield return HotUiCommand(remote, "拿 烤箱 ·", true); yield return HotUiCommand(remote, "脱模 甜品盘台 ·", true);
                 Assert.That(view.Items[plate].Contents, Is.EqualTo(new[] { firstCake }));
                 Assert.That(view.Actors[client.MemberId].HandItemId, Is.EqualTo(mold));
                 Assert.That(view.Items[mold].Contents, Is.Empty);
+                if (verifyBakingLayout)
+                {
+                    Assert.That(view.Items[firstCake].HolderId, Is.EqualTo(plate));
+                    Assert.That(view.Items[firstCake].DefinitionId, Is.EqualTo(GridKitchenRules.PlainCake));
+                    yield break;
+                }
                 yield return HotUiCommand(remote, "装模 搅拌机 ·", true);
                 Assert.That(view.AutoProcesses, Is.Empty);
                 Assert.That(view.Items[mixer.ItemId].Contents, Is.Empty);
@@ -97,6 +128,9 @@ namespace ET
 
         [UnityTest, Category("DessertUi"), Timeout(420000)]
         public IEnumerator DessertUiCooperativeActualHostMixAndKcpMoldBakeUnmoldDeliveryReuseAndWash() => DessertUiJourney(true);
+
+        [UnityTest, Category("DishWorkstationContracts"), Timeout(180000)]
+        public IEnumerator DessertUiOrdinaryLauncherMovesAndRotatesBakingCarrierThenUnmoldsAtNewStation() => DessertUiJourney(false, true);
     }
 }
 #endif

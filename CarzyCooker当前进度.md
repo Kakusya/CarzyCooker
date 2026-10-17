@@ -1,5 +1,7 @@
 # CarzyCooker 当前进度
 
+2026-10-17 菜品／工作台审查及 `fix-dish-workstation-contracts`：已检查十一菜、16种工位与63种物品的实际合同，修正带模具烘烤时工作台布局误拒绝，并在厨房创建前拒绝手工／烘烤／乱序批次／成品身份歧义。12个不同相关UTF的最新适用结果Passed（10核心、1直接烘烤回归、1普通Launcher入口），包含实际KCP和真实采购到脱模、移动旋转、坏关系拒绝；原失败及测试操作修正保留在[执行记录](openspec/changes/archive/2026-10-17-fix-dish-workstation-contracts/execution-notes.md)。[审查正文](audit/2026-10-17-dishes-and-workstations.md)列明已有界面规划和有限长局维护风险；未改表源／生成物／协议／存档，不提升Player/AOT、Android真机或物理LAN结论。change已实施并归档，主规格已同步；提交与推送按本轮用户授权执行。
+
 2026-10-16 入口批次归档：原18案、54/54任务已归档到 `openspec/changes/archive/2026-10-16-*`，36条要求／56个场景已合并至10份主规格，保留原Purpose和其他要求。全量严格验证72/72通过，归档后相对引用已调整；复用各案适用的UTF／普通入口结果，未因归档重复运行。提交纳入入口功能依赖的已完成枚举、菜单加成、工位升级和菜谱实物提示前置；动画、PC／Android适配、后续21案规划和临时产物保留工作区，不推送。本段替代下方过程历史中的“未同步／未归档”状态。
 
 2026-10-16 入口原批收尾：**18/18案、54/54项任务已完成**，36项增补需求/56场景已逐案对照实现与适用运行证据。最后接入失败恢复引导：八类真实拒绝/保存失败、未知诊断、迟到结果、同容器变化和HUD池化/换关均有UTF断言；5个不同相关用例最新适用结果Passed，KCP暂停/帮助互斥补验及原动作滚动补验各单项Passed，Console完整。普通Launcher540×960实际满收货台拒绝command4→只读说明/供应仍4→原腾空/接收command7，唯一包装2份；自有Play停止、原GameView已恢复。全批严格校验18/18通过，详情见[完成复核与逐案索引](openspec/changes/archive/2026-10-16-product-entry-navigation/entry-roadmap.md)和[最后一案记录](openspec/changes/archive/2026-10-16-product-action-recovery-guidance/execution-notes.md)。后建21案仍仅规划；独立Player/物理LAN/Android真机及真人理解未由本批证明。未提交、推送、同步主规格或归档；下方同日分阶段“最新”段落保留为过程历史，以本段为当前状态。

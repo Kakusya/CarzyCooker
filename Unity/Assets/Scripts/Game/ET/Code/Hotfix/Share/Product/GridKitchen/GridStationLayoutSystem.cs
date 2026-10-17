@@ -66,8 +66,27 @@ namespace ET
             if (batch is { LockContainer: true, State: GridAutoState.Cooking }) return "ProcessLocked";
             if (station.AutoProcessId != 0 && (batch == null || batch.StartStationId != station.Id)) return "LayoutRelationshipsChanged";
             GridBakeProcess bake = self.BakeProcess(station.BakeProcessId);
-            if (station.BakeProcessId != 0 && (bake == null || bake.StationId != station.Id || bake.InputItemId != station.ItemId || item?.BakeProcessId != bake.Id))
-                return "LayoutRelationshipsChanged";
+            if (station.BakeProcessId != 0)
+            {
+                GridItem input = self.Item(bake?.InputItemId ?? 0);
+                if (bake == null || bake.State != GridBakeState.Baking || bake.StationId != station.Id || input == null ||
+                    input.BakeProcessId != bake.Id || item == null || item.BakeProcessId != bake.Id)
+                {
+                    return "LayoutRelationshipsChanged";
+                }
+                if (bake.CarrierItemId == 0)
+                {
+                    if (input.Id != item.Id)
+                    {
+                        return "LayoutRelationshipsChanged";
+                    }
+                }
+                else if (bake.CarrierItemId != item.Id || item.Contents.Count != 1 || item.Contents[0] != input.Id ||
+                    input.Location != GridItemLocation.Container || input.HolderId != item.Id)
+                {
+                    return "LayoutRelationshipsChanged";
+                }
+            }
             var placements = self.Stations.Values.Select(value => (GridStation)value).Select(value => new GridStationPlacement(value.DefinitionId,
                 value.Id == station.Id ? intent.Cell : value.Cell, value.Id == station.Id ? intent.Orientation : value.Orientation));
             System.Collections.Generic.HashSet<GridCell> terrain;
