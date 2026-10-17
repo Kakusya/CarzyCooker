@@ -4,6 +4,8 @@
 
 ## 状态与 UI
 
+合作制作意向归当前Level，按成员/绑定和订单/顾客身份清理，经原厨房提交版本复制为独立只读值；HUD结构键包含意向，其他成员改选也刷新当前订单说明。意向不进入出餐资格或饮品绑定，详见[当前规格](../openspec/specs/orders-front-service/spec.md)和[实际验收](../openspec/changes/archive/2026-10-17-cooperative-order-intents/execution-notes.md)。原Session值化适配器在捕获的Session实例已失效时将挂起RPC的销毁异常转为取消，正常错误/超时保持原语义，finally仍回收请求/响应；不能把取消当作撤回已提交业务。
+
 当前协议与交付范围统一查[根进度](../CarzyCooker当前进度.md)；下文旧协议数字保留历史范围，不作为当前版本。本轮消息边界协议已升为 18。Grid 保留 GridCommandResult 单一出口；Level／Layout／FrontWork／Serve／Buff／Supply／Renovation 在原 HostPeer 接收记账后，保留各自 Context 到 PendingOutcomes，原 GridBroadcast 在同版快照之后发送 ProductCommandOutcome，不能只靠最近快照字段猜结果。
 
 终态流序号属于原 Peer，客户端仅保存最新消费位置和独立值，不保留无限命令历史。较早命令完成／取消仍发布自己的 ProductCommandOutcomeApplied，只有不早于当前命令的结果才更新最新反馈；重复流序号、错误运行／关／绑定或尚未安装的版本不消费。Continue 的终态另保留 OriginLevel 身份，合法成功携新关的适用状态，不用旧关结果覆盖新关。KitchenWorkOutcome 同样在快照后复制值并发布观察事件；事件只读表现。内部转换仍禁止 Host wire 和 Peer 直达，Client 仅接新增结果通知。具体真实队列和 KCP 验证见[消息执行记录](../openspec/changes/archive/2026-10-13-product-local-message-boundaries/execution-notes.md)。

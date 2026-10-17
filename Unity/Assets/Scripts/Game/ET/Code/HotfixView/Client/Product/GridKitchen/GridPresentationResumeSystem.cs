@@ -24,7 +24,15 @@ namespace ET.Client
                 return false;
             }
             self.ClearStationInspection();
+            self.PreferencesDraft = null;
             self.ClearRenovationPreview();
+            self.ResetServiceOverview();
+            self.ResetServiceRecap();
+            self.ResetNoticeView();
+            if (self.OverviewPage == GridOverviewPage.Service)
+            {
+                self.OverviewPage = GridOverviewPage.None;
+            }
             self.Ready = false; self.PointerHeld = false; self.Highlight = null; self.HudTargetsValid=false;self.HudInformationValid=false;
             UIGridKitchen hud = self.Hud;
             if (hud?.View == null) { return true; }

@@ -17,6 +17,7 @@ namespace ET
             self.Restaurant = default;
             self.RoomVersion = 1;
             self.RoomMenuVariant = ProductMenuVariant.Basic;
+            self.AddComponent<ProductRoomReadiness>();
         }
     }
 
@@ -81,6 +82,10 @@ namespace ET
             self.LastFrontWorkCommand = default;
             self.LastServeCommand = default;
             self.LastBuffCommand = default;
+            self.LastCompanionPreference = default;
+            self.LastOrderIntent = default;
+            self.LastTargetPing = default;
+            self.LastSupplyRequest = default;
             self.LastSupplyCommand = default;
             self.LastRenovationCommand = default;
             self.LastRoomCommand = default;

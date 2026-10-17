@@ -8,7 +8,7 @@ namespace ET
         private static KitchenProcessKind AutoWorkKind(GridStationCapability capability) => capability switch
         {
             GridStationCapability.Mixing => KitchenProcessKind.Mix,
-            GridStationCapability.Extract or GridStationCapability.HeatMilk or GridStationCapability.FoamMilk => KitchenProcessKind.Beverage,
+            GridStationCapability.BrewTea or GridStationCapability.MixTea or GridStationCapability.Extract or GridStationCapability.HeatMilk or GridStationCapability.FoamMilk => KitchenProcessKind.Beverage,
             GridStationCapability.Juice => KitchenProcessKind.Juice,
             _ => KitchenProcessKind.Soup
         };

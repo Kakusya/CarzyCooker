@@ -11,7 +11,7 @@ namespace ET.Client
             {
                 return;
             }
-            string operation = carrier.DefinitionId == GridKitchenRules.HotDrinkCup ? "混合" : "组装";
+            string operation = carrier.DefinitionId is GridKitchenRules.HotDrinkCup or GridKitchenRules.ColdDrinkCup ? "混合" : "组装";
             var work = grid.Processes.Values.FirstOrDefault(value => value.InputItemId == carrier.Id && value.State != GridWorkState.Completed);
             EntityRef<GridPresentationComponent> original = self;
             if (work.Id != 0 && Tables.Instance.DTGridManualRecipeConfig.Get(work.RecipeId).Mode == GridManualMode.Assembly)
@@ -28,7 +28,7 @@ namespace ET.Client
             foreach (var recipe in Tables.Instance.DTGridManualRecipeConfig.DataList)
             {
                 if (recipe.Mode != GridManualMode.Assembly || recipe.ContainerDefinitionId != carrier.DefinitionId ||
-                    !grid.AllowedDishIds.Any(id => Tables.Instance.DTDishConfig.Get(id).ContentDefinitionId == recipe.OutputDefinitionId))
+                    !grid.ProductionPermit.ManualRecipes.Contains(recipe.Id))
                 {
                     continue;
                 }

@@ -34,11 +34,55 @@ namespace ET
 
         private void RoomDo(ProductRoomAction action)
         {
+            if (action == ProductRoomAction.StartRestaurant)
+            {
+                OpenRoomForFixture(ProductMenuVariant.Basic);
+                return;
+            }
             var client = (ClientSessionComponent)host.Client;
             using var reply = RoomReply(client, client.CreateRoomCommand(action, menuVariant: 0));
             Assert.That(reply.Error, Is.Zero, reply.Message);
             Assert.That(reply.Status, Is.EqualTo((int)GridResultStatus.Executed));
             Pump(16);
+        }
+
+        private void OpenRoomForFixture(ProductMenuVariant menu, int chapter = 0)
+        {
+            ClientSessionComponent local = host.Client;
+            using (var publication = RoomReply(local, local.CreateRoomCommand(ProductRoomAction.PublishProposal, menu, chapter)))
+            {
+                Assert.That(publication.Error, Is.Zero, publication.Message);
+            }
+            StartPublishedRoomForFixture();
+        }
+
+        private void StartPublishedRoomForFixture(bool startRestaurant = true, int settleFrames = 16)
+        {
+            ClientSessionComponent local = host.Client;
+            PumpUntil(() => local.Stage == ProductClientStage.Joined && local.GetComponent<ProductRoomClient>().Current.Version > 0,
+                "Fixture confirms local room before preparing", 200, true);
+            Match match = ((HostSessionComponent)host.Authority).Match;
+            var clients = fibers.Select(fiber => (ClientSessionComponent)(fiber.Root.GetComponent<ProductRuntimeComponent>()?.Client ?? default))
+                .Where(client => client?.Stage == ProductClientStage.Joined && client.MatchId == local.MatchId).ToArray();
+            foreach (var member in match.Children.Values.OfType<Participant>().Where(member => member.Online).ToArray())
+            {
+                var client = clients.Single(candidate => candidate.MemberId == member.MemberId && candidate.BindingGeneration == member.BindingGeneration);
+                PumpUntil(() => client.GetComponent<ProductRoomClient>().Current.HasProposal &&
+                    client.GetComponent<ProductRoomClient>().Current.ProposalVersion == match.GetComponent<ProductRoomReadiness>().ProposalVersion,
+                    "Fixture receives the same proposal before an explicit Ready request", 200, true);
+                using var ready = RoomReply(client, client.CreateRoomCommand(ProductRoomAction.Ready));
+                Assert.That(ready.Error, Is.Zero, ready.Message);
+            }
+            PumpUntil(() => local.GetComponent<ProductRoomClient>().Current.AllReady, "Fixture observes every real Ready response", 200, true);
+            if (!startRestaurant)
+            {
+                return;
+            }
+            var proposal = local.GetComponent<ProductRoomClient>().Current;
+            using var start = RoomReply(local, local.CreateRoomCommand(ProductRoomAction.StartRestaurant, proposal.ProposalMenu, proposal.ProposalChapter));
+            Assert.That(start.Error, Is.Zero, start.Message);
+            Assert.That(start.Status, Is.EqualTo((int)GridResultStatus.Executed));
+            Pump(settleFrames);
         }
 
         private ProductRoomControlRequest RoomCopy(ProductRoomControlRequest source) => ProductMessages.Create<ProductRoomControlRequest>(copy =>
@@ -51,6 +95,7 @@ namespace ET
             copy.Action = source.Action;
             copy.MenuVariant = source.MenuVariant;
             copy.ContentChapterId = source.ContentChapterId;
+            copy.ExpectedProposalVersion = source.ExpectedProposalVersion;
         });
 
         [Test]
@@ -131,6 +176,11 @@ namespace ET
         {
             StartRoomFixture();
             var client = (ClientSessionComponent)host.Client;
+            using (var publication = RoomReply(client, client.CreateRoomCommand(ProductRoomAction.PublishProposal, ProductMenuVariant.Basic)))
+            {
+                Assert.That(publication.Error, Is.Zero, publication.Message);
+            }
+            StartPublishedRoomForFixture(startRestaurant: false);
             var request = client.CreateRoomCommand(ProductRoomAction.StartRestaurant, 0);
             var replay = RoomCopy(request);
             var conflict = RoomCopy(request);

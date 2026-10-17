@@ -15,6 +15,7 @@ namespace ET.Client
                 StationWorkKind.Chop => "切配 " + Tables.Instance.DTGridItemConfig.Get(Tables.Instance.DTGridManualRecipeConfig.Get(definition.ManualRecipeId).InputDefinitionId).Name,
                 StationWorkKind.Bake => ((GridStationCapability)Tables.Instance.DTGridBakeRecipeConfig.Get(definition.BakeRecipeId).StationCapability switch
                     {
+                        GridStationCapability.Steam => "蒸制 ",
                         GridStationCapability.Fry => "煎制 ",
                         GridStationCapability.Grind => "研磨 ",
                         _ => "烘焙 "
@@ -31,7 +32,9 @@ namespace ET.Client
             view.ClockText.text=grid.LevelPhase is LevelPhase.Preparing or LevelPhase.Operating
                 ?$"剩余 {Math.Max(0,grid.LevelOperatingTicks-grid.LevelElapsedTicks)*grid.TickMilliseconds/1000f:0.0} 秒"
                 :grid.LevelPhase==LevelPhase.Draining?"等待前厅完成":"本关已结束";
-            view.ScoreText.text=$"{grid.LevelScore} 分 · {grid.LevelStars} 星";
+            view.ScoreText.text = grid.LevelPhase == LevelPhase.Completed
+                ? $"{grid.LevelScore} 分 · {grid.LevelStars} 星"
+                : $"{grid.LevelScore} 分 · 参考 {ServiceReferenceStars(grid)} 星 · 未结算";
             string partner=string.Join(" · ",grid.Companions.Values.Select(role=>
             {
                 string job="空闲";
@@ -39,7 +42,7 @@ namespace ET.Client
                     job=(work.Kind==FrontWorkKind.Ask?"询问":work.Kind==FrontWorkKind.Clear?"清桌":"洗碗")+$" {work.Progress:P0}";
                 return role.Name+"："+job+$" · 完成 {role.CompletedCount} 项";
             }));
-            view.WorkText.text=partner;
+            view.WorkText.text=partner + (grid.Companions.Count == 0 ? "" : " · 岗位 " + CompanionPreferenceCaption(grid.CompanionPreference));
             if (!string.IsNullOrEmpty(self.CompanionFeedback))
             {
                 view.WorkText.text += "\n" + self.CompanionFeedback;

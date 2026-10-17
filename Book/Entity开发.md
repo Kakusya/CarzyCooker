@@ -1,6 +1,9 @@
 # Entity 开发
 
+合作目标标记复用原GridKitchenBoard的WorldSpace文字，负成员key仅为该Mono内部标签索引，与实体类型/实例ID无关。每帧按独立投影更新目标位置，不改本人选中高亮；HUD关闭/恢复页先清文字，原Board隐藏在ReleaseBoard统一释放。没有新增Entity表或私有资源池，范围和实际运行见[目标标记记录](../openspec/changes/archive/2026-10-17-cooperative-target-pings/execution-notes.md)。
+
 当前 Product Board 的美术图集通过原 Entity Prefab 引用；动态 Sprite 切片归实际 Mono 本轮 view，在 ReleaseBoard 释放。工位、手持物、容器图层与座位表现只消费投影，不另建 Entity 权威或资源池；具体做法见 [餐厅美术约定](../references/restaurant-art.md)。
+
 
 > **ET 底座适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。
 

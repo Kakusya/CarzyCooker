@@ -23,7 +23,8 @@ namespace ET
                     throw new InvalidOperationException("Reusable cookware cannot be discarded");
             foreach (var station in stations.Values.Where(row => (row.Capabilities & GridStationCapability.FillWater) != 0))
                 if (station.WaterUnits != 1 || !items.TryGetValue(station.WaterDefinitionId, out var supplied) ||
-                    supplied.Kind != GridItemKind.Material || supplied.Form != GridMaterialForm.Liquid || supplied.Id != water.Id)
+                    supplied.Kind != GridItemKind.Material || supplied.Form != GridMaterialForm.Liquid ||
+                    supplied.Id != (station.Kind == GridStationKind.HotWaterDispenser ? GridKitchenRules.HotWater : water.Id))
                     throw new InvalidOperationException($"Invalid sink water definition {station.Id}");
             if (!stations.Values.Any(row => (row.Capabilities & GridStationCapability.FillWater) != 0) ||
                 !stations.Values.Any(row => row.Kind == GridStationKind.Trash))

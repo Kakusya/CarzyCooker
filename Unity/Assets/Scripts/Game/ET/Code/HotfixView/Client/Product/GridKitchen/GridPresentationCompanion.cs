@@ -72,6 +72,7 @@ namespace ET.Client
 
         private static void AddCompanionTargets(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
+            self.AddCompanionPreferenceTargets(view, grid);
             if (grid.LevelPhase != LevelPhase.Preparing || grid.Companions.Count == 0)
             {
                 return;

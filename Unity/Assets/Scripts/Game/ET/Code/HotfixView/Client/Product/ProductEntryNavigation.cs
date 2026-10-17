@@ -141,6 +141,8 @@ namespace ET.Client
                 AddMenu("开启热餐餐厅", ProductMenuVariant.Hot);
                 AddMenu("开启甜品餐厅", ProductMenuVariant.Dessert);
                 AddMenu("开启咖啡餐厅", ProductMenuVariant.Cafe);
+                AddMenu("开启蒸食餐厅", ProductMenuVariant.Steamed);
+                AddMenu("开启茶饮餐厅", ProductMenuVariant.Tea);
                 view.SettlementText.text += "\n这些入口保留原菜单链，用于单独体验；内容大关请返回选择章节。";
             }
             self.AddEntryNavigation(view, "返回房间首页", ProductEntryPage.Home);

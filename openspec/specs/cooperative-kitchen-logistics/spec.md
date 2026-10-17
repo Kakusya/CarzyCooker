@@ -8,7 +8,7 @@
 
 ### Requirement: 远端设施操作保持真实到位和原容器
 
-成员 SHALL 按既有清理规则在水池接水／排液，在垃圾桶处理固体／包装，执行时核对真实设施、四邻到位、目标布局、容器内容、卫生及加工占用。错误设施、未到位、混合内容或加工锁定按原规则拒绝；成功只处理允许的内容，保留不应消费的原容器。
+成员 SHALL 在原水池或具名热水档接水，在有排液能力的水池排液，在垃圾桶处理固体／包装；执行时核对真实设施、四邻到位、目标布局、容器内容、卫生及加工占用。错误设施、未到位、不支持的混合内容或加工锁定按原规则拒绝；成功只处理允许的内容，保留不应消费的原容器。本批透明冷饮杯和调饮壶允许通过对应设施分别处理实际固体／液体，保留另一物态及原壳，不退款；其他容器不获得该例外。
 
 #### Scenario: 从远处排液并重放
 - **WHEN** Client 手持剩汤锅请求排液，并重放相同命令
@@ -17,6 +17,10 @@
 #### Scenario: 共址洗碗占用
 - **WHEN** 水池正在被有效洗碗工作占用，另一成员请求接水或排液
 - **THEN** 按既有设施占用规则拒绝，原工作与手持内容不变，不能因远端身份绕过占用
+
+#### Scenario: 冷杯按物态分别清理
+- **WHEN** Client 手持本批含珍珠和奶茶的冷杯，分别在水池排液或垃圾桶处理固体
+- **THEN** 只移除对应实际物态，另一内容及原杯保持，剩余基底不增加；后续加料仍须按配方顺序，其他混合容器保持拒绝
 
 ### Requirement: 所有成员共用有限补货与唯一收货
 
@@ -56,3 +60,5 @@
 - [设施实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridCleanupSystem.cs)、[供应实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridSupplySystem.cs)、[设计](../../changes/archive/2026-10-14-cooperative-cleanup-supply/design.md)。
 
 - [cooperative-cleanup-supply 逐功能运行与验收](../../changes/archive/2026-10-14-cooperative-cleanup-supply/execution-notes.md)。
+
+- [茶饮实际加工与两模式交付](../../changes/archive/2026-10-17-kitchen-tea-beverage-batch/execution-notes.md)。

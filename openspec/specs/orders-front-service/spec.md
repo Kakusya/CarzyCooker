@@ -140,6 +140,22 @@ Host 本地与远端成员 SHALL 能在当前关按相同资格询问、交付�
 - **WHEN** 玩家关闭并重开本入口，随后旧页面回调或迟到结果到达
 - **THEN** 页面只作用于当前有效上下文，原操作不因重开重复提交，旧结果不覆盖新选择，原合法入口仍可使用
 
+### Requirement: 合作制作意向仅作非独占提示
+
+当前连接成员 SHALL 能显式设置、改选或撤销自己的一个当前等待订单制作意向，同一订单允许多人表达意向。其他成员可看到已提交的成员与订单关系；查看不设置意向，意向不认领物品或工作、不贴单、不抵扣需求，不阻止任意原有合法制作者或交付者。
+
+#### Scenario: 两名成员选择同一订单
+- **WHEN** 两名连接成员分别将同一有效订单设为制作意向，另一成员合法制作并交付
+- **THEN** 两个意向均可显示，交付仍按原规则成功且只计一次分，不因意向归属拒绝合法交付
+
+### Requirement: 制作意向遵守订单和成员寿命
+
+制作意向 MUST 使用当前关、顾客和订单身份。订单交付或超时、成员失联/退出、换关及餐厅关闭时清理对应意向；恢复连接后不自动恢复旧意向。旧绑定、旧订单和旧回调不得改选同桌新顾客或改写其他成员意向。设置与撤销沿原阶段/暂停请求限制，暂停阅读保持已有事实；不持久化到进度文件。
+
+#### Scenario: 原桌换客和成员恢复
+- **WHEN** 有意向的订单结束或成员断线，之后原桌换客且该成员手动恢复
+- **THEN** 旧意向已经清理，旧请求被拒绝，玩家只能从当前有效订单重新设置，不自动为新顾客认领
+
 ## Sources
 
 - [当前实现](../../../Unity/Assets/Scripts/Game/ET/Code/Hotfix/Share/Product/GridKitchen/GridFrontWorkSystem.cs)。
@@ -147,3 +163,5 @@ Host 本地与远端成员 SHALL 能在当前关按相同资格询问、交付�
 
 - [cooperative-front-service 逐功能运行与验收](../../changes/archive/2026-10-14-cooperative-front-service/execution-notes.md)。
 - [front-service-workboard 逐项验收](../../changes/archive/2026-10-16-front-service-workboard/execution-notes.md)?
+
+- [cooperative-order-intents 逐功能验收](../../changes/archive/2026-10-17-cooperative-order-intents/execution-notes.md)。

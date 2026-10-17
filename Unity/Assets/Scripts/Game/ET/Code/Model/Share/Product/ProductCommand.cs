@@ -3,7 +3,7 @@ using System;
 
 namespace ET
 {
-    public enum ProductCommandKind { Grid = 0, Level = 1, Layout = 2, FrontWork = 3, Serve = 4, Buff = 5, Supply = 6, Renovation = 7, Room = 8, Baseline = 9 }
+    public enum ProductCommandKind { Grid = 0, Level = 1, Layout = 2, FrontWork = 3, Serve = 4, Buff = 5, Supply = 6, Renovation = 7, Room = 8, Baseline = 9, CompanionPreference = 10, OrderIntent = 11, TargetPing = 12, SupplyRequest = 13 }
 
     // 值身份，不持 Entity、消息或任何可写载荷。
     public readonly struct ProductCommandContext : IEquatable<ProductCommandContext>

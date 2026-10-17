@@ -9,10 +9,29 @@ namespace ET
     {
         public static void Validate(IEnumerable<DRCustomerFlowConfig> flowRows, IEnumerable<DROrderConfig> orderRows, IEnumerable<DRTableConfig> tableRows)
         {
+            var flows = flowRows.ToArray(); var orders = orderRows.ToArray(); var tables = tableRows.ToArray();
+            var levels = Tables.Instance.DTLevelConfig.DataList;
+            if (flows.Length != levels.Count || flows.Select(row => row.Id).Distinct().Count() != flows.Length ||
+                flows.Select(row => row.LevelConfigId).Distinct().Count() != flows.Length ||
+                flows.Any(row => levels.All(level => level.Id != row.LevelConfigId)))
+            {
+                throw new InvalidOperationException("Invalid front definitions / duplicate references");
+            }
+            foreach (var menu in levels.GroupBy(row => row.MenuVariant))
+            {
+                var ids = menu.Select(row => row.Id).ToHashSet();
+                ValidateMenu(flows.Where(row => ids.Contains(row.LevelConfigId)), orders, tables, menu,
+                    Tables.Instance.DTInitialLayoutConfig.DataList.Where(row => ProductMenuCatalog.Includes(menu.Key, row.MenuVariant)));
+            }
+        }
+
+        private static void ValidateMenu(IEnumerable<DRCustomerFlowConfig> flowRows, IEnumerable<DROrderConfig> orderRows,
+            IEnumerable<DRTableConfig> tableRows, IEnumerable<DRLevelConfig> levelRows, IEnumerable<DRInitialLayoutConfig> layoutRows)
+        {
             DRCustomerFlowConfig[] flows = flowRows.ToArray(); DROrderConfig[] orders = orderRows.ToArray(); DRTableConfig[] tables = tableRows.ToArray();
-            var levels = Tables.Instance.DTLevelConfig.DataList.ToDictionary(row => row.Id);
+            var levels = levelRows.ToDictionary(row => row.Id);
             var dishes = Tables.Instance.DTDishConfig.DataList.ToDictionary(row => row.Id);
-            var layouts = Tables.Instance.DTInitialLayoutConfig.DataList.ToDictionary(row => row.Id);
+            var layouts = layoutRows.ToDictionary(row => row.Id);
             var stations = GridStationConfig.ValidateDefinitions(Tables.Instance.DTStationConfig.DataList);
             if (flows.Length != levels.Count || flows.Select(row => row.Id).Distinct().Count() != flows.Length ||
                 flows.Select(row => row.LevelConfigId).Distinct().Count() != flows.Length || orders.Length == 0 ||

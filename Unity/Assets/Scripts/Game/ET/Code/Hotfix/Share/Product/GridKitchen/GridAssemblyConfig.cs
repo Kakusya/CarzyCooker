@@ -7,9 +7,62 @@ namespace ET
 {
     public static class GridAssemblyConfig
     {
+        public static bool AllowsStoredContents(int carrierDefinitionId, IReadOnlyList<int> definitions)
+        {
+            if (AllowsContainerContents(carrierDefinitionId, definitions))
+            {
+                return true;
+            }
+            if (carrierDefinitionId != GridKitchenRules.ColdDrinkCup)
+            {
+                return false;
+            }
+            // 明确清理可移除一种物态，留下配方的有序子序列；恢复不补回缺失内容。
+            foreach (var recipe in Tables.Instance.DTGridManualRecipeConfig.DataList)
+            {
+                if (recipe.Mode != GridManualMode.Assembly || recipe.ContainerDefinitionId != carrierDefinitionId)
+                {
+                    continue;
+                }
+                int index = 0;
+                foreach (int definition in recipe.InputDefinitionIds.SelectMany((id, offset) => Enumerable.Repeat(id, recipe.InputCounts[offset])))
+                {
+                    if (index < definitions.Count && definitions[index] == definition)
+                    {
+                        ++index;
+                    }
+                }
+                if (index == definitions.Count)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static bool AllowsContainerContents(int carrierDefinitionId, IReadOnlyList<int> definitions)
         {
             var carrier = Tables.Instance.DTGridItemConfig.Get(carrierDefinitionId);
+            if (carrierDefinitionId == GridKitchenRules.ColdDrinkCup)
+            {
+                if (definitions.Count == 0 || definitions.Count == 1 && definitions[0] is GridKitchenRules.IcedMilkTea or GridKitchenRules.PearlMilkTea)
+                {
+                    return true;
+                }
+                foreach (var recipe in Tables.Instance.DTGridManualRecipeConfig.DataList)
+                {
+                    if (recipe.Mode != GridManualMode.Assembly || recipe.ContainerDefinitionId != carrierDefinitionId)
+                    {
+                        continue;
+                    }
+                    var ordered = recipe.InputDefinitionIds.SelectMany((id, index) => Enumerable.Repeat(id, recipe.InputCounts[index])).ToArray();
+                    if (definitions.Count <= ordered.Length && definitions.SequenceEqual(ordered.Take(definitions.Count)))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
             if (carrierDefinitionId == GridKitchenRules.HotDrinkCup && definitions.Count == 0)
             {
                 return true;
@@ -72,7 +125,7 @@ namespace ET
                 !items.TryGetValue(recipe.ContainerDefinitionId, out var carrier) || carrier.Kind != GridItemKind.Container ||
                 !carrier.AcceptedDefinitionIds.Contains(output.Id) || recipe.InputCounts.Sum() > carrier.ContainerCapacity ||
                 recipe.InputDefinitionIds.Any(id => !items.TryGetValue(id, out var input) || input.Kind != GridItemKind.Material ||
-                    (input.Form != GridMaterialForm.Solid && !(carrier.Id == GridKitchenRules.HotDrinkCup && input.Form == GridMaterialForm.Liquid)) || !carrier.AcceptedDefinitionIds.Contains(id)))
+                    (input.Form != GridMaterialForm.Solid && !(carrier.Id is GridKitchenRules.HotDrinkCup or GridKitchenRules.ColdDrinkCup && input.Form == GridMaterialForm.Liquid)) || !carrier.AcceptedDefinitionIds.Contains(id)))
             {
                 throw new InvalidOperationException("Invalid assembly recipe / quantities / carrier");
             }

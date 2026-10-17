@@ -36,6 +36,10 @@ namespace ET.Client
             switch((DishStageKind)stage.Kind)
             {
                 case DishStageKind.Raw:
+                    if (stage.OutputDefinitionId == GridKitchenRules.HotWater)
+                    {
+                        return "接热水：拿空泡茶桶，到取水台热水档显式接水；放回泡茶设备，再加入一份红茶叶。热水是实际投入。";
+                    }
                     return "备料："+output;
                 case DishStageKind.Manual:
                     var manual=Tables.Instance.DTGridManualRecipeConfig.Get(stage.RecipeId);
@@ -45,7 +49,9 @@ namespace ET.Client
                 case DishStageKind.Batch:
                     var batch=Tables.Instance.DTGridAutoRecipeConfig.Get(stage.RecipeId);
                     string inputs=string.Join("、",batch.InputDefinitionIds.Select((id,index)=>$"{ItemName(id)} ×{batch.InputCounts[index]}"));
-                    return $"把{inputs}放入{ItemName(batch.ContainerDefinitionId)}{(batch.LockContainer ? "；加工期间锁定载具" : "；蛋液从碗倒入")}。在{Equipment((GridStationCapability)batch.StationCapability)}显式{(batch.StationCapability == GridStationCapability.Extract ? "萃取" : batch.StationCapability == GridStationCapability.HeatMilk ? "热奶" : batch.StationCapability == GridStationCapability.FoamMilk ? "打泡" : batch.StationCapability == GridStationCapability.Mixing ? "搅拌" : batch.LockContainer ? "榨汁" : "煮制")} → {output}（基础 {batch.RequiredTicks*tickMilliseconds/1000f:0.0} 秒，{batch.OutputPortions} 份）";
+                    return $"把{inputs}放入{ItemName(batch.ContainerDefinitionId)}{(batch.LockContainer ? "；加工期间锁定载具" : "；蛋液从碗倒入")}。在{Equipment((GridStationCapability)batch.StationCapability)}显式{(batch.StationCapability == GridStationCapability.BrewTea ? "泡茶" : batch.StationCapability == GridStationCapability.MixTea ? "调饮" : batch.StationCapability == GridStationCapability.Extract ? "萃取" : batch.StationCapability == GridStationCapability.HeatMilk ? "热奶" : batch.StationCapability == GridStationCapability.FoamMilk ? "打泡" : batch.StationCapability == GridStationCapability.Mixing ? "搅拌" : batch.LockContainer ? "榨汁" : "煮制")} → {output}（基础 {batch.RequiredTicks*tickMilliseconds/1000f:0.0} 秒，{batch.OutputPortions} 份）";
+                case DishStageKind.Boil:
+                case DishStageKind.Steam:
                 case DishStageKind.Grind:
                 case DishStageKind.Bake:
                 case DishStageKind.Fry:
@@ -55,10 +61,14 @@ namespace ET.Client
                     {
                         return $"把装有一份{ItemName(bake.InputDefinitionId)}的{ItemName(bake.CarrierDefinitionId)}放入{Equipment((GridStationCapability)bake.StationCapability)}，显式烘烤（基础 {bake.RequiredTicks*tickMilliseconds/1000f:0.0} 秒）；完成只替换内部内容，原模具保留。";
                     }
-                    return $"将{ItemName(bake.InputDefinitionId)}放入{Equipment((GridStationCapability)bake.StationCapability)}，显式{((DishStageKind)stage.Kind == DishStageKind.Grind ? "研磨" : (DishStageKind)stage.Kind == DishStageKind.Fry ? "煎制" : "烘烤")} → {output}（基础 {bake.RequiredTicks*tickMilliseconds/1000f:0.0} 秒）";
+                    return $"将{ItemName(bake.InputDefinitionId)}放入{Equipment((GridStationCapability)bake.StationCapability)}，显式{((DishStageKind)stage.Kind == DishStageKind.Boil ? "煮珍珠" : (DishStageKind)stage.Kind == DishStageKind.Steam ? "蒸制" : (DishStageKind)stage.Kind == DishStageKind.Grind ? "研磨" : (DishStageKind)stage.Kind == DishStageKind.Fry ? "煎制" : "烘烤")} → {output}（基础 {bake.RequiredTicks*tickMilliseconds/1000f:0.0} 秒）";
                 case DishStageKind.Unmold:
                     return $"脱模：手持装有烤熟{output}的原模具，到放有干净空{ItemName(stage.ContainerDefinitionId)}的台面显式脱模。模具保留；未熟或未脱模不能交付，满盘失败不转移。";
                 case DishStageKind.Portion:
+                    if (stage.ContainerDefinitionId == GridKitchenRules.ColdDrinkCup)
+                    {
+                        return "取份：拿起干净透明冷饮杯，从完成的调饮壶取一份奶茶基底；珍珠奶茶须先放一份熟珍珠，取份后再加冰。每次扣源一份。";
+                    }
                     if (stage.ContainerDefinitionId == GridKitchenRules.HotDrinkCup)
                     {
                         return $"取份：手持干净热饮杯，从已完成基底取一份{output}；按配方继续向同一杯添加，每次扣源一份。";
@@ -72,10 +82,16 @@ namespace ET.Client
                     string components = string.Join("、", assembly.InputDefinitionIds.Select((id, index) => $"{ItemName(id)} ×{assembly.InputCounts[index]}"));
                     if ((DishStageKind)stage.Kind == DishStageKind.Blend)
                     {
+                        if (stage.ContainerDefinitionId == GridKitchenRules.ColdDrinkCup)
+                        {
+                            return $"调饮：在同一干净透明冷饮杯按顺序加入{components}，拿起并明确混合{output}（基础 {assembly.RequiredTicks*tickMilliseconds/1000f:0.0} 秒）。熟珍珠先经煮熟、放入小料罐并从原详情取出；冰最后投入。完成后再贴有效订单。";
+                        }
                         return $"调饮：将{components}逐份取入同一干净热饮杯，拿起并明确混合{output}（基础 {assembly.RequiredTicks*tickMilliseconds/1000f:0.0} 秒）" +
                             (assembly.LastInputDefinitionId == 0 ? "。" : $"；{ItemName(assembly.LastInputDefinitionId)}必须等其他基底齐全后最后加入，拒绝不扣源份数。") + "成品之后再贴有效订单。";
                     }
-                    return $"合流：将{components}放入同一干净{ItemName(stage.ContainerDefinitionId)}，拿起并明确选择组装{output}（基础 {assembly.RequiredTicks*tickMilliseconds/1000f:0.0} 秒）。未完成不是成品，可停止后交接原盘接续。";
+                    string extraction = Tables.Instance.DTGridBakeRecipeConfig.DataList.Any(recipe => recipe.InputDefinitionId == stage.OutputDefinitionId && recipe.CarrierDefinitionId == 0)
+                        ? $"完成后把{ItemName(stage.ContainerDefinitionId)}放回台面，在“查看详情”取出{output}，再放入对应加工设备；原器具保留。" : "";
+                    return $"合流：将{components}放入同一干净{ItemName(stage.ContainerDefinitionId)}，拿起并明确选择组装{output}（基础 {assembly.RequiredTicks*tickMilliseconds/1000f:0.0} 秒）。未完成不是成品，可停止后交接原载具接续。" + extraction;
                 default:
                     throw new System.InvalidOperationException("Unknown recipe guide stage");
             }
@@ -158,7 +174,7 @@ namespace ET.Client
             {
                 DRDishStageConfig stage=Tables.Instance.DTDishStageConfig.Get(id);
                 var kind=(DishStageKind)stage.Kind;
-                if(kind is DishStageKind.Raw or DishStageKind.Manual or DishStageKind.Grind or DishStageKind.Bake or DishStageKind.Fry or DishStageKind.BakeInCarrier && HasItem(stage.OutputDefinitionId))return null;
+                if(kind is DishStageKind.Raw or DishStageKind.Manual or DishStageKind.Boil or DishStageKind.Steam or DishStageKind.Grind or DishStageKind.Bake or DishStageKind.Fry or DishStageKind.BakeInCarrier && HasItem(stage.OutputDefinitionId))return null;
                 if(kind==DishStageKind.Manual)
                 {
                     var working=grid.Processes.Values.FirstOrDefault(value=>value.RecipeId==stage.RecipeId && value.State!=GridWorkState.Completed);
@@ -169,7 +185,7 @@ namespace ET.Client
                 }
                 if (kind is DishStageKind.Assembly or DishStageKind.Blend)
                 {
-                    string carrierName = kind == DishStageKind.Blend ? "原杯" : "原盘";
+                    string carrierName = ItemName(stage.ContainerDefinitionId);
                     string operation = kind == DishStageKind.Blend ? "混合" : "组装";
                     var working = grid.Processes.Values.FirstOrDefault(value => value.RecipeId == stage.RecipeId && value.State != GridWorkState.Completed);
                     if (working.Id != 0)
@@ -220,7 +236,7 @@ namespace ET.Client
                     return EmptyContainer(stage.ContainerDefinitionId) ? Step(stage, grid.TickMilliseconds) :
                         $"蛋糕已烤熟，保留原模具；需要干净空{ItemName(stage.ContainerDefinitionId)}后脱模，脏餐具先洗净。";
                 }
-                if(kind is DishStageKind.Grind or DishStageKind.Bake or DishStageKind.Fry or DishStageKind.BakeInCarrier)
+                if(kind is DishStageKind.Boil or DishStageKind.Steam or DishStageKind.Grind or DishStageKind.Bake or DishStageKind.Fry or DishStageKind.BakeInCarrier)
                 {
                     var bake=grid.BakeProcesses.Values.FirstOrDefault(value=>value.RecipeId==stage.RecipeId && value.State==GridBakeState.Baking);
                     if(bake.Id!=0)return GridClientSystem.BakeWorkDescription(bake)+"；等待真实完成。";

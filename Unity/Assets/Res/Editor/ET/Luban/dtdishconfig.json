@@ -86,5 +86,37 @@
     "ContainerDefinitionId": 59,
     "FinalStageId": 56,
     "RequiresOrderBinding": true
+  },
+  {
+    "Id": 12,
+    "Name": "牛肉蒸饺",
+    "ContentDefinitionId": 70,
+    "ContainerDefinitionId": 71,
+    "FinalStageId": 66,
+    "RequiresOrderBinding": false
+  },
+  {
+    "Id": 13,
+    "Name": "热红茶",
+    "ContentDefinitionId": 78,
+    "ContainerDefinitionId": 59,
+    "FinalStageId": 72,
+    "RequiresOrderBinding": true
+  },
+  {
+    "Id": 14,
+    "Name": "冰鲜奶茶",
+    "ContentDefinitionId": 88,
+    "ContainerDefinitionId": 84,
+    "FinalStageId": 81,
+    "RequiresOrderBinding": true
+  },
+  {
+    "Id": 15,
+    "Name": "珍珠奶茶",
+    "ContentDefinitionId": 89,
+    "ContainerDefinitionId": 84,
+    "FinalStageId": 86,
+    "RequiresOrderBinding": true
   }
 ]

@@ -21,6 +21,7 @@ namespace ET.Client
     public sealed class ProductEntryPresentation : Entity, IAwake, IUpdate, IDestroy
     {
         public EntityRef<UIGridKitchen> Hud;
+        public ProductPreferencesDraft PreferencesDraft;
         public long Epoch;
         public bool LoadingHud, ChoosingSolo, Busy, Suspended;
         // 本轮页面导航；只影响可见入口，不代表房间、世界或文件状态。

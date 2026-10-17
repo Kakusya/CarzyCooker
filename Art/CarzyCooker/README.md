@@ -25,7 +25,11 @@ Inkscape：分别导出 `panel`、`button`、`badge`，保留透明背景与边�
 
 图集每格 192×192，16 列，索引从图片下方开始。生成的 `MonoGridKitchenBoard.ArtLayout.cs` 只由导出脚本更新，不能手改。方向 0／1／2／3 对应北／东／南／西；角色姿势 0 待机，1／2 行走两帧，3 持物，4／5 作业两帧，6／7 持物行走两帧。角色四种外观为玩家、伙伴、两种顾客。
 
-环境按原格子显示；工位按原 Footprint、方向与定义映射，所有物品 ID 1–63 均有独立图形（沙拉22–31、热餐32–42、甜品43–51、咖啡52–63）。容器内容、脏污、订单票、蒸汽等由实际投影组合，不把内容画死在容器或工位上。
+环境按原格子显示；工位按原 Footprint、方向与定义映射，所有物品 ID 1–94 均有独立图形（沙拉22–31、热餐32–42、甜品43–51、咖啡52–63、蒸食64–75、茶饮76–94）。容器内容、脏污、订单票、蒸汽等由实际投影组合，不把内容画死在容器或工位上。
+
+2026-10-17 茶饮模型由原脚本生成317格、20行图集，ArtItemCount=94；增加热水档、泡茶、煮珍珠和调饮设备四方向，以及原料、冷热杯罐、基底、冰与成品。35个新增方向/物件接触表已查看，原资源集合刷新成功；普通Launcher Solo与真实KCP三杯制作交付均通过，见[茶饮运行记录](../../openspec/changes/archive/2026-10-17-kitchen-tea-beverage-batch/execution-notes.md)。
+
+2026-10-17 蒸食模型由原脚本生成282格、18行图集，ArtItemCount=75；新增蒸锅四方向与洋葱、碎葱、牛肉末、饺子皮、混馅、未熟/熟蒸饺、蒸食盘、拌馅盆及三种供应袋。未熟饺用深色褶线，熟饺用白色与蒸汽形状区分；原HandmadeBistro图集与动画源未改。具体运行范围见[kitchen-steamed-food-batch](../../openspec/changes/archive/2026-10-17-kitchen-steamed-food-batch/execution-notes.md)。
 
 本轮制作／游戏验收结果见 `openspec/changes/archive/2026-10-15-restaurant-art-production/execution-notes.md`，截图为实机 Editor 输出。手机和 Player 验收属于后续设备 change。
 

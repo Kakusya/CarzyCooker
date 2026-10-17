@@ -29,7 +29,7 @@ namespace ET
             ownedInit = Init.Instance;
             var match = (Match)((HostSessionComponent)Runtime.Authority).Match;
             string matchId = match.MatchId;
-            StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
+            yield return StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
             yield return Wait(() => Presentation?.Ready == true, "Ordinary Host begins cooperative chapter");
             Presentation.CloseGridHud();
             yield return null;
@@ -90,7 +90,7 @@ namespace ET
                 Assert.That(match.MatchId, Is.EqualTo(matchId));
                 Assert.That(Client.Roster.Count, Is.EqualTo(2));
                 Assert.That(((ProcessInnerSender)Runtime.Sender).IsStopped, Is.False);
-                StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
+                yield return StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
                 yield return WaitCoopUi(remote, () => Presentation?.Ready == true && remote.Grid.Confirmed, "Same members reopen a fresh chapter");
                 Assert.That(Grid.WorldId, Is.Not.EqualTo(world));
                 Assert.That(Grid.LevelConfigId, Is.EqualTo(401));

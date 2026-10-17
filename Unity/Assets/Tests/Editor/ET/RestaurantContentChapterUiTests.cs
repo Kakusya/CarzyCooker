@@ -45,7 +45,7 @@ namespace ET
             {
                 yield return StartProgressHostRoom();
                 Assert.That(EntryButton("开启大关 1 · 家常开张"), Is.Not.Null);
-                StartPreviewAndConfirm(EntryButton("开启大关 2 · 进阶小馆"));
+                yield return StartPreviewAndConfirm(EntryButton("开启大关 2 · 进阶小馆"));
             }
             else
             {
@@ -54,7 +54,7 @@ namespace ET
                 Pointer(EntryButton("单机餐厅"));
                 yield return Wait(() => Selection != null && ((UIGridKitchen)Selection.Hud)?.Available == true, "Actual content chapter selector");
                 Assert.That(SelectionButton("新开大关 1 · 家常开张"), Is.Not.Null);
-                StartPreviewAndConfirm(SelectionButton("新开大关 2 · 进阶小馆"));
+                yield return StartPreviewAndConfirm(SelectionButton("新开大关 2 · 进阶小馆"));
             }
             yield return Wait(() => Presentation?.Ready == true && Grid.Confirmed, "Selected second content chapter opens");
             var chapter = Tables.Instance.DTRestaurantChapterConfig.Get(2);
@@ -169,7 +169,7 @@ namespace ET
                 {
                     yield return WaitCoopUi(remote, () => Presentation == null && !remote.Grid.Confirmed && Entry != null && ((UIGridKitchen)Entry.Hud)?.Available == true, "Completed second chapter returns same room");
                     Assert.That(Client.Roster.Count, Is.EqualTo(2));
-                    StartPreviewAndConfirm(EntryButton("开启大关 1 · 家常开张"));
+                    yield return StartPreviewAndConfirm(EntryButton("开启大关 1 · 家常开张"));
                     yield return WaitCoopUi(remote, () => Presentation?.Ready == true && remote.Grid.Confirmed, "Same cooperative room independently opens first chapter");
                 }
                 else
@@ -183,7 +183,7 @@ namespace ET
                     Assert.That(Selection.ViewedResult.ChapterId, Is.EqualTo(12));
                     Assert.That(SelectionHud.SettlementText.text, Does.Contain("进阶小馆"));
                     Pointer(SelectionButton("返回记录列表"));
-                    StartPreviewAndConfirm(SelectionButton("新开大关 1 · 家常开张"));
+                    yield return StartPreviewAndConfirm(SelectionButton("新开大关 1 · 家常开张"));
                     yield return Wait(() => Presentation?.Ready == true && Grid.Confirmed, "Completed record permits an independent first chapter");
                     Assert.That(repository.Browse().Length, Is.EqualTo(3));
                 }

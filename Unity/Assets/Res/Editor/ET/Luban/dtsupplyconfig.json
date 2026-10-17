@@ -163,5 +163,115 @@
     "TransitTicks": 40,
     "ReceivingLayoutId": 4,
     "MenuVariant": 6
+  },
+  {
+    "Id": 16,
+    "Name": "洋葱补货",
+    "MaterialDefinitionId": 64,
+    "PackageDefinitionId": 73,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 7
+  },
+  {
+    "Id": 17,
+    "Name": "牛肉末补货",
+    "MaterialDefinitionId": 66,
+    "PackageDefinitionId": 74,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 7
+  },
+  {
+    "Id": 18,
+    "Name": "饺子皮补货",
+    "MaterialDefinitionId": 67,
+    "PackageDefinitionId": 75,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 7
+  },
+  {
+    "Id": 19,
+    "Name": "红茶叶补货",
+    "MaterialDefinitionId": 77,
+    "PackageDefinitionId": 90,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 20,
+    "Name": "生珍珠补货",
+    "MaterialDefinitionId": 79,
+    "PackageDefinitionId": 91,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 21,
+    "Name": "糖浆补货",
+    "MaterialDefinitionId": 81,
+    "PackageDefinitionId": 92,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 22,
+    "Name": "冰块补货",
+    "MaterialDefinitionId": 83,
+    "PackageDefinitionId": 93,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 23,
+    "Name": "奶茶牛奶补货",
+    "MaterialDefinitionId": 44,
+    "PackageDefinitionId": 51,
+    "PackageUnits": 1,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 24,
+    "Name": "冷饮杯补货",
+    "MaterialDefinitionId": 84,
+    "PackageDefinitionId": 94,
+    "PackageUnits": 2,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 25,
+    "Name": "热茶杯补货",
+    "MaterialDefinitionId": 59,
+    "PackageDefinitionId": 63,
+    "PackageUnits": 3,
+    "AvailablePackages": 5,
+    "TransitTicks": 40,
+    "ReceivingLayoutId": 4,
+    "MenuVariant": 8
   }
 ]

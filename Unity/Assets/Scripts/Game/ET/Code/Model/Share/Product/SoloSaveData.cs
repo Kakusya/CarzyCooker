@@ -179,10 +179,14 @@ namespace ET
     }
 
     [ComponentOf(typeof(Scene))]
-    public sealed class SoloSaveRepository : Entity, IAwake<string, string>
+    public sealed class SoloSaveRepository : Entity, IAwake<string, string>, IAwake<string, string, Game.ProductStoragePlatform>
     {
         public string DirectoryPath;
         public string ProfileId;
+        public Game.ProductStoragePlatform Platform;
+        public ProductPreferencesValue Preferences;
+        public string PreferencesFailure;
+        public long PreferencesVersion;
     }
 
     [ChildOf(typeof(Match))]

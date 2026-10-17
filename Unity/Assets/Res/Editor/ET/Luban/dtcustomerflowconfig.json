@@ -1154,5 +1154,317 @@
       7,
       8
     ]
+  },
+  {
+    "Id": 1601,
+    "LevelConfigId": 1601,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 400,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      12
+    ]
+  },
+  {
+    "Id": 1602,
+    "LevelConfigId": 1602,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 400,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      12
+    ]
+  },
+  {
+    "Id": 1603,
+    "LevelConfigId": 1603,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 400,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      12
+    ]
+  },
+  {
+    "Id": 2601,
+    "LevelConfigId": 2601,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 400,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      12
+    ]
+  },
+  {
+    "Id": 2602,
+    "LevelConfigId": 2602,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 400,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      12
+    ]
+  },
+  {
+    "Id": 2603,
+    "LevelConfigId": 2603,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 400,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      12
+    ]
+  },
+  {
+    "Id": 1701,
+    "LevelConfigId": 1701,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      13,
+      14,
+      15
+    ]
+  },
+  {
+    "Id": 1702,
+    "LevelConfigId": 1702,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      13,
+      14,
+      15
+    ]
+  },
+  {
+    "Id": 1703,
+    "LevelConfigId": 1703,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      13,
+      14,
+      15
+    ]
+  },
+  {
+    "Id": 2701,
+    "LevelConfigId": 2701,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      13,
+      14,
+      15
+    ]
+  },
+  {
+    "Id": 2702,
+    "LevelConfigId": 2702,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      13,
+      14,
+      15
+    ]
+  },
+  {
+    "Id": 2703,
+    "LevelConfigId": 2703,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      13,
+      14,
+      15
+    ]
+  },
+  {
+    "Id": 1801,
+    "LevelConfigId": 1801,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 120,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      12,
+      13
+    ]
+  },
+  {
+    "Id": 1802,
+    "LevelConfigId": 1802,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      14,
+      12,
+      13
+    ]
+  },
+  {
+    "Id": 1803,
+    "LevelConfigId": 1803,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 80,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      15,
+      14,
+      12,
+      13
+    ]
+  },
+  {
+    "Id": 2801,
+    "LevelConfigId": 2801,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 120,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      12,
+      13
+    ]
+  },
+  {
+    "Id": 2802,
+    "LevelConfigId": 2802,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 100,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      14,
+      12,
+      13
+    ]
+  },
+  {
+    "Id": 2803,
+    "LevelConfigId": 2803,
+    "FirstArrivalTicks": 20,
+    "ArrivalIntervalTicks": 80,
+    "QueueCapacity": 2,
+    "OrderWaitTicks": 600,
+    "EatTicks": 60,
+    "EntranceX": 3,
+    "EntranceY": 1,
+    "QueueX": 3,
+    "QueueY": 2,
+    "OrderConfigIds": [
+      15,
+      14,
+      12,
+      13
+    ]
   }
 ]

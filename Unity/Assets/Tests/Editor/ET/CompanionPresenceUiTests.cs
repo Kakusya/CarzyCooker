@@ -1,6 +1,7 @@
 #if UNITY_ET_VIEW && UNITY_EDITOR
 using System.Collections;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using ET.Client;
 using NUnit.Framework;
 using UnityEngine.TestTools;
@@ -36,7 +37,7 @@ namespace ET
             Assert.That(grid.LevelPhase, Is.EqualTo(LevelPhase.Preparing)); Assert.That(grid.Orders, Is.Empty);
         }
 
-        private IEnumerator CompanionPresenceUiJourney(bool cooperative)
+        private IEnumerator CompanionPresenceUiJourney(bool cooperative, bool preferences = false)
         {
             if (cooperative)
             {
@@ -47,10 +48,27 @@ namespace ET
                 yield return StartLauncher();
             }
             CompanionPresenceReadChats(null);
+            UnityEngine.Events.UnityAction stalePreference = null, oldLevelPreference = null;
+            if (preferences)
+            {
+                yield return Command("岗位：询问优先", true);
+                yield return Command("岗位：自动", true);
+                yield return Command("岗位：洗碗优先", true);
+                Assert.That(Grid.CompanionPreference, Is.EqualTo(CompanionWorkPreference.WashFirst));
+                Assert.That(Hud.WorkText.text, Does.Contain("岗位 洗碗优先"));
+                stalePreference = CaptureButtonCallback(Button("岗位：询问优先", true));
+            }
             var staleChat = CaptureButtonCallback(Button("聊聊备菜"));
             Presentation.CloseGridHud(); yield return null; Presentation.OpenGridHud();
             yield return Wait(() => Presentation.Ready, "Companion managed HUD reopens");
             staleChat(); Assert.That(Presentation.CompanionChat, Is.EqualTo(CompanionChatTopic.None));
+            if (preferences)
+            {
+                long command = Client.NextCommandId;
+                stalePreference();
+                Assert.That(Client.NextCommandId, Is.EqualTo(command));
+                Assert.That(Grid.CompanionPreference, Is.EqualTo(CompanionWorkPreference.WashFirst));
+            }
             yield return CoopFrontUiPrepareSoup();
             CoopUiRemote remote = null;
             if (cooperative)
@@ -58,6 +76,17 @@ namespace ET
                 Presentation.CloseGridHud(); remote = new CoopUiRemote(Runtime.ListenEndpoint); ownedCoopUiRemotes.Add(remote);
                 yield return WaitCoopUi(remote, () => remote.Presentation?.Ready == true && remote.Grid.Confirmed, "KCP sees same preparing companion");
                 CompanionPresenceReadChats(remote);
+                if (preferences)
+                {
+                    Assert.That(remote.Grid.CompanionPreference, Is.EqualTo(CompanionWorkPreference.WashFirst));
+                    Assert.That(remote.Hud.WorkText.text, Does.Contain("岗位 洗碗优先"));
+                    Assert.That(remote.Hud.GetComponentsInChildren<Button>(false).Any(button => button.GetComponentInChildren<Text>().text.StartsWith("岗位：")), Is.False);
+                    var forbidden = remote.Client.CallProduct(remote.Grid.CreateCompanionPreference(CompanionWorkPreference.AskFirst)).AsTask();
+                    yield return WaitCoopUi(remote, () => forbidden.IsCompleted, "Real KCP rejects direct Client preference request");
+                    using var denied = (CompanionPreferenceResponse)forbidden.GetAwaiter().GetResult();
+                    Assert.That(denied.Message, Is.EqualTo("HostControlOnly"));
+                    Assert.That(Grid.CompanionPreference, Is.EqualTo(CompanionWorkPreference.WashFirst));
+                }
             }
             try
             {
@@ -66,7 +95,19 @@ namespace ET
                 var client = remote?.Client ?? Client;
                 yield return HotUiWait(remote, () => grid.Companions.Values.Single().CompletedCount > 0 && !string.IsNullOrEmpty(presentation.CompanionFeedback), "Actual companion work commits before positive feedback", 25);
                 Assert.That(presentation.CompanionFeedback, Does.Contain("小麦").And.Contain(Tables.Instance.DTCompanionConfig.Get(1).WorkFeedback));
-                yield return HotUiSwitch(remote, true); yield return ContentUiPump(Command("暂停"), remote); yield return HotUiSwitch(remote, false);
+                yield return HotUiSwitch(remote, true);
+                if (preferences)
+                {
+                    oldLevelPreference = CaptureButtonCallback(Button("岗位：询问优先", true));
+                }
+                yield return ContentUiPump(Command("暂停"), remote);
+                if (preferences)
+                {
+                    long command = Client.NextCommandId;
+                    oldLevelPreference();
+                    Assert.That(Client.NextCommandId, Is.EqualTo(command));
+                }
+                yield return HotUiSwitch(remote, false);
                 long revision = presentation.CompanionFeedbackRevision;
                 int completed = grid.Companions.Values.Single().CompletedCount;
                 for (int repeat = 0; repeat < 3; ++repeat)
@@ -79,6 +120,10 @@ namespace ET
                 presentation.CloseGridHud(); yield return null; presentation.OpenGridHud();
                 yield return HotUiWait(remote, () => presentation.Ready, "No history replay on operating HUD reopen");
                 Assert.That(presentation.CompanionFeedback, Is.Null);
+                if (preferences)
+                {
+                    Assert.That(grid.CompanionPreference, Is.EqualTo(CompanionWorkPreference.WashFirst));
+                }
                 yield return HotUiSwitch(remote, true); yield return ContentUiPump(Command("恢复"), remote); yield return HotUiSwitch(remote, false);
                 yield return HotUiWait(remote, () => grid.Orders.Values.Any(order => order.DishId == 1 && order.State == OrderState.Waiting), "Real soup order");
                 var order = grid.Orders.Values.First(value => value.DishId == 1 && value.State == OrderState.Waiting);
@@ -106,6 +151,13 @@ namespace ET
                 Assert.That(grid.Companions.Values.Single().Name, Is.EqualTo("小麦"));
                 Assert.That(grid.Companions.Values.Single().DefinitionId, Is.EqualTo(1));
                 Assert.That(grid.Companions.Values.Single().CompletedCount, Is.Zero);
+                if (preferences)
+                {
+                    long command = Client.NextCommandId;
+                    oldLevelPreference();
+                    Assert.That(Client.NextCommandId, Is.EqualTo(command));
+                    Assert.That(grid.CompanionPreference, Is.EqualTo(CompanionWorkPreference.WashFirst));
+                }
                 Assert.That(presentation.CompanionFeedback, Is.Null);
                 staleChat(); Assert.That(presentation.CompanionChat, Is.EqualTo(CompanionChatTopic.None));
                 CompanionPresenceReadChats(remote);

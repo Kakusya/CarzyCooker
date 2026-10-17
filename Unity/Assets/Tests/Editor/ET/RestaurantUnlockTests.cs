@@ -14,6 +14,10 @@ namespace ET
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
             host.InitializeProduct(menuVariant: ProductMenuVariant.Growth); Pump(12);
             Assert.That(host.Stage, Is.Not.EqualTo(ProductStage.Failed), host.Failure);
+            if (cooperative)
+            {
+                StartPublishedRoomForFixture();
+            }
         }
 
         [Test]

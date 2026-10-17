@@ -63,6 +63,14 @@ namespace ET.Editor
         /// Grind
         /// </summary>
         Grind = 11,
+        /// <summary>
+        /// 蒸制整份食物
+        /// </summary>
+        Steam = 12,
+        /// <summary>
+        /// 煮熟整份小料
+        /// </summary>
+        Boil = 13,
     }
 
     public static class DishStageKind_Metadata
@@ -79,6 +87,8 @@ namespace ET.Editor
         public static readonly Luban.EditorEnumItemInfo Unmold = new Luban.EditorEnumItemInfo("Unmold", "", 9, "Unmold");
         public static readonly Luban.EditorEnumItemInfo Blend = new Luban.EditorEnumItemInfo("Blend", "", 10, "Blend");
         public static readonly Luban.EditorEnumItemInfo Grind = new Luban.EditorEnumItemInfo("Grind", "", 11, "Grind");
+        public static readonly Luban.EditorEnumItemInfo Steam = new Luban.EditorEnumItemInfo("Steam", "", 12, "蒸制整份食物");
+        public static readonly Luban.EditorEnumItemInfo Boil = new Luban.EditorEnumItemInfo("Boil", "", 13, "煮熟整份小料");
 
         private static readonly System.Collections.Generic.List<Luban.EditorEnumItemInfo> __items = new System.Collections.Generic.List<Luban.EditorEnumItemInfo>
         {
@@ -94,6 +104,8 @@ namespace ET.Editor
             Unmold,
             Blend,
             Grind,
+            Steam,
+            Boil,
         };
 
         public static System.Collections.Generic.List<Luban.EditorEnumItemInfo> GetItems() => __items;

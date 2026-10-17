@@ -44,6 +44,18 @@ namespace ET
         /// 首批完整小馆资源
         /// </summary>
         Cafe = 6,
+        /// <summary>
+        /// 蒸食菜单
+        /// </summary>
+        Steamed = 7,
+        /// <summary>
+        /// 茶饮菜单
+        /// </summary>
+        Tea = 8,
+        /// <summary>
+        /// 蒸茶主题菜单
+        /// </summary>
+        SteamTea = 9,
     }
 
 } 

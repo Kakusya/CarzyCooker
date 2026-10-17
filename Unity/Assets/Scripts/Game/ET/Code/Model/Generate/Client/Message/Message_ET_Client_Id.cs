@@ -185,5 +185,32 @@ namespace ET
          public const ushort ProgressClosePreparedResponse = 10179;
          public const ushort SaveAuthorizationRequest = 10180;
          public const ushort SaveAuthorizationResponse = 10181;
+         public const ushort ProductPreferencesReadRequest = 10182;
+         public const ushort ProductPreferencesReadResponse = 10183;
+         public const ushort ProductPreferencesWriteRequest = 10184;
+         public const ushort ProductPreferencesWriteResponse = 10185;
+         public const ushort SoloSaveLabelsReadRequest = 10186;
+         public const ushort SoloSaveLabelsReadResponse = 10187;
+         public const ushort SoloSaveLabelsWriteRequest = 10188;
+         public const ushort SoloSaveLabelsWriteResponse = 10189;
+         public const ushort CompanionPreferenceRequest = 10190;
+         public const ushort CompanionPreferenceResponse = 10191;
+         public const ushort CompanionPreferenceSubmitRequest = 10192;
+         public const ushort CompanionPreferenceSubmitResponse = 10193;
+         public const ushort OrderIntentRequest = 10194;
+         public const ushort OrderIntentResponse = 10195;
+         public const ushort OrderIntentSubmitRequest = 10196;
+         public const ushort OrderIntentSubmitResponse = 10197;
+         public const ushort GridOrderIntentState = 10198;
+         public const ushort TargetPingRequest = 10199;
+         public const ushort TargetPingResponse = 10200;
+         public const ushort TargetPingSubmitRequest = 10201;
+         public const ushort TargetPingSubmitResponse = 10202;
+         public const ushort GridTargetPingState = 10203;
+         public const ushort SupplyRequestRequest = 10204;
+         public const ushort SupplyRequestResponse = 10205;
+         public const ushort SupplyRequestSubmitRequest = 10206;
+         public const ushort SupplyRequestSubmitResponse = 10207;
+         public const ushort GridSupplyRequestState = 10208;
     }
 }

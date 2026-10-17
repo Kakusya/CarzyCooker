@@ -101,7 +101,7 @@ namespace ET
                 yield return null;
                 Entry.OpenProductEntry();
                 yield return WaitCoopUi(remote, () => ((UIGridKitchen)Entry.Hud)?.Available == true, "Host room form resumes");
-                StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
+                yield return StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
                 yield return WaitCoopUi(remote, () => Presentation != null && remote.Presentation != null && Grid.Confirmed && remote.Grid.Confirmed,
                     "Both independent world projections exist");
                 remote.Presentation.CloseGridHud();

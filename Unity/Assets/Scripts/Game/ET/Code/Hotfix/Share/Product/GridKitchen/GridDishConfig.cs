@@ -49,6 +49,10 @@ namespace ET
             {
                 if (!stations.TryGetValue(layout.StationDefinitionId, out var station)) throw new InvalidOperationException("Missing menu equipment definition");
                 capabilities |= station.Capabilities;
+                if ((station.Capabilities & GridStationCapability.FillWater) != 0 && station.WaterDefinitionId > 0 && station.WaterUnits > 0)
+                {
+                    supplies[station.WaterDefinitionId] = checked(supplies.GetValueOrDefault(station.WaterDefinitionId) + station.WaterUnits);
+                }
             }
             if (menu.Length == 0 || menu.Distinct().Count() != menu.Length) throw new InvalidOperationException("Empty / duplicate menu");
             var visiting = new HashSet<int>(); var available = new Dictionary<int, int>();
@@ -67,7 +71,9 @@ namespace ET
             {
                 var value = stages[stageId];
                 return value.Kind == DishStageKind.Raw && items[value.OutputDefinitionId].Kind == GridItemKind.Material ||
-                    value.Kind is DishStageKind.Bake or DishStageKind.Fry or DishStageKind.Grind || value.Kind == DishStageKind.Manual && manuals[value.RecipeId].Mode == GridManualMode.Chop;
+                    value.Kind is DishStageKind.Bake or DishStageKind.Fry or DishStageKind.Grind or DishStageKind.Steam or DishStageKind.Boil ||
+                    value.Kind == DishStageKind.Assembly && items[value.OutputDefinitionId].Form == GridMaterialForm.Solid ||
+                    value.Kind == DishStageKind.Manual && manuals[value.RecipeId].Mode == GridManualMode.Chop;
             }
             void NeedWhole(DRDishStageConfig stage, int definition)
             { if (!Whole(stage.DependencyIds.Single(id => stages[id].OutputDefinitionId == definition))) throw new InvalidOperationException("Stage requires an actual whole material"); }
@@ -107,13 +113,15 @@ namespace ET
                         for (int i = 0; i < batch.InputDefinitionIds.Count; ++i) batchCount = Math.Min(batchCount, UnitsFor(stage, batch.InputDefinitionIds[i]) / batch.InputCounts[i]);
                         units = checked(batchCount * batch.OutputPortions);
                         break;
+                    case DishStageKind.Boil:
+                    case DishStageKind.Steam:
                     case DishStageKind.Grind:
                     case DishStageKind.Bake:
                     case DishStageKind.Fry:
                     case DishStageKind.BakeInCarrier:
                         if (!bakes.TryGetValue(stage.RecipeId, out var bake) || bake.OutputDefinitionId != output.Id || output.Kind != GridItemKind.Material || bake.RequiredTicks <= 0 ||
                             bake.InputDefinitionId == bake.OutputDefinitionId || !items.TryGetValue(bake.InputDefinitionId, out var raw) || raw.Kind != GridItemKind.Material ||
-                            bake.StationCapability != (stage.Kind == DishStageKind.Grind ? GridStationCapability.Grind : stage.Kind == DishStageKind.Fry ? GridStationCapability.Fry : GridStationCapability.Bake))
+                            bake.StationCapability != (stage.Kind == DishStageKind.Boil ? GridStationCapability.BoilPearls : stage.Kind == DishStageKind.Steam ? GridStationCapability.Steam : stage.Kind == DishStageKind.Grind ? GridStationCapability.Grind : stage.Kind == DishStageKind.Fry ? GridStationCapability.Fry : GridStationCapability.Bake))
                         {
                             throw new InvalidOperationException("Invalid bake stage recipe");
                         }
@@ -156,7 +164,7 @@ namespace ET
                         if (stage.RecipeId != 0 || !Compatible(stage.ContainerDefinitionId, output.Id)) throw new InvalidOperationException("Invalid portion stage container");
                         NeedInputs(stage, output.Id, stage.ContainerDefinitionId);
                         var producer = stages[stage.DependencyIds.Single(key => stages[key].OutputDefinitionId == output.Id)];
-                        if (producer.Kind != DishStageKind.Batch || batches[producer.RecipeId].ServingContainerDefinitionId != stage.ContainerDefinitionId)
+                        if (producer.Kind != DishStageKind.Batch || !GridTeaRules.CanServe(batches[producer.RecipeId], stage.ContainerDefinitionId))
                             throw new InvalidOperationException("Portion requires compatible batch");
                         units = Math.Min(UnitsFor(stage, output.Id), UnitsFor(stage, stage.ContainerDefinitionId));
                         break;
@@ -187,7 +195,13 @@ namespace ET
                             else
                             {
                                 var portion = stages[stage.DependencyIds.Single(key => stages[key].OutputDefinitionId == assembly.InputDefinitionIds[index])];
-                                if (assembly.ContainerDefinitionId != GridKitchenRules.HotDrinkCup || portion.Kind != DishStageKind.Portion || items[portion.OutputDefinitionId].Form != GridMaterialForm.Liquid)
+                                bool hotLiquid = assembly.ContainerDefinitionId == GridKitchenRules.HotDrinkCup &&
+                                    portion.Kind == DishStageKind.Portion && items[portion.OutputDefinitionId].Form == GridMaterialForm.Liquid;
+                                bool coldInput = assembly.ContainerDefinitionId == GridKitchenRules.ColdDrinkCup &&
+                                    (portion.OutputDefinitionId == GridKitchenRules.MilkTeaBase && portion.Kind == DishStageKind.Portion ||
+                                     portion.OutputDefinitionId == GridKitchenRules.Ice && Whole(portion.Id) ||
+                                     portion.OutputDefinitionId == GridKitchenRules.CookedPearls && portion.Kind == DishStageKind.AddToContainer && portion.ContainerDefinitionId == GridKitchenRules.PearlJar);
+                                if (!hotLiquid && !coldInput)
                                 {
                                     throw new InvalidOperationException("Blend requires actual compatible liquid portions");
                                 }

@@ -58,7 +58,7 @@ namespace ET
                 Selection.CloseSoloSelection(); Selection.OpenSoloSelection();
                 yield return Wait(() => ((UIGridKitchen)Selection.Hud)?.Available == true && Selection.Headers.Length == 2, "Selection reopens from durable records");
                 oldCallback(); Assert.That((Scene)runtime.HostScene, Is.Null); Assert.That(repository.Browse().Length, Is.EqualTo(2));
-                StartPreviewAndConfirm(SelectionButton("内存试玩"));
+                yield return StartPreviewAndConfirm(SelectionButton("内存试玩"));
                 yield return Wait(() => Presentation?.Ready == true && Grid.LevelConfigId == 201, "New independent chapter starts with first drink menu");
                 Assert.That(Grid.SaveEnabled, Is.False); Assert.That(Grid.Items.Count, Is.EqualTo(10));
                 oldCallback(); Assert.That(Grid.LevelConfigId, Is.EqualTo(201)); Assert.That(repository.Browse().Length, Is.EqualTo(2));

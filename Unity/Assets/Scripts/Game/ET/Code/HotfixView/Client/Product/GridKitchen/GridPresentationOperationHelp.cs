@@ -51,7 +51,7 @@ namespace ET.Client
             string phase = grid.LevelPhase switch { LevelPhase.Preparing => "准备", LevelPhase.Operating => "营业", LevelPhase.Draining => "收尾", _ => "结算" };
             string text = self.HelpTopic switch
             {
-                GridHelpTopic.Map => "轻点工位会选择并执行当前互动。\n轻点可走空地会移动。\n上下拖动查看前厅，释放不追加点击。\n布局调整中点格会直接提交移位。",
+                GridHelpTopic.Map => "轻点工位会选择并执行当前互动。\n轻点可走空地会移动。\n上下拖动查看前厅，释放不追加点击。\n布局调整中点格会直接提交移位。\n本机设置可调字号和拖动速度，拖动仍不点击。",
                 GridHelpTopic.Carry => "普通手槽和台面一格一物。\n拿取和放置使用对应动作。\n满手时先找合法空台面放下。\n容器搬运会连同内容一起移动。",
                 GridHelpTopic.Containers => "容器和内部内容是不同实物。\n取出固体、倾倒液体使用各自动作。\n熟食按份盛装，不等同整锅搬走。\n加工锁定会限制搬运或改料。",
                 GridHelpTopic.Work => "手工加工需到位并持续作业。\n停手保留进度，合法队友可接续。\n自动加工完成不等于已交付。\n收到请求不等于加工已经完成。",

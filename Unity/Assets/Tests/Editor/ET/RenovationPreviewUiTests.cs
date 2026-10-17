@@ -74,7 +74,7 @@ namespace ET
         [UnityTest, Category("EntryExperience"), Category("RenovationPreviewLocal"), Timeout(120000)]
         public IEnumerator EntryRenovationPreviewUpgradeAndExpansionSameCandidateSetCancelThenConfirmUpgrade()
         {
-            yield return StartProgressHostRoom(); StartPreviewAndConfirm(EntryButton("开启经营成长餐厅"));
+            yield return StartProgressHostRoom(); yield return StartPreviewAndConfirm(EntryButton("开启经营成长餐厅"));
             yield return Wait(() => Presentation?.Ready == true, "Ordinary Host growth menu before shared candidate comparison");
             Match match = ((HostSessionComponent)Runtime.Authority).Match;
             RestaurantRuntime restaurant = match.Restaurant;
@@ -105,7 +105,7 @@ namespace ET
         [Category("SettlementNetwork")]
         public IEnumerator EntryRenovationPreviewActualKcpReadOnlyUnlockAndExpansionStaySeparateUntilHostConfirmation()
         {
-            yield return StartProgressHostRoom(); StartPreviewAndConfirm(EntryButton("开启经营成长餐厅"));
+            yield return StartProgressHostRoom(); yield return StartPreviewAndConfirm(EntryButton("开启经营成长餐厅"));
             yield return Wait(() => Presentation?.Ready == true, "Ordinary growth room starts");
             Match match = ((HostSessionComponent)Runtime.Authority).Match;
             RestaurantRuntime restaurant = match.Restaurant;

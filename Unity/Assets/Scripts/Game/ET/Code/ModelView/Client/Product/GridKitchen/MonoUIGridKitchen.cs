@@ -22,6 +22,12 @@ namespace ET.Client
         [SerializeField] private Image m_HandIcon;
         private Sprite[] handArt;
         private InputField m_EntryAddress;
+        private float m_FontScale = 1;
+        private bool m_HasFontSize;
+        private ProductFontSize m_FontSize;
+        private readonly Dictionary<Text, int> m_OriginalTextSizes = new();
+        private readonly Dictionary<GridLayoutGroup, float> m_OriginalCellHeights = new();
+        private readonly Dictionary<RectTransform, (Vector2 Min, Vector2 Max)> m_OriginalHeaderAnchors = new();
         public string EntryAddress => m_EntryAddress == null ? "" : m_EntryAddress.text;
         public bool EntryAddressVisible => m_EntryAddress != null && m_EntryAddress.gameObject.activeSelf;
 
@@ -45,7 +51,7 @@ namespace ET.Client
                 rect.offsetMax = new Vector2(-12, -4);
                 Text text = caption.GetComponent<Text>();
                 text.font = font;
-                text.fontSize = 22;
+                text.fontSize = Mathf.RoundToInt(22 * m_FontScale);
                 text.color = new Color(.15f, .26f, .23f);
                 text.alignment = TextAnchor.MiddleLeft;
                 text.supportRichText = false;
@@ -61,6 +67,7 @@ namespace ET.Client
         public void SetInputGuard(Func<bool> guard)=>inputGuard=guard;
         public void ConfigureHud()
         {
+            m_HasFontSize = false;
             hudCanvas=GetComponent<Canvas>();
             CameraDragAreaRectTransform.gameObject.SetActive(true);
             if(m_ArtAtlas==null)
@@ -79,6 +86,72 @@ namespace ET.Client
             DetailsPanelRectTransform.gameObject.SetActive(false);
             HintText.text = "点击地面行走 · 拖动查看餐厅 · 点击台面拿放";
         }
+
+        public void ApplyLocalFontSize(ProductFontSize size)
+        {
+            if (m_HasFontSize && m_FontSize == size)
+            {
+                return;
+            }
+            m_HasFontSize = true;
+            m_FontSize = size;
+            m_FontScale = size switch { ProductFontSize.Larger => 1.15f, ProductFontSize.Largest => 1.3f, _ => 1f };
+            foreach (var text in new[] { PhaseText, ClockText, ScoreText })
+            {
+                RectTransform rect = text.rectTransform;
+                if (!m_OriginalHeaderAnchors.ContainsKey(rect))
+                {
+                    m_OriginalHeaderAnchors.Add(rect, (rect.anchorMin, rect.anchorMax));
+                }
+                var original = m_OriginalHeaderAnchors[rect];
+                rect.anchorMin = original.Min;
+                rect.anchorMax = original.Max;
+            }
+            if (size != ProductFontSize.Standard)
+            {
+                // 放大后为完整“参考/未结算”留宽，不用缩字抵消字号选择。
+                PhaseText.rectTransform.anchorMax = new Vector2(.35f, PhaseText.rectTransform.anchorMax.y);
+                ClockText.rectTransform.anchorMin = new Vector2(.35f, ClockText.rectTransform.anchorMin.y);
+                ClockText.rectTransform.anchorMax = new Vector2(.6f, ClockText.rectTransform.anchorMax.y);
+                ScoreText.rectTransform.anchorMin = new Vector2(.6f, ScoreText.rectTransform.anchorMin.y);
+            }
+            foreach (Text text in new[] { StatusText, HandText, HintText, PhaseText, ClockText, ScoreText, WorkText, OrdersText, BuffText, SettlementText, TargetText, DetailsText })
+            {
+                if (!m_OriginalTextSizes.TryGetValue(text, out int original))
+                {
+                    original = text.fontSize;
+                    m_OriginalTextSizes.Add(text, original);
+                }
+                text.fontSize = Mathf.RoundToInt(original * m_FontScale);
+                text.resizeTextForBestFit = false;
+            }
+            foreach (var layout in GetComponentsInChildren<GridLayoutGroup>(true))
+            {
+                if (!m_OriginalCellHeights.TryGetValue(layout, out float original))
+                {
+                    original = layout.cellSize.y;
+                    m_OriginalCellHeights.Add(layout, original);
+                }
+                layout.cellSize = new Vector2(layout.cellSize.x, original * m_FontScale);
+            }
+            foreach (Button button in buttons)
+            {
+                ApplyButtonFont(button.GetComponentInChildren<Text>());
+            }
+            if (m_EntryAddress != null)
+            {
+                m_EntryAddress.textComponent.fontSize = Mathf.RoundToInt(22 * m_FontScale);
+            }
+        }
+
+        private void ApplyButtonFont(Text caption)
+        {
+            caption.fontSize = Mathf.RoundToInt(24 * m_FontScale);
+            caption.resizeTextForBestFit = m_FontSize == ProductFontSize.Standard;
+            caption.resizeTextMinSize = Mathf.RoundToInt(16 * m_FontScale);
+            caption.resizeTextMaxSize = Mathf.RoundToInt(24 * m_FontScale);
+        }
+
         public Rect MapViewport()
         {
             if(hudCanvas==null)
@@ -159,7 +232,7 @@ namespace ET.Client
         private Button AddButton(RectTransform parent,string label,Action action,bool primary=false)
         {
             Button button=Instantiate(TargetTemplateButton,parent);button.gameObject.SetActive(true);
-            Text caption=button.GetComponentInChildren<Text>();caption.font=font;caption.fontSize=24;caption.resizeTextForBestFit=true;caption.resizeTextMinSize=16;caption.resizeTextMaxSize=24;caption.text=label;
+            Text caption=button.GetComponentInChildren<Text>();caption.font=font;ApplyButtonFont(caption);caption.text=label;
             caption.color=new Color(.99f,.96f,.86f);
             if(primary)
             {

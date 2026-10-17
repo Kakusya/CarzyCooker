@@ -348,5 +348,195 @@
     "Name": "第二奶缸台",
     "InitialItemDefinitionId": 55,
     "MenuVariant": 6
+  },
+  {
+    "Id": 36,
+    "StationDefinitionId": 1,
+    "X": 1,
+    "Y": 15,
+    "Orientation": 0,
+    "Name": "洋葱台",
+    "InitialItemDefinitionId": 64,
+    "MenuVariant": 7
+  },
+  {
+    "Id": 37,
+    "StationDefinitionId": 1,
+    "X": 5,
+    "Y": 7,
+    "Orientation": 0,
+    "Name": "牛肉末台",
+    "InitialItemDefinitionId": 66,
+    "MenuVariant": 7
+  },
+  {
+    "Id": 38,
+    "StationDefinitionId": 1,
+    "X": 5,
+    "Y": 16,
+    "Orientation": 0,
+    "Name": "饺子皮台",
+    "InitialItemDefinitionId": 67,
+    "MenuVariant": 7
+  },
+  {
+    "Id": 39,
+    "StationDefinitionId": 1,
+    "X": 1,
+    "Y": 7,
+    "Orientation": 0,
+    "Name": "拌馅盆台",
+    "InitialItemDefinitionId": 72,
+    "MenuVariant": 7
+  },
+  {
+    "Id": 40,
+    "StationDefinitionId": 1,
+    "X": 3,
+    "Y": 4,
+    "Orientation": 0,
+    "Name": "蒸食盘台",
+    "InitialItemDefinitionId": 71,
+    "MenuVariant": 7
+  },
+  {
+    "Id": 41,
+    "StationDefinitionId": 17,
+    "X": 5,
+    "Y": 13,
+    "Orientation": 0,
+    "Name": "蒸锅",
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 7
+  },
+  {
+    "Id": 42,
+    "StationDefinitionId": 18,
+    "X": 1,
+    "Y": 13,
+    "Orientation": 0,
+    "Name": "取水台热水档",
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 43,
+    "StationDefinitionId": 19,
+    "X": 2,
+    "Y": 9,
+    "Orientation": 0,
+    "Name": "泡茶桶",
+    "InitialItemDefinitionId": 87,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 44,
+    "StationDefinitionId": 20,
+    "X": 5,
+    "Y": 12,
+    "Orientation": 0,
+    "Name": "煮珍珠台",
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 45,
+    "StationDefinitionId": 21,
+    "X": 3,
+    "Y": 12,
+    "Orientation": 0,
+    "Name": "调饮台",
+    "InitialItemDefinitionId": 85,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 46,
+    "StationDefinitionId": 1,
+    "X": 2,
+    "Y": 12,
+    "Orientation": 0,
+    "Name": "冷饮杯台",
+    "InitialItemDefinitionId": 84,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 47,
+    "StationDefinitionId": 1,
+    "X": 3,
+    "Y": 13,
+    "Orientation": 0,
+    "Name": "热茶杯台",
+    "InitialItemDefinitionId": 59,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 48,
+    "StationDefinitionId": 1,
+    "X": 2,
+    "Y": 11,
+    "Orientation": 0,
+    "Name": "小料罐台",
+    "InitialItemDefinitionId": 86,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 49,
+    "StationDefinitionId": 11,
+    "X": 2,
+    "Y": 16,
+    "Orientation": 0,
+    "Name": "茶饮贴单台",
+    "InitialItemDefinitionId": 0,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 50,
+    "StationDefinitionId": 1,
+    "X": 4,
+    "Y": 6,
+    "Orientation": 0,
+    "Name": "红茶叶台",
+    "InitialItemDefinitionId": 77,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 51,
+    "StationDefinitionId": 1,
+    "X": 4,
+    "Y": 5,
+    "Orientation": 0,
+    "Name": "生珍珠台",
+    "InitialItemDefinitionId": 79,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 52,
+    "StationDefinitionId": 1,
+    "X": 2,
+    "Y": 7,
+    "Orientation": 0,
+    "Name": "牛奶台",
+    "InitialItemDefinitionId": 44,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 53,
+    "StationDefinitionId": 1,
+    "X": 3,
+    "Y": 9,
+    "Orientation": 0,
+    "Name": "糖浆台",
+    "InitialItemDefinitionId": 81,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 54,
+    "StationDefinitionId": 1,
+    "X": 5,
+    "Y": 9,
+    "Orientation": 0,
+    "Name": "冰块台",
+    "InitialItemDefinitionId": 83,
+    "MenuVariant": 8
   }
 ]

@@ -90,7 +90,7 @@ namespace ET
                 ((UIGridKitchen)selector.Hud)?.Available == true, "Solo selector remains managed");
             var selection = Runtime.Root().GetComponent<SoloSavePresentation>();
             var view = ((UIGridKitchen)selection.Hud).View;
-            StartPreviewAndConfirm(view.GetComponentsInChildren<Button>(false).Single(button => button.GetComponentInChildren<Text>().text == "内存试玩"));
+            yield return StartPreviewAndConfirm(view.GetComponentsInChildren<Button>(false).Single(button => button.GetComponentInChildren<Text>().text == "内存试玩"));
             yield return Wait(() => Presentation?.Ready == true, "Chosen Solo enters a real map");
             Assert.That(Runtime.Config.Role, Is.EqualTo(RuntimeInstanceRole.Solo));
             Assert.That(((Scene)Runtime.HostScene).GetComponent<NetComponent>(), Is.Null);
@@ -144,8 +144,8 @@ namespace ET
                     Entry.OpenProductEntry();
                     yield return WaitCoopUi(remote, () => ((UIGridKitchen)Entry.Hud)?.Available == true, "Host room controls reopen through owner");
                     long command = Client.NextCommandId;
-                    StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
-                    Assert.That(Client.NextCommandId, Is.EqualTo(command + 1));
+                    yield return StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
+                    Assert.That(Client.NextCommandId, Is.EqualTo(command + 3), "Publish, explicit Host Ready, then Start are separate requests");
                     yield return WaitCoopUi(remote, () => Presentation?.Ready == true && remote.Grid.Confirmed,
                         "Host opens one kitchen and both identities confirm a world");
                     string world = Grid.WorldId;
@@ -164,12 +164,13 @@ namespace ET
                     retired();
                     Assert.That(Client.NextCommandId, Is.EqualTo(command));
                     Entry.CloseProductEntry();
+                    remoteEntry.CloseProductEntry();
                     remote.KeepMapHeadlessWhileHostOwnsDisplay();
                     yield return WaitCoopUi(remote, () => !Game.GameEntry.UI.HasUIForm("Assets/Res/UI/UIForm/Product/UIGridKitchen.prefab"),
                         "The next map retains a single managed Editor display owner");
                     Entry.OpenProductEntry();
                     yield return WaitCoopUi(remote, () => ((UIGridKitchen)Entry.Hud)?.Available == true, "Host controls reopen before the next world");
-                    StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
+                    yield return StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
                     yield return WaitCoopUi(remote, () => Presentation?.Ready == true && remote.Grid.Confirmed,
                         "Same room opens an independent new world");
                     Assert.That(Grid.WorldId, Is.Not.EqualTo(world));

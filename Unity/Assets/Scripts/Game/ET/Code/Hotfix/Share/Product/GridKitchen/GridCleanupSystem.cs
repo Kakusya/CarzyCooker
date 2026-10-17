@@ -87,6 +87,15 @@ namespace ET
             if (contents.Length == 0)
                 return intent.Action == GridAction.DiscardSolid && definition.Discardable ? null : "ProtectedContainer";
             var forms = contents.Select(item => Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Form).Distinct().ToArray();
+            if (GridTeaRules.SelectiveCleanup(source.DefinitionId))
+            {
+                contents = contents.Where(item => Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Form == requiredForm).ToArray();
+                if (contents.Length == 0)
+                {
+                    return intent.Action == GridAction.DrainLiquid ? "RequiresLiquid" : "RequiresSolid";
+                }
+                return contents.Any(item => !Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Discardable) ? "ProtectedItem" : null;
+            }
             if (forms.Length != 1) return "MixedContents";
             if (forms[0] != requiredForm) return intent.Action == GridAction.DrainLiquid ? "RequiresLiquid" : "RequiresSolid";
             return contents.Any(item => !Tables.Instance.DTGridItemConfig.Get(item.DefinitionId).Discardable) ? "ProtectedItem" : null;
@@ -122,9 +131,13 @@ namespace ET
                 source.AutoProcessId = 0; batch.RemainingPortions = 0;
                 self.AutoProcesses.Remove(batch.Id); batch.Dispose();
             }
-            foreach (var item in contents) { self.Items.Remove(item.Id); item.Dispose(); }
+            foreach (var item in contents)
+            {
+                source.Contents.Remove(item.Id);
+                self.Items.Remove(item.Id);
+                item.Dispose();
+            }
             self.ProductLevel()?.DrinkBindings.Remove(source.Id);
-            source.Contents.Clear();
             var definition = Tables.Instance.DTGridItemConfig.Get(source.DefinitionId);
             if (definition.Kind == GridItemKind.Material || contents.Length == 0 && batch == null && definition.Discardable)
             {

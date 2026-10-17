@@ -32,9 +32,13 @@ namespace ET.Client
         }
         public static void CloseGridHud(this GridPresentationComponent self)
         {
+            self.PreferencesDraft = null;
             self.ClearOperationHelp();
             self.ResetActionAdvice();
             self.OverviewPage = GridOverviewPage.None;
+            self.ResetServiceOverview();
+            self.ResetServiceRecap();
+            self.ResetNoticeView();
             self.ClearOrderNavigation();
             self.ResetItemLocator();
             self.ResetSupplyOverview();
@@ -51,8 +55,16 @@ namespace ET.Client
         public static void GridHudClosed(this GridPresentationComponent self,UIGridKitchen hud)
         {
             if((UIGridKitchen)self.Hud!=hud)return;
+            self.PreferencesDraft = null;
             self.ClearOperationHelp();
             self.ResetActionAdvice();
+            self.ResetServiceOverview();
+            self.ResetServiceRecap();
+            self.ResetNoticeView();
+            if (self.OverviewPage == GridOverviewPage.Service)
+            {
+                self.OverviewPage = GridOverviewPage.None;
+            }
             self.ClearRenovationPreview();
             self.ClearStationInspection();
             if (self.OverviewPage is GridOverviewPage.Stations or GridOverviewPage.Settlement)

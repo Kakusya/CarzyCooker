@@ -1,0 +1,34 @@
+syntax = "proto3";
+package ET;
+
+// 本机选档元数据；不进入远端wire白名单，不改变成功记录。
+// ResponseType SoloSaveLabelsReadResponse
+message SoloSaveLabelsReadRequest // IRequest
+{
+    int32 RpcId = 1;
+}
+message SoloSaveLabelsReadResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    bytes Values = 4;
+}
+
+// ResponseType SoloSaveLabelsWriteResponse
+message SoloSaveLabelsWriteRequest // IRequest
+{
+    int32 RpcId = 1;
+    string SlotId = 2;
+    int32 Revision = 3;
+    string ResultId = 4;
+    string Name = 5;
+    bool Favorite = 6;
+}
+message SoloSaveLabelsWriteResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    bytes Values = 4;
+}

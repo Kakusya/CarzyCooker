@@ -37,6 +37,10 @@ namespace ET
             self.LevelPhase = default; self.LevelPaused = false; self.LevelOperatingTicks = 0; self.LevelElapsedTicks = 0;
             self.LevelScore = 0; self.LevelStars = 0; self.LevelConfigId = 0; self.NextLevelConfigId = 0; self.LastCommandKind = default;
             self.ServedOrders = self.UnfulfilledOrders = 0;
+            self.CompanionPreference = CompanionWorkPreference.Automatic;
+            self.OrderIntents = Array.Empty<OrderIntentValue>();
+            self.TargetPings = Array.Empty<TargetPingValue>();
+            self.SupplyRequests = Array.Empty<SupplyRequestValue>();
             self.Actors.Clear(); self.Stations.Clear(); self.Items.Clear(); self.Processes.Clear(); self.AutoProcesses.Clear();
             self.BakeProcesses.Clear();
             self.Companions.Clear(); self.FrontWorks.Clear(); self.Customers.Clear(); self.Orders.Clear(); self.Tables.Clear();
@@ -86,13 +90,16 @@ namespace ET
                 snapshot.LevelGeneration == self.LevelGeneration && snapshot.LevelId != self.LevelId)) return;
             // 先完整复制再安装；不保留 wire DTO、Host EntityRef 或消息集合。
             // Validate integer wire values before installing any part of the projection.
-            if (snapshot.Actors.Any(value => (GridFacing)value.Facing is < GridFacing.Up or > GridFacing.Left) ||
+            if (snapshot.SupplyRequests.Any(value => !Enum.IsDefined(typeof(SupplyRequestState), value.State)) ||
+                snapshot.TargetPings.Any(value => !Enum.IsDefined(typeof(TargetPingKind), value.TargetKind)) ||
+                !Enum.IsDefined(typeof(CompanionWorkPreference), snapshot.CompanionPreference) ||
+                snapshot.Actors.Any(value => (GridFacing)value.Facing is < GridFacing.Up or > GridFacing.Left) ||
                 snapshot.Stations.Any(value => (GridOrientation)value.Orientation is < GridOrientation.Unrotated or > GridOrientation.CounterClockwise270 ||
                     Tables.Instance.DTStationConfig.GetOrDefault(value.DefinitionId) is not { } definition ||
                     (GridStationKind)value.Kind != definition.Kind || (GridStationCapability)value.Capabilities != definition.Capabilities) ||
                 snapshot.Items.Any(value => (GridMaterialForm)value.Form is not (GridMaterialForm.Solid or GridMaterialForm.Liquid or GridMaterialForm.Container)) ||
                 snapshot.AutoProcesses.Any(value => (GridStationCapability)value.RequiredCapability is not
-                    (GridStationCapability.Cook or GridStationCapability.Juice or GridStationCapability.Mixing or GridStationCapability.Extract or GridStationCapability.HeatMilk or GridStationCapability.FoamMilk)))
+                    (GridStationCapability.Cook or GridStationCapability.Juice or GridStationCapability.Mixing or GridStationCapability.Extract or GridStationCapability.HeatMilk or GridStationCapability.FoamMilk or GridStationCapability.BrewTea or GridStationCapability.MixTea)))
             {
                 return;
             }
@@ -117,6 +124,9 @@ namespace ET
             var frontWorks = snapshot.FrontWorks.ToDictionary(value => value.WorkId, value => new GridFrontWorkProjection(value));
             var customers = snapshot.Customers.ToDictionary(value => value.CustomerId, value => new GridCustomerProjection(value));
             var orders = snapshot.Orders.ToDictionary(value => value.OrderId, value => new GridOrderProjection(value));
+            var intents = Array.AsReadOnly(snapshot.OrderIntents.Select(value => new OrderIntentValue(value.MemberId, value.BindingGeneration, value.OrderId, value.CustomerId)).ToArray());
+            var pings = Array.AsReadOnly(snapshot.TargetPings.Select(value => new TargetPingValue(value.MemberId, value.BindingGeneration, (TargetPingKind)value.TargetKind, value.TargetId, value.Serial, value.ExpiresTick)).ToArray());
+            var requests = Array.AsReadOnly(snapshot.SupplyRequests.Select(value => new SupplyRequestValue(value.RequestId, value.Revision, value.MemberId, value.BindingGeneration, value.SourceId, (SupplyRequestState)value.State, value.ShipmentId)).ToArray());
             var tables = snapshot.Tables.ToDictionary(value => value.StationId, value => new GridTableProjection(value));
             var waiting = Array.AsReadOnly(snapshot.WaitingCustomers.ToArray());
             var buffCandidates=Array.AsReadOnly(snapshot.BuffCandidates.ToArray());
@@ -139,6 +149,10 @@ namespace ET
                 self.PermissionVersion = snapshot.PermissionVersion; self.PermissionReady = true;
             }
             self.LevelPhase = (LevelPhase)snapshot.LevelPhase; self.LevelPaused = snapshot.LevelPaused;
+            self.CompanionPreference = (CompanionWorkPreference)snapshot.CompanionPreference;
+            self.OrderIntents = intents;
+            self.TargetPings = pings;
+            self.SupplyRequests = requests;
             self.LevelOperatingTicks = snapshot.LevelOperatingTicks; self.LevelElapsedTicks = snapshot.LevelElapsedTicks;
             self.LevelScore = snapshot.LevelScore; self.LevelStars = snapshot.LevelStars;
             self.ServedOrders = snapshot.ServedOrders; self.UnfulfilledOrders = snapshot.UnfulfilledOrders;
@@ -250,7 +264,7 @@ namespace ET
                 bool emptyContainer = self.Items.TryGetValue(actor.HandItemId, out var vessel) && vessel.Form == GridMaterialForm.Container && vessel.Contents.Count == 0 && vessel.AutoProcessId == 0;
                 return self.CleanupIntent(target, emptyContainer ? GridAction.FillWater : GridAction.DrainLiquid);
             }
-            if (actor.HandItemId == 0 && (station.Capabilities & (GridStationCapability.Bake | GridStationCapability.Fry | GridStationCapability.Grind)) != 0 &&
+            if (actor.HandItemId == 0 && (station.Capabilities & (GridStationCapability.Bake | GridStationCapability.Fry | GridStationCapability.Grind | GridStationCapability.Steam | GridStationCapability.BoilPearls)) != 0 &&
                 self.Items.TryGetValue(station.ItemId, out GridItemProjection bakeSlot) && bakeSlot.BakeProcessId == 0)
             {
                 var recipes = Tables.Instance.DTGridBakeRecipeConfig.DataList;
@@ -276,6 +290,8 @@ namespace ET
                     }
                     GridAction action = (GridStationCapability)recipe.StationCapability switch
                     {
+                        GridStationCapability.Steam => GridAction.StartSteam,
+                        GridStationCapability.BoilPearls => GridAction.StartBoilPearls,
                         GridStationCapability.Grind => GridAction.StartGrind,
                         GridStationCapability.Fry => GridAction.StartFry,
                         _ => GridAction.StartBake
@@ -289,6 +305,12 @@ namespace ET
                 return new GridIntent(0, GridAction.StopWork, station.Cell, target, process.InputItemId, process.TargetItemId, process.Id);
             if (actor.HandItemId != 0)
             {
+                if (self.Items.TryGetValue(actor.HandItemId, out var teaTarget) &&
+                    teaTarget.DefinitionId is GridKitchenRules.HotDrinkCup or GridKitchenRules.ColdDrinkCup or GridKitchenRules.TeaMixingJug &&
+                    self.Items.TryGetValue(station.ItemId, out var teaSource) && teaSource.DefinitionId is GridKitchenRules.TeaBarrel or GridKitchenRules.TeaMixingJug)
+                {
+                    return new GridIntent(0, GridAction.PortionTeaBase, station.Cell, target, teaTarget.Id, teaSource.Id, teaSource.AutoProcessId);
+                }
                 if (self.Items.TryGetValue(actor.HandItemId, out var drinkCup) && drinkCup.DefinitionId == GridKitchenRules.HotDrinkCup &&
                     self.Items.TryGetValue(station.ItemId, out var baseVessel) && baseVessel.DefinitionId is GridKitchenRules.CoffeeReceiver or GridKitchenRules.MilkPitcher)
                 {
@@ -325,6 +347,12 @@ namespace ET
                 mixture.DefinitionId == GridKitchenRules.MixingBowl && mixture.AutoProcessId == 0)
             {
                 return new GridIntent(0, GridAction.StartMix, station.Cell, target, mixture.Id, mixture.Id);
+            }
+            if (station.Kind is GridStationKind.TeaBrewer or GridStationKind.DrinkMixingDesk &&
+                self.Items.TryGetValue(station.ItemId, out var teaInput) && teaInput.AutoProcessId == 0 &&
+                teaInput.DefinitionId == (station.Kind == GridStationKind.TeaBrewer ? GridKitchenRules.TeaBarrel : GridKitchenRules.TeaMixingJug))
+            {
+                return self.BeverageModeIntent(target, station.Kind == GridStationKind.TeaBrewer ? GridAction.StartBrewTea : GridAction.StartMixTea);
             }
             if (station.Kind is GridStationKind.CoffeeMachine or GridStationKind.SteamMachine &&
                 self.Items.TryGetValue(station.ItemId, out var baseInput) && baseInput.AutoProcessId == 0 &&
@@ -369,6 +397,8 @@ namespace ET
             string name = (GridStationCapability)process.RequiredCapability switch
             {
                 GridStationCapability.Mixing => "搅拌（锁盆）",
+                GridStationCapability.BrewTea => "泡茶（锁桶）",
+                GridStationCapability.MixTea => "调饮（锁壶）",
                 GridStationCapability.Extract => "萃取（锁壶）",
                 GridStationCapability.HeatMilk => "热奶（锁缸）",
                 GridStationCapability.FoamMilk => "打泡（锁缸）",
@@ -382,6 +412,8 @@ namespace ET
         {
             string name = (GridStationCapability)Tables.Instance.DTGridBakeRecipeConfig.Get(process.RecipeId).StationCapability switch
             {
+                GridStationCapability.Steam => "蒸制",
+                GridStationCapability.BoilPearls => "煮珍珠",
                 GridStationCapability.Grind => "研磨",
                 GridStationCapability.Fry => "煎制",
                 _ => "烘烤"

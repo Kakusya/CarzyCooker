@@ -38,14 +38,14 @@ namespace ET
         {
             if (cooperative)
             {
-                yield return StartProgressHostRoom(); StartPreviewAndConfirm(EntryButton("开启经营成长餐厅"));
+                yield return StartProgressHostRoom(); yield return StartPreviewAndConfirm(EntryButton("开启经营成长餐厅"));
             }
             else
             {
                 yield return StartModeLauncher(); CreateSaveUiRepository(Runtime, out _, out _);
                 Pointer(EntryButton("单机餐厅"));
                 yield return Wait(() => Selection != null && ((UIGridKitchen)Selection.Hud)?.Available == true, "Ordinary Solo selector opens");
-                StartPreviewAndConfirm(SelectionButton("新开经营成长餐厅"));
+                yield return StartPreviewAndConfirm(SelectionButton("新开经营成长餐厅"));
             }
             yield return Wait(() => Presentation?.Ready == true && Grid.Confirmed, "Ordinary growth entry opens");
             Assert.That(Grid.LevelConfigId, Is.EqualTo(cooperative ? 801 : 701));

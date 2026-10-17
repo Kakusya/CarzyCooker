@@ -45,7 +45,7 @@ namespace ET
         public static void ValidateAll()
         {
             var chapters = Tables.Instance.DTRestaurantChapterConfig.DataList;
-            if (chapters.Count != 2 || chapters.Select(row => row.Id).Distinct().Count() != chapters.Count ||
+            if (chapters.Count == 0 || chapters.Select(row => row.Id).Distinct().Count() != chapters.Count ||
                 chapters.SelectMany(row => new[] { row.SoloChapterId, row.CooperativeChapterId }).Distinct().Count() != chapters.Count * 2)
             {
                 throw new InvalidOperationException("InvalidContentChapters");

@@ -14,14 +14,18 @@
 
 2026-10-16 原18项入口业务与UI变更已完成并归档，54/54任务；36条增补要求／56场景合并至10份主规格，全量严格验证72/72通过。实现、UTF及普通Launcher逐项记录见[入口归档索引](changes/archive/2026-10-16-product-entry-navigation/entry-roadmap.md)。本地提交包含已完成的枚举、菜单加成、扩展升级和菜谱实物提示前置；后续21案仍为规划，设备／Player／物理LAN未由本批证明。
 
+2026-10-17 [合作经营与蒸茶内容13案](../Docs/Product/cooperation-and-content-delivery-roadmap.md)已归档，33/33任务完成；14份delta的31条要求已核对主规格。原功能运行记录随案保留，本轮只检查归档格式和引用，不重复执行未变功能。
+
 | 规格 | 范围 |
 |---|---|
 | [startup](specs/startup/spec.md) | 启动/模式 |
 | [runtime-foundation](specs/runtime-foundation/spec.md) | 公共组件/流程/示例 |
 | [runtime-instances](specs/runtime-instances/spec.md) | 显式实例配置、工程范围请求、Play 交接与本轮入口收尾 |
 | [product-entry](specs/product-entry/spec.md) | 普通模式菜单、无餐厅房间、开局/返回/重开及取消失败 |
+| [product-preferences](specs/product-preferences/spec.md) | 本机字号、地图拖动和提醒偏好，独立文件、明确保存/失败保旧及原交互保护 |
 | [cooperative-save-baselines](specs/cooperative-save-baselines/spec.md) | 当前绑定Profile证明、离线授权基线读取及真实库存恢复 |
 | [product-session](specs/product-session/spec.md) | Unity 本机产品树、共同裁决、逻辑成员/连接分离、本轮手动恢复、本地/远端消息与收尾 |
+| [cooperative-target-markers](specs/cooperative-target-markers/spec.md) | 每成员一个真实工位/物品/餐桌共享标记，10业务秒、暂停/退出/恢复和原操作边界 |
 | [grid-kitchen](specs/grid-kitchen/spec.md) | 竖屏固定地图、四方向行走、台面交接、断线落物与同格拾取 |
 | [kitchen-item-processing](specs/kitchen-item-processing/spec.md) | 真实材料／碗内容、切配与手持打蛋、单工作者 Tick、暂停接续与合作交接 |
 | [kitchen-batch-cooking](specs/kitchen-batch-cooking/spec.md) | 蛋液倾倒、显式煮汤、可搬批次、有限盛装与最后一份复位 |

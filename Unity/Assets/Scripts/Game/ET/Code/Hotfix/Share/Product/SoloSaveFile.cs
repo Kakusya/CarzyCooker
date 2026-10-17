@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Game;
 
 namespace ET
 {
@@ -14,9 +15,9 @@ namespace ET
         public const int MaxHeaderBytes = 128 * 1024;
         public const int MaxPayloadBytes = 4 * 1024 * 1024;
 
-        public static byte[] Encode(SoloSaveHeader header, SoloSavePayload payload)
+        public static byte[] Encode(SoloSaveHeader header, SoloSavePayload payload, ProductStoragePlatform? platform = null)
         {
-            SoloSaveValidation.Payload(header, payload, header.ProfileId);
+            SoloSaveValidation.Payload(header, payload, header.ProfileId, platform);
             byte[] head = MemoryPackHelper.Serialize(header), body = MemoryPackHelper.Serialize(payload);
             if (head.Length > MaxHeaderBytes || body.Length > MaxPayloadBytes) throw new InvalidOperationException("SaveTooLarge");
             using var stream = new MemoryStream(); using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
@@ -50,9 +51,9 @@ namespace ET
             return header;
         }
 
-        public static SoloSavePayload ReadPayload(Stream stream, string profile, out SoloSaveHeader header)
+        public static SoloSavePayload ReadPayload(Stream stream, string profile, out SoloSaveHeader header, ProductStoragePlatform? platform = null)
         {
-            header = ReadHeader(stream); SoloSaveValidation.Header(header, profile);
+            header = ReadHeader(stream); SoloSaveValidation.Header(header, profile, platform);
             int remaining = checked((int)(stream.Length - stream.Position));
             var bytes = new byte[remaining]; int offset = 0;
             while (offset < remaining)
@@ -64,7 +65,7 @@ namespace ET
             var payload = (SoloSavePayload)MemoryPackHelper.Deserialize(typeof(SoloSavePayload), bytes, 0, bytes.Length);
             RestaurantUnlockValues.AdaptLegacy(header, payload);
             KitchenGeometryConfig.AdaptLegacy(header, payload);
-            SoloSaveValidation.Payload(header, payload, profile); return payload;
+            SoloSaveValidation.Payload(header, payload, profile, platform); return payload;
         }
     }
 
@@ -74,17 +75,31 @@ namespace ET
     {
         [EntitySystem]
         private static void Awake(this SoloSaveRepository self, string applicationDirectory, string profile)
+            => self.InitializeRepository(applicationDirectory, profile, RuntimeInstanceContext.StoragePlatform);
+
+        [EntitySystem]
+        private static void Awake(this SoloSaveRepository self, string applicationDirectory, string profile, ProductStoragePlatform platform)
+            => self.InitializeRepository(applicationDirectory, profile, platform);
+
+        private static void InitializeRepository(this SoloSaveRepository self, string applicationDirectory, string profile, ProductStoragePlatform platform)
         {
             if (!SoloSaveValidation.IsIdentifier(profile)) throw new InvalidOperationException("InvalidProfile");
+            string platformName = RuntimeInstanceContext.StoragePlatformName(platform);
             self.ProfileId = profile;
-            self.DirectoryPath = Path.GetFullPath(Path.Combine(applicationDirectory, "Solo", "PC", profile));
+            self.Platform = platform;
+            self.Preferences = new ProductPreferencesValue();
+            self.PreferencesFailure = null;
+            self.PreferencesVersion = 0;
+            self.DirectoryPath = Path.GetFullPath(Path.Combine(applicationDirectory, "Solo", platformName, profile));
             Directory.CreateDirectory(self.DirectoryPath);
             self.AddComponent<MailBoxComponent, MailBoxType>(MailBoxType.OrderedMessage);
+            self.LoadProductPreferences();
         }
 
-        public static string LocalProfile(string applicationDirectory)
+        public static string LocalProfile(string applicationDirectory, ProductStoragePlatform? platform = null)
         {
-            string directory = Path.GetFullPath(Path.Combine(applicationDirectory, "Solo", "PC"));
+            string directory = Path.GetFullPath(Path.Combine(applicationDirectory, "Solo",
+                RuntimeInstanceContext.StoragePlatformName(platform ?? RuntimeInstanceContext.StoragePlatform)));
             Directory.CreateDirectory(directory); string path = Path.Combine(directory, "profile.id");
             if (!File.Exists(path))
             {
@@ -125,14 +140,14 @@ namespace ET
         public static SoloSavePayload Select(this SoloSaveRepository self, string slot, out SoloSaveHeader header)
         {
             using var stream = File.OpenRead(self.SlotPath(slot));
-            var payload = SoloSaveFile.ReadPayload(stream, self.ProfileId, out header);
+            var payload = SoloSaveFile.ReadPayload(stream, self.ProfileId, out header, self.Platform);
             if (header.SlotId != slot) throw new InvalidOperationException("SlotIdentityMismatch");
             return payload;
         }
 
         public static SoloSaveHeader Commit(this SoloSaveRepository self, SoloSaveHeader header, SoloSavePayload payload)
         {
-            SoloSaveValidation.Payload(header, payload, self.ProfileId);
+            SoloSaveValidation.Payload(header, payload, self.ProfileId, self.Platform);
             // Rebuild from committed headers, so response loss and reopening share the same fact.
             var existing = self.Browse().FirstOrDefault(h => h.ResultId == header.ResultId && h.ProfileId == header.ProfileId);
             if (existing != null) { self.Select(existing.SlotId, out var committed); return committed; }
@@ -141,7 +156,7 @@ namespace ET
 
         public static SoloSaveHeader CommitWithReceipt(this SoloSaveRepository self, SoloSaveHeader header, SoloSavePayload payload)
         {
-            SoloSaveValidation.Payload(header, payload, self.ProfileId);
+            SoloSaveValidation.Payload(header, payload, self.ProfileId, self.Platform);
             RequireReceiptForRecord(header);
             return self.WriteNewRecord(header, payload);
         }
@@ -159,7 +174,7 @@ namespace ET
         {
             string target = self.SlotPath(header.SlotId);
             if (File.Exists(target)) throw new IOException("SaveSlotConflict");
-            byte[] bytes = SoloSaveFile.Encode(header, payload);
+            byte[] bytes = SoloSaveFile.Encode(header, payload, self.Platform);
             string temp = Path.Combine(self.DirectoryPath, ".save-" + Guid.NewGuid().ToString("N") + ".tmp");
             try
             {
@@ -200,7 +215,7 @@ namespace ET
                 throw new InvalidOperationException("TargetMissing");
             }
             using var stream = File.OpenRead(path);
-            var payload = SoloSaveFile.ReadPayload(stream, owner, out header);
+            var payload = SoloSaveFile.ReadPayload(stream, owner, out header, self.Platform);
             if (header.SlotId != slot)
             {
                 throw new InvalidOperationException("SlotIdentityMismatch");
@@ -210,7 +225,7 @@ namespace ET
 
         public static void ReplaceWithReceipt(this SoloSaveRepository self, SoloSaveHeader header, SoloSavePayload payload, int expectedRevision)
         {
-            SoloSaveValidation.Payload(header, payload, header.ProfileId);
+            SoloSaveValidation.Payload(header, payload, header.ProfileId, self.Platform);
             RequireReceiptForRecord(header);
             self.SelectOwnerRecord(header.ProfileId, header.SlotId, out var current);
             if (current.Revision != expectedRevision || header.Revision != checked(expectedRevision + 1))
@@ -230,7 +245,7 @@ namespace ET
             string temporary = Path.Combine(Path.GetDirectoryName(target), ".replace-" + Guid.NewGuid().ToString("N") + ".tmp");
             try
             {
-                WriteTemporary(temporary, SoloSaveFile.Encode(header, payload));
+                WriteTemporary(temporary, SoloSaveFile.Encode(header, payload, self.Platform));
                 // 同目录替换为唯一发布点；null备份参数，不生成可恢复旧载荷。
                 File.Replace(temporary, target, null);
             }

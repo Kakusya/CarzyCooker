@@ -12,7 +12,8 @@ namespace ET.Client
             GridStationCapability.CleanPool => "干净餐具池", GridStationCapability.FillWater => "接水", GridStationCapability.DrainLiquid => "排液",
             GridStationCapability.Trash => "投垃圾", GridStationCapability.Juice => "榨汁", GridStationCapability.LabelDrink => "饮品贴单",
             GridStationCapability.Fry => "煎制", GridStationCapability.Mixing => "搅拌", GridStationCapability.Grind => "研磨",
-            GridStationCapability.Extract => "萃取", GridStationCapability.HeatMilk => "热奶", GridStationCapability.FoamMilk => "打泡",
+            GridStationCapability.Extract => "萃取", GridStationCapability.HeatMilk => "热奶", GridStationCapability.FoamMilk => "打泡", GridStationCapability.Steam => "蒸制",
+            GridStationCapability.BrewTea => "泡茶", GridStationCapability.BoilPearls => "煮珍珠", GridStationCapability.MixTea => "调饮",
             _ => capability.ToString()
         };
 
@@ -62,7 +63,9 @@ namespace ET.Client
                         var batch = Tables.Instance.DTGridAutoRecipeConfig.Get(stage.RecipeId);
                         required = batch.StationCapability; container = batch.ContainerDefinitionId;
                         break;
-                    case DishStageKind.Grind:
+                    case DishStageKind.Boil:
+                case DishStageKind.Steam:
+                case DishStageKind.Grind:
                     case DishStageKind.Bake:
                     case DishStageKind.Fry:
                     case DishStageKind.BakeInCarrier:

@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace Game
 {
+    public enum ProductStoragePlatform { Unsupported = 0, PC = 1, Android = 2 }
+
     public enum RuntimeInstanceState
     {
         NotRequested,
@@ -16,6 +18,20 @@ namespace Game
     {
         // Unity 平台事实由壳层提供，ET Model 不引用 UnityEngine。
         public static int ProductPlatformId => UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android ? 2 : 1;
+        public static ProductStoragePlatform StoragePlatform => StoragePlatformFor(Application.platform);
+        public static ProductStoragePlatform StoragePlatformFor(RuntimePlatform platform) => platform switch
+        {
+            RuntimePlatform.Android => ProductStoragePlatform.Android,
+            RuntimePlatform.WindowsEditor or RuntimePlatform.WindowsPlayer or RuntimePlatform.OSXEditor or RuntimePlatform.OSXPlayer or
+                RuntimePlatform.LinuxEditor or RuntimePlatform.LinuxPlayer => ProductStoragePlatform.PC,
+            _ => ProductStoragePlatform.Unsupported
+        };
+        public static string StoragePlatformName(ProductStoragePlatform platform) => platform switch
+        {
+            ProductStoragePlatform.PC => "PC",
+            ProductStoragePlatform.Android => "Android",
+            _ => throw new System.InvalidOperationException("当前平台只支持内存试玩")
+        };
         public static RuntimeInstanceConfig Config { get; private set; }
         public static RuntimeInstanceState State { get; private set; }
         public static string Failure { get; private set; }

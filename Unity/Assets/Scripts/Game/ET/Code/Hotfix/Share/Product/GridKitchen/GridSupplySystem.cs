@@ -55,6 +55,8 @@ namespace ET
             error = peer.CheckProductCommand(context, ProductCommandKind.Supply, intent.Equals(peer.LastSupplyCommand), out bool replay);
             if (error != null || replay) return error;
             if (intent.Action < SupplyAction.Purchase || intent.Action > SupplyAction.TakePortion) return "InvalidCommand";
+            error = level.CheckCooperativePurchase(match, peer, intent, out _);
+            if (error != null) return error;
             if (level.Paused) return "Paused";
             if (level.Phase == LevelPhase.Completed) return "LevelCompleted";
             if (intent.Action == SupplyAction.Purchase && level.Phase == LevelPhase.Draining) return "WrongPhase";
@@ -73,6 +75,8 @@ namespace ET
                     : command.Context.Validate(((Match)kitchen.Match).MatchId, kitchen.WorldId, kitchen.WorldGeneration, level.Id, level.Generation, peer.Generation);
                 if (error == null) error = level.Paused ? "Paused" : level.Phase == LevelPhase.Completed ? "LevelCompleted" : null;
                 SupplyIntent intent = command.Intent;
+                SupplyRequestValue coordinated = default;
+                if (error == null) error = level.CheckCooperativePurchase((Match)kitchen.Match, peer, intent, out coordinated);
                 if (error == null && intent.Action == SupplyAction.Purchase)
                 {
                     DRSupplyConfig source = Tables.Instance.DTSupplyConfig.GetOrDefault(intent.SourceId);
@@ -97,6 +101,7 @@ namespace ET
                             shipment.ReceivingStationId = receiving.Id; shipment.RequiredTicks = source.TransitTicks;
                             shipment.ProgressTicks = 0; shipment.PackageItemId = 0;
                             shipment.StartedTick = kitchen.Tick + 1; shipment.Stage = ShipmentStage.InTransit;
+                            level.CompleteCooperativePurchase(coordinated, shipment.Id);
                             kitchen.PublishShipmentStage(shipment);
                         }
                     }
@@ -203,7 +208,9 @@ namespace ET
             GridItem source = kitchen.Item(station.ItemId), content = kitchen.Item(intent.ExpectedItemId);
             if (source == null || source.Id != intent.ExpectedTargetItemId || source.Location != GridItemLocation.Counter || source.HolderId != station.Id ||
                 content == null || !source.Contents.Contains(content.Id) || content.Location != GridItemLocation.Container || content.HolderId != source.Id) return "ContentsChanged";
-            DRSupplyConfig definition = Tables.Instance.DTSupplyConfig.DataList.SingleOrDefault(row => row.PackageDefinitionId == source.DefinitionId);
+            KitchenSupply supply = kitchen.GetComponent<KitchenSupply>();
+            DRSupplyConfig definition = Tables.Instance.DTSupplyConfig.DataList.SingleOrDefault(row =>
+                row.PackageDefinitionId == source.DefinitionId && supply.RemainingPackages.ContainsKey(row.Id));
             if (definition == null || content.DefinitionId != definition.MaterialDefinitionId) return "RequiresSupplyPackage";
             if (kitchen.ItemWorking(source.Id) || kitchen.ItemWorking(content.Id)) return "WorkBusy";
             kitchen.PauseWork(actor);

@@ -174,6 +174,38 @@ def cabinet(kind):
         box("Drip tray", (0, -.20, .77), (.58, .42, .035), "metal", .02)
         for x in [-.17, 0, .17]:
             sphere("Coffee controls", (x, -.105, 1.11), (.035, .02, .035), "cream")
+    elif kind == 17:
+        box("Hot water boiler", (0, .12, .98), (.49, .45, .51), "metal", .07)
+        cylinder("Water boiler lid", (0, .12, 1.25), .27, .045, "tealdark")
+        box("Hot water tap", (0, -.18, 1.02), (.10, .21, .09), "metal", .025)
+        sphere("Hot mode selector", (.14, -.13, 1.14), (.06, .025, .06), "red")
+        box("Water tray", (0, -.18, .78), (.54, .38, .045), "tealdark", .02)
+    elif kind == 18:
+        cylinder("Tea warmer plate", (0, 0, .76), .36, .07, "tealdark")
+        box("Tea brewer riser", (0, .27, .97), (.57, .15, .42), "teal", .04)
+        box("Tea heating control", (.22, -.36, .77), (.16, .07, .08), "orange", .02)
+        sphere("Tea leaf emblem", (0, .177, 1.06), (.11, .018, .06), "green").rotation_euler.y = -.4
+    elif kind == 19:
+        cylinder("Pearl boil hob", (0, 0, .77), .36, .08, "dark")
+        cylinder("Pearl boil well", (0, 0, .87), .29, .15, "metal")
+        cylinder("Boiling water well", (0, 0, .955), .25, .02, "water")
+        for x in [-.36, .36]:
+            box("Boil pot handle", (x, 0, .90), (.18, .08, .07), "tealdark", .025)
+        sphere("Pearl boil control", (.22, -.39, .76), (.055, .025, .04), "orange")
+    elif kind == 20:
+        box("Mixing work mat", (0, 0, .75), (.78, .66, .035), "tealdark", .025)
+        cylinder("Drink measuring scale", (0, .03, .79), .29, .06, "metal")
+        box("Scale readout", (0, -.31, .80), (.26, .12, .06), "blue", .018)
+        for x in [-.30, .30]:
+            cylinder("Measure marker", (x, .29, .87), .05, .21, "cream")
+    elif kind == 16:
+        cylinder("Steamer base", (0, 0, .79), .36, .12, "metal")
+        cylinder("Bamboo steam basket", (0, 0, .92), .33, .20, "woodlight")
+        for height in [.84, .91, .99]:
+            ring("Basket band", (0, 0, height), .33, .018, "wood")
+        sphere("Steamer domed lid", (0, 0, 1.065), (.34, .34, .09), "cream")
+        ring("Lid handle", (0, 0, 1.16), .07, .021, "wood", (math.pi / 2, 0, 0))
+        sphere("Steam switch", (.19, -.39, .79), (.055, .028, .04), "orange")
     elif kind == 15:
         box("Steam boiler", (-.14, .17, 1.02), (.39, .42, .53), "tealdark", .05)
         cylinder("Steam dial", (-.14, -.054, 1.15), .11, .025, "cream").rotation_euler.x = math.pi / 2
@@ -363,6 +395,95 @@ def food(kind):
         if kind in [58, 61]:
             for x, y in [(-.13, -.05), (.12, -.06), (0, .12), (0, 0)]:
                 sphere("Milk foam cap", (x, y, .09), (.14, .13, .045), "ivory")
+    elif kind == 76:
+        cylinder("Hot water surface", (0, 0, .04), .29, .055, "water")
+        for x in [-.12, .12]:
+            sphere("Hot water steam", (x, 0, .16), (.023, .018, .08), "ivory")
+    elif kind == 77:
+        for x, y, angle in [(-.16, -.06, -.6), (.12, -.09, .5), (-.04, .13, -.3), (.17, .12, .7)]:
+            sphere("Black tea leaf", (x, y, .06), (.08, .16, .035), "wood").rotation_euler.z = angle
+            box("Tea leaf vein", (x, y, .09), (.012, .16, .008), "green", .003).rotation_euler.z = angle
+    elif kind == 78:
+        cylinder("Black tea surface", (0, 0, .04), .29, .055, "wood")
+        ring("Amber tea edge", (0, 0, .07), .265, .014, "orange")
+    elif kind in [79, 80]:
+        for x, y in [(-.15, -.10), (.10, -.12), (-.11, .12), (.15, .11), (0, 0)]:
+            sphere("Dry pearl" if kind == 79 else "Cooked pearl", (x, y, .08), (.075, .075, .065), "cream" if kind == 79 else "coffee")
+            if kind == 80:
+                sphere("Pearl highlight", (x - .02, y - .025, .13), (.018, .018, .008), "woodlight")
+    elif kind == 81:
+        cylinder("Syrup bottle", (0, 0, .21), .18, .36, "woodlight")
+        cylinder("Syrup neck", (0, 0, .43), .08, .12, "yellow")
+        cylinder("Syrup cap", (0, 0, .50), .10, .04, "tealdark")
+        box("Syrup label", (0, -.181, .23), (.23, .018, .15), "ivory", .015)
+    elif kind in [82, 88, 89]:
+        cylinder("Milk tea surface", (0, 0, .04), .29, .055, "latte")
+        if kind in [88, 89]:
+            for x, y in [(-.14, .07), (.09, .12), (.10, -.10)]:
+                box("Cold drink ice", (x, y, .10), (.13, .12, .10), "water", .025).rotation_euler.z = .3
+        if kind == 89:
+            for x, y in [(-.20, -.11), (-.09, -.17), (.04, -.19), (.18, -.15)]:
+                sphere("Finished drink pearl", (x, y, .08), (.049, .049, .04), "coffee")
+    elif kind == 83:
+        for x, y in [(-.15, -.07), (.12, -.10), (0, .15)]:
+            box("Ice cube", (x, y, .11), (.21, .20, .19), "water", .035).rotation_euler.z = .2
+            box("Ice glint", (x - .03, y - .03, .21), (.11, .10, .012), "ivory", .015)
+    elif kind == 84:
+        cylinder("Clear cup base", (0, 0, .04), .24, .025, "water")
+        ring("Cold cup rim", (0, 0, .40), .28, .018, "blue")
+        for x in [-.23, .23]:
+            box("Clear cup edge", (x, 0, .22), (.018, .018, .34), "water", .008).rotation_euler.y = -.10 if x < 0 else .10
+        ring("Clear cup bottom rim", (0, 0, .055), .24, .012, "blue")
+    elif kind == 85:
+        cylinder("Tea mixing jug", (0, 0, .18), .26, .30, "ivory")
+        cylinder("Mixing jug interior", (0, 0, .34), .22, .012, "cream")
+        ring("Mixing jug rim", (0, 0, .35), .245, .018, "teal")
+        ring("Mixing jug handle", (.29, 0, .21), .11, .025, "teal", (math.pi / 2, 0, 0))
+        for z in [.12, .19, .26]:
+            box("Jug measuring line", (0, -.263, z), (.12, .012, .012), "blue", .003)
+    elif kind == 86:
+        cylinder("Pearl jar base", (0, 0, .05), .28, .05, "teal")
+        cylinder("Pearl jar", (0, 0, .14), .27, .15, "ivory")
+        cylinder("Pearl jar interior", (0, 0, .225), .23, .012, "cream")
+        ring("Pearl jar mouth", (0, 0, .24), .26, .022, "teal")
+        box("Small jar scoop", (.15, .07, .25), (.045, .36, .03), "wood", .01).rotation_euler.z = -.5
+    elif kind == 87:
+        cylinder("Tea brewing barrel", (0, 0, .22), .31, .39, "teal")
+        cylinder("Tea barrel interior", (0, 0, .425), .27, .015, "cream")
+        ring("Tea barrel lip", (0, 0, .44), .30, .025, "tealdark")
+        box("Tea barrel spout", (0, -.34, .16), (.12, .15, .09), "metal", .025)
+        sphere("Tea barrel tap", (0, -.38, .25), (.055, .025, .045), "orange")
+    elif kind == 64:
+        sphere("Whole onion", (0, 0, .20), (.27, .26, .24), "cream")
+        cylinder("Onion stalk", (0, 0, .45), .045, .12, "green")
+        for angle in [0, math.pi / 3, -math.pi / 3]:
+            ring("Onion skin line", (0, 0, .20), .255, .009, "woodlight", (math.pi / 2, 0, angle))
+    elif kind == 65:
+        for x, y in [(-.16, -.10), (.10, -.12), (-.10, .13), (.16, .10)]:
+            box("Chopped onion cube", (x, y, .07), (.17, .15, .12), "ivory", .025)
+    elif kind in [66, 68]:
+        sphere("Minced beef" if kind == 66 else "Mixed filling", (0, 0, .08), (.30, .25, .075), "pink" if kind == 66 else "woodlight")
+        for i, (x, y) in enumerate([(-.18, -.05), (.08, -.12), (.17, .06), (-.07, .12)]):
+            sphere("Filling grain", (x, y, .15), (.065, .05, .025), "ivory" if kind == 68 and i % 2 == 0 else "red")
+    elif kind == 67:
+        for height in [.035, .065, .095]:
+            cylinder("Dumpling wrapper", (0, 0, height), .29, .025, "cream")
+    elif kind in [69, 70]:
+        sphere("Raw dumpling" if kind == 69 else "Cooked dumpling", (0, 0, .13), (.34, .18, .13), "cream" if kind == 69 else "ivory")
+        for x in [-.24, -.16, -.08, 0, .08, .16, .24]:
+            box("Folded dumpling pleat", (x, .02, .24 - abs(x) * .25), (.035, .11, .075), "woodlight" if kind == 69 else "cream", .012)
+        if kind == 70:
+            for x in [-.12, .12]:
+                sphere("Steam curl", (x, .03, .36), (.028, .021, .07), "ivory")
+    elif kind == 71:
+        cylinder("Steam serving plate", (0, 0, .045), .39, .06, "teal")
+        cylinder("Plate center", (0, 0, .08), .33, .015, "ivory")
+        ring("Steam plate rim", (0, 0, .09), .37, .018, "teal")
+    elif kind == 72:
+        sphere("Filling bowl body", (0, 0, .13), (.34, .31, .16), "teal")
+        cylinder("Bowl interior", (0, 0, .24), .29, .02, "cream")
+        ring("Filling bowl rim", (0, 0, .25), .32, .024, "tealdark")
+        box("Bowl mixing spoon", (.15, .10, .29), (.04, .45, .04), "wood", .012).rotation_euler.z = -.5
     elif kind == 43:
         sphere("Premix powder portion", (0, 0, .08), (.31, .25, .08), "cream")
         for x, y in [(-.15, .06), (.12, -.07), (.10, .11)]:
@@ -383,7 +504,7 @@ def food(kind):
     else:
         box("Supply bag", (0, 0, .22), (.54, .38, .45), "woodlight", .06)
         box("Folded bag top", (0, 0, .45), (.57, .12, .08), "wood", .02)
-        color = {12: "red", 13: "ivory", 14: "yellow", 20: "orange", 21: "teal", 29: "green", 30: "green", 31: "yellow", 40: "cream", 41: "pink", 42: "woodlight", 50: "cream", 51: "blue", 62: "coffee", 63: "tealdark"}[kind]
+        color = {12: "red", 13: "ivory", 14: "yellow", 20: "orange", 21: "teal", 29: "green", 30: "green", 31: "yellow", 40: "cream", 41: "pink", 42: "woodlight", 50: "cream", 51: "blue", 62: "coffee", 63: "tealdark", 73: "cream", 74: "pink", 75: "ivory", 90: "wood", 91: "cream", 92: "yellow", 93: "water", 94: "blue"}[kind]
         box("Contents label", (0, -.202, .23), (.30, .012, .25), "ivory", .02)
         sphere("Contents symbol", (0, -.215, .25), (.083, .015, .083), color)
 
@@ -468,11 +589,11 @@ records = []
 for i, name in enumerate(["kitchen_floor", "dining_floor", "low_wall", "plant", "window", "chair"]):
     records.append((name, "environment", i, 0, 0))
 station_start = len(records)
-for kind in range(16):
+for kind in range(21):
     for facing in range(4):
         records.append((f"station_{kind}_{facing}", "station", kind, facing, 0))
 item_start = len(records)
-for kind in range(1, 64):
+for kind in range(1, 95):
     records.append((f"item_{kind}", "item", kind, 2, 0))
 character_start = len(records)
 for skin in range(4):

@@ -29,6 +29,8 @@ namespace ET
             }
             GridStationCapability capability = intent.Action switch
             {
+                GridAction.StartSteam => GridStationCapability.Steam,
+                GridAction.StartBoilPearls => GridStationCapability.BoilPearls,
                 GridAction.StartGrind => GridStationCapability.Grind,
                 GridAction.StartFry => GridStationCapability.Fry,
                 _ => GridStationCapability.Bake
@@ -37,6 +39,8 @@ namespace ET
             {
                 return capability switch
                 {
+                    GridStationCapability.Steam => "RequiresSteamer",
+                    GridStationCapability.BoilPearls => "RequiresPearlBoiler",
                     GridStationCapability.Grind => "RequiresGrinder",
                     GridStationCapability.Fry => "RequiresFryingStation",
                     _ => "RequiresOven"

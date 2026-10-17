@@ -16,5 +16,14 @@
     "CooperativeChapterId": 22,
     "SoloFirstLevelId": 1501,
     "CooperativeFirstLevelId": 2501
+  },
+  {
+    "Id": 3,
+    "Name": "蒸茶小馆",
+    "MenuVariant": 9,
+    "SoloChapterId": 13,
+    "CooperativeChapterId": 23,
+    "SoloFirstLevelId": 1801,
+    "CooperativeFirstLevelId": 2801
   }
 ]

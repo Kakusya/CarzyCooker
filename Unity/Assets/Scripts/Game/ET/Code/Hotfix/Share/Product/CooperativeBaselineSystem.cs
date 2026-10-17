@@ -71,30 +71,7 @@ namespace ET
         }
 
         public static CooperativeBaselineValue ReadValue(OfflineVerifiedDocument signed, out SoloSaveHeader header, out SoloSavePayload payload)
-        {
-            var value = (CooperativeBaselineValue)MemoryPackHelper.Deserialize(typeof(CooperativeBaselineValue), signed.Body, 0, signed.Body.Length);
-            if (value == null || !SoloSaveValidation.IsIdentifier(value.GrantId) || !SoloSaveValidation.IsIdentifier(value.MatchId) ||
-                !SoloSaveValidation.IsIdentifier(value.HostProfileId) || !SoloSaveValidation.IsIdentifier(value.HostKeyId) ||
-                !value.DelegateMatchResults || !SoloSaveValidation.IsIdentifier(value.RootProfileId) ||
-                !SoloSaveValidation.IsIdentifier(value.RootSlotId) || value.RootRevision <= 0 ||
-                value.Record == null || value.Record.Length > SoloSaveFile.MaxPayloadBytes + SoloSaveFile.MaxHeaderBytes + 16)
-            {
-                throw new InvalidOperationException("GrantScopeDenied");
-            }
-            using var stream = new MemoryStream(value.Record, false);
-            payload = SoloSaveFile.ReadPayload(stream, signed.Signer.ProfileId, out header);
-            if (value.RootProfileId != (header.Version >= 5 ? header.RootProfileId : header.ProfileId) ||
-                value.RootSlotId != (header.Version >= 5 ? header.RootSlotId : header.SlotId) ||
-                value.RootRevision != (header.Version >= 5 ? header.RootRevision : header.Revision))
-            {
-                throw new InvalidOperationException("InvalidSource");
-            }
-            if (header.RecordKind != SoloSaveRecordKind.Continue)
-            {
-                throw new InvalidOperationException("ChapterCompleted");
-            }
-            return value;
-        }
+            => CooperativeBaselineValues.ReadValue(signed, out header, out payload);
 
         public static string ProveProfile(this HostSessionComponent authority, HostPeer peer, string matchId, int action, byte[] proof, out string challenge, out string profile)
         {
@@ -144,6 +121,7 @@ namespace ET
             participant.ProfileId = signed.Signer.ProfileId;
             participant.ProfileKeyId = signed.Signer.KeyId;
             profile = participant.ProfileId;
+            match.InvalidateRoomReadiness();
             ++match.RoomVersion;
             authority.BroadcastRoom();
             return null;
@@ -200,17 +178,13 @@ namespace ET
             {
                 return "RestaurantAlreadyOpen";
             }
-            if (match.GetComponent<CooperativeSaveBinding>() != null)
-            {
-                return "BaselineAlreadyLoaded";
-            }
             long nextVersion = checked(match.RoomVersion + 1);
             peer.RecordProductCommand(context, ProductCommandKind.Baseline);
             peer.LastBaselineSignature = signed.Signature;
             peer.LastBaselineRoomVersion = roomVersion;
-            long restaurantId = IdGenerater.Instance.GenerateId();
             try
             {
+                match.ClearCooperativeBaseline();
                 var binding = match.AddComponent<CooperativeSaveBinding>();
                 binding.Baseline = match.AddChild<SelectedSaveBaseline, SoloSaveHeader, SoloSavePayload>(header, payload);
                 binding.Authorization = (byte[])authorization.Clone();
@@ -218,23 +192,15 @@ namespace ET
                 binding.RootSlotId = value.RootSlotId;
                 binding.RootRevision = value.RootRevision;
                 DRLevelConfig first = Tables.Instance.DTLevelConfig.Get(header.NextLevelId);
-                var restaurant = match.AddChildWithId<RestaurantRuntime, DRLevelConfig>(restaurantId, first);
-                match.Restaurant = restaurant;
                 match.RoomMenuVariant = first.MenuVariant;
-                foreach (Participant member in match.Children.Values.OfType<Participant>())
-                {
-                    if (member.Online)
-                    {
-                        ((GridKitchenComponent)restaurant.Kitchen).QueueGridMember(member.MemberId, member.BindingGeneration, true);
-                    }
-                }
+                match.PublishRoomProposal(first.MenuVariant, 0, first.Id);
                 match.RoomVersion = nextVersion;
                 peer.RecordProductResult(context.CommandId, GridResultStatus.Executed, null);
             }
             catch
             {
-                match.GetChild<RestaurantRuntime>(restaurantId)?.Dispose();
                 match.ClearCooperativeBaseline();
+                match.InvalidateRoomReadiness(false);
                 peer.RecordProductResult(context.CommandId, GridResultStatus.Rejected, "RestaurantInitializeFailed");
                 throw;
             }

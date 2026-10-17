@@ -106,5 +106,45 @@
     "StationCapability": 131072,
     "LockContainer": true,
     "MenuVariant": 6
+  },
+  {
+    "Id": 7,
+    "ContainerDefinitionId": 87,
+    "InputDefinitionIds": [
+      77,
+      76
+    ],
+    "InputCounts": [
+      1,
+      1
+    ],
+    "RequiredTicks": 80,
+    "OutputDefinitionId": 78,
+    "OutputPortions": 3,
+    "ServingContainerDefinitionId": 59,
+    "StationCapability": 524288,
+    "LockContainer": true,
+    "MenuVariant": 8
+  },
+  {
+    "Id": 8,
+    "ContainerDefinitionId": 85,
+    "InputDefinitionIds": [
+      78,
+      44,
+      81
+    ],
+    "InputCounts": [
+      1,
+      1,
+      1
+    ],
+    "RequiredTicks": 60,
+    "OutputDefinitionId": 82,
+    "OutputPortions": 2,
+    "ServingContainerDefinitionId": 84,
+    "StationCapability": 2097152,
+    "LockContainer": true,
+    "MenuVariant": 8
   }
 ]

@@ -379,6 +379,41 @@ namespace ET
             Assert.That(two.GetAwaiter().GetResult(), Is.EqualTo(123));
         }
 
+        [Test, Category("OrderIntentSession")]
+        public void OwnedSession_DestroyCancelsPendingOwnedRequestsWithoutErrorsAndSameIdNewSessionStillReplies()
+        {
+            ownedRuntime = AsyncRuntime.Begin();
+            int errors = 0, reads = 0;
+            ownedRuntime.ErrorObserver = _ => ++errors;
+            world.AddSingleton<LogMsg>();
+            var service = new OwnedTestService();
+            Session session = actor.AddChildWithId<Session, AService>(90004, service);
+            var first = new AsyncScope(ownedRuntime);
+            var second = new AsyncScope(ownedRuntime);
+            var one = first.RunAsync(context => context.CallSessionValueAsync(session, C2G_Ping.Create(true), response => ++reads));
+            var two = second.RunAsync(context => context.CallSessionValueAsync(session, C2G_Ping.Create(true), response => ++reads));
+            Assert.That(session.requestCallbacks.Count, Is.EqualTo(2));
+            long instance = session.InstanceId;
+            session.Dispose();
+            Assert.That(one.Status, Is.EqualTo(UniTaskStatus.Canceled));
+            Assert.That(two.Status, Is.EqualTo(UniTaskStatus.Canceled));
+            Assert.That(errors, Is.Zero);
+            Assert.That(reads, Is.Zero);
+            Assert.That(first.PendingCount, Is.Zero);
+            Assert.That(second.PendingCount, Is.Zero);
+            Assert.That(service.Removed, Is.EqualTo(1));
+            Session replacement = actor.AddChildWithId<Session, AService>(90004, service);
+            Assert.That(replacement.InstanceId, Is.Not.EqualTo(instance));
+            var request = C2G_Ping.Create(true);
+            var next = first.RunAsync(context => context.CallSessionValueAsync(replacement, request, response => ((G2C_Ping)response).Time));
+            var reply = G2C_Ping.Create(true);
+            reply.RpcId = request.RpcId; reply.Time = 42;
+            replacement.OnResponse(reply);
+            Assert.That(next.GetAwaiter().GetResult(), Is.EqualTo(42));
+            Assert.That(replacement.requestCallbacks, Is.Empty);
+            Assert.That(errors, Is.Zero);
+        }
+
         [Test] public void OwnedLocal_CancelOnlyBusinessWaitAndLetOriginalReplyRetire()
         {
             ownedRuntime = AsyncRuntime.Begin();

@@ -18,7 +18,7 @@ namespace ET
         public override string ToString() => $"({X},{Y})";
     }
 
-    public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4, AddToContainer = 5, StartStationWork = 6, StartHeldWork = 7, StopWork = 8, PourContents = 9, StartAutoWork = 10, PortionSoup = 11, StartBake = 12, FillWater = 13, DrainLiquid = 14, DiscardSolid = 15, ReceiveSupply = 16, TakeSupplyPortion = 17, StartJuice = 18, PortionJuice = 19, BindDrink = 20, UnbindDrink = 21, TakeContainerContent = 22, StartAssembly = 23, StartFry = 24, StartMix = 25, PortionBatter = 26, Unmold = 27, StartGrind = 28, StartExtract = 29, HeatMilk = 30, FoamMilk = 31, PortionDrinkBase = 32 }
+    public enum GridAction { Move = 1, TakeCounter = 2, PlaceCounter = 3, PickupDrop = 4, AddToContainer = 5, StartStationWork = 6, StartHeldWork = 7, StopWork = 8, PourContents = 9, StartAutoWork = 10, PortionSoup = 11, StartBake = 12, FillWater = 13, DrainLiquid = 14, DiscardSolid = 15, ReceiveSupply = 16, TakeSupplyPortion = 17, StartJuice = 18, PortionJuice = 19, BindDrink = 20, UnbindDrink = 21, TakeContainerContent = 22, StartAssembly = 23, StartFry = 24, StartMix = 25, PortionBatter = 26, Unmold = 27, StartGrind = 28, StartExtract = 29, HeatMilk = 30, FoamMilk = 31, PortionDrinkBase = 32, StartSteam = 33, StartBrewTea = 34, StartBoilPearls = 35, StartMixTea = 36, PortionTeaBase = 37 }
     public enum GridFacing { Up = 0, Right = 1, Down = 2, Left = 3 }
     public enum GridMotion { Standing = 0, Transit = 1, Waiting = 2 }
     public enum GridItemLocation { Counter = 1, Hand = 2, Ground = 3, Container = 4, Table = 5, DirtyPool = 6, CleanPool = 7 }
@@ -41,6 +41,8 @@ namespace ET
         public const int MixingBowl = 45, SweetBatter = 46, BakingMold = 47, PlainCake = 48, DessertPlate = 49;
         public const int CoffeeBeans = 52, CoffeeGrounds = 53, CoffeeReceiver = 54, MilkPitcher = 55, Espresso = 56, HotMilk = 57, MilkFoam = 58, HotDrinkCup = 59;
         public const int Orange = 15, OrangeChunks = 16, JuiceJug = 17, OrangeJuice = 18, DisposableCup = 19;
+        public const int HotWater = 76, BlackTeaLeaf = 77, BlackTea = 78, RawPearls = 79, CookedPearls = 80, Syrup = 81;
+        public const int MilkTeaBase = 82, Ice = 83, ColdDrinkCup = 84, TeaMixingJug = 85, PearlJar = 86, TeaBarrel = 87, IcedMilkTea = 88, PearlMilkTea = 89;
     }
 
     public readonly struct GridIntent : IEquatable<GridIntent>

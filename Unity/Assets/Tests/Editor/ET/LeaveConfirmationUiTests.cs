@@ -70,7 +70,7 @@ namespace ET
             Assert.That(File.ReadAllBytes(savedPath), Is.EqualTo(savedBytes));
             Pointer(EntryButton("单机餐厅"));
             yield return Wait(() => Selection != null && ((UIGridKitchen)Selection.Hud)?.Available == true, "New original Solo selector");
-            StartPreviewAndConfirm(SelectionButton("内存试玩"));
+            yield return StartPreviewAndConfirm(SelectionButton("内存试玩"));
             yield return Wait(() => Presentation?.Ready == true, "New independent world");
             command = Client.NextCommandId; confirm(); oldConfirm();
             Assert.That(Grid.WorldId, Is.Not.EqualTo(world)); Assert.That(Client.NextCommandId, Is.EqualTo(command));
@@ -106,7 +106,7 @@ namespace ET
                 yield return WaitCoopUi(remote, () => !Game.GameEntry.UI.HasUIForm("Assets/Res/UI/UIForm/Product/UIGridKitchen.prefab"), "Remote releases shared Editor UI");
                 Entry.OpenProductEntry();
                 yield return WaitCoopUi(remote, () => ((UIGridKitchen)Entry.Hud)?.Available == true, "Host room owner reopens");
-                StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
+                yield return StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
                 yield return WaitCoopUi(remote, () => Presentation != null && remote.Presentation != null && Grid.Confirmed && remote.Grid.Confirmed, "Both actual world projections");
                 remote.KeepMapHeadlessWhileHostOwnsDisplay();
                 Presentation.OpenGridHud();
@@ -139,7 +139,7 @@ namespace ET
                 yield return WaitCoopUi(remote, () => !Game.GameEntry.UI.HasUIForm("Assets/Res/UI/UIForm/Product/UIGridKitchen.prefab"), "Both room views release before Host reopens");
                 Entry.OpenProductEntry();
                 yield return WaitCoopUi(remote, () => ((UIGridKitchen)Entry.Hud)?.Available == true, "Host room form is available before a new preview");
-                StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
+                yield return StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
                 yield return WaitCoopUi(remote, () => Presentation != null && Grid.Confirmed && remote.Grid.Confirmed, "Same members observe a new world");
                 remote.KeepMapHeadlessWhileHostOwnsDisplay(); Presentation.OpenGridHud();
                 yield return WaitCoopUi(remote, () => Presentation.Ready, "New world owned display");

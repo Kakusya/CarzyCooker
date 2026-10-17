@@ -22,7 +22,7 @@ namespace ET
                 if (string.IsNullOrWhiteSpace(item.Name) || item.Kind is not (GridItemKind.Material or GridItemKind.Container) ||
                     (item.Kind == GridItemKind.Material && (item.ContainerCapacity != 0 || item.AcceptedDefinitionIds.Count != 0)) ||
                     (item.Kind == GridItemKind.Container && (item.ContainerCapacity <= 0 || item.AcceptedDefinitionIds.Count == 0)) ||
-                    !ProductMenuCatalog.IsValid(item.MenuVariant) || item.Disposable && (item.Kind != GridItemKind.Container || item.ContainerCapacity != (item.Id == GridKitchenRules.HotDrinkCup ? 3 : 1)) ||
+                    !ProductMenuCatalog.IsValid(item.MenuVariant) || item.Disposable && (item.Kind != GridItemKind.Container || item.ContainerCapacity != (item.Id is GridKitchenRules.HotDrinkCup or GridKitchenRules.ColdDrinkCup ? 3 : 1)) ||
                     item.AllowsEmptyContainers && (item.Kind != GridItemKind.Container || !item.Discardable) ||
                     item.AcceptedDefinitionIds.Any(id => !items.ContainsKey(id) || items[id].Kind != GridItemKind.Material &&
                         !(item.AllowsEmptyContainers && items[id].Kind == GridItemKind.Container && items[id].Disposable)) ||
@@ -92,13 +92,21 @@ namespace ET
             DRGridItemConfig source = Tables.Instance.DTGridItemConfig.Get(input.DefinitionId), bowl = Tables.Instance.DTGridItemConfig.Get(target.DefinitionId);
             if (source.Kind == GridItemKind.Container) return "NestedContainer";
             if (bowl.Kind != GridItemKind.Container || !bowl.AcceptedDefinitionIds.Contains(input.DefinitionId)) return "IncompatibleMaterial";
+            if (target.DefinitionId == GridKitchenRules.ColdDrinkCup)
+            {
+                string sequence = self.CheckDrinkBaseAddition(target, input.DefinitionId);
+                if (sequence != null)
+                {
+                    return sequence;
+                }
+            }
             if (!GridAssemblyConfig.AllowsContainerContents(target.DefinitionId,
                 target.Contents.Select(id => self.Item(id).DefinitionId).Append(input.DefinitionId).ToArray()))
             {
                 return "ContainerFull";
             }
             if (target.Contents.Count >= bowl.ContainerCapacity) return "ContainerFull";
-            if (target.DefinitionId is GridKitchenRules.Pot or GridKitchenRules.JuiceJug or GridKitchenRules.MixingBowl or GridKitchenRules.CoffeeReceiver or GridKitchenRules.MilkPitcher)
+            if (target.DefinitionId is GridKitchenRules.Pot or GridKitchenRules.JuiceJug or GridKitchenRules.MixingBowl or GridKitchenRules.CoffeeReceiver or GridKitchenRules.MilkPitcher or GridKitchenRules.TeaBarrel or GridKitchenRules.TeaMixingJug)
             {
                 string error = self.CheckPotAddition(target, input.DefinitionId);
                 if (error != null) return error;
@@ -108,7 +116,7 @@ namespace ET
             {
                 return permission;
             }
-            if (target.DefinitionId == GridKitchenRules.HotDrinkCup)
+            if (target.DefinitionId is GridKitchenRules.HotDrinkCup or GridKitchenRules.ColdDrinkCup)
             {
                 string addition = self.CheckDrinkBaseAddition(target, input.DefinitionId);
                 if (addition != null)

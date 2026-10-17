@@ -11,6 +11,30 @@ namespace ET.Client
             self.RecipeItemId = 0;
             self.OrderRecipeDetailsVisible = false;
             self.OrderNavigationFeedback = null;
+            self.ServiceReturnVisible = false;
+        }
+
+        public static bool SelectOrderForReading(this GridPresentationComponent self, GridClientComponent grid,
+            long orderId, long customerId, int dishId)
+        {
+            if (!grid.Confirmed || !grid.Orders.TryGetValue(orderId, out var order) || order.State != OrderState.Waiting ||
+                order.CustomerId != customerId || order.DishId != dishId || !grid.AllowedDishIds.Contains(dishId))
+            {
+                return false;
+            }
+            self.ResetItemLocator();
+            self.OverviewPage = GridOverviewPage.None;
+            self.CompanionChat = CompanionChatTopic.None;
+            self.DetailsVisible = false;
+            self.RecipeDishId = dishId;
+            self.RecipeOrderId = orderId;
+            self.RecipeItemId = 0;
+            self.FirstOrderGuideVisible = false;
+            self.OrderRecipeDetailsVisible = false;
+            self.OrderNavigationFeedback = null;
+            self.ServiceReturnVisible = false;
+            self.RecipeVisible = true;
+            return true;
         }
 
         private static void ObserveOrderNavigation(this GridPresentationComponent self, GridClientComponent grid)
@@ -50,6 +74,9 @@ namespace ET.Client
                 string need = GridRecipeGuide.CurrentNeed(grid, order.DishId, order.Id);
                 string details = self.OrderRecipeDetailsVisible ? GridRecipeGuide.Describe(order.DishId, grid.TickMilliseconds)
                     : Tables.Instance.DTDishConfig.Get(order.DishId).Name + "\n" + need + "\n只读目标，不认领、不贴单、不交付。";
+                string intentions = string.Join("、", grid.OrderIntents.Where(value => value.OrderId == order.Id)
+                    .Select(value => "成员 " + value.MemberId));
+                details += "\n制作意向：" + (intentions.Length == 0 ? "暂无" : intentions) + "\n仅作提示，可多人；所有人仍可正常制作和交付。";
                 view.SetInformation(title, details, true, self.OrdersVisible);
             }
         }
@@ -66,27 +93,27 @@ namespace ET.Client
                 view.AddTarget("制作 · " + table.Name + " · " + Tables.Instance.DTDishConfig.Get(order.DishId).Name, () =>
                 {
                     GridPresentationComponent current = original;
-                    if (current == null || !grid.Orders.TryGetValue(order.Id, out var latest) || latest.State != OrderState.Waiting ||
-                        latest.CustomerId != order.CustomerId || latest.DishId != order.DishId)
+                    if (current == null || !current.SelectOrderForReading(grid, order.Id, order.CustomerId, order.DishId))
                     {
                         return;
                     }
-                    current.ResetItemLocator();
-                    current.OverviewPage = GridOverviewPage.None;
-                    current.CompanionChat = CompanionChatTopic.None;
-                    current.DetailsVisible = false;
-                    current.RecipeDishId = latest.DishId;
-                    current.RecipeOrderId = latest.Id;
-                    current.RecipeItemId = 0;
-                    current.FirstOrderGuideVisible = false;
-                    current.OrderRecipeDetailsVisible = false;
-                    current.OrderNavigationFeedback = null;
-                    current.RecipeVisible = true;
                     current.RefreshGridHud();
                 });
             }
             if (self.RecipeOrderId != 0)
             {
+                if (!grid.LevelPaused && grid.LevelPhase is LevelPhase.Operating or LevelPhase.Draining &&
+                    grid.Orders.TryGetValue(self.RecipeOrderId, out var selectedOrder) && selectedOrder.State == OrderState.Waiting)
+                {
+                    long level = grid.LevelId, generation = grid.LevelGeneration;
+                    bool mine = grid.OrderIntents.Any(value => value.MemberId == grid.MemberId && value.OrderId == selectedOrder.Id);
+                    view.AddTarget(mine ? "撤销我的制作意向" : "我准备制作此单（不独占）", () =>
+                    {
+                        GridPresentationComponent current = original;
+                        current?.SendOrderIntent(mine ? OrderIntentAction.Clear : OrderIntentAction.Set,
+                            selectedOrder.Id, selectedOrder.CustomerId, level, generation);
+                    });
+                }
                 bool full = self.OrderRecipeDetailsVisible;
                 view.AddTarget(full ? "订单：制作缺口" : "订单：完整菜谱", () =>
                 {
@@ -157,7 +184,7 @@ namespace ET.Client
                 {
                     capabilities |= Tables.Instance.DTGridAutoRecipeConfig.Get(stage.RecipeId).StationCapability;
                 }
-                else if (stage.Kind is DishStageKind.Bake or DishStageKind.Grind or DishStageKind.Fry or DishStageKind.BakeInCarrier)
+                else if (stage.Kind is DishStageKind.Bake or DishStageKind.Boil or DishStageKind.Steam or DishStageKind.Grind or DishStageKind.Fry or DishStageKind.BakeInCarrier)
                 {
                     capabilities |= Tables.Instance.DTGridBakeRecipeConfig.Get(stage.RecipeId).StationCapability;
                 }

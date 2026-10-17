@@ -93,6 +93,22 @@ namespace ET
         /// FoamMilk
         /// </summary>
         FoamMilk = 131072,
+        /// <summary>
+        /// 蒸制
+        /// </summary>
+        Steam = 262144,
+        /// <summary>
+        /// 泡茶
+        /// </summary>
+        BrewTea = 524288,
+        /// <summary>
+        /// 煮珍珠
+        /// </summary>
+        BoilPearls = 1048576,
+        /// <summary>
+        /// 混合奶茶基底
+        /// </summary>
+        MixTea = 2097152,
     }
 
 } 

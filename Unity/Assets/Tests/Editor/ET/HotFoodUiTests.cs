@@ -78,7 +78,7 @@ namespace ET
             if (cooperative)
             {
                 yield return StartProgressHostRoom();
-                StartPreviewAndConfirm(EntryButton("开启热餐餐厅"));
+                yield return StartPreviewAndConfirm(EntryButton("开启热餐餐厅"));
             }
             else
             {
@@ -86,7 +86,7 @@ namespace ET
                 CreateSaveUiRepository(Runtime, out _, out _);
                 Pointer(EntryButton("单机餐厅"));
                 yield return Wait(() => Selection != null && ((UIGridKitchen)Selection.Hud)?.Available == true, "Ordinary Solo hot menu selection");
-                StartPreviewAndConfirm(SelectionButton("新开热餐餐厅"));
+                yield return StartPreviewAndConfirm(SelectionButton("新开热餐餐厅"));
             }
             yield return Wait(() => Presentation?.Ready == true && Grid.Confirmed, "Ordinary hot restaurant opens");
             Assert.That(Grid.AllowedDishIds, Is.EqualTo(new[] { 6, 7 }));

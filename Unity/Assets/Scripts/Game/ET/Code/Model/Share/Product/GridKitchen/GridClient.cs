@@ -120,6 +120,10 @@ namespace ET
         public int LevelOperatingTicks, LevelElapsedTicks, LevelScore, LevelStars, LevelConfigId, NextLevelConfigId;
         public int ServedOrders, UnfulfilledOrders;
         public ProductCommandKind LastCommandKind;
+        public CompanionWorkPreference CompanionPreference;
+        public IReadOnlyList<OrderIntentValue> OrderIntents;
+        public IReadOnlyList<TargetPingValue> TargetPings;
+        public IReadOnlyList<SupplyRequestValue> SupplyRequests;
         public int MemberId, Width, Height, KitchenBottom, TickMilliseconds, StepTicks;
         public GridResultStatus LastStatus;
         public string LastReason;

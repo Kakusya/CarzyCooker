@@ -173,7 +173,7 @@ namespace ET.Client
             string title = self.AuthorizationTask == AuthorizationViewTask.ImportBranch ? "导入独立进度" :
                 self.AuthorizationTask == AuthorizationViewTask.ContinueRestaurant ? "继续他人餐厅" : "替换我的记录";
             string effect = self.AuthorizationTask == AuthorizationViewTask.ImportBranch ? "明确导入后新建自己的记录，源档和其他分支保留" :
-                self.AuthorizationTask == AuthorizationViewTask.ContinueRestaurant ? "只读运行；当前房主控制开局，不取得源档覆盖权" : "先选可领取结果及目标，最后单独确认有损替换";
+                self.AuthorizationTask == AuthorizationViewTask.ContinueRestaurant ? "只读来源先发布提案；全员准备后由Host开局，不取得源档覆盖权" : "先选可领取结果及目标，最后单独确认有损替换";
             view.SettlementText.text = title + "\n第1步：填写并检查相应用途的文件路径\n第2步：核对来源，单独确认信任\n第3步：" + effect;
             self.AddProgressControl(view, "查看导入文件", current => current.ProgressFileOperation(ProgressFileAction.Inspect));
             if (joined && self.AuthorizationTask == AuthorizationViewTask.ContinueRestaurant)
@@ -225,7 +225,7 @@ namespace ET.Client
             {
                 if (joined && !room.Current.HasRestaurant && room.Current.CanControlRoom && !string.IsNullOrEmpty(room.Current.VerifiedProfileId))
                 {
-                    self.AddProgressControl(view, "载入此授权餐厅", current =>
+                    self.AddProgressControl(view, "发布此授权提案", current =>
                     {
                         if (current.AuthorizationPathIsCurrent())
                         {

@@ -10,7 +10,7 @@ namespace ET
         protected override async UniTask Run(HostPeer peer, ProductRoomControlRequest request, ProductRoomControlResponse response)
         {
             response.CommandId = request.CommandId;
-            if (!peer.CanControlRestaurant())
+            if ((ProductRoomAction)request.Action is not (ProductRoomAction.Ready or ProductRoomAction.CancelReady) && !peer.CanControlRestaurant())
             {
                 response.Error = ProductError.InvalidRequest;
                 response.Message = "HostControlOnly";
@@ -29,6 +29,7 @@ namespace ET
                 message.Action = request.Action;
                 message.MenuVariant = request.MenuVariant;
                 message.ContentChapterId = request.ContentChapterId;
+                message.ExpectedProposalVersion = request.ExpectedProposalVersion;
             });
             HostSessionComponent authority = peer.Authority;
             using var reply = (ProductRoomSubmitResponse)await peer.Root().GetComponent<ProcessInnerSender>().Call(authority.GetActorId(), inner, false);
@@ -59,7 +60,7 @@ namespace ET
                     !peer.EntryOpen || peer.Closing ? "EntryClosed"
                 : authority.CommitRoom(peer, new ProductCommandContext(request.MatchId, string.Empty, 0, 0, 0,
                         request.BindingGeneration, request.CommandId),
-                    new ProductRoomIntent(request.ExpectedRoomVersion, (ProductRoomAction)request.Action, (ProductMenuVariant)request.MenuVariant, request.ContentChapterId));
+                    new ProductRoomIntent(request.ExpectedRoomVersion, (ProductRoomAction)request.Action, (ProductMenuVariant)request.MenuVariant, request.ContentChapterId, request.ExpectedProposalVersion));
             response.Error = error == null ? 0 : ProductError.InvalidRequest;
             response.Message = error ?? peer.LastCommandReason;
             response.Status = (int)(error == null ? peer.LastCommandStatus : GridResultStatus.Rejected);

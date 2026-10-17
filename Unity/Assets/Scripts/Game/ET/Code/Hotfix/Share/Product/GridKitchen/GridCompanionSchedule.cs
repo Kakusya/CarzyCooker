@@ -5,6 +5,7 @@ namespace ET
 {
     [FriendOf(typeof(CompanionRole))]
     [FriendOf(typeof(FrontWork))]
+    [FriendOf(typeof(CompanionPreferenceState))]
     public static partial class GridKitchenSystem
     {
         public static void ScheduleCompanions(this GridKitchenComponent self, Level level)
@@ -23,12 +24,15 @@ namespace ET
                     commands.ScheduleCandidates.Add(work);
                 }
             }
-            commands.ScheduleCandidates.Sort(static (left,right)=>
+            CompanionWorkPreference preference = level.GetParent<RestaurantRuntime>().GetComponent<CompanionPreferenceState>().Value;
+            if (preference == CompanionWorkPreference.WashFirst)
             {
-                FrontWork first=left,second=right;
-                int priority=(first.Kind==FrontWorkKind.Ask?0:1).CompareTo(second.Kind==FrontWorkKind.Ask?0:1);
-                return priority!=0?priority:first.Id.CompareTo(second.Id);
-            });
+                commands.ScheduleCandidates.Sort(static (left, right) => CompareCompanionCandidate(left, right, FrontWorkKind.Wash));
+            }
+            else
+            {
+                commands.ScheduleCandidates.Sort(static (left, right) => CompareCompanionCandidate(left, right, FrontWorkKind.Ask));
+            }
             foreach (var reference in commands.ScheduleRoles)
             {
                 CompanionRole role=reference;
@@ -74,6 +78,13 @@ namespace ET
                 if (candidate != null) role.RequestCompanionWork(new FrontWorkIntent(FrontWorkAction.Claim, candidate.Id, candidate.ClaimSerial)).Forget();
             }
             commands.ScheduleRoles.Clear();commands.ScheduleCandidates.Clear();
+        }
+
+        private static int CompareCompanionCandidate(EntityRef<FrontWork> left, EntityRef<FrontWork> right, FrontWorkKind preferred)
+        {
+            FrontWork first = left, second = right;
+            int priority = (first.Kind == preferred ? 0 : 1).CompareTo(second.Kind == preferred ? 0 : 1);
+            return priority != 0 ? priority : first.Id.CompareTo(second.Id);
         }
     }
 }

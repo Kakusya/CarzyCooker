@@ -3,9 +3,9 @@ namespace ET.Client
 {
     public partial class MonoGridKitchenBoard
     {
-        private const int ArtCell = 192, ArtColumns = 16, ArtRows = 17, ArtCount = 266;
+        private const int ArtCell = 192, ArtColumns = 16, ArtRows = 20, ArtCount = 317;
         private const int ArtPoseCount = 8;
-        private const int ArtItemCount = 63;
-        private const int ArtStationStart = 6, ArtItemStart = 70, ArtCharacterStart = 133, ArtEffectStart = 261;
+        private const int ArtItemCount = 94;
+        private const int ArtStationStart = 6, ArtItemStart = 90, ArtCharacterStart = 184, ArtEffectStart = 312;
     }
 }

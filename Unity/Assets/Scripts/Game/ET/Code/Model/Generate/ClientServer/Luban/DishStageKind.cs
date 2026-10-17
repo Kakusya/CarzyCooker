@@ -64,6 +64,14 @@ namespace ET
         /// Grind
         /// </summary>
         Grind = 11,
+        /// <summary>
+        /// 蒸制整份食物
+        /// </summary>
+        Steam = 12,
+        /// <summary>
+        /// 煮熟整份小料
+        /// </summary>
+        Boil = 13,
     }
 
 } 

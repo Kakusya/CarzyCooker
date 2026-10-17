@@ -180,7 +180,7 @@ namespace ET
                 yield return WaitCoopUi(remote, () => !Game.GameEntry.UI.HasUIForm("Assets/Res/UI/UIForm/Product/UIGridKitchen.prefab"), "Remote room form releases shared Editor UI");
                 Entry.OpenProductEntry();
                 yield return WaitCoopUi(remote, () => ((UIGridKitchen)Entry.Hud)?.Available == true, "Host original room form");
-                StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
+                yield return StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
                 yield return WaitCoopUi(remote, () => Presentation != null && remote.Presentation != null && Grid.Confirmed && remote.Grid.Confirmed,
                     "Both original projections exist");
                 remote.KeepMapHeadlessWhileHostOwnsDisplay();

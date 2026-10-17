@@ -92,6 +92,22 @@ namespace ET.Editor
         /// FoamMilk
         /// </summary>
         FoamMilk = 131072,
+        /// <summary>
+        /// 蒸制
+        /// </summary>
+        Steam = 262144,
+        /// <summary>
+        /// 泡茶
+        /// </summary>
+        BrewTea = 524288,
+        /// <summary>
+        /// 煮珍珠
+        /// </summary>
+        BoilPearls = 1048576,
+        /// <summary>
+        /// 混合奶茶基底
+        /// </summary>
+        MixTea = 2097152,
     }
 
     public static class GridStationCapability_Metadata
@@ -115,6 +131,10 @@ namespace ET.Editor
         public static readonly Luban.EditorEnumItemInfo Extract = new Luban.EditorEnumItemInfo("Extract", "", 32768, "Extract");
         public static readonly Luban.EditorEnumItemInfo HeatMilk = new Luban.EditorEnumItemInfo("HeatMilk", "", 65536, "HeatMilk");
         public static readonly Luban.EditorEnumItemInfo FoamMilk = new Luban.EditorEnumItemInfo("FoamMilk", "", 131072, "FoamMilk");
+        public static readonly Luban.EditorEnumItemInfo Steam = new Luban.EditorEnumItemInfo("Steam", "", 262144, "蒸制");
+        public static readonly Luban.EditorEnumItemInfo BrewTea = new Luban.EditorEnumItemInfo("BrewTea", "", 524288, "泡茶");
+        public static readonly Luban.EditorEnumItemInfo BoilPearls = new Luban.EditorEnumItemInfo("BoilPearls", "", 1048576, "煮珍珠");
+        public static readonly Luban.EditorEnumItemInfo MixTea = new Luban.EditorEnumItemInfo("MixTea", "", 2097152, "混合奶茶基底");
 
         private static readonly System.Collections.Generic.List<Luban.EditorEnumItemInfo> __items = new System.Collections.Generic.List<Luban.EditorEnumItemInfo>
         {
@@ -137,6 +157,10 @@ namespace ET.Editor
             Extract,
             HeatMilk,
             FoamMilk,
+            Steam,
+            BrewTea,
+            BoilPearls,
+            MixTea,
         };
 
         public static System.Collections.Generic.List<Luban.EditorEnumItemInfo> GetItems() => __items;

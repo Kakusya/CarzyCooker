@@ -838,7 +838,8 @@
       57,
       58,
       60,
-      61
+      61,
+      78
     ],
     "Form": 3,
     "Discardable": true,
@@ -848,7 +849,8 @@
     "ExclusiveDefinitionIds": [
       56,
       60,
-      61
+      61,
+      78
     ]
   },
   {
@@ -905,6 +907,456 @@
     "AllowsEmptyContainers": true,
     "Disposable": false,
     "MenuVariant": 6,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 64,
+    "Name": "洋葱",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 65,
+    "Name": "洋葱块",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 66,
+    "Name": "牛肉末",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 67,
+    "Name": "饺子皮",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 68,
+    "Name": "牛肉洋葱馅",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 69,
+    "Name": "未熟牛肉蒸饺",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 70,
+    "Name": "熟牛肉蒸饺",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 71,
+    "Name": "蒸食盘",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      70
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": [
+      70
+    ]
+  },
+  {
+    "Id": 72,
+    "Name": "拌馅盆",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      65,
+      66,
+      67,
+      68,
+      69
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": [
+      68,
+      69
+    ]
+  },
+  {
+    "Id": 73,
+    "Name": "洋葱补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      64
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 74,
+    "Name": "牛肉末补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      66
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 75,
+    "Name": "饺子皮补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      67
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 7,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 76,
+    "Name": "热水",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 77,
+    "Name": "红茶叶",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 78,
+    "Name": "红茶底",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 79,
+    "Name": "生珍珠",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 80,
+    "Name": "熟珍珠",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 81,
+    "Name": "糖浆",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 82,
+    "Name": "奶茶基底",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 83,
+    "Name": "冰块",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 1,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 84,
+    "Name": "透明冷饮杯",
+    "Kind": 2,
+    "ContainerCapacity": 3,
+    "AcceptedDefinitionIds": [
+      80,
+      82,
+      83,
+      88,
+      89
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": true,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": [
+      88,
+      89
+    ]
+  },
+  {
+    "Id": 85,
+    "Name": "调饮壶",
+    "Kind": 2,
+    "ContainerCapacity": 3,
+    "AcceptedDefinitionIds": [
+      78,
+      44,
+      81
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 86,
+    "Name": "小料罐",
+    "Kind": 2,
+    "ContainerCapacity": 1,
+    "AcceptedDefinitionIds": [
+      80
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 87,
+    "Name": "泡茶桶",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      76,
+      77
+    ],
+    "Form": 3,
+    "Discardable": false,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 88,
+    "Name": "冰鲜奶茶",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 89,
+    "Name": "珍珠奶茶",
+    "Kind": 1,
+    "ContainerCapacity": 0,
+    "AcceptedDefinitionIds": [],
+    "Form": 2,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 90,
+    "Name": "红茶叶补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      77
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 91,
+    "Name": "生珍珠补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      79
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 92,
+    "Name": "糖浆补给包",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      81
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 93,
+    "Name": "冰块补给袋",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      83
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": false,
+    "Disposable": false,
+    "MenuVariant": 8,
+    "ExclusiveDefinitionIds": []
+  },
+  {
+    "Id": 94,
+    "Name": "冷饮杯补给包",
+    "Kind": 2,
+    "ContainerCapacity": 2,
+    "AcceptedDefinitionIds": [
+      84
+    ],
+    "Form": 3,
+    "Discardable": true,
+    "AllowsEmptyContainers": true,
+    "Disposable": false,
+    "MenuVariant": 8,
     "ExclusiveDefinitionIds": []
   }
 ]

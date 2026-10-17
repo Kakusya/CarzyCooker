@@ -296,7 +296,15 @@ namespace ET.Client
                     string progress=batch.Id==0?"":batch.State==GridAutoState.Cooking?$"\n煮制 {batchProgress}%":$"\n已熟 · {batch.RemainingPortions} 份";
                     if(bake.Id!=0)
                     {
-                        progress+=bake.State==GridBakeState.Baking?$"\n烘烤 {bakeProgress}%":"\n烘烤完成";
+                        string workName = counter.Kind switch
+                        {
+                            GridStationKind.Steamer => "蒸制",
+                            GridStationKind.PearlBoiler => "煮珍珠",
+                            GridStationKind.Frying => "煎制",
+                            GridStationKind.Grinder => "研磨",
+                            _ => "烘烤"
+                        };
+                        progress+=bake.State==GridBakeState.Baking?$"\n{workName} {bakeProgress}%":$"\n{workName}完成";
                     }
                     caption.text=progress.Length>0?counter.Name+progress:"";
                 }
@@ -479,6 +487,7 @@ namespace ET.Client
             labelStates.Clear();removedIds.Clear();removedMembers.Clear();previousTints.Clear();nextTints.Clear();
             stationGeometry.Clear();groundPositions.Clear();
             ReleaseStationInspection();
+            ReleaseTargetPings();
             ReleaseArt();
             if(labelFont!=null)Destroy(labelFont);labelFont=null;
             originalCamera=null;

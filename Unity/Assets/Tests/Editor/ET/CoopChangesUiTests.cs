@@ -33,17 +33,22 @@ namespace ET
                 yield return WaitCoopUi(remote, () => remote.Grid.LastCommandId == command && remote.Grid.LastStatus == GridResultStatus.Executed, "Real remote takes bowl");
                 int member = remote.Client.MemberId; long generation = remote.Client.BindingGeneration;
                 long bowl = remote.Grid.Actors[member].HandItemId;
+                Pointer(RemoteButton("营业总览"));
+                Pointer(RemoteButton("总览：客流"));
+                var oldServiceTab = CaptureButtonCallback(RemoteButton("总览：需求"));
                 ProductRuntimeComponent runtime = remote.Client.Runtime;
                 ((Session)remote.Client.Session).Dispose();
                 yield return WaitCoopUi(remote, () => runtime.Stage == ProductStage.Disconnected, "Real Session close retains running intent");
                 Assert.That(remote.Presentation.Ready, Is.False); Assert.That(remote.Grid.Confirmed, Is.False);
                 oldTake(); Assert.That(remote.Client.NextCommandId, Is.EqualTo(command));
                 Button stableResume=RemoteButton("手动恢复");
+                long disconnectedTick = remote.Grid.Tick;
                 for(int frame=0;frame<12;frame++)
                 {
                     remote.Tick();yield return null;
                     Assert.That(RemoteButton("手动恢复"),Is.SameAs(stableResume),"Stable lost frames keep managed button identity");
                     Assert.That(remote.Presentation.Ready,Is.False);
+                    Assert.That(remote.Grid.Tick, Is.EqualTo(disconnectedTick), "Disconnected overview does not invent new business time");
                 }
                 ProductResumeIntent intent=runtime.GetComponent<ProductResumeIntent>();
                 long originalAttempt=intent.AttemptId;
@@ -65,6 +70,13 @@ namespace ET
                 Assert.That(remote.Hud.GetInstanceID(), Is.EqualTo(mono)); Assert.That(remote.Client.MemberId, Is.EqualTo(member));
                 Assert.That(remote.Client.BindingGeneration, Is.GreaterThan(generation)); Assert.That(remote.Grid.Actors[member].HandItemId, Is.Zero);
                 Assert.That(remote.Grid.Items[bowl].Location, Is.EqualTo(GridItemLocation.Ground));
+                Assert.That(remote.Presentation.OverviewPage, Is.EqualTo(GridOverviewPage.None));
+                long overviewCommand = remote.Client.NextCommandId;
+                oldServiceTab();
+                Assert.That(remote.Presentation.OverviewPage, Is.EqualTo(GridOverviewPage.None), "Old overview callback cannot affect the new binding");
+                Pointer(RemoteButton("营业总览"));
+                Assert.That(remote.Hud.DetailsText.text, Does.Contain("尚未开店"));
+                Assert.That(remote.Client.NextCommandId, Is.EqualTo(overviewCommand));
                 long fresh = remote.Client.NextCommandId; oldTake(); oldResume(); Assert.That(remote.Client.NextCommandId, Is.EqualTo(fresh));
                 ((Session)remote.Client.Session).Dispose();
                 yield return WaitCoopUi(remote, () => runtime.Stage == ProductStage.Disconnected, "Second manual loss");

@@ -9,6 +9,7 @@ namespace ET.Client
         private static void AddSupplyTargets(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
             self.AddSupplyOverview(view, grid);
+            self.AddCooperativeSupplyTargets(view, grid);
             if (grid.LevelPaused || grid.LevelPhase == LevelPhase.Completed) return;
             EntityRef<GridPresentationComponent> selfRef = self;
             long level = grid.LevelId, generation = grid.LevelGeneration, layout = grid.LayoutVersion;

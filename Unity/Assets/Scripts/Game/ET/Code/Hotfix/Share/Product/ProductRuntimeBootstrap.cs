@@ -79,7 +79,11 @@ namespace ET
                     Match match = host.AddChild<Match>();
                     if (profile != null) match.BindSoloSave(profile, header, payload);
                     match.RoomMenuVariant = menuVariant;
-                    if (!roomOnly)
+                    if (!roomOnly && self.Config.Role == RuntimeInstanceRole.Host)
+                    {
+                        match.PublishRoomProposal(menuVariant, contentChapterId, firstDefinition.Id);
+                    }
+                    else if (!roomOnly)
                     {
                         match.Restaurant = match.AddChild<RestaurantRuntime, DRLevelConfig>(firstDefinition);
                     }

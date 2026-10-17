@@ -26,7 +26,12 @@ namespace ET
             {
                 return "EntryClosed";
             }
-            if (!peer.CanControlRestaurant() || runtime.Config.Role != RuntimeInstanceRole.Host)
+            if (peer == null || !peer.EntryOpen || peer.Closing)
+            {
+                return "EntryClosed";
+            }
+            bool ready = intent.Action is ProductRoomAction.Ready or ProductRoomAction.CancelReady;
+            if (runtime.Config.Role != RuntimeInstanceRole.Host || !ready && !peer.CanControlRestaurant())
             {
                 return "HostControlOnly";
             }
@@ -47,16 +52,25 @@ namespace ET
             {
                 return error;
             }
+            if (ready)
+            {
+                error = authority.CommitRoomReady(peer, context, intent);
+                if (error == null || error == "RoomSourceChanged")
+                {
+                    authority.BroadcastRoom();
+                }
+                return error;
+            }
             if (intent.Version != match.RoomVersion)
             {
                 return "RoomChanged";
             }
-            if (!ProductMenuCatalog.IsValid(intent.MenuVariant) || intent.Action is not (ProductRoomAction.StartRestaurant or ProductRoomAction.CloseRestaurant))
+            if (!ProductMenuCatalog.IsValid(intent.MenuVariant) || intent.Action is not (ProductRoomAction.StartRestaurant or ProductRoomAction.CloseRestaurant or ProductRoomAction.PublishProposal))
             {
                 return "InvalidRoomCommand";
             }
             RestaurantRuntime old = match.Restaurant;
-            if (intent.Action == ProductRoomAction.StartRestaurant && old != null)
+            if (intent.Action is ProductRoomAction.StartRestaurant or ProductRoomAction.PublishProposal && old != null)
             {
                 return "RestaurantAlreadyOpen";
             }
@@ -65,7 +79,7 @@ namespace ET
                 return "RestaurantUnavailable";
             }
             DRLevelConfig selectedFirst = null;
-            if (intent.Action == ProductRoomAction.StartRestaurant)
+            if (intent.Action is ProductRoomAction.StartRestaurant or ProductRoomAction.PublishProposal)
             {
                 var selected = intent.ContentChapterId == 0 ? null : Tables.Instance.DTRestaurantChapterConfig.GetOrDefault(intent.ContentChapterId);
                 if (intent.ContentChapterId != 0 && (selected == null || selected.MenuVariant != intent.MenuVariant))
@@ -73,6 +87,27 @@ namespace ET
                     return "InvalidContentChapter";
                 }
                 selectedFirst = RestaurantChapters.First(intent.ContentChapterId, RuntimeInstanceRole.Host, intent.MenuVariant);
+                if (intent.Action == ProductRoomAction.StartRestaurant)
+                {
+                    error = authority.CheckRoomProposal(intent);
+                    if (error != null)
+                    {
+                        if (error == "RoomSourceChanged")
+                        {
+                            authority.BroadcastRoom();
+                        }
+                        return error;
+                    }
+                    if (!match.AllRoomMembersReady())
+                    {
+                        return "MembersNotReady";
+                    }
+                    SelectedSaveBaseline baseline = match.GetComponent<CooperativeSaveBinding>()?.Baseline ?? default;
+                    if (baseline != null)
+                    {
+                        selectedFirst = Tables.Instance.DTLevelConfig.Get(baseline.Header.NextLevelId);
+                    }
+                }
             }
             else if (intent.ContentChapterId != 0)
             {
@@ -83,7 +118,12 @@ namespace ET
             peer.LastRoomCommand = intent;
             try
             {
-                if (intent.Action == ProductRoomAction.StartRestaurant)
+                if (intent.Action == ProductRoomAction.PublishProposal)
+                {
+                    match.ClearCooperativeBaseline();
+                    match.PublishRoomProposal(intent.MenuVariant, intent.ContentChapterId, selectedFirst.Id);
+                }
+                else if (intent.Action == ProductRoomAction.StartRestaurant)
                 {
                     DRLevelConfig first = selectedFirst;
                     long id = IdGenerater.Instance.GenerateId();
@@ -99,6 +139,7 @@ namespace ET
                     }
                     match.Restaurant = restaurant;
                     match.RoomMenuVariant = intent.MenuVariant;
+                    match.InvalidateRoomReadiness(false);
                     foreach (Participant member in match.Children.Values.OfType<Participant>())
                     {
                         if (member.Online)
@@ -113,6 +154,7 @@ namespace ET
                     old.Dispose();
                     match.Restaurant = default;
                     match.ClearCooperativeBaseline();
+                    match.InvalidateRoomReadiness(false);
                 }
                 match.RoomVersion = nextVersion;
                 peer.RecordProductResult(context.CommandId, GridResultStatus.Executed, null);
@@ -144,6 +186,7 @@ namespace ET
             restaurant.Dispose();
             match.Restaurant = default;
             match.ClearCooperativeBaseline();
+            match.InvalidateRoomReadiness(false);
             match.RoomVersion = nextVersion;
             authority.BroadcastRoom();
         }
@@ -178,6 +221,7 @@ namespace ET
                     message.BaselineSlotId = baseline?.Header.SlotId;
                     message.BaselineRevision = baseline?.Header.Revision ?? 0;
                 });
+                match.CopyRoomReadiness(snapshot);
                 try
                 {
                     ProductDelivery.Send(peer, snapshot);

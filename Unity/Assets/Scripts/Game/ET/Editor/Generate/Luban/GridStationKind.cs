@@ -79,6 +79,26 @@ namespace ET.Editor
         /// SteamMachine
         /// </summary>
         SteamMachine = 15,
+        /// <summary>
+        /// 蒸锅设备
+        /// </summary>
+        Steamer = 16,
+        /// <summary>
+        /// 取水台热水档
+        /// </summary>
+        HotWaterDispenser = 17,
+        /// <summary>
+        /// 泡茶设备
+        /// </summary>
+        TeaBrewer = 18,
+        /// <summary>
+        /// 煮珍珠设备
+        /// </summary>
+        PearlBoiler = 19,
+        /// <summary>
+        /// 调饮台
+        /// </summary>
+        DrinkMixingDesk = 20,
     }
 
     public static class GridStationKind_Metadata
@@ -99,6 +119,11 @@ namespace ET.Editor
         public static readonly Luban.EditorEnumItemInfo Grinder = new Luban.EditorEnumItemInfo("Grinder", "", 13, "Grinder");
         public static readonly Luban.EditorEnumItemInfo CoffeeMachine = new Luban.EditorEnumItemInfo("CoffeeMachine", "", 14, "CoffeeMachine");
         public static readonly Luban.EditorEnumItemInfo SteamMachine = new Luban.EditorEnumItemInfo("SteamMachine", "", 15, "SteamMachine");
+        public static readonly Luban.EditorEnumItemInfo Steamer = new Luban.EditorEnumItemInfo("Steamer", "", 16, "蒸锅设备");
+        public static readonly Luban.EditorEnumItemInfo HotWaterDispenser = new Luban.EditorEnumItemInfo("HotWaterDispenser", "", 17, "取水台热水档");
+        public static readonly Luban.EditorEnumItemInfo TeaBrewer = new Luban.EditorEnumItemInfo("TeaBrewer", "", 18, "泡茶设备");
+        public static readonly Luban.EditorEnumItemInfo PearlBoiler = new Luban.EditorEnumItemInfo("PearlBoiler", "", 19, "煮珍珠设备");
+        public static readonly Luban.EditorEnumItemInfo DrinkMixingDesk = new Luban.EditorEnumItemInfo("DrinkMixingDesk", "", 20, "调饮台");
 
         private static readonly System.Collections.Generic.List<Luban.EditorEnumItemInfo> __items = new System.Collections.Generic.List<Luban.EditorEnumItemInfo>
         {
@@ -118,6 +143,11 @@ namespace ET.Editor
             Grinder,
             CoffeeMachine,
             SteamMachine,
+            Steamer,
+            HotWaterDispenser,
+            TeaBrewer,
+            PearlBoiler,
+            DrinkMixingDesk,
         };
 
         public static System.Collections.Generic.List<Luban.EditorEnumItemInfo> GetItems() => __items;

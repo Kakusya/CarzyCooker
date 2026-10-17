@@ -12,17 +12,20 @@ namespace ET
         public readonly SupplyAction Action;
         public readonly int SourceId, Quantity;
         public readonly long StationId, ShipmentId, PackageId, ContentItemId, LayoutVersion;
+        public readonly long CooperativeRequestId, CooperativeRevision;
 
         public SupplyIntent(SupplyAction action, int source = 0, int quantity = 1, long station = 0,
-            long shipment = 0, long package = 0, long content = 0, long layout = 0)
+            long shipment = 0, long package = 0, long content = 0, long layout = 0, long cooperativeRequestId = 0, long cooperativeRevision = 0)
         {
             Action = action; SourceId = source; Quantity = quantity; StationId = station;
             ShipmentId = shipment; PackageId = package; ContentItemId = content; LayoutVersion = layout;
+            CooperativeRequestId = cooperativeRequestId; CooperativeRevision = cooperativeRevision;
         }
 
         public bool Equals(SupplyIntent other) => Action == other.Action && SourceId == other.SourceId && Quantity == other.Quantity &&
             StationId == other.StationId && ShipmentId == other.ShipmentId && PackageId == other.PackageId &&
-            ContentItemId == other.ContentItemId && LayoutVersion == other.LayoutVersion;
+            ContentItemId == other.ContentItemId && LayoutVersion == other.LayoutVersion &&
+            CooperativeRequestId == other.CooperativeRequestId && CooperativeRevision == other.CooperativeRevision;
     }
 
     public readonly struct SupplyEnvelope

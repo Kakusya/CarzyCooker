@@ -28,7 +28,10 @@ namespace ET
         {
             if (message.ProtocolVersion != ProductSessionRules.ProtocolVersion || string.IsNullOrEmpty(message.MatchId) ||
                 message.MemberId <= 0 || message.BindingGeneration <= 0 || message.RoomVersion <= 0 ||
-                !ProductMenuCatalog.IsValid(message.MenuVariant) ||
+                !ProductMenuCatalog.IsValid(message.MenuVariant) || !ProductMenuCatalog.IsValid(message.ProposalMenu) ||
+                message.ProposalVersion < 0 || message.HasProposal && message.ProposalVersion == 0 ||
+                message.HasProposal && (Tables.Instance.DTLevelConfig.GetOrDefault(message.ProposalFirstLevel) == null ||
+                    message.ProposalChapter != 0 && Tables.Instance.DTRestaurantChapterConfig.GetOrDefault(message.ProposalChapter) == null) ||
                 (string.IsNullOrEmpty(message.WorldId) ? message.WorldGeneration != 0 : message.WorldGeneration <= 0))
             {
                 return;
@@ -72,6 +75,7 @@ namespace ET
             {
                 return;
             }
+            bool retired = self.Current.HasRestaurant && !projection.HasRestaurant;
             self.Current = projection;
             GridClientComponent grid = client.GetComponent<GridClientComponent>();
             if (grid.WorldId != null && (!projection.HasRestaurant || grid.WorldId != projection.WorldId ||
@@ -79,7 +83,7 @@ namespace ET
             {
                 grid.ResetGrid();
             }
-            EventSystem.Instance.Publish((Scene)client.IScene, new ProductRoomApplied());
+            EventSystem.Instance.Publish((Scene)client.IScene, new ProductRoomApplied { RestaurantRetired = retired });
             grid.ConfirmGridProjection();
         }
 
@@ -91,6 +95,11 @@ namespace ET
                 throw new InvalidOperationException("RoomNotReady");
             }
             ProductCommandContext context = client.CreateProductCommandContext(string.Empty, 0, 0, 0);
+            if (action is ProductRoomAction.Ready or ProductRoomAction.CancelReady)
+            {
+                menuVariant = room.Current.ProposalMenu;
+                contentChapterId = room.Current.ProposalChapter;
+            }
             return ProductMessages.Create<ProductRoomControlRequest>(request =>
             {
                 request.ProtocolVersion = ProductSessionRules.ProtocolVersion;
@@ -98,6 +107,7 @@ namespace ET
                 request.BindingGeneration = client.BindingGeneration;
                 request.CommandId = context.CommandId;
                 request.ExpectedRoomVersion = room.Current.Version;
+                request.ExpectedProposalVersion = room.Current.ProposalVersion;
                 request.Action = (int)action;
                 request.MenuVariant = (int)menuVariant;
                 request.ContentChapterId = contentChapterId;

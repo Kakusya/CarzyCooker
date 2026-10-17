@@ -43,6 +43,18 @@ namespace ET.Editor
         /// 首批完整小馆资源
         /// </summary>
         Cafe = 6,
+        /// <summary>
+        /// 蒸食菜单
+        /// </summary>
+        Steamed = 7,
+        /// <summary>
+        /// 茶饮菜单
+        /// </summary>
+        Tea = 8,
+        /// <summary>
+        /// 蒸茶主题菜单
+        /// </summary>
+        SteamTea = 9,
     }
 
     public static class ProductMenuVariant_Metadata
@@ -54,6 +66,9 @@ namespace ET.Editor
         public static readonly Luban.EditorEnumItemInfo Hot = new Luban.EditorEnumItemInfo("Hot", "", 4, "热餐资源组合");
         public static readonly Luban.EditorEnumItemInfo Dessert = new Luban.EditorEnumItemInfo("Dessert", "", 5, "小蛋糕资源组合");
         public static readonly Luban.EditorEnumItemInfo Cafe = new Luban.EditorEnumItemInfo("Cafe", "", 6, "首批完整小馆资源");
+        public static readonly Luban.EditorEnumItemInfo Steamed = new Luban.EditorEnumItemInfo("Steamed", "", 7, "蒸食菜单");
+        public static readonly Luban.EditorEnumItemInfo Tea = new Luban.EditorEnumItemInfo("Tea", "", 8, "茶饮菜单");
+        public static readonly Luban.EditorEnumItemInfo SteamTea = new Luban.EditorEnumItemInfo("SteamTea", "", 9, "蒸茶主题菜单");
 
         private static readonly System.Collections.Generic.List<Luban.EditorEnumItemInfo> __items = new System.Collections.Generic.List<Luban.EditorEnumItemInfo>
         {
@@ -64,6 +79,9 @@ namespace ET.Editor
             Hot,
             Dessert,
             Cafe,
+            Steamed,
+            Tea,
+            SteamTea,
         };
 
         public static System.Collections.Generic.List<Luban.EditorEnumItemInfo> GetItems() => __items;

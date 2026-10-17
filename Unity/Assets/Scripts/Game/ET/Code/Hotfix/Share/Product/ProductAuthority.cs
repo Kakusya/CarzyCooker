@@ -205,6 +205,8 @@ namespace ET
 
         private static void Changed(HostSessionComponent authority, Match match)
         {
+            match.InvalidateRoomReadiness();
+            ++match.RoomVersion;
             ++match.RosterVersion;
             foreach (HostPeer peer in authority.Children.Values.Cast<HostPeer>().ToArray())
             {

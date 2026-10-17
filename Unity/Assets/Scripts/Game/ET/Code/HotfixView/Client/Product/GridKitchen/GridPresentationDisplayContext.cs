@@ -43,6 +43,10 @@ namespace ET.Client
             Flag(self.DetailsVisible);Flag(self.OrdersVisible);Field(self.RecipeDishId);Flag(self.RecipeVisible);Flag(self.FirstOrderGuideVisible);
             Field((int)self.CompanionChat);
             Field((int)self.OverviewPage);
+            Field((int)grid.CompanionPreference);
+            var notices = ((Scene)self.IScene).GetComponent<RestaurantNoticesComponent>();
+            Field(notices?.InstanceId ?? 0);Field(notices?.Version ?? 0);Field(0,self.NoticeFeedback);
+            Field((int)self.ServiceSection); Field(self.ServiceDishId); Flag(self.ServiceReturnVisible);
             Field((int)self.HelpTopic); Field(self.HelpSerial);
             Field(self.ActionAdviceSerial);
             // 说明入口及其回调绑定当前反馈；终态变化即使未改变实物也需更新。
@@ -114,6 +118,22 @@ namespace ET.Client
             }
             Field(grid.Orders.Count);
             foreach(var order in grid.Orders.Values){Field(order.Id);Field((int)order.State);Field(order.CustomerId);Field(order.TableStationId);Field(order.DishId);}
+            Field(grid.OrderIntents.Count);
+            Field(grid.SupplyRequests.Count);
+            foreach (var request in grid.SupplyRequests)
+            {
+                Field(request.MemberId); Field(request.Id); Field(request.Revision); Field(request.SourceId);
+                Field((int)request.State); Field(request.ShipmentId);
+            }
+            Field(grid.TargetPings.Count);
+            foreach (var ping in grid.TargetPings)
+            {
+                Field(ping.MemberId); Field(ping.Serial); Field((int)ping.Kind); Field(ping.TargetId);
+            }
+            foreach (var intent in grid.OrderIntents)
+            {
+                Field(intent.MemberId); Field(intent.BindingGeneration); Field(intent.OrderId); Field(intent.CustomerId);
+            }
             Field(grid.SupplySources.Count);
             foreach(var source in grid.SupplySources.Values){Field(source.Id);Field(source.RemainingPackages);Field(source.StationId);}
             Field(grid.SupplyShipments.Count);
@@ -143,6 +163,23 @@ namespace ET.Client
             Field((int)grid.LastStatus,grid.LastReason);Field(0,self.Failure);Field(0,grid.SaveFailure);Field(0,grid.RenovationFailure);
             Field(self.ItemLocatorSelectedId);
             Field(self.FrontWorkboardSelectedId);
+            if (self.OverviewPage == GridOverviewPage.Service)
+            {
+                Field(grid.SkippedArrivals);
+                Field(grid.WaitingCustomers.Count);
+                foreach (long customerId in grid.WaitingCustomers)
+                {
+                    Field(customerId);
+                }
+                foreach (var customer in grid.Customers.Values)
+                {
+                    Field(customer.Id); Field((int)customer.Phase); Field(customer.ArrivalSequence);
+                }
+                foreach (var table in grid.Tables.Values)
+                {
+                    Field(table.Id); Field((int)table.State); Field(table.CustomerId);
+                }
+            }
             if (self.OverviewPage == GridOverviewPage.FrontWork)
             {
                 Field(grid.Tables.Count);
@@ -168,6 +205,13 @@ namespace ET.Client
                 }
             }
             Field(grid.LevelScore);Field(grid.LevelStars);Field(grid.ServedOrders);Field(grid.UnfulfilledOrders);
+            if (self.OverviewPage == GridOverviewPage.Recap)
+            {
+                foreach (var order in grid.Orders.Values)
+                {
+                    Field(order.Id);Field(order.Score);
+                }
+            }
             Field(grid.LevelOperatingTicks);Field(grid.TickMilliseconds);
             Field((long)Math.Round(Math.Max(0,grid.LevelOperatingTicks-grid.LevelElapsedTicks)*grid.TickMilliseconds/100d,MidpointRounding.AwayFromZero));
             foreach(var work in grid.Processes.Values){Field(work.Id);Field(work.ProgressTicks);Field(work.RequiredTicks);}

@@ -63,7 +63,7 @@ namespace ET
             // This existing suite exercises the retained two-food configuration; drink tests opt into the new menu.
             selector.NewMenuVariant = menuVariant;
             var menu = ((UIGridKitchen)selector.Hud).View;
-            StartPreviewAndConfirm(menu.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "内存试玩"));
+            yield return StartPreviewAndConfirm(menu.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "内存试玩"));
             if(waitReady)yield return Wait(()=>Presentation?.Ready==true,"Real managed HUD ready");
         }
         private Button Button(string caption,bool prefix=false)
@@ -77,12 +77,20 @@ namespace ET
         {
             Assert.That(ExecuteEvents.Execute(button.gameObject,new PointerEventData(UiEventSystem.current){button=PointerEventData.InputButton.Left},ExecuteEvents.pointerClickHandler),Is.True);
         }
-        private void StartPreviewAndConfirm(Button start)
+        private IEnumerator StartPreviewAndConfirm(Button start)
         {
             MonoUIGridKitchen view = start.GetComponentInParent<MonoUIGridKitchen>();
             Pointer(start);
-            Pointer(view.GetComponentsInChildren<Button>(false)
-                .Single(button => button.GetComponentInChildren<Text>().text == "确认开始"));
+            var publication = view.GetComponentsInChildren<Button>(false).SingleOrDefault(button => button.GetComponentInChildren<Text>().text == "发布房间提案");
+            if (publication != null)
+            {
+                Pointer(publication);
+                yield return PreparePublishedRoomUi();
+            }
+            else
+            {
+                Pointer(view.GetComponentsInChildren<Button>(false).Single(button => button.GetComponentInChildren<Text>().text == "确认开始"));
+            }
         }
         private UnityAction CaptureButtonCallback(Button button)
         {

@@ -141,7 +141,7 @@ namespace ET
             return fiber;
         }
 
-        private ProductRuntimeComponent StartHost(bool join = true, int port = 0, bool liveDrinks = false)
+        private ProductRuntimeComponent StartHost(bool join = true, int port = 0, bool liveDrinks = false, bool startRestaurant = true)
         {
             RuntimeInstanceConfig config = RuntimeInstanceConfig.Create("product-test", "test", "host", "127.0.0.1:" + port);
             RuntimeInstanceContext.Prepare(config);
@@ -149,6 +149,10 @@ namespace ET
             host = fiber.Root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(config);
             host.InitializeProduct(join, menuVariant: liveDrinks ? ProductMenuVariant.Drink : ProductMenuVariant.Basic);
             Pump(8);
+            if (join && startRestaurant)
+            {
+                StartPublishedRoomForFixture();
+            }
             return host;
         }
 

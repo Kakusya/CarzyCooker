@@ -14,6 +14,7 @@ message ProductRoomControlRequest // IRequest
     int32 Action = 7;
     int32 MenuVariant = 8;
     int32 ContentChapterId = 9;
+    int64 ExpectedProposalVersion = 10;
 }
 
 message ProductRoomControlResponse // IResponse
@@ -39,6 +40,7 @@ message ProductRoomSubmitRequest // IRequest
     int32 Action = 9;
     int32 MenuVariant = 10;
     int32 ContentChapterId = 11;
+    int64 ExpectedProposalVersion = 12;
 }
 
 message ProductRoomSubmitResponse // IResponse
@@ -66,4 +68,11 @@ message ProductRoomSnapshot // IMessage
     string BaselineOwnerId = 12;
     string BaselineSlotId = 13;
     int32 BaselineRevision = 14;
+    bool HasProposal = 15;
+    int64 ProposalVersion = 16;
+    int32 ProposalMenu = 17;
+    int32 ProposalChapter = 18;
+    repeated ProductRosterMember ReadyMembers = 19;
+    bool AllReady = 20;
+    int32 ProposalFirstLevel = 21;
 }

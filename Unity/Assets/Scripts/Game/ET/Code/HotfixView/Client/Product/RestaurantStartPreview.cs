@@ -118,20 +118,20 @@ namespace ET.Client
             long version = self.PreviewRoomVersion, client = self.PreviewClient;
             view.ClockText.text = "合作房间 / 开局预览";
             view.SettlementText.text = RestaurantStartPreview.Describe(chapterId, menu, RuntimeInstanceRole.Host) +
-                "本端目录预览，不是全房间共同选择。\n合作运行的检查点由原领取／授权流程保存，不自动写入本机。";
+                "本端目录预览；发布后成为全房间提案，仍须所有连接成员明确准备。\n合作运行的检查点由原领取／授权流程保存，不自动写入本机。";
             RestaurantStartPreview.AddMenus(view, chapterId, menu, RuntimeInstanceRole.Host);
             EntityRef<ProductEntryPresentation> original = self;
             if (canStart && !self.Busy)
             {
-                view.AddControl("确认开始", () =>
+                view.AddControl("发布房间提案", () =>
                 {
                     ProductEntryPresentation current = original;
-                    current?.SendRoomEntry(ProductRoomAction.StartRestaurant, version, client, menu, chapterId);
+                    current?.SendRoomEntry(ProductRoomAction.PublishProposal, version, client, menu, chapterId);
                 });
             }
             else
             {
-                view.StatusText.text = self.Busy ? "正在等待房主开局结果…" : "只读目录 · 由房主决定实际开局";
+                view.StatusText.text = self.Busy ? "正在发布房间提案…" : "只读目录 · 不改变已发布提案";
             }
             if (!self.Busy)
             {

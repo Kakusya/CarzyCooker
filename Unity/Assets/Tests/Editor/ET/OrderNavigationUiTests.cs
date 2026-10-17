@@ -23,7 +23,7 @@ namespace ET
             {
                 Pointer(EntryButton("单机餐厅"));
                 yield return Wait(() => Selection != null && ((UIGridKitchen)Selection.Hud)?.Available == true, "Normal content selector");
-                StartPreviewAndConfirm(SelectionButton("新开大关 1 · 家常开张"));
+                yield return StartPreviewAndConfirm(SelectionButton("新开大关 1 · 家常开张"));
                 yield return Wait(() => Presentation?.Ready == true && Grid.BuffDrawVersion > 0, "Actual first content chapter");
                 yield return UnlockUiStartOperating();
                 yield return Wait(() => Grid.Orders.Values.Count(order => order.State == OrderState.Waiting && order.DishId == 1) == 2,
@@ -90,7 +90,7 @@ namespace ET
         public IEnumerator EntryOrderNavigationActualKcpReadsSpecificCustomerAndReturnsToOriginalPickup()
         {
             yield return StartProgressHostRoom();
-            StartPreviewAndConfirm(EntryButton("开启大关 1 · 家常开张"));
+            yield return StartPreviewAndConfirm(EntryButton("开启大关 1 · 家常开张"));
             yield return Wait(() => Presentation?.Ready == true && Grid.BuffDrawVersion > 0, "Host content chapter ready");
             yield return UnlockUiStartOperating();
             yield return Wait(() => Grid.Orders.Values.Count(order => order.State == OrderState.Waiting && order.DishId == 1) == 2,

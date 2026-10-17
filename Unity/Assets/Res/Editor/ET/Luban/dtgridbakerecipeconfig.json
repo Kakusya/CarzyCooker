@@ -46,5 +46,21 @@
     "StationCapability": 16384,
     "RequiredTicks": 40,
     "CarrierDefinitionId": 0
+  },
+  {
+    "Id": 7,
+    "InputDefinitionId": 69,
+    "OutputDefinitionId": 70,
+    "StationCapability": 262144,
+    "RequiredTicks": 80,
+    "CarrierDefinitionId": 0
+  },
+  {
+    "Id": 8,
+    "InputDefinitionId": 79,
+    "OutputDefinitionId": 80,
+    "StationCapability": 1048576,
+    "RequiredTicks": 80,
+    "CarrierDefinitionId": 0
   }
 ]

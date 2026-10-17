@@ -235,6 +235,16 @@ namespace ET
                     Assert.That(loaded.Error, Is.Zero, loaded.Message);
                     Assert.That(loaded.Status, Is.EqualTo((int)GridResultStatus.Executed));
                 }
+                Assert.That(Grid, Is.Null, "Validated baseline is only a proposal until each real member prepares");
+                using (var repeated = BaselineReply(local, replay))
+                {
+                    Assert.That(repeated.Status, Is.EqualTo((int)GridResultStatus.Executed));
+                }
+                using (var different = BaselineReply(local, conflict))
+                {
+                    Assert.That(different.Message, Is.EqualTo("CommandConflict"));
+                }
+                StartPublishedRoomForFixture();
                 PumpUntil(() => remote.GetComponent<GridClientComponent>().Confirmed, "KCP confirms only restored world", 100, advanceTime: true);
                 string restoredWorld = Grid.WorldId;
                 Assert.That(restoredWorld, Is.Not.EqualTo(oldWorld));
@@ -246,14 +256,6 @@ namespace ET
                 Assert.That(room.BaselineSlotId, Is.EqualTo(header.SlotId));
                 Assert.That(room.BaselineRevision, Is.EqualTo(1));
                 Assert.That(remote.GetComponent<GridClientComponent>().Items.Count, Is.EqualTo(payload.Items.Length));
-                using (var repeated = BaselineReply(local, replay))
-                {
-                    Assert.That(repeated.Status, Is.EqualTo((int)GridResultStatus.Executed));
-                }
-                using (var different = BaselineReply(local, conflict))
-                {
-                    Assert.That(different.Message, Is.EqualTo("CommandConflict"));
-                }
                 var oldRoom = local.CreateBaselineCommand(authorization);
                 --oldRoom.ExpectedRoomVersion;
                 using (var stale = BaselineReply(local, oldRoom))
@@ -334,6 +336,8 @@ namespace ET
                 {
                     Assert.That(loaded.Error, Is.Zero, loaded.Message);
                 }
+                Assert.That(Grid, Is.Null);
+                StartPublishedRoomForFixture(settleFrames: 0);
                 PumpUntil(() => client.GetComponent<GridClientComponent>().Confirmed,
                     "Local restored world confirms before level controls", 100, advanceTime: true);
                 LevelDo(LevelControlAction.Pause);

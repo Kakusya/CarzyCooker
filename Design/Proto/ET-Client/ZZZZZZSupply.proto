@@ -21,6 +21,8 @@ message SupplyCommandRequest // IRequest
     int64 PackageId = 15;
     int64 ContentItemId = 16;
     int64 LayoutVersion = 17;
+    int64 CooperativeRequestId = 18;
+    int64 CooperativeRevision = 19;
 }
 
 message SupplyCommandResponse // IResponse
@@ -56,6 +58,8 @@ message SupplySubmitRequest // IRequest
     int64 PackageId = 18;
     int64 ContentItemId = 19;
     int64 LayoutVersion = 20;
+    int64 CooperativeRequestId = 21;
+    int64 CooperativeRevision = 22;
 }
 
 message SupplySubmitResponse // IResponse

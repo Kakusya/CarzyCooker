@@ -125,7 +125,7 @@ namespace ET.Client
                 }
                 else if (self.InspectedAuthorization != null && joined && !room.Current.HasRestaurant && room.Current.CanControlRoom)
                 {
-                    self.AddProgressControl(view, "载入此授权餐厅", current => current.LoadProgressAuthorization(current.InspectedAuthorization));
+                    self.AddProgressControl(view, "发布此授权提案", current => current.LoadProgressAuthorization(current.InspectedAuthorization));
                 }
                 if (self.InspectedAuthorizationKind != SaveAuthorizationKind.None && self.InspectedAuthorization != null)
                 {
@@ -138,7 +138,7 @@ namespace ET.Client
                 view.SettlementText.text = destination == null ? "本机记录选择\n当前未找到记录，请刷新确认；原提交事实不会因此撤回" :
                     "本机记录选择 · 尚未加载\n本机记录：" + destination.SlotId + "\n当前修订：" + destination.Revision +
                     "\n归属：" + destination.ProfileId + "\n" + (destination.RecordKind == SoloSaveRecordKind.Continue
-                        ? "可继续：关卡 " + destination.NextLevelId : "大关完成记录，仅供查看") + "\n只有明确选择原读取入口才会开局。";
+                        ? "可继续：关卡 " + destination.NextLevelId : "大关完成记录，仅供查看") + "\n请选择原读取入口继续核对；合作来源先发布提案，全员准备后由Host开局。";
                 var runtime = self.Root().GetComponent<ProductRuntimeComponent>();
                 if (destination != null && runtime.Config.Role == RuntimeInstanceRole.Solo &&
                     (ClientSessionComponent)runtime.Client == null && (Scene)runtime.HostScene == null)
@@ -186,7 +186,7 @@ namespace ET.Client
             });
         }
 
-        private static void RunProgress(this ProductEntryPresentation self, Func<AsyncContext, Func<ProductEntryPresentation>, UniTask> action)
+        private static void RunProgress(this ProductEntryPresentation self, Func<AsyncContext, Func<ProductEntryPresentation>, UniTask> action, bool returnToRoomAfterSuccess = false)
         {
             UIGridKitchen hud = self.Hud;
             if (self.Busy || self.Suspended || !self.ProgressVisible || hud?.Available != true)
@@ -218,7 +218,12 @@ namespace ET.Client
             }
             hud.GetAsyncOwner().Run(async context =>
             {
-                try { await action(context, Current); }
+                bool completed = false;
+                try
+                {
+                    await action(context, Current);
+                    completed = true;
+                }
                 catch (OperationCanceledException) { }
                 catch (Exception exception)
                 {
@@ -231,6 +236,11 @@ namespace ET.Client
                     {
                         ProductEntryPresentation current = Current();
                         current.Busy = current.ProgressCommitting = false;
+                        if (completed && returnToRoomAfterSuccess)
+                        {
+                            current.ProgressVisible = false;
+                            current.Page = ProductEntryPage.Home;
+                        }
                         current.RenderProductEntry();
                     }
                     catch (OperationCanceledException) { }
@@ -419,12 +429,12 @@ namespace ET.Client
                     request.HostIdentity = (byte[])room.Current.HostIdentity.Clone();
                 }), response => { RequireProgressResponse(response); return (byte[])((CooperativeBaselineSelectResponse)response).Authorization.Clone(); });
                 await CommitProgressAuthorization(context, current, authorization);
-            });
+            }, returnToRoomAfterSuccess: true);
         }
 
         private static void LoadProgressAuthorization(this ProductEntryPresentation self, byte[] authorization)
         {
-            self.RunProgress((context, current) => CommitProgressAuthorization(context, current, authorization));
+            self.RunProgress((context, current) => CommitProgressAuthorization(context, current, authorization), returnToRoomAfterSuccess: true);
         }
 
         private static async UniTask CommitProgressAuthorization(AsyncContext context, Func<ProductEntryPresentation> current, byte[] authorization)
@@ -438,7 +448,8 @@ namespace ET.Client
                 RequireProgressResponse(response);
                 return true;
             });
-            current().ProgressFeedback = "餐厅已建立，等待世界与本人角色就绪";
+            active = current();
+            active.ProgressFeedback = "来源提案已发布，请在房间分别准备后由Host开局";
         }
     }
 }

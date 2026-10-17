@@ -56,9 +56,19 @@ namespace ET
             }
         }
 
-        public static HashSet<GridCell> ValidateStationConfiguration() => GridStationConfig.ValidateInitialLayout(
-            Tables.Instance.DTStationConfig.DataList, Tables.Instance.DTInitialLayoutConfig.DataList,
-            Tables.Instance.DTGridItemConfig.DataList, Tables.Instance.DTLevelConfig.DataList.Select(row => new GridCell(row.SpawnX, row.SpawnY)));
+        public static HashSet<GridCell> ValidateStationConfiguration()
+        {
+            var tables = Tables.Instance;
+            var blocked = new HashSet<GridCell>();
+            // 独立菜单可以复用同一格；只有同一运行菜单内的设备互斥。
+            foreach (var menu in tables.DTLevelConfig.DataList.GroupBy(row => row.MenuVariant))
+            {
+                blocked.UnionWith(GridStationConfig.ValidateInitialLayout(tables.DTStationConfig.DataList,
+                    tables.DTInitialLayoutConfig.DataList.Where(row => ProductMenuCatalog.Includes(menu.Key, row.MenuVariant)),
+                    tables.DTGridItemConfig.DataList, menu.Select(row => new GridCell(row.SpawnX, row.SpawnY))));
+            }
+            return blocked;
+        }
 
         public static bool IsInitialGridWalkable(GridCell cell) => GridStationGeometry.Inside(cell) && !ValidateStationConfiguration().Contains(cell);
 
@@ -180,8 +190,8 @@ namespace ET
         {
             GridActor actor = self.Actor(memberId);
             if (self.Stopped || !self.HasBinding(memberId, generation) || actor == null || actor.Generation != generation) return "EntryClosed";
-            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.PortionDrinkBase) return "InvalidCommand";
-            if (IsDrinkAction(intent.Action) && !ProductMenuCatalog.Includes(((RestaurantRuntime)self.Restaurant)?.MenuVariant ?? ProductMenuVariant.Basic, ProductMenuVariant.Drink)) return "DrinkMenuRequired";
+            if (intent.CommandId <= 0 || intent.Action < GridAction.Move || intent.Action > GridAction.PortionTeaBase) return "InvalidCommand";
+            if (IsDrinkAction(intent.Action) && !ProductMenuCatalog.SupportsDrinks(((RestaurantRuntime)self.Restaurant)?.MenuVariant ?? ProductMenuVariant.Basic)) return "DrinkMenuRequired";
             Match match = self.Match;
             Participant member = match.GetChild<Participant>(memberId);
             HostPeer peer = member.BoundPeer;
@@ -263,6 +273,18 @@ namespace ET
 
         public static void CommitGridState(this GridKitchenComponent self)
         {
+            if (self.ProductLevel()?.PruneOrderIntents((Match)self.Match, self.Tick) == true)
+            {
+                self.Dirty = true;
+            }
+            if (self.PruneTargetPings())
+            {
+                self.Dirty = true;
+            }
+            if (self.PruneSupplyRequests())
+            {
+                self.Dirty = true;
+            }
             if (self.Dirty)
             {
                 ++self.Version;
@@ -497,11 +519,11 @@ namespace ET
                     else if (intent.Action == GridAction.TakeContainerContent) error = self.TakeContainerContent(actor, station, intent);
                     else if (intent.Action == GridAction.StartStationWork) error = self.StartWork(actor, station, intent);
                     else if (intent.Action == GridAction.PourContents) error = self.PourContents(actor, station, intent);
-                    else if (intent.Action is GridAction.StartAutoWork or GridAction.StartJuice or GridAction.StartMix or GridAction.StartExtract or GridAction.HeatMilk or GridAction.FoamMilk) error = self.StartAutoWork(actor, station, intent);
-                    else if (intent.Action is GridAction.PortionSoup or GridAction.PortionJuice or GridAction.PortionBatter or GridAction.PortionDrinkBase) error = self.PortionSoup(actor, station, intent);
+                    else if (intent.Action is GridAction.StartAutoWork or GridAction.StartJuice or GridAction.StartMix or GridAction.StartExtract or GridAction.HeatMilk or GridAction.FoamMilk or GridAction.StartBrewTea or GridAction.StartMixTea) error = self.StartAutoWork(actor, station, intent);
+                    else if (intent.Action is GridAction.PortionSoup or GridAction.PortionJuice or GridAction.PortionBatter or GridAction.PortionDrinkBase or GridAction.PortionTeaBase) error = self.PortionSoup(actor, station, intent);
                     else if (intent.Action is GridAction.BindDrink or GridAction.UnbindDrink) error = self.BindDrink(actor, station, intent);
                     else if (intent.Action == GridAction.Unmold) error = self.Unmold(actor, station, intent);
-                    else if (intent.Action is GridAction.StartBake or GridAction.StartFry or GridAction.StartGrind) error = self.StartBake(actor, station, intent);
+                    else if (intent.Action is GridAction.StartBake or GridAction.StartFry or GridAction.StartGrind or GridAction.StartSteam or GridAction.StartBoilPearls) error = self.StartBake(actor, station, intent);
                     else
                     {
                         GridItem item = self.Item(actor.HandItemId);

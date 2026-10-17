@@ -93,7 +93,7 @@ namespace ET
         [UnityTest, Category("EntryExperience")]
         public IEnumerator EntryStationInspectionActualKcpSteamCapabilitiesAndHostGeometryRemainReadOnly()
         {
-            yield return StartProgressHostRoom(); StartPreviewAndConfirm(EntryButton("开启咖啡餐厅"));
+            yield return StartProgressHostRoom(); yield return StartPreviewAndConfirm(EntryButton("开启咖啡餐厅"));
             yield return Wait(() => Presentation?.Ready == true, "Original coffee room opens");
             long steam = Grid.Stations.Values.Single(station => station.Name == "蒸汽机").Id;
             Presentation.CloseGridHud(); ((GridKitchenBoard)Presentation.Board).Visible = false;
@@ -139,7 +139,7 @@ namespace ET
         [UnityTest, Category("EntryExperience"), Timeout(180000)]
         public IEnumerator EntryStationInspectionActualGrowthUnlockExpansionAndMenuNarrowingUpdateExplanation()
         {
-            yield return StartProgressHostRoom(); StartPreviewAndConfirm(EntryButton("开启经营成长餐厅"));
+            yield return StartProgressHostRoom(); yield return StartPreviewAndConfirm(EntryButton("开启经营成长餐厅"));
             yield return Wait(() => Presentation?.Ready == true, "Ordinary growth restaurant");
             long juicer = Grid.Stations.Values.Single(station => station.Name == "榨汁机").Id;
             Pointer(Button("工位说明")); InspectStationRow(Hud, Grid, juicer); Pointer(Button("查看详情"));

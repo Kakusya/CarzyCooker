@@ -23,6 +23,7 @@ namespace ET.Client
             self.InspectedSave = null;
             self.SaveInspectionRows = Array.Empty<string>();
             self.ViewedResult = null;
+            self.LabelDraft = null;
         }
 
         private static string[] SaveInspectionRows(SoloSaveHeader header, SoloSavePayload payload)
@@ -78,6 +79,7 @@ namespace ET.Client
                 (header.RecordKind == SoloSaveRecordKind.Continue ? "\n可继续记录" : "\n大关已完成 · 仅供查看") +
                 $" · {header.Score}分 · {header.Stars}星\n成功 {header.ServedOrders} 单 · 未满足 {header.UnfulfilledOrders} 单\n{new DateTime(header.SavedUtcTicks).ToLocalTime():yyyy-MM-dd HH:mm}\n实物、剩余份数和在途货见下方列表";
             EntityRef<SoloSavePresentation> original = self;
+            self.AddSaveLabelEditor(view, header);
             if (header.RecordKind == SoloSaveRecordKind.Continue)
             {
                 view.AddControl("确认继续此记录", () =>
@@ -108,6 +110,7 @@ namespace ET.Client
             Add("全部记录", SoloSaveListFilter.All);
             Add("可继续记录", SoloSaveListFilter.Continue);
             Add("已完成记录", SoloSaveListFilter.Completed);
+            Add("收藏记录", SoloSaveListFilter.Favorites);
             void Add(string label, SoloSaveListFilter filter)
             {
                 EntityRef<SoloSavePresentation> original = self;

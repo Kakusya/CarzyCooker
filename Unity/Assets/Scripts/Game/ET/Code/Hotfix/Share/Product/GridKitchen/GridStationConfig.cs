@@ -33,6 +33,11 @@ namespace ET
                     GridStationKind.LabelDesk => GridStationCapability.LabelDrink,
                     GridStationKind.Frying => GridStationCapability.Fry,
                     GridStationKind.Mixer => GridStationCapability.Mixing,
+                    GridStationKind.Steamer => GridStationCapability.Steam,
+                    GridStationKind.HotWaterDispenser => GridStationCapability.FillWater,
+                    GridStationKind.TeaBrewer => GridStationCapability.BrewTea,
+                    GridStationKind.PearlBoiler => GridStationCapability.BoilPearls,
+                    GridStationKind.DrinkMixingDesk => GridStationCapability.MixTea,
                     GridStationKind.Grinder => GridStationCapability.Grind,
                     GridStationKind.CoffeeMachine => GridStationCapability.Extract,
                     GridStationKind.SteamMachine => GridStationCapability.HeatMilk | GridStationCapability.FoamMilk,
@@ -40,9 +45,11 @@ namespace ET
                 };
                 GridStationCapability sink = GridStationCapability.FillWater | GridStationCapability.DrainLiquid;
                 bool isSink = row.Kind == GridStationKind.Wash && row.Capabilities == (capability | sink);
+                bool waterSource = isSink || row.Kind == GridStationKind.HotWaterDispenser && row.Capabilities == capability;
                 if (row.Id <= 0 || !rows.TryAdd(row.Id, row) || string.IsNullOrWhiteSpace(row.Name) ||
                     (!isSink && row.Capabilities != capability) ||
-                    (isSink ? row.WaterDefinitionId <= 0 || row.WaterUnits != 1 : row.WaterDefinitionId != 0 || row.WaterUnits != 0) ||
+                    (waterSource ? row.WaterDefinitionId <= 0 || row.WaterUnits != 1 ||
+                        row.Kind == GridStationKind.HotWaterDispenser && row.WaterDefinitionId != GridKitchenRules.HotWater : row.WaterDefinitionId != 0 || row.WaterUnits != 0) ||
                     (pool ? row.ItemSlotCapacity <= 0 : row.ItemSlotCapacity != 1) ||
                     !footprint.Contains(new GridCell(0, 0)) || approach.Any(cell => footprint.Contains(cell) ||
                         !footprint.Any(part => Math.Abs(cell.X - part.X) + Math.Abs(cell.Y - part.Y) == 1)))

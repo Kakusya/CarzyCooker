@@ -34,7 +34,7 @@ namespace ET.Client
             if (!grid.SupplySources.TryGetValue(self.SupplyOverviewSourceId, out var source))
             {
                 view.SetInformation("补货总览", "请选择来源，分别查看外部配额、运输和实物。\n" + phase +
-                    "\n配额和未到货不属于可取库存。", true, self.OrdersVisible);
+                    "\n配额和未到货不属于可取库存。\n" + CooperativeSupplySummary(grid, 0), true, self.OrdersVisible);
                 return;
             }
             var definition = Tables.Instance.DTSupplyConfig.Get(source.Id);
@@ -97,6 +97,7 @@ namespace ET.Client
                     details += "\n所选货物已离开当前上下文，请重新选择";
                 }
             }
+            details += "\n" + CooperativeSupplySummary(grid, source.Id);
             view.SetInformation("补货总览 · " + definition.Name, details, true, self.OrdersVisible);
         }
 

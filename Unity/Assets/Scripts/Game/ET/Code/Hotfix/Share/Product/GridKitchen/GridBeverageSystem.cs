@@ -12,6 +12,8 @@ namespace ET
             GridAction.StartExtract => GridStationCapability.Extract,
             GridAction.HeatMilk => GridStationCapability.HeatMilk,
             GridAction.FoamMilk => GridStationCapability.FoamMilk,
+                GridAction.StartBrewTea => GridStationCapability.BrewTea,
+                GridAction.StartMixTea => GridStationCapability.MixTea,
             _ => GridStationCapability.Cook
         };
 
@@ -24,12 +26,14 @@ namespace ET
             GridStationCapability.Mixing => GridKitchenRules.MixingBowl,
             GridStationCapability.Extract => GridKitchenRules.CoffeeReceiver,
             GridStationCapability.HeatMilk or GridStationCapability.FoamMilk => GridKitchenRules.MilkPitcher,
+            GridStationCapability.BrewTea => GridKitchenRules.TeaBarrel,
+            GridStationCapability.MixTea => GridKitchenRules.TeaMixingJug,
             _ => GridKitchenRules.Pot
         };
 
         private static string CheckDrinkBaseAddition(this GridKitchenComponent kitchen, GridItem cup, int definition)
         {
-            if (cup.DefinitionId != GridKitchenRules.HotDrinkCup)
+            if (cup.DefinitionId is not (GridKitchenRules.HotDrinkCup or GridKitchenRules.ColdDrinkCup or GridKitchenRules.TeaMixingJug))
             {
                 return "IncompatibleContainer";
             }
@@ -40,6 +44,14 @@ namespace ET
             if (kitchen.ProductLevel()?.DrinkBindings.ContainsKey(cup.Id) == true)
             {
                 return "DrinkAlreadyBound";
+            }
+            if (cup.DefinitionId == GridKitchenRules.TeaMixingJug)
+            {
+                string recipe = kitchen.CheckPotAddition(cup, definition);
+                if (recipe != null)
+                {
+                    return recipe;
+                }
             }
             var carrier = Tables.Instance.DTGridItemConfig.Get(cup.DefinitionId);
             if (cup.Contents.Count >= carrier.ContainerCapacity)

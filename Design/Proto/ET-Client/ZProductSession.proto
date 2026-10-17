@@ -6,6 +6,8 @@ message ProductRosterMember
 {
     int32 MemberId = 1;
     bool Online = 2;
+    bool Ready = 3;
+    int64 ReadyBinding = 4;
 }
 
 // ResponseType ProductJoinResponse

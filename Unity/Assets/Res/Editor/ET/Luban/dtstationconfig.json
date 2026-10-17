@@ -372,5 +372,120 @@
     "Capabilities": 196608,
     "WaterDefinitionId": 0,
     "WaterUnits": 0
+  },
+  {
+    "Id": 17,
+    "Name": "蒸锅",
+    "Kind": 16,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 262144,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
+  },
+  {
+    "Id": 18,
+    "Name": "取水台热水档",
+    "Kind": 17,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 128,
+    "WaterDefinitionId": 76,
+    "WaterUnits": 1
+  },
+  {
+    "Id": 19,
+    "Name": "泡茶设备",
+    "Kind": 18,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 524288,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
+  },
+  {
+    "Id": 20,
+    "Name": "煮珍珠设备",
+    "Kind": 19,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 1048576,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
+  },
+  {
+    "Id": 21,
+    "Name": "调饮台",
+    "Kind": 20,
+    "FootprintOffsets": [
+      0,
+      0
+    ],
+    "ApproachOffsets": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0
+    ],
+    "ItemSlotCapacity": 1,
+    "Capabilities": 2097152,
+    "WaterDefinitionId": 0,
+    "WaterUnits": 0
   }
 ]

@@ -14,7 +14,7 @@ namespace ET
         public IEnumerator EntrySettlementActualKcpMemoryThreeZeroStarResultsReadonlyDetailsAndTerminalRoomReturn()
         {
             yield return StartProgressHostRoom();
-            StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
+            yield return StartPreviewAndConfirm(EntryButton("开启内存餐厅"));
             yield return Wait(() => Presentation?.Ready == true, "Ordinary Host first chapter");
             Match match = ((HostSessionComponent)Runtime.Authority).Match;
             string matchId = match.MatchId;

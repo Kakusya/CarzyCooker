@@ -21,6 +21,7 @@ namespace ET
                 value.Action = request.Action; value.SourceId = request.SourceId; value.Quantity = request.Quantity;
                 value.StationId = request.StationId; value.ShipmentId = request.ShipmentId; value.PackageId = request.PackageId;
                 value.ContentItemId = request.ContentItemId; value.LayoutVersion = request.LayoutVersion;
+                value.CooperativeRequestId = request.CooperativeRequestId; value.CooperativeRevision = request.CooperativeRevision;
             });
             HostSessionComponent authority = peer.Authority;
             using var reply = (SupplySubmitResponse)await peer.Root().GetComponent<ProcessInnerSender>().Call(authority.GetActorId(), inner, false);
@@ -50,7 +51,7 @@ namespace ET
                     new ProductCommandContext(request.MatchId, request.WorldId, request.WorldGeneration, request.LevelId,
                         request.LevelGeneration, request.BindingGeneration, request.CommandId),
                     new SupplyIntent((SupplyAction)request.Action, request.SourceId, request.Quantity, request.StationId,
-                        request.ShipmentId, request.PackageId, request.ContentItemId, request.LayoutVersion));
+                        request.ShipmentId, request.PackageId, request.ContentItemId, request.LayoutVersion, request.CooperativeRequestId, request.CooperativeRevision));
             response.Error = error == null ? 0 : ProductError.InvalidRequest; response.Message = error ?? peer?.LastCommandReason;
             response.Status = (int)(error == null ? peer.LastCommandStatus : GridResultStatus.Rejected);
             return UniTask.CompletedTask;
@@ -75,6 +76,7 @@ namespace ET
                 value.Action = (int)intent.Action; value.SourceId = intent.SourceId; value.Quantity = intent.Quantity;
                 value.StationId = intent.StationId; value.ShipmentId = intent.ShipmentId; value.PackageId = intent.PackageId;
                 value.ContentItemId = intent.ContentItemId; value.LayoutVersion = intent.LayoutVersion;
+                value.CooperativeRequestId = intent.CooperativeRequestId; value.CooperativeRevision = intent.CooperativeRevision;
             });
         }
     }

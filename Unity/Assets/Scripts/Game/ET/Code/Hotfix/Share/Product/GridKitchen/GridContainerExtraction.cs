@@ -6,11 +6,11 @@ namespace ET
     public static partial class GridKitchenSystem
     {
         private static bool IsDrinkAction(GridAction action) =>
-            action is GridAction.StartGrind or GridAction.StartExtract or GridAction.HeatMilk or GridAction.FoamMilk or GridAction.PortionDrinkBase or GridAction.StartJuice or GridAction.PortionJuice or GridAction.BindDrink or GridAction.UnbindDrink;
+            action is GridAction.StartBrewTea or GridAction.StartBoilPearls or GridAction.StartMixTea or GridAction.PortionTeaBase or GridAction.StartGrind or GridAction.StartExtract or GridAction.HeatMilk or GridAction.FoamMilk or GridAction.PortionDrinkBase or GridAction.StartJuice or GridAction.PortionJuice or GridAction.BindDrink or GridAction.UnbindDrink;
 
         private static bool RequiresGridStation(GridAction action) =>
             action is GridAction.TakeCounter or GridAction.PlaceCounter or GridAction.AddToContainer or GridAction.StartStationWork or
-                GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake or GridAction.StartFry or GridAction.StartMix or GridAction.PortionBatter or GridAction.Unmold or GridAction.TakeContainerContent ||
+                GridAction.PourContents or GridAction.StartAutoWork or GridAction.PortionSoup or GridAction.StartBake or GridAction.StartFry or GridAction.StartSteam or GridAction.StartMix or GridAction.PortionBatter or GridAction.Unmold or GridAction.TakeContainerContent ||
             IsDrinkAction(action) || IsCleanupAction(action) || IsSupplyInteraction(action);
 
         private static string CheckContainerExtraction(this GridKitchenComponent self, GridActor actor, GridStation station,

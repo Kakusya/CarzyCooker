@@ -10,9 +10,8 @@ namespace ET
     {
         private void ContentRoomStart(int chapter)
         {
-            using var reply = RoomReply(host.Client, ((ClientSessionComponent)host.Client).CreateRoomCommand(ProductRoomAction.StartRestaurant,
-                Tables.Instance.DTRestaurantChapterConfig.Get(chapter).MenuVariant, chapter));
-            Assert.That(reply.Error, Is.Zero, reply.Message); Assert.That(reply.Status, Is.EqualTo((int)GridResultStatus.Executed)); Pump(20);
+            OpenRoomForFixture(Tables.Instance.DTRestaurantChapterConfig.Get(chapter).MenuVariant, chapter);
+            Pump(20);
         }
 
         private ClientSessionComponent StartContentChapter(bool cooperative, int chapter)

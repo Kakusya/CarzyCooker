@@ -1,0 +1,30 @@
+syntax = "proto3";
+package ET;
+
+// 本机ProductRoot repository消息，不进入远端wire白名单。
+// ResponseType ProductPreferencesReadResponse
+message ProductPreferencesReadRequest // IRequest
+{
+    int32 RpcId = 1;
+}
+message ProductPreferencesReadResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    bytes Values = 4;
+}
+
+// ResponseType ProductPreferencesWriteResponse
+message ProductPreferencesWriteRequest // IRequest
+{
+    int32 RpcId = 1;
+    bytes Values = 2;
+}
+message ProductPreferencesWriteResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    bytes Values = 4;
+}

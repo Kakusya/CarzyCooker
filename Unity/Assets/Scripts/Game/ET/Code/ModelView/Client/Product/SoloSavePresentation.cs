@@ -1,11 +1,15 @@
 namespace ET.Client
 {
-    public enum SoloSaveListFilter { All = 0, Continue = 1, Completed = 2 }
+    public enum SoloSaveListFilter { All = 0, Continue = 1, Completed = 2, Favorites = 3 }
 
     [ComponentOf(typeof(Scene))]
     public sealed class SoloSavePresentation : Entity, IAwake, IUpdate, IDestroy
     {
         public EntityRef<UIGridKitchen> Hud;
+        public ProductPreferencesDraft PreferencesDraft;
+        public SoloSaveLabels Labels;
+        public string LabelsFailure;
+        public SoloSaveLabelDraft LabelDraft;
         public SoloSaveHeader[] Headers;
         public string Failure;
         public SoloSaveHeader ViewedResult;

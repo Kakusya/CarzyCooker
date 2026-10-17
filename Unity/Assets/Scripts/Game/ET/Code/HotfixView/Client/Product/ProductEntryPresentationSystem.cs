@@ -16,6 +16,8 @@ namespace ET.Client
         [EntitySystem]
         private static void Awake(this ProductEntryPresentation self)
         {
+            self.PreferencesDraft = null;
+            self.InitializePreferences();
             self.Hud = default;
             self.Epoch = 0;
             self.LoadingHud = self.Busy = false;
@@ -62,6 +64,7 @@ namespace ET.Client
 
         public static void CloseProductEntry(this ProductEntryPresentation self)
         {
+            self.PreferencesDraft = null;
             self.ClearLeaveConfirmation();
             self.AuthorizationResultSlot = self.AuthorizationResultProfile = self.AuthorizationOutputPath = null; self.AuthorizationResultRevision = 0;
             self.AuthorizationTask = AuthorizationViewTask.Home;
@@ -199,6 +202,11 @@ namespace ET.Client
             {
                 return;
             }
+            self.ApplySavedPreferences(hud.View);
+            if (self.RenderPreferences(hud, () => self.RenderProductEntry()))
+            {
+                return;
+            }
             ProductRuntimeComponent runtime = self.Root().GetComponent<ProductRuntimeComponent>();
             ClientSessionComponent client = runtime.Client;
             ProductRoomClient room = client?.GetComponent<ProductRoomClient>();
@@ -240,6 +248,10 @@ namespace ET.Client
                     !current.ChoosingSolo && ((UIGridKitchen)hudRef)?.Available == true &&
                     (active?.InstanceId ?? 0) == clientInstance && (active?.GetComponent<ProductRoomClient>()?.Current.Version ?? 0) == roomVersion;
             });
+            if (self.Page == ProductEntryPage.Home && !self.ProgressVisible && !self.ClaimsVisible && !self.Busy)
+            {
+                self.AddPreferencesControl(view, () => self.RenderProductEntry());
+            }
             if (self.LeaveAction != ProductLeaveAction.None)
             {
                 self.RenderLeaveConfirmation(view);
@@ -277,6 +289,10 @@ namespace ET.Client
                     if (!room.Current.HasRestaurant && (!self.Busy || self.Page == ProductEntryPage.StartPreview))
                     {
                         self.AddRoomStartNavigation(view, roomVersion, clientInstance);
+                        if (self.Page == ProductEntryPage.Home)
+                        {
+                            self.AddRoomReadiness(view, client, room.Current);
+                        }
                     }
                     if (!self.Busy && !room.Current.HasRestaurant)
                     {
@@ -364,7 +380,8 @@ namespace ET.Client
             ClientSessionComponent client = runtime.Client;
             ProductRoomClient room = client?.GetComponent<ProductRoomClient>();
             UIGridKitchen hud = self.Hud;
-            if (self.Busy || hud?.Available != true || client?.InstanceId != expectedClient || room?.Current.Version != expectedVersion || !room.Current.CanControlRoom)
+            bool ready = action is ProductRoomAction.Ready or ProductRoomAction.CancelReady;
+            if (self.Busy || hud?.Available != true || client?.InstanceId != expectedClient || room?.Current.Version != expectedVersion || !ready && !room.Current.CanControlRoom)
             {
                 return;
             }
@@ -382,7 +399,18 @@ namespace ET.Client
                     self = original;
                     if (self != null && self.Epoch == epoch)
                     {
-                        self.Failure = error;
+                        self.Failure = error switch
+                        {
+                            "RoomProposalRequired" => "请先由Host发布开局提案。",
+                            "RoomProposalChanged" => "提案已经变化，请重新查看并准备。",
+                            "MembersNotReady" => "还有当前连接成员未准备，Host不能强开。",
+                            "RoomSourceChanged" => "来源记录或授权已经变化，请重新发布提案并准备。",
+                            _ => error
+                        };
+                        if (error == null && action == ProductRoomAction.PublishProposal)
+                        {
+                            self.Page = ProductEntryPage.Home;
+                        }
                     }
                 }
                 catch (OperationCanceledException) { }
@@ -459,6 +487,7 @@ namespace ET.Client
 
     [Event(SceneType.ProductClient)]
     [FriendOf(typeof(ProductRoomClient))]
+    [FriendOf(typeof(ProductEntryPresentation))]
     public sealed class ProductRoomAppliedView : AEvent<Scene, ProductRoomApplied>
     {
         protected override UniTask Run(Scene scene, ProductRoomApplied args)
@@ -470,7 +499,7 @@ namespace ET.Client
                 scene.RemoveComponent<GridPresentationComponent>();
             }
             ProductEntryPresentation entry = scene.Root().GetComponent<ProductEntryPresentation>() ?? scene.Root().AddComponent<ProductEntryPresentation>();
-            if (!room.Current.HasRestaurant)
+            if (!room.Current.HasRestaurant && (!entry.Suspended || args.RestaurantRetired))
             {
                 entry.OpenProductEntry();
             }

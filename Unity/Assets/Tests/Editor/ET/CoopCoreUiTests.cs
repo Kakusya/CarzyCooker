@@ -33,6 +33,7 @@ namespace ET
             ownedRoot = ((Component)Game.GameEntry.RuntimeOwner).transform.root.gameObject;
             yield return Wait(() => Init.Instance != null, "Host ET entry starts");
             ownedInit = Init.Instance;
+            yield return PreparePublishedRoomUi();
             yield return Wait(() => Presentation?.Ready == true, "Host managed HUD ready");
             Assert.That(Runtime.Config.Role, Is.EqualTo(RuntimeInstanceRole.Host));
             Assert.That(Grid.CanControlRestaurant, Is.True);
@@ -52,6 +53,26 @@ namespace ET
             public GridClientComponent Grid => Client.GetComponent<GridClientComponent>();
             public GridPresentationComponent Presentation => ((Scene)Client.IScene).GetComponent<GridPresentationComponent>();
             public MonoUIGridKitchen Hud => ((UIGridKitchen)Presentation.Hud).View;
+
+            public SoloSaveRepository UseOwnedPreferencesRepository(string directory, string profile)
+            {
+                object previous = CurrentFiber.GetValue(null);
+                SynchronizationContext previousContext = SynchronizationContext.Current;
+                try
+                {
+                    CurrentFiber.SetValue(null, fiber);
+                    SynchronizationContext.SetSynchronizationContext(fiber.ThreadSynchronizationContext);
+                    fiber.Root.RemoveComponent<SoloSaveRepository>();
+                    var repository = fiber.Root.AddComponent<SoloSaveRepository, string, string>(directory, profile);
+                    Presentation.RefreshGridHud();
+                    return repository;
+                }
+                finally
+                {
+                    CurrentFiber.SetValue(null, previous);
+                    SynchronizationContext.SetSynchronizationContext(previousContext);
+                }
+            }
 
             public void KeepMapHeadlessWhileHostOwnsDisplay()
             {

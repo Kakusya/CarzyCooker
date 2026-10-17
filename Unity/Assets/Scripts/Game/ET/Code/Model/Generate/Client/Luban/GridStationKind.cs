@@ -80,6 +80,26 @@ namespace ET
         /// SteamMachine
         /// </summary>
         SteamMachine = 15,
+        /// <summary>
+        /// 蒸锅设备
+        /// </summary>
+        Steamer = 16,
+        /// <summary>
+        /// 取水台热水档
+        /// </summary>
+        HotWaterDispenser = 17,
+        /// <summary>
+        /// 泡茶设备
+        /// </summary>
+        TeaBrewer = 18,
+        /// <summary>
+        /// 煮珍珠设备
+        /// </summary>
+        PearlBoiler = 19,
+        /// <summary>
+        /// 调饮台
+        /// </summary>
+        DrinkMixingDesk = 20,
     }
 
 } 

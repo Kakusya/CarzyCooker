@@ -16,7 +16,7 @@ namespace ET
             yield return StartModeLauncher(); CreateSaveUiRepository(Runtime, out _, out _);
             Pointer(EntryButton("单机餐厅"));
             yield return Wait(() => Selection != null && ((UIGridKitchen)Selection.Hud)?.Available == true, "Ordinary Solo content selection");
-            StartPreviewAndConfirm(SelectionButton("新开甜品餐厅"));
+            yield return StartPreviewAndConfirm(SelectionButton("新开甜品餐厅"));
             yield return Wait(() => Presentation?.Ready == true && Grid.BuffDrawVersion > 0, "Actual dessert menu and candidate pool");
             Assert.That(Grid.BuffCandidates, Is.EquivalentTo(new[] { 13, 14 }));
             Assert.That(Button("选择 顺滑搅拌", true).GetComponentInChildren<Text>().text, Does.Contain("面糊").And.Not.Contain("煮汤"));
@@ -43,7 +43,7 @@ namespace ET
         [UnityTest, Category("RemainingBusinessUi")]
         public IEnumerator RemainingBusinessUiActualKcpClientReadsPartialRecipeAndApplicableBuffWithoutControl()
         {
-            yield return StartProgressHostRoom(); StartPreviewAndConfirm(EntryButton("开启甜品餐厅"));
+            yield return StartProgressHostRoom(); yield return StartPreviewAndConfirm(EntryButton("开启甜品餐厅"));
             yield return Wait(() => Presentation?.Ready == true && Grid.BuffDrawVersion > 0, "Ordinary Host dessert entry");
             yield return Command("选择 顺滑搅拌", true);
             yield return HotUiBuyRaw(null, 12, "甜点预拌粉"); yield return Command("添加 搅拌机 ·", true);

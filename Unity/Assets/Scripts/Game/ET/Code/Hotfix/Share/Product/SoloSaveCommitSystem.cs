@@ -76,6 +76,7 @@ namespace ET
                 catch (InvalidOperationException e) { return e.Message; }
                 var header = new SoloSaveHeader
                 {
+                    Platform = RuntimeInstanceContext.StoragePlatformName(RuntimeInstanceContext.StoragePlatform),
                     SlotId = Guid.NewGuid().ToString("N"), ProfileId = binding.ProfileId, ResultId = Guid.NewGuid().ToString("N"),
                     SourceSlotId = binding.SourceSlotId, SourceRevision = binding.SourceRevision, CompletedLevelId = level.ConfigId,
                     NextLevelId = level.NextLevelConfigId, Score = level.Score, Stars = level.Stars, SavedUtcTicks = DateTime.UtcNow.Ticks,

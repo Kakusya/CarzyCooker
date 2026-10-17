@@ -1,0 +1,63 @@
+syntax = "proto3";
+package ET;
+
+// ResponseType OrderIntentResponse
+message OrderIntentRequest // IRequest
+{
+    int32 RpcId = 1;
+    int32 ProtocolVersion = 2;
+    string MatchId = 3;
+    string WorldId = 4;
+    int64 WorldGeneration = 5;
+    int64 LevelId = 6;
+    int64 LevelGeneration = 7;
+    int64 BindingGeneration = 8;
+    int64 CommandId = 9;
+    int32 Action = 10;
+    int64 OrderId = 11;
+    int64 CustomerId = 12;
+}
+message OrderIntentResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+// ResponseType OrderIntentSubmitResponse
+message OrderIntentSubmitRequest // IRequest
+{
+    int32 RpcId = 1;
+    int64 PeerId = 2;
+    int64 PeerInstanceId = 3;
+    int64 PeerGeneration = 4;
+    int32 ProtocolVersion = 5;
+    string MatchId = 6;
+    string WorldId = 7;
+    int64 WorldGeneration = 8;
+    int64 LevelId = 9;
+    int64 LevelGeneration = 10;
+    int64 BindingGeneration = 11;
+    int64 CommandId = 12;
+    int32 Action = 13;
+    int64 OrderId = 14;
+    int64 CustomerId = 15;
+}
+message OrderIntentSubmitResponse // IResponse
+{
+    int32 RpcId = 1;
+    int32 Error = 2;
+    string Message = 3;
+    int64 CommandId = 4;
+    int32 Status = 5;
+}
+
+message GridOrderIntentState
+{
+    int32 MemberId = 1;
+    int64 BindingGeneration = 2;
+    int64 OrderId = 3;
+    int64 CustomerId = 4;
+}

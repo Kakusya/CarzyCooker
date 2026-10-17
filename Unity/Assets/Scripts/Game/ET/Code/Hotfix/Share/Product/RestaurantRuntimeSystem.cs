@@ -26,6 +26,7 @@ namespace ET
             self.PhaseOutcomes.Clear();
             self.NextLevelGeneration = 0; self.LastFrameTime = TimeInfo.Instance.FrameTime; self.Accumulator = 0;
             self.AddComponent<RestaurantRenovation>();
+            self.AddComponent<CompanionPreferenceState>();
             self.AddComponent<RestaurantUnlocks, DRLevelConfig>(first);
             self.Kitchen = self.AddComponent<GridKitchenComponent>();
             self.InstallLevel(first);

@@ -30,9 +30,13 @@ namespace ET
                     {
                         throw new InvalidOperationException("InvalidExpansionReward:" + reward.Id);
                     }
-                    KitchenGeometryConfig.ValidateExpansionLayout(reward, Tables.Instance.DTInitialLayoutConfig.DataList.Select(row =>
-                        new GridStationPlacement(row.StationDefinitionId, new GridCell(row.X, row.Y), row.Orientation)),
-                        Tables.Instance.DTLevelConfig.DataList.Select(row => new GridCell(row.SpawnX, row.SpawnY)));
+                    foreach (var menu in levels.GroupBy(row => row.MenuVariant))
+                    {
+                        KitchenGeometryConfig.ValidateExpansionLayout(reward, Tables.Instance.DTInitialLayoutConfig.DataList
+                            .Where(row => ProductMenuCatalog.Includes(menu.Key, row.MenuVariant)).Select(row =>
+                                new GridStationPlacement(row.StationDefinitionId, new GridCell(row.X, row.Y), row.Orientation)),
+                            menu.Select(row => new GridCell(row.SpawnX, row.SpawnY)));
+                    }
                     continue;
                 }
                 if (reward.ExpansionWidth != 0 || reward.ExpansionHeight != 0 || reward.TableDefinitionId != 0)

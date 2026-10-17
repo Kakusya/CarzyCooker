@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Game;
 
 namespace ET
 {
@@ -13,10 +14,10 @@ namespace ET
         public static bool IsIdentifier(string value) => value != null && value.Length == 32 &&
             Guid.TryParseExact(value, "N", out _) && value.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f');
 
-        public static void Header(SoloSaveHeader header, string profile)
+        public static void Header(SoloSaveHeader header, string profile, ProductStoragePlatform? platform = null)
         {
             Require(header != null && header.Version is 1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10 or 11 or FormatVersion, "UnsupportedVersion");
-            Require(header.Platform == "PC", "WrongPlatform");
+            Require(header.Platform == RuntimeInstanceContext.StoragePlatformName(platform ?? RuntimeInstanceContext.StoragePlatform), "WrongPlatform");
             Require(IsIdentifier(profile) && header.ProfileId == profile, "WrongProfile");
             Require(IsIdentifier(header.SlotId) && IsIdentifier(header.ResultId) && header.Revision > 0 &&
                 (header.Version >= 6 || header.Revision == 1), "InvalidIdentity");
@@ -55,6 +56,9 @@ namespace ET
             Require(header.Version >= 10 || completed.MenuVariant != ProductMenuVariant.Hot, "UnsupportedHotCatalog");
             Require(header.Version >= 11 || completed.MenuVariant != ProductMenuVariant.Dessert, "UnsupportedDessertCatalog");
             Require(header.Version >= 12 || completed.MenuVariant != ProductMenuVariant.Cafe, "UnsupportedCafeCatalog");
+            Require(header.Version >= 12 || completed.MenuVariant != ProductMenuVariant.Steamed, "UnsupportedSteamedCatalog");
+            Require(header.Version >= 12 || completed.MenuVariant != ProductMenuVariant.Tea, "UnsupportedTeaCatalog");
+            Require(header.Version >= 12 || completed.MenuVariant != ProductMenuVariant.SteamTea, "UnsupportedSteamTeaCatalog");
             if (header.Version == 1)
                 Require(completed.ChapterId == 0 && header.RecordKind == SoloSaveRecordKind.Continue &&
                     Tables.Instance.DTLevelConfig.GetOrDefault(header.NextLevelId) != null, "InvalidLegacyNextLevel");
@@ -70,9 +74,9 @@ namespace ET
             Require(header.Stars == completed.StarThresholds.Count(threshold => header.Score >= threshold), "InvalidResultStars");
         }
 
-        public static void Payload(SoloSaveHeader header, SoloSavePayload payload, string profile)
+        public static void Payload(SoloSaveHeader header, SoloSavePayload payload, string profile, ProductStoragePlatform? platform = null)
         {
-            Header(header, profile);
+            Header(header, profile, platform);
             Require(payload != null, "MissingPayload");
             if (header.Version >= 8)
             {
@@ -194,11 +198,11 @@ namespace ET
             foreach (var item in items.Values)
             {
                 var definition = tables.DTGridItemConfig.GetOrDefault(item.DefinitionId);
-                Require(definition != null && (ProductMenuCatalog.Includes(menuVariant, definition.MenuVariant)) && item.Hygiene is (int)ItemHygiene.Clean or (int)ItemHygiene.Dirty &&
+                Require(definition != null && ProductMenuCatalog.IncludesItem(menuVariant, definition) && item.Hygiene is (int)ItemHygiene.Clean or (int)ItemHygiene.Dirty &&
                     GridStationGeometry.Inside(new GridCell(item.X, item.Y), geometry.Width, geometry.Height), "InvalidItem");
                 Require(item.ContentKeys != null && item.ContentKeys.Length <= definition.ContainerCapacity &&
                     item.ContentKeys.Distinct().Count() == item.ContentKeys.Length && (definition.Kind == GridItemKind.Container || item.ContentKeys.Length == 0), "ContainerCapacity");
-                Require(GridAssemblyConfig.AllowsContainerContents(item.DefinitionId, item.ContentKeys.Select(key =>
+                Require(GridAssemblyConfig.AllowsStoredContents(item.DefinitionId, item.ContentKeys.Select(key =>
                     items.TryGetValue(key, out var content) ? content.DefinitionId : 0).ToArray()), "ExclusiveContainerContent");
                 foreach (int key in item.ContentKeys)
                     Require(items.TryGetValue(key, out var content) && content.Location == (int)GridItemLocation.Container && content.HolderKey == item.Key &&

@@ -58,6 +58,8 @@ namespace ET
                 case DishStageKind.Batch:
                     result |= (GridStationCapability)tables.DTGridAutoRecipeConfig.Get(stage.RecipeId).StationCapability;
                     break;
+                case DishStageKind.Boil:
+                case DishStageKind.Steam:
                 case DishStageKind.Grind:
                 case DishStageKind.Bake:
                 case DishStageKind.Fry:
@@ -120,6 +122,8 @@ namespace ET
                         AddInput(permit, stage.ContainerDefinitionId, id);
                     }
                     break;
+                case DishStageKind.Boil:
+                case DishStageKind.Steam:
                 case DishStageKind.Grind:
                 case DishStageKind.Bake:
                 case DishStageKind.Fry:

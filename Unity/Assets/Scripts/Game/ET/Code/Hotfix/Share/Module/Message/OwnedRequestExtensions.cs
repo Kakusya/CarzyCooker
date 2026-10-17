@@ -22,6 +22,7 @@ namespace ET
             context.ThrowIfStopped();
             return context.Scope.RunAsync(async inner =>
             {
+                long sessionInstance = session.InstanceId;
                 using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(inner.CancellationToken);
                 bool timeout = false;
                 bool finished = false;
@@ -55,6 +56,11 @@ namespace ET
                     T value = default;
                     inner.Apply(() => value = read(response));
                     return value;
+                }
+                catch (RpcException) when (session.InstanceId != sessionInstance)
+                {
+                    // Session destruction ends outstanding waits, including replies after a committed snapshot.
+                    throw new OperationCanceledException(inner.CancellationToken);
                 }
                 finally
                 {

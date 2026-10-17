@@ -15,6 +15,9 @@ namespace ET
             level.AddComponent<LevelBuff,DRLevelConfig,int>(Tables.Instance.DTLevelConfig.Get(level.ConfigId),System.Guid.NewGuid().GetHashCode());
             level.AddComponent<FrontLevelState, DRCustomerFlowConfig>(Tables.Instance.DTCustomerFlowConfig.DataList.Single(value => value.LevelConfigId == level.ConfigId));
             level.AddComponent<CompanionGrowth>();
+            level.AddComponent<CooperativeOrderIntents>();
+            level.AddComponent<CooperativeTargetPings>();
+            level.AddComponent<CooperativeSupplyRequests>();
             level.AddComponent<FrontWorkCommands>();
             foreach (DRCompanionConfig definition in Tables.Instance.DTCompanionConfig.DataList)
             {

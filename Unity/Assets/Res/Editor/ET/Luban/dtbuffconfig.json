@@ -178,5 +178,45 @@
     "BatchRecipeId": 6,
     "ManualRecipeId": 0,
     "BakeRecipeId": 0
+  },
+  {
+    "Id": 19,
+    "Name": "轻快切葱",
+    "EffectKind": 2,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 12,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 20,
+    "Name": "均匀蒸制",
+    "EffectKind": 3,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 0,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 7
+  },
+  {
+    "Id": 21,
+    "Name": "专注泡茶",
+    "EffectKind": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 7,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 0
+  },
+  {
+    "Id": 22,
+    "Name": "顺手调饮",
+    "EffectKind": 1,
+    "DurationNumerator": 3,
+    "DurationDenominator": 4,
+    "BatchRecipeId": 8,
+    "ManualRecipeId": 0,
+    "BakeRecipeId": 0
   }
 ]

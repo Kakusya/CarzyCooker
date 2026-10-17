@@ -13,14 +13,14 @@ namespace ET
         {
             if (cooperative)
             {
-                yield return StartProgressHostRoom(); StartPreviewAndConfirm(EntryButton("开启咖啡餐厅"));
+                yield return StartProgressHostRoom(); yield return StartPreviewAndConfirm(EntryButton("开启咖啡餐厅"));
             }
             else
             {
                 yield return StartModeLauncher(); CreateSaveUiRepository(Runtime, out _, out _);
                 Pointer(EntryButton("单机餐厅"));
                 yield return Wait(() => Selection != null && ((UIGridKitchen)Selection.Hud)?.Available == true, "Ordinary coffee menu selection");
-                StartPreviewAndConfirm(SelectionButton("新开咖啡餐厅"));
+                yield return StartPreviewAndConfirm(SelectionButton("新开咖啡餐厅"));
             }
             yield return Wait(() => Presentation?.Ready == true && Grid.Confirmed, "Actual coffee restaurant opens");
             Assert.That(Grid.AllowedDishIds, Is.EqualTo(new[] { 9, 10, 11 }));

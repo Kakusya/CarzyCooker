@@ -12,6 +12,10 @@ namespace ET
     [FriendOf(typeof(Customer))]
     [FriendOf(typeof(Order))]
     [FriendOf(typeof(LevelBuff))]
+    [FriendOf(typeof(CompanionPreferenceState))]
+    [FriendOf(typeof(CooperativeOrderIntents))]
+    [FriendOf(typeof(CooperativeTargetPings))]
+    [FriendOf(typeof(CooperativeSupplyRequests))]
     public static partial class GridBroadcast
     {
         private static void CopyFrontState(GridKitchenComponent world, GridWorldSnapshot snapshot)
@@ -27,6 +31,33 @@ namespace ET
             }
             foreach (GridItemState state in snapshot.Items) state.Hygiene = (int)((GridItem)world.Items[state.ItemId]).Hygiene;
             Level level = world.ProductLevel(); if (level == null) return;
+            snapshot.CompanionPreference = (int)level.GetParent<RestaurantRuntime>().GetComponent<CompanionPreferenceState>().Value;
+            foreach (var intent in level.GetComponent<CooperativeOrderIntents>().Members.Values)
+            {
+                snapshot.OrderIntents.Add(ProductMessages.Create<GridOrderIntentState>(value =>
+                {
+                    value.MemberId = intent.MemberId; value.BindingGeneration = intent.BindingGeneration;
+                    value.OrderId = intent.OrderId; value.CustomerId = intent.CustomerId;
+                }));
+            }
+            foreach (var ping in level.GetComponent<CooperativeTargetPings>().Members.Values)
+            {
+                snapshot.TargetPings.Add(ProductMessages.Create<GridTargetPingState>(value =>
+                {
+                    value.MemberId = ping.MemberId; value.BindingGeneration = ping.BindingGeneration;
+                    value.TargetKind = (int)ping.Kind; value.TargetId = ping.TargetId;
+                    value.Serial = ping.Serial; value.ExpiresTick = ping.ExpiresTick;
+                }));
+            }
+            foreach (var request in level.GetComponent<CooperativeSupplyRequests>().Members.Values)
+            {
+                snapshot.SupplyRequests.Add(ProductMessages.Create<GridSupplyRequestState>(value =>
+                {
+                    value.MemberId = request.MemberId; value.BindingGeneration = request.BindingGeneration;
+                    value.RequestId = request.Id; value.Revision = request.Revision; value.SourceId = request.SourceId;
+                    value.State = (int)request.State; value.ShipmentId = request.ShipmentId;
+                }));
+            }
             LevelBuff buff=level.GetComponent<LevelBuff>();
             snapshot.BuffSeed=buff.Seed;snapshot.BuffDrawVersion=buff.DrawVersion;snapshot.SelectedBuffId=buff.SelectedId;snapshot.RequireBuffChoice=buff.RequireChoice;
             snapshot.BuffCandidates.AddRange(buff.Candidates);

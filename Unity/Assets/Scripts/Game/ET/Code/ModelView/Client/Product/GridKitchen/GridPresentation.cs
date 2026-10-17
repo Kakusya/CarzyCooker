@@ -4,7 +4,8 @@ using System.Collections.Generic;
 namespace ET.Client
 {
     public enum CompanionChatTopic { None = 0, Preparation = 1, Cooperation = 2, Closing = 3 }
-    public enum GridOverviewPage { None = 0, Preparation = 1, Items = 2, Supply = 3, FrontWork = 4, Stations = 5, Renovation = 6, Settlement = 7, Help = 8, ActionAdvice = 9 }
+    public enum GridOverviewPage { None = 0, Preparation = 1, Items = 2, Supply = 3, FrontWork = 4, Stations = 5, Renovation = 6, Settlement = 7, Help = 8, ActionAdvice = 9, Service = 10, Recap = 11, Notices = 12 }
+    public enum ServiceOverviewSection { Demand = 0, Flow = 1, Score = 2 }
     public enum ActionAdviceKind { Unknown = 0, Hand = 1, Locked = 2, Container = 3, Path = 4, Permission = 5, Supply = 6, Target = 7, Save = 8, Paused = 9 }
     public enum GridHelpTopic { Map = 0, Carry = 1, Containers = 2, Work = 3, Phase = 4, Roles = 5 }
 
@@ -28,6 +29,7 @@ namespace ET.Client
     {
         public EntityRef<GridKitchenBoard> Board;
         public EntityRef<UIGridKitchen> Hud;
+        public ProductPreferencesDraft PreferencesDraft;
         public bool Ready;
         public bool RoomControlPending;
         public string Failure;
@@ -60,6 +62,18 @@ namespace ET.Client
         public GridActionGroup ActionGroup;
         // 只读总览的短寿命页面；所属关卡／世界换轮失效，不保存准备或完成状态。
         public GridOverviewPage OverviewPage;
+        // 营业总览仅持阅读选择；订单、队列和评分仍来自当前投影。
+        public ServiceOverviewSection ServiceSection;
+        public int ServiceDishId;
+        public bool ServiceReturnVisible;
+        public GridActionGroup ServicePreviousGroup;
+        public readonly System.Text.StringBuilder ServiceText = new(1024);
+        public readonly List<int> ServiceDishIds = new(16);
+        // 只在当前完成关查看时构建；不持久化订单或历史统计。
+        public readonly System.Text.StringBuilder RecapText = new(768);
+        public readonly List<int> RecapDishIds = new(16);
+        public string NoticeFeedback;
+        public readonly System.Text.StringBuilder NoticeText = new(1024);
         // 本轮只读帮助分类及返回分组；不持有教学进度或输入/业务权威。
         public GridHelpTopic HelpTopic;
         public GridActionGroup HelpPreviousGroup;

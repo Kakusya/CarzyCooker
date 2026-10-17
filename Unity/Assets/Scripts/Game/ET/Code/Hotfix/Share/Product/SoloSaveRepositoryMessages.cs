@@ -34,6 +34,7 @@ namespace ET
     }
 
     [MessageHandler(SceneType.ProductRoot)]
+    [FriendOf(typeof(SoloSaveRepository))]
     public sealed class SoloSaveWriteHandler : ProductActorRequestHandler<SoloSaveRepository, SoloSaveWriteRequest, SoloSaveWriteResponse>
     {
         protected override UniTask Run(SoloSaveRepository repository, SoloSaveWriteRequest request, SoloSaveWriteResponse response)
@@ -43,7 +44,7 @@ namespace ET
                 if (request.Record == null || request.Record.Length > SoloSaveFile.MaxPayloadBytes + SoloSaveFile.MaxHeaderBytes + 16)
                     throw new InvalidOperationException("InvalidSaveRequest");
                 using var stream = new MemoryStream(request.Record, false);
-                var payload = SoloSaveFile.ReadPayload(stream, repository.SaveProfile(), out var header);
+                var payload = SoloSaveFile.ReadPayload(stream, repository.SaveProfile(), out var header, repository.Platform);
                 response.Header = MemoryPackHelper.Serialize(repository.Commit(header, payload));
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or MemoryPack.MemoryPackSerializationException)

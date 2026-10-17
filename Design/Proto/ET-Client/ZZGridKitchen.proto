@@ -218,6 +218,10 @@ message GridWorldSnapshot // IMessage
     int64 PermissionVersion = 69;
     repeated int32 UnlockedDishIds = 70;
     repeated int32 UnlockedStationIds = 71;
+    int32 CompanionPreference = 72;
+    repeated GridOrderIntentState OrderIntents = 73;
+    repeated GridTargetPingState TargetPings = 74;
+    repeated GridSupplyRequestState SupplyRequests = 75;
 }
 
 message GridCommandResult // IMessage

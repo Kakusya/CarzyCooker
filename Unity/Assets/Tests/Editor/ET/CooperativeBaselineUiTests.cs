@@ -119,7 +119,10 @@ namespace ET
             Assert.That((RestaurantRuntime)match.Restaurant, Is.Null, "Late file response cannot start a world after cancellation");
             Assert.That(File.ReadAllBytes(path), Is.EqualTo(original));
             Pointer(EntryProgressButton("读取 记录 ", true));
-            yield return Wait(() => Presentation?.Ready == true, "Ordinary selected baseline starts exactly one real kitchen", 30);
+            yield return Wait(() => !Entry.Busy && Client.GetComponent<ProductRoomClient>().Current.HasProposal, "Original source browser publishes only a proposal", 30);
+            Assert.That((RestaurantRuntime)match.Restaurant, Is.Null);
+            yield return PreparePublishedRoomUi();
+            yield return Wait(() => Presentation?.Ready == true, "Explicit all-ready baseline start creates exactly one kitchen", 30);
             Assert.That(Grid.LevelConfigId, Is.EqualTo(header.NextLevelId));
             Assert.That(Grid.Items.Count, Is.EqualTo(SelectionFixture().Items.Length));
             Assert.That(Hud.HintText.text, Does.Contain(profile.Substring(0, 8)).And.Contain("只读运行"));
@@ -160,7 +163,7 @@ namespace ET
                 Assert.That(Grid.Items.Count, Is.EqualTo(SelectionFixture().Items.Length));
                 Assert.That(File.ReadAllBytes(path), Is.EqualTo(original));
                 Assert.That(repository.Browse().Length, Is.EqualTo(1));
-                var other = remote.Client.Root().AddComponent<SoloSaveRepository, string, string>(directory, Guid.NewGuid().ToString("N"));
+                var other = remote.UseOwnedPreferencesRepository(directory, Guid.NewGuid().ToString("N"));
                 var otherEntry = remote.Client.Root().GetComponent<ProductEntryPresentation>();
                 Pointer(ClaimUiButton(remote.Hud, "合作进度领取"));
                 yield return WaitCoopUi(remote, () => otherEntry.ClaimsVisible && !otherEntry.Busy && ((UIGridKitchen)otherEntry.Hud)?.Available == true,
@@ -231,7 +234,7 @@ namespace ET
                     Assert.That((RestaurantRuntime)match.Restaurant, Is.Null);
                     Pointer(EntryProgressButton("确认信任此身份"));
                     yield return Wait(() => !Entry.Busy && Entry.InspectedTrusted, "Explicit identity pinning preserves existing keys");
-                    Pointer(EntryProgressButton("载入此授权餐厅"));
+                    Pointer(EntryProgressButton("发布此授权提案"));
                     if (input == wrongPath)
                     {
                         yield return Wait(() => !Entry.Busy && Entry.Failure != null, "Valid signature with wrong match is rejected");
@@ -239,7 +242,10 @@ namespace ET
                         Assert.That((RestaurantRuntime)match.Restaurant, Is.Null);
                     }
                 }
-                yield return Wait(() => Presentation?.Ready == true, "Trusted foreign file creates a new running world");
+                yield return Wait(() => !Entry.Busy && Client.GetComponent<ProductRoomClient>().Current.HasProposal, "Trusted foreign file publishes a shared proposal first");
+                Assert.That((RestaurantRuntime)match.Restaurant, Is.Null);
+                yield return PreparePublishedRoomUi();
+                yield return Wait(() => Presentation?.Ready == true, "All-ready explicit start creates the trusted foreign world");
                 Assert.That(Client.GetComponent<ProductRoomClient>().Current.BaselineOwnerId, Is.EqualTo(ownerProfile));
                 Assert.That(Client.GetComponent<ProductRoomClient>().Current.BaselineOwnerId, Is.Not.EqualTo(profile));
                 Assert.That(Hud.HintText.text, Does.Contain(ownerProfile.Substring(0, 8)).And.Contain("只读运行"));

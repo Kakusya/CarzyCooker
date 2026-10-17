@@ -15,7 +15,7 @@ namespace ET
         public override void Handle(NetComponentOnRead args)
         {
             Session session = args.Session;
-            if (args.Message is not (ProductJoinRequest or ProductResumeRequest or ProductProbeRequest or ProductLeaveRequest or ProductHeartbeatRequest or GridCommandRequest or LevelCommandRequest or StationLayoutRequest or ChooseBuffRequest or ChooseRenovationRequest or ServeOrderRequest or FrontWorkRequest or SupplyCommandRequest or ProductRoomControlRequest or ProductProfileRequest or CooperativeBaselineRequest or ProgressAckRequest or ProgressCloseMatchRequest))
+            if (args.Message is not (ProductJoinRequest or ProductResumeRequest or ProductProbeRequest or ProductLeaveRequest or ProductHeartbeatRequest or GridCommandRequest or LevelCommandRequest or StationLayoutRequest or ChooseBuffRequest or CompanionPreferenceRequest or OrderIntentRequest or TargetPingRequest or SupplyRequestRequest or ChooseRenovationRequest or ServeOrderRequest or FrontWorkRequest or SupplyCommandRequest or ProductRoomControlRequest or ProductProfileRequest or CooperativeBaselineRequest or ProgressAckRequest or ProgressCloseMatchRequest))
             {
                 (args.Message as MessageObject)?.Dispose();
                 session.Error = ProductError.InvalidRequest;
@@ -100,6 +100,7 @@ namespace ET
                             message.Action = room.Action;
                             message.MenuVariant = room.MenuVariant;
                             message.ContentChapterId = room.ContentChapterId;
+                            message.ExpectedProposalVersion = room.ExpectedProposalVersion;
                         }),
                         ProductProfileRequest profile => ProductMessages.Create<ProductProfileRequest>(message =>
                         {
@@ -155,6 +156,34 @@ namespace ET
                             message.StationId = layout.StationId; message.ExpectedLayoutVersion = layout.ExpectedLayoutVersion;
                             message.X = layout.X; message.Y = layout.Y; message.Orientation = layout.Orientation;
                         }),
+                        CompanionPreferenceRequest preference => ProductMessages.Create<CompanionPreferenceRequest>(message =>
+                        {
+                            message.ProtocolVersion = preference.ProtocolVersion; message.MatchId = preference.MatchId; message.WorldId = preference.WorldId;
+                            message.WorldGeneration = preference.WorldGeneration; message.BindingGeneration = preference.BindingGeneration;
+                            message.LevelId = preference.LevelId; message.LevelGeneration = preference.LevelGeneration;
+                            message.CommandId = preference.CommandId; message.Preference = preference.Preference;
+                        }),
+                        OrderIntentRequest preference => ProductMessages.Create<OrderIntentRequest>(message =>
+                        {
+                            message.ProtocolVersion = preference.ProtocolVersion; message.MatchId = preference.MatchId; message.WorldId = preference.WorldId;
+                            message.WorldGeneration = preference.WorldGeneration; message.BindingGeneration = preference.BindingGeneration;
+                            message.LevelId = preference.LevelId; message.LevelGeneration = preference.LevelGeneration;
+                            message.CommandId = preference.CommandId; message.Action = preference.Action; message.OrderId = preference.OrderId; message.CustomerId = preference.CustomerId;
+                        }),
+                        TargetPingRequest preference => ProductMessages.Create<TargetPingRequest>(message =>
+                        {
+                            message.ProtocolVersion = preference.ProtocolVersion; message.MatchId = preference.MatchId; message.WorldId = preference.WorldId;
+                            message.WorldGeneration = preference.WorldGeneration; message.BindingGeneration = preference.BindingGeneration;
+                            message.LevelId = preference.LevelId; message.LevelGeneration = preference.LevelGeneration;
+                            message.CommandId = preference.CommandId; message.Action = preference.Action; message.TargetKind = preference.TargetKind; message.TargetId = preference.TargetId;
+                        }),
+                        SupplyRequestRequest preference => ProductMessages.Create<SupplyRequestRequest>(message =>
+                        {
+                            message.ProtocolVersion = preference.ProtocolVersion; message.MatchId = preference.MatchId; message.WorldId = preference.WorldId;
+                            message.WorldGeneration = preference.WorldGeneration; message.BindingGeneration = preference.BindingGeneration;
+                            message.LevelId = preference.LevelId; message.LevelGeneration = preference.LevelGeneration;
+                            message.CommandId = preference.CommandId; message.Action = preference.Action; message.SourceId = preference.SourceId; message.ExpectedRequestId = preference.ExpectedRequestId; message.ExpectedRevision = preference.ExpectedRevision;
+                        }),
                         ChooseBuffRequest buff => ProductMessages.Create<ChooseBuffRequest>(message =>
                         {
                             message.ProtocolVersion = buff.ProtocolVersion; message.MatchId = buff.MatchId; message.WorldId = buff.WorldId;
@@ -192,6 +221,7 @@ namespace ET
                             message.Action = supply.Action; message.SourceId = supply.SourceId; message.Quantity = supply.Quantity;
                             message.StationId = supply.StationId; message.ShipmentId = supply.ShipmentId; message.PackageId = supply.PackageId;
                             message.ContentItemId = supply.ContentItemId; message.LayoutVersion = supply.LayoutVersion;
+                            message.CooperativeRequestId = supply.CooperativeRequestId; message.CooperativeRevision = supply.CooperativeRevision;
                         }),
                         _ => throw new InvalidOperationException("Product wire whitelist mismatch")
                     };
@@ -256,7 +286,7 @@ namespace ET
             (int)GridAction.PourContents or (int)GridAction.StartAutoWork or (int)GridAction.PortionSoup or (int)GridAction.StartBake or (int)GridAction.StartFry or
             (int)GridAction.FillWater or (int)GridAction.DrainLiquid or (int)GridAction.DiscardSolid or (int)GridAction.ReceiveSupply or (int)GridAction.TakeSupplyPortion or
             (int)GridAction.StartJuice or (int)GridAction.PortionJuice or (int)GridAction.BindDrink or (int)GridAction.UnbindDrink or (int)GridAction.TakeContainerContent or (int)GridAction.StartAssembly or (int)GridAction.StartMix or
-            (int)GridAction.PortionBatter or (int)GridAction.Unmold or (int)GridAction.StartGrind or (int)GridAction.StartExtract or
+            (int)GridAction.PortionBatter or (int)GridAction.Unmold or (int)GridAction.StartBrewTea or (int)GridAction.StartBoilPearls or (int)GridAction.StartMixTea or (int)GridAction.PortionTeaBase or (int)GridAction.StartSteam or (int)GridAction.StartGrind or (int)GridAction.StartExtract or
             (int)GridAction.HeatMilk or (int)GridAction.FoamMilk or (int)GridAction.PortionDrinkBase;
 
         private static MessageObject CopyResponse(MessageObject result)
@@ -320,6 +350,14 @@ namespace ET
                     return ProductMessages.Create<LevelCommandResponse>(message => { message.Error = level.Error; message.Message = level.Message; message.CommandId = level.CommandId; message.Status = level.Status; });
                 case StationLayoutResponse layout:
                     return ProductMessages.Create<StationLayoutResponse>(message => { message.Error = layout.Error; message.Message = layout.Message; message.CommandId = layout.CommandId; message.Status = layout.Status; });
+                case CompanionPreferenceResponse preference:
+                    return ProductMessages.Create<CompanionPreferenceResponse>(message => { message.Error = preference.Error; message.Message = preference.Message; message.CommandId = preference.CommandId; message.Status = preference.Status; });
+                case OrderIntentResponse intent:
+                    return ProductMessages.Create<OrderIntentResponse>(message => { message.Error = intent.Error; message.Message = intent.Message; message.CommandId = intent.CommandId; message.Status = intent.Status; });
+                case TargetPingResponse intent:
+                    return ProductMessages.Create<TargetPingResponse>(message => { message.Error = intent.Error; message.Message = intent.Message; message.CommandId = intent.CommandId; message.Status = intent.Status; });
+                case SupplyRequestResponse intent:
+                    return ProductMessages.Create<SupplyRequestResponse>(message => { message.Error = intent.Error; message.Message = intent.Message; message.CommandId = intent.CommandId; message.Status = intent.Status; });
                 case ChooseBuffResponse buff:
                     return ProductMessages.Create<ChooseBuffResponse>(message => { message.Error = buff.Error; message.Message = buff.Message; message.CommandId = buff.CommandId; message.Status = buff.Status; });
                 case ChooseRenovationResponse renovation:
@@ -352,7 +390,7 @@ namespace ET
                 message?.Dispose();
                 return;
             }
-            if (message is ProductJoinResponse or ProductResumeResponse or ProductProbeResponse or ProductLeaveResponse or ProductHeartbeatResponse or GridCommandResponse or LevelCommandResponse or StationLayoutResponse or ChooseBuffResponse or ChooseRenovationResponse or ServeOrderResponse or FrontWorkResponse or SupplyCommandResponse or ProductRoomControlResponse or ProductProfileResponse or CooperativeBaselineResponse or ProgressAckResponse or ProgressCloseMatchResponse)
+            if (message is ProductJoinResponse or ProductResumeResponse or ProductProbeResponse or ProductLeaveResponse or ProductHeartbeatResponse or GridCommandResponse or LevelCommandResponse or StationLayoutResponse or ChooseBuffResponse or CompanionPreferenceResponse or OrderIntentResponse or TargetPingResponse or SupplyRequestResponse or ChooseRenovationResponse or ServeOrderResponse or FrontWorkResponse or SupplyCommandResponse or ProductRoomControlResponse or ProductProfileResponse or CooperativeBaselineResponse or ProgressAckResponse or ProgressCloseMatchResponse)
             {
                 IResponse response = (IResponse)message;
                 if (!session.requestCallbacks.TryGetValue(response.RpcId, out RpcInfo pending))

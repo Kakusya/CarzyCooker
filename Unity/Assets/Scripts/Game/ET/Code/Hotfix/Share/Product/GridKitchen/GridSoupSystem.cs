@@ -27,7 +27,7 @@ namespace ET
                     recipe.RequiredTicks <= 0 || recipe.OutputPortions <= 0 || recipe.InputDefinitionIds.Count == 0 ||
                     recipe.InputDefinitionIds.Count != recipe.InputCounts.Count || recipe.InputCounts.Any(count => count <= 0) ||
                     recipe.InputDefinitionIds.Distinct().Count() != recipe.InputDefinitionIds.Count || !ProductMenuCatalog.IsValid(recipe.MenuVariant) ||
-                    recipe.StationCapability is not (GridStationCapability.Cook or GridStationCapability.Juice or GridStationCapability.Mixing or GridStationCapability.Extract or GridStationCapability.HeatMilk or GridStationCapability.FoamMilk) ||
+                    recipe.StationCapability is not (GridStationCapability.Cook or GridStationCapability.Juice or GridStationCapability.Mixing or GridStationCapability.Extract or GridStationCapability.HeatMilk or GridStationCapability.FoamMilk or GridStationCapability.BrewTea or GridStationCapability.MixTea) ||
                     recipe.LockContainer != (recipe.StationCapability != GridStationCapability.Cook) ||
                     recipe.InputCounts.Sum() > container.ContainerCapacity ||
                     recipe.InputDefinitionIds.Any(id => !items.TryGetValue(id, out var item) || item.Kind != GridItemKind.Material || !container.AcceptedDefinitionIds.Contains(id)) ||
@@ -124,6 +124,8 @@ namespace ET
                     GridStationCapability.Mixing => "RequiresMixer",
                     GridStationCapability.Juice => "RequiresJuicer",
                     GridStationCapability.Extract => "RequiresCoffeeMachine",
+                    GridStationCapability.BrewTea => "RequiresTeaBrewer",
+                    GridStationCapability.MixTea => "RequiresTeaMixingDesk",
                     GridStationCapability.HeatMilk or GridStationCapability.FoamMilk => "RequiresSteamMachine",
                     _ => "RequiresStove"
                 };
@@ -184,14 +186,15 @@ namespace ET
         {
             bool juice = intent.Action == GridAction.PortionJuice;
             bool mix = intent.Action == GridAction.PortionBatter;
-            bool beverage = intent.Action == GridAction.PortionDrinkBase;
+            bool tea = intent.Action == GridAction.PortionTeaBase;
+            bool beverage = intent.Action == GridAction.PortionDrinkBase || tea;
             GridStationCapability capability = mix ? GridStationCapability.Mixing : juice ? GridStationCapability.Juice : GridStationCapability.Cook;
             if (juice && !ProductMenuCatalog.Includes(((RestaurantRuntime)self.Restaurant)?.MenuVariant ?? ProductMenuVariant.Basic, ProductMenuVariant.Drink)) return "DrinkMenuRequired";
             GridItem bowl = self.Item(actor.HandItemId), pot = self.Item(station.ItemId);
             if (beverage)
             {
                 var active = self.AutoProcess(pot?.AutoProcessId ?? 0);
-                if (active == null || !IsBeverageCapability(active.RequiredCapability))
+                if (active == null || !(tea ? GridTeaRules.IsTeaCapability(active.RequiredCapability) : IsBeverageCapability(active.RequiredCapability)))
                 {
                     return "ProcessChanged";
                 }
@@ -204,13 +207,14 @@ namespace ET
             if (process.RequiredCapability != capability) return "ProcessChanged";
             if (process.State != GridAutoState.Ready) return "NotReady";
             if (process.RemainingPortions <= 0) return "EmptyBatch";
-            string permission = self.CheckProductionInput(process.ServingContainerDefinitionId, process.OutputDefinitionId);
+            string permission = self.CheckProductionInput(tea ? bowl.DefinitionId : process.ServingContainerDefinitionId, process.OutputDefinitionId);
             if (permission != null)
             {
                 return permission;
             }
             if (bowl.Hygiene != ItemHygiene.Clean || pot.Hygiene != ItemHygiene.Clean) return "DirtyUtensil";
-            if (bowl.DefinitionId != process.ServingContainerDefinitionId || !Tables.Instance.DTGridItemConfig.Get(bowl.DefinitionId).AcceptedDefinitionIds.Contains(process.OutputDefinitionId)) return "IncompatibleContainer";
+            if (!GridTeaRules.CanServe(capability, pot.DefinitionId, process.OutputDefinitionId, process.ServingContainerDefinitionId, bowl.DefinitionId) ||
+                !Tables.Instance.DTGridItemConfig.Get(bowl.DefinitionId).AcceptedDefinitionIds.Contains(process.OutputDefinitionId)) return "IncompatibleContainer";
             if (beverage)
             {
                 string addition = self.CheckDrinkBaseAddition(bowl, process.OutputDefinitionId);
