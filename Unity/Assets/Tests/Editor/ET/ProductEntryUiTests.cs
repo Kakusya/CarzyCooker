@@ -90,7 +90,7 @@ namespace ET
                 ((UIGridKitchen)selector.Hud)?.Available == true, "Solo selector remains managed");
             var selection = Runtime.Root().GetComponent<SoloSavePresentation>();
             var view = ((UIGridKitchen)selection.Hud).View;
-            yield return StartPreviewAndConfirm(view.GetComponentsInChildren<Button>(false).Single(button => button.GetComponentInChildren<Text>().text == "内存试玩"));
+            yield return StartPreviewAndConfirm(SelectionButton("内存试玩"));
             yield return Wait(() => Presentation?.Ready == true, "Chosen Solo enters a real map");
             Assert.That(Runtime.Config.Role, Is.EqualTo(RuntimeInstanceRole.Solo));
             Assert.That(((Scene)Runtime.HostScene).GetComponent<NetComponent>(), Is.Null);

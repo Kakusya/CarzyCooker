@@ -159,6 +159,7 @@ namespace ET
             Assert.That(repository.Preferences.FontSize, Is.EqualTo(ProductFontSize.Largest), "Cancel only discards the unsaved draft");
             oldChoice();
             Assert.That(selection.PreferencesDraft, Is.Null);
+            Pointer(MenuButton("菜单试玩"));
             yield return StartPreviewAndConfirm(MenuButton("内存试玩"));
             yield return Wait(() => Presentation?.Ready == true, "Saved local parameters reach ordinary restaurant");
             Assert.That(Hud.DetailsText.fontSize, Is.EqualTo(Mathf.RoundToInt(baseFont * 1.3f)));

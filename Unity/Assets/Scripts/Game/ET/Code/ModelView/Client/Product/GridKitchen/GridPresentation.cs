@@ -23,6 +23,7 @@ namespace ET.Client
         Help = 9,
         ActionAdvice = 10
     }
+    public enum GridContextPriority { SelectedOrder = 0, Direct = 1, Related = 2, Navigation = 3 }
 
     [ComponentOf(typeof(Scene))]
     public sealed class GridPresentationComponent : Entity, IAwake, IUpdate, IDestroy
@@ -30,6 +31,7 @@ namespace ET.Client
         public EntityRef<GridKitchenBoard> Board;
         public EntityRef<UIGridKitchen> Hud;
         public ProductPreferencesDraft PreferencesDraft;
+        public ProductAudioPage AudioPage;
         public bool Ready;
         public bool RoomControlPending;
         public string Failure;
@@ -113,6 +115,8 @@ namespace ET.Client
         // 菜谱选择与首单说明只属于本轮视图，不保存任务进度或业务状态。
         public int RecipeDishId;
         public bool RecipeVisible, FirstOrderGuideVisible;
+        public long FirstGuideOrderId, FirstGuideLocatedItem, FirstGuideLocatedStation;
+        public bool FirstGuideNeedsOrderChoice;
         // 本轮阅读目标，不是订单认领或饮品绑定；完整菜谱／缺口共用原详情区。
         public long RecipeOrderId;
         public long RecipeItemId;

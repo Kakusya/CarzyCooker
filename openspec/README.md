@@ -1,5 +1,7 @@
 # 中文底座规格索引
 
+2026-10-20 HUD、首局路径、情境动作、第一章节奏、短声画和有限视觉样板六案已归档，29/29任务；8份delta的23条新增与1条修改已同步6份主规格，保留原场景。原UTF及正常三关运行证据随案保留，用户已接受有限视觉方向和短音试听；没有增加Player、真机或真人新手结论。本轮授权本地提交，不推送。
+
 这些主规格描述当前源码／配置支持的底座与产品契约；逐项交付状态、协议和模式范围以 [当前进度](../CarzyCooker当前进度.md) 及相应 change 的 execution-notes 为准。供应、装修、本机检查点与合作核心已有实现，不能从早期索引文字推断未实现。未来方向读 [产品文档](../Docs/Product/README.md)，模块路由读 [模块索引](../Docs/AI/module-index.md)。
 
 2026-10-09 的 [深度扫描](../Docs/AI/spec-scan.md) 已细化十四项底座规格；合计十六份主规格、74 项要求、120 个场景。新增 31 项要求和 70 个场景，保留原要求；仅给固定 ET 入口补充实际编译条件。增量、来源和验证见 [deepen-foundation-specs](changes/archive/2026-10-09-deepen-foundation-specs/proposal.md) 与 [verification](changes/archive/2026-10-09-deepen-foundation-specs/verification.md)。场景是契约及后续验证目标，不代表这些动态场景已运行。
@@ -11,6 +13,8 @@
 同日已完成并归档合作装修、原成员恢复与合作饮品贴单三案，合计13/13；新增链在主工作区Host／第二工作区Client的真实双Editor通过，复用22项新增UTF及11项相关回归结果。三份delta的13项需求与场景已核对主规格，当前36份主规格严格验证通过；原始失败及设备未验收范围保留在各归档案记录。
 
 2026-10-15 已完成并归档[16项业务变更](../Docs/Product/full-version-roadmap.md)，66/66任务。涉及27份delta、5组共享规格按实际最终实现核对，保留扩建后续合同；离线协议案显式跳过delta。48份主规格严格验证通过。原功能运行记录随各案归档，未因归档重复执行未改变的套件；设备／物理LAN／Player/AOT／构建边界保持。
+
+2026-10-16 已归档动画样板、动画真实接入、菜谱实物提示、菜单相关加成、扩展工位升级及产品枚举六案，合计21/21任务；11条新增需求已核对同步，48份主规格严格验证通过。PC合作与Android单机尚未全部完成，仍在活动目录；原运行证据随完成案归档，未因归档重跑未改变的功能套件。
 
 2026-10-16 原18项入口业务与UI变更已完成并归档，54/54任务；36条增补要求／56场景合并至10份主规格，全量严格验证72/72通过。实现、UTF及普通Launcher逐项记录见[入口归档索引](changes/archive/2026-10-16-product-entry-navigation/entry-roadmap.md)。本地提交包含已完成的枚举、菜单加成、扩展升级和菜谱实物提示前置；后续21案仍为规划，设备／Player／物理LAN未由本批证明。
 
@@ -42,6 +46,7 @@
 | [kitchen-recipe-guide](specs/kitchen-recipe-guide/spec.md) | 实际配方、当前缺口及只读首单提示；玩家理解已豁免 |
 | [restaurant-chapters](specs/restaurant-chapters/spec.md) | Solo 三关、明确终关、完成记录与旧档兼容 |
 | [restaurant-ui](specs/restaurant-ui/spec.md) | 同版显示、真实输入、前厅拖动和受管关闭重开 |
+| [restaurant-feedback](specs/restaurant-feedback/spec.md) | 已提交动作的经营短音、去重、本机即时声音与所属播放回收 |
 | [restaurant-art](specs/restaurant-art/spec.md) | 统一斜俯视美术、当前资源、方向／内容图层、竖屏可读性与本轮回收 |
 | [kitchen-supply](specs/kitchen-supply/spec.md) | 有限采购、业务运输、满槽待收货、真实包装拆份及跨关保留 |
 | [restaurant-renovation](specs/restaurant-renovation/spec.md) | 成功固定候选、下一关一次安装、整体布局预检及持续装修归属 |

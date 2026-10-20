@@ -41,6 +41,7 @@ namespace ET.Client
             Field(grid.PermissionVersion);
             Field(own.HandItemId);Field(own.WorkId);Field(own.FrontWorkId);Field(own.FrontClaimSerial);
             Flag(self.DetailsVisible);Flag(self.OrdersVisible);Field(self.RecipeDishId);Flag(self.RecipeVisible);Flag(self.FirstOrderGuideVisible);
+            Field(self.FirstGuideOrderId);Flag(self.FirstGuideNeedsOrderChoice);
             Field((int)self.CompanionChat);
             Field((int)self.OverviewPage);
             Field((int)grid.CompanionPreference);

@@ -31,7 +31,8 @@
         "LoopScrollRect.Runtime",
         "Game",
         "Unity.InputSystem",
-        "UnityGameFramework.Runtime"
+        "UnityGameFramework.Runtime",
+        "GameFramework"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

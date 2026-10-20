@@ -63,13 +63,34 @@ namespace ET
             // This existing suite exercises the retained two-food configuration; drink tests opt into the new menu.
             selector.NewMenuVariant = menuVariant;
             var menu = ((UIGridKitchen)selector.Hud).View;
+            Pointer(menu.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "菜单试玩"));
             yield return StartPreviewAndConfirm(menu.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "内存试玩"));
             if(waitReady)yield return Wait(()=>Presentation?.Ready==true,"Real managed HUD ready");
         }
         private Button Button(string caption,bool prefix=false)
         {
-            Button result = Hud.GetComponentsInChildren<Button>(false)
-                .SingleOrDefault(value=>prefix?value.GetComponentInChildren<Text>().text.StartsWith(caption):value.GetComponentInChildren<Text>().text==caption);
+            Button Find() => Hud.GetComponentsInChildren<Button>(false).SingleOrDefault(value => prefix
+                ? value.GetComponentInChildren<Text>().text.StartsWith(caption) || value.name.StartsWith(caption)
+                : value.GetComponentInChildren<Text>().text == caption || value.name == caption);
+            Button result = Find();
+            if (result == null && !Hud.MoreActionsVisible)
+            {
+                var more = Hud.GetComponentsInChildren<Button>(false).SingleOrDefault(value => value.GetComponentInChildren<Text>().text == "更多动作");
+                if (more != null)
+                {
+                    Pointer(more);
+                    result = Find();
+                }
+            }
+            if (result == null)
+            {
+                var all = Hud.GetComponentsInChildren<Button>(false).SingleOrDefault(value => value.GetComponentInChildren<Text>().text == "全部动作");
+                if (all != null)
+                {
+                    Pointer(all);
+                    result = Find();
+                }
+            }
             Assert.That(result, Is.Not.Null, "Missing actual button: " + caption + "; phase=" + Grid?.LevelPhase + "; group=" + Presentation?.ActionGroup);
             return result;
         }
@@ -233,7 +254,7 @@ namespace ET
             }
         }
 
-        [Test]
+        [Test, Category("ReadableHud")]
         public void SoloRestaurantUiBindingsRealPrefabHasGeneratedFieldsAndOriginalCanvas()
         {
             GameObject asset=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Res/UI/UIForm/Product/UIGridKitchen.prefab");
@@ -544,7 +565,7 @@ namespace ET
             Assert.That(Grid.LevelScore,Is.Zero,"Processing completion is not order scoring");
         }
 
-        [UnityTest]
+        [UnityTest, Category("ReadableHud")]
         public IEnumerator SoloRestaurantUiLifecycleExitDuringActualInitialLoadDoesNotShowOrphanHud()
         {
             yield return StartLauncher(false);yield return Wait(()=>Presentation?.HudLoading==true && !Presentation.Ready,"Actual UI loading window");

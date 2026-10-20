@@ -16,12 +16,14 @@ namespace ET.Client
         private static void Awake(this SoloSavePresentation self)
         {
             self.PreferencesDraft = null;
+            self.AudioPage = null;
             self.Labels = null; self.LabelsFailure = null; self.LabelDraft = null;
             self.InitializePreferences();
             self.Hud = default; self.Headers = Array.Empty<SoloSaveHeader>(); self.Failure = null; self.Epoch = 0;
             self.ViewedResult = null;
             self.NewMenuVariant = ProductMenuVariant.Drink;
             self.RenderVersion = 0; self.StartPreviewVisible = false;
+            self.Page = SoloEntryPage.Home;
             self.ClearSaveInspection(); self.SaveFilter = SoloSaveListFilter.All; self.BrowseSerial = 0;
             self.LoadingHud = false; self.LoadingSelection = false; self.Started = false;
             self.OpenSoloSelection();
@@ -42,6 +44,7 @@ namespace ET.Client
 
         public static void CloseSoloSelection(this SoloSavePresentation self)
         {
+            self.AudioPage = null;
             self.PreferencesDraft = null;
             self.LabelDraft = null;
             self.RequestedSlotId = null; self.RequestedRevision = 0;
@@ -147,9 +150,10 @@ namespace ET.Client
         {
             UIGridKitchen hud = self.Hud; if (hud?.Available != true || self.Started) return;
             self.ApplySavedPreferences(hud.View);
+            if (self.RenderAudio(hud, () => self.RenderSoloSelection())) return;
             if (self.RenderPreferences(hud, () => self.RenderSoloSelection())) return;
             long render = ++self.RenderVersion;
-            var view = hud.View; view.ClearTargets(); view.SetInformation("", "", false, false); view.ShowPanels(false, true); view.CameraDragAreaRectTransform.gameObject.SetActive(false);
+            var view = hud.View; view.ClearTargets(); view.SetInformation("", "", false, false); view.ShowEntryLayout();
             view.PhaseText.text = "单机餐厅"; view.ClockText.text = "选择开始方式"; view.ScoreText.text = "成功后保存";
             view.StatusText.text = self.LoadingSelection ? "正在读取并校验检查点…" : "选择新开餐厅，或继续一份本机记录";
             view.HandText.text = "保存只新建，不覆盖原记录"; view.WorkText.text = ""; view.HintText.text = "本机 PC 单机 · 内存试玩退出后不保留";
@@ -172,13 +176,46 @@ namespace ET.Client
                 return;
             }
             self.AddPreferencesControl(view, () => self.RenderSoloSelection());
+            self.AddAudioControl(view, () => self.RenderSoloSelection());
             if (self.InspectedSave != null) { self.RenderSaveInspection(view); return; }
             if (self.StartPreviewVisible) { self.RenderSoloStartPreview(view); return; }
-            self.AddSaveFilters(view);
+            if (self.Page == SoloEntryPage.Home)
+            {
+                view.ClockText.text = "单机 / 开始";
+                view.SettlementText.text = "第一次来？从「家常开张」开始，先学会一碗汤，再逐关加入吐司和沙拉。\n已有记录可明确选档继续；独立菜单集中在「菜单试玩」。";
+                var first = Tables.Instance.DTRestaurantChapterConfig.Get(1);
+                view.AddControl("开始第一章 · " + first.Name, () =>
+                {
+                    SoloSavePresentation current = original;
+                    current?.PreviewSoloStart(!Application.isMobilePlatform, first.MenuVariant, first.Id);
+                });
+                self.AddSoloPage(view, "选择其他章节", SoloEntryPage.Chapters);
+                self.AddSoloPage(view, self.Headers.Length > 0 ? "继续记录" : "查看记录", SoloEntryPage.Records);
+                self.AddSoloPage(view, "菜单试玩", SoloEntryPage.TrialMenus);
+                view.AddControl("返回模式选择", () =>
+                {
+                    SoloSavePresentation current = original;
+                    if (current != null)
+                    {
+                        ProductBootstrapBridge.ReturnToModeMenu(current.Root().GetComponent<ProductRuntimeComponent>().Config);
+                    }
+                });
+                return;
+            }
+            self.AddSoloPage(view, "返回单机首页", SoloEntryPage.Home);
+            if (self.Page == SoloEntryPage.Records)
+            {
+                view.ClockText.text = "单机 / 记录";
+                self.AddSaveFilters(view);
+            }
             if (self.LabelsFailure != null)
             {
                 view.StatusText.text = self.LabelsFailure;
             }
+            if (self.Page == SoloEntryPage.TrialMenus)
+            {
+            view.ClockText.text = "单机 / 菜单试玩";
+            view.SettlementText.text = "独立菜单用于单独体验原有制作链。\n正式章节请返回单机首页选择；各入口仍会预览并说明是否保存。";
             if (!Application.isMobilePlatform)
                 view.AddControl("新开餐厅", () => { SoloSavePresentation current = original; current?.PreviewSoloStart(true, current.NewMenuVariant); });
             view.AddControl("内存试玩", () => { SoloSavePresentation current = original; current?.PreviewSoloStart(false, current.NewMenuVariant); });
@@ -238,6 +275,11 @@ namespace ET.Client
                     current.PreviewSoloStart(!Application.isMobilePlatform, ProductMenuVariant.Tea);
                 }
             });
+            }
+            if (self.Page == SoloEntryPage.Chapters)
+            {
+            view.ClockText.text = "单机 / 选择章节";
+            view.SettlementText.text = "章节按各自已有菜单与关链开始；选择后先预览，确认后才建立餐厅。";
             foreach (var chapter in Tables.Instance.DTRestaurantChapterConfig.DataList.OrderBy(row => row.Id))
             {
                 int id = chapter.Id; ProductMenuVariant menu = chapter.MenuVariant;
@@ -249,6 +291,11 @@ namespace ET.Client
                         current.PreviewSoloStart(!Application.isMobilePlatform, menu, id);
                     }
                 });
+            }
+            }
+            if (self.Page != SoloEntryPage.Records)
+            {
+                return;
             }
             view.AddControl("刷新记录", () => { SoloSavePresentation current = original; current?.BrowseSoloSelection(); });
             view.AddControl("返回模式选择", () =>
@@ -284,6 +331,20 @@ namespace ET.Client
             if (self.Headers.Length == 0) view.SettlementText.text += "\n当前没有可继续的记录";
         }
 
+        private static void AddSoloPage(this SoloSavePresentation self, MonoUIGridKitchen view, string caption, SoloEntryPage page)
+        {
+            EntityRef<SoloSavePresentation> original = self;
+            view.AddControl(caption, () =>
+            {
+                SoloSavePresentation current = original;
+                if (current != null)
+                {
+                    current.Page = page;
+                    current.RenderSoloSelection();
+                }
+            });
+        }
+
         public static void ChooseSoloNewGame(this SoloSavePresentation self, bool persistent, int contentChapterId = 0)
         {
             if (self.Started || self.LoadingSelection || ((UIGridKitchen)self.Hud)?.Available != true) return;
@@ -304,7 +365,11 @@ namespace ET.Client
             catch (Exception e) { self.Started = false; self.Failure = e.Message; self.OpenSoloSelection(); }
         }
 
-        public static void ChooseSoloSave(this SoloSavePresentation self, string slot) => self.ReadSoloSave(slot, false);
+        public static void ChooseSoloSave(this SoloSavePresentation self, string slot)
+        {
+            self.Page = SoloEntryPage.Records;
+            self.ReadSoloSave(slot, false);
+        }
 
         private static void ReadSoloSave(this SoloSavePresentation self, string slot, bool continuing)
         {
@@ -353,6 +418,7 @@ namespace ET.Client
 
     [Event(SceneType.ProductRoot)]
     [FriendOf(typeof(ProductRuntimeComponent))]
+    [FriendOf(typeof(SoloSavePresentation))]
     public sealed class SoloSaveSelectionView : AEvent<Scene, SoloSaveSelectionRequested>
     {
         protected override UniTask Run(Scene scene, SoloSaveSelectionRequested args)
@@ -365,6 +431,10 @@ namespace ET.Client
             }
             scene.RemoveComponent<SoloSavePresentation>();
             var selection = scene.AddComponent<SoloSavePresentation>();
+            if (args.ShowRecords || args.SlotId != null)
+            {
+                selection.Page = SoloEntryPage.Records;
+            }
             if (args.SlotId != null)
             {
                 selection.NavigateSoloRecord(args.SlotId, args.Revision);

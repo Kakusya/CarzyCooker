@@ -81,7 +81,7 @@ namespace ET.Client
             view.AddControl("继续记录", () =>
             {
                 ProductEntryPresentation current = original;
-                current?.ChooseSoloEntry();
+                current?.ChooseSoloEntry(true);
             });
             self.AddEntryNavigation(view, "合作房间", ProductEntryPage.Cooperation);
             view.AddControl("合作进度领取", () =>

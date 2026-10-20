@@ -301,3 +301,4 @@ MonoBehaviour:
   m_PaletteSpriteRenderer: {fileID: 268061603814627748}
   m_RenderRootTransform: {fileID: 5872636301948953619}
   m_ViewportTransform: {fileID: 2906563789672940493}
+  m_BistroAtlas: {fileID: 2800000, guid: a36716ec85b32564aa0e0d6edef1ab63, type: 3}

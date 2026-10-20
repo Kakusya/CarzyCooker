@@ -13,7 +13,8 @@ namespace ET.Client
             {
                 return "目标：点击地图工位，或选择下方操作";
             }
-            return $"目标：{station.Name} · {grid.ItemDescription(station.ItemId)}";
+            string reason = ContextActionReason(grid, station, grid.CounterIntent(station.Id));
+            return $"目标：{station.Name} · {grid.ItemDescription(station.ItemId)}" + (reason == null ? "" : "\n" + reason);
         }
 
         public static string SelectedTargetDetails(this GridPresentationComponent self, GridClientComponent grid)
@@ -38,7 +39,9 @@ namespace ET.Client
             {
                 position += "\n餐具：" + string.Join("、", station.PoolItemIds.Select(grid.ItemDescription));
             }
-            return position + StationCapabilityDetails(grid, station);
+            string reason = ContextActionReason(grid, station, grid.CounterIntent(station.Id));
+            return position + StationCapabilityDetails(grid, station) + (reason == null ? "" : "\n\n当前条件：" + reason +
+                "。\n装盘沿原方向：把盘放到空台面，取出吐司，再将吐司加入盘；不会自动交换。最终执行仍核对当前位置、占用与物品。" );
         }
 
         private static bool IsSelectedTarget(this GridPresentationComponent self, long stationId)

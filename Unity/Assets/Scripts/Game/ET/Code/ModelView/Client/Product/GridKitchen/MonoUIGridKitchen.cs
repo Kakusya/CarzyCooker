@@ -10,7 +10,7 @@ namespace ET.Client
     public partial class MonoUIGridKitchen : AETMonoUGFUIForm
     {
         private readonly List<Button> buttons = new();
-        private readonly List<(Button Button, GridActionGroup Group, bool Primary)> actionButtons = new();
+        private readonly List<(Button Button, GridActionGroup Group, bool Primary, string Label, string Summary, GridContextPriority Priority)> actionButtons = new();
         private readonly List<(Button Button, GridActionGroup Group)> actionNavigationButtons = new();
         private GridActionGroup targetGroup;
         private Font font;
@@ -19,9 +19,13 @@ namespace ET.Client
         private readonly Vector3[] viewportCorners = new Vector3[4];
         private Canvas hudCanvas;
         [SerializeField] private Texture2D m_ArtAtlas;
+        [SerializeField] private Texture2D m_BistroAtlas;
         [SerializeField] private Image m_HandIcon;
         private Sprite[] handArt;
         private InputField m_EntryAddress;
+        private Rect m_AppliedSafeArea;
+        private Vector2 m_AppliedScreenSize;
+        private bool m_HasSafeArea;
         private float m_FontScale = 1;
         private bool m_HasFontSize;
         private ProductFontSize m_FontSize;
@@ -69,6 +73,8 @@ namespace ET.Client
         {
             m_HasFontSize = false;
             hudCanvas=GetComponent<Canvas>();
+            m_HasSafeArea = false;
+            ApplySafeArea(Screen.safeArea, new Vector2(Screen.width, Screen.height));
             CameraDragAreaRectTransform.gameObject.SetActive(true);
             if(m_ArtAtlas==null)
             {
@@ -77,13 +83,15 @@ namespace ET.Client
             if(font==null)font = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "Noto Sans CJK SC", "Arial" }, 34);
             foreach(Text text in new[]{StatusText,HandText,HintText,PhaseText,ClockText,ScoreText,WorkText,OrdersText,BuffText,SettlementText,TargetText,DetailsText})text.font=font;
             foreach(Text text in new[]{StatusText,HandText,HintText,PhaseText,ClockText,ScoreText,WorkText,OrdersText,BuffText,SettlementText,TargetText,DetailsText})text.color=new Color(.15f,.26f,.23f);
-            handArt=new Sprite[21];
+            handArt=new Sprite[MonoGridKitchenBoard.ItemArtDefinitionCount];
             for(int i=0;i<handArt.Length;++i)
             {
-                handArt[i]=MonoGridKitchenBoard.CreateItemArtSlice(m_ArtAtlas,i+1);
+                handArt[i]=MonoGridKitchenBoard.CreateHudItemArtSlice(m_ArtAtlas,m_BistroAtlas,i+1);
             }
+            ConfigureUnknownIcon();
             SetHandItemIcon(0);
             DetailsPanelRectTransform.gameObject.SetActive(false);
+            ConfigureLayout();
             HintText.text = "点击地面行走 · 拖动查看餐厅 · 点击台面拿放";
         }
 
@@ -142,6 +150,7 @@ namespace ET.Client
             {
                 m_EntryAddress.textComponent.fontSize = Mathf.RoundToInt(22 * m_FontScale);
             }
+            ApplyLayout();
         }
 
         private void ApplyButtonFont(Text caption)
@@ -152,6 +161,34 @@ namespace ET.Client
             caption.resizeTextMaxSize = Mathf.RoundToInt(24 * m_FontScale);
         }
 
+        private void Update()
+        {
+            if (hudCanvas != null)
+            {
+                ApplySafeArea(Screen.safeArea, new Vector2(Screen.width, Screen.height));
+            }
+        }
+
+        public void ApplySafeArea(Rect area, Vector2 screenSize)
+        {
+            if (screenSize.x <= 0 || screenSize.y <= 0 || area.width <= 0 || area.height <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(area));
+            }
+            if (m_HasSafeArea && area == m_AppliedSafeArea && screenSize == m_AppliedScreenSize)
+            {
+                return;
+            }
+            RememberViewportPosition();
+            m_HasSafeArea = true;
+            m_AppliedSafeArea = area;
+            m_AppliedScreenSize = screenSize;
+            var rect = (RectTransform)transform;
+            rect.anchorMin = new Vector2(Mathf.Clamp01(area.xMin / screenSize.x), Mathf.Clamp01(area.yMin / screenSize.y));
+            rect.anchorMax = new Vector2(Mathf.Clamp01(area.xMax / screenSize.x), Mathf.Clamp01(area.yMax / screenSize.y));
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+        }
         public Rect MapViewport()
         {
             if(hudCanvas==null)
@@ -165,17 +202,25 @@ namespace ET.Client
         }
         public void ShowPanels(bool preparing,bool completed)
         {
+            m_EntryLayout = false;
+            CameraDragAreaRectTransform.gameObject.SetActive(true);
+            m_Preparing = preparing;
+            m_Completed = completed;
             BuffPanelRectTransform.gameObject.SetActive(preparing);OrderPanelRectTransform.gameObject.SetActive(!preparing && !completed);
             SettlementPanelRectTransform.gameObject.SetActive(completed);
+            ApplyLayout();
         }
         public void ClearTargets()
         {
+            RememberListPosition();
             if (m_EntryAddress != null)
             {
                 m_EntryAddress.gameObject.SetActive(false);
             }
             foreach(Button button in buttons){button.onClick.RemoveAllListeners();button.gameObject.SetActive(false);Destroy(button.gameObject);}buttons.Clear();
             actionButtons.Clear();
+            m_ContextSummaryReady = false;
+            m_SummaryButtons.Clear();
             actionNavigationButtons.Clear();
             targetGroup = GridActionGroup.Kitchen;
         }
@@ -184,6 +229,7 @@ namespace ET.Client
             TargetText.text=target;
             DetailsText.text=details;
             DetailsPanelRectTransform.gameObject.SetActive(showDetails);
+            ApplyLayout();
             if (!BuffPanelRectTransform.gameObject.activeSelf && !SettlementPanelRectTransform.gameObject.activeSelf)
             {
                 OrderPanelRectTransform.gameObject.SetActive(showOrders);
@@ -191,10 +237,11 @@ namespace ET.Client
         }
         public void BeginActionGroup(GridActionGroup group) => targetGroup = group;
 
-        public void AddTarget(string label, Action action, bool primary=false, GridActionGroup? group=null)
+        public void AddTarget(string label, Action action, bool primary=false, GridActionGroup? group=null,
+            string summaryLabel = null, GridContextPriority priority = GridContextPriority.Related)
         {
             Button button = AddButton(primary ? PrimaryActionsRectTransform : TargetsRectTransform, label, action, primary);
-            actionButtons.Add((button, group ?? targetGroup, primary));
+            actionButtons.Add((button, group ?? targetGroup, primary, label, summaryLabel ?? label, priority));
         }
 
         public void AddActionNavigation(string label, GridActionGroup group, Action action)
@@ -206,19 +253,29 @@ namespace ET.Client
 
         public void ApplyActionGroup(GridActionGroup group)
         {
+            m_CurrentActionGroup = group;
             foreach (var entry in actionButtons)
             {
-                entry.Button.gameObject.SetActive(entry.Primary || group == GridActionGroup.All || entry.Group == group);
+                bool summary = m_ContextSummaryReady && m_SummaryButtons.Contains(entry.Button);
+                entry.Button.gameObject.SetActive(summary || (!m_ContextSummaryReady || m_MoreActionsVisible) &&
+                    (entry.Primary || group == GridActionGroup.All || entry.Group == group));
             }
             foreach (var entry in actionNavigationButtons)
             {
+                entry.Button.gameObject.SetActive(!m_ContextSummaryReady || m_MoreActionsVisible);
                 ColorBlock colors = entry.Button.colors;
                 colors.normalColor = entry.Group == group ? new Color(.58f, .85f, .76f) : TargetTemplateButton.colors.normalColor;
                 entry.Button.colors = colors;
             }
         }
-        public void AddControl(string label,Action action)=>AddButton(ControlPanelRectTransform,label,action);
-        public void AddOrderAction(string label,Action action)=>AddButton(OrderActionsRectTransform,label,action);
+        public void AddControl(string label,Action action)=>AddButton(ControlParent(label),label,action);
+        public void AddOrderAction(string label, Action action, bool primary = false, int dishDefinition = 0)
+        {
+            Button button = AddButton(OrderActionsRectTransform, label, action);
+            AddOrderIcon(button, dishDefinition);
+            actionButtons.Add((button, GridActionGroup.FrontService, primary, label, label,
+                primary ? GridContextPriority.SelectedOrder : GridContextPriority.Related));
+        }
         public void AddBuffAction(string label,Action action)=>AddButton(BuffActionsRectTransform,label,action);
         public void SetHandItemIcon(int definition)
         {
@@ -226,12 +283,16 @@ namespace ET.Client
             {
                 throw new InvalidOperationException("Restaurant hand icon binding is missing.");
             }
-            m_HandIcon.enabled=definition>=1 && definition<=21;
-            m_HandIcon.sprite=m_HandIcon.enabled?handArt[definition-1]:null;
+            bool known = definition >= 1 && definition <= handArt.Length && handArt[definition - 1] != null;
+            m_HandIcon.enabled = definition != 0;
+            m_HandIcon.sprite = known ? handArt[definition - 1] : definition == 0 ? null : m_UnknownItemSprite;
+            m_HandIcon.color = known ? Color.white : new Color(.82f, .77f, .66f);
+            m_UnknownItemLabel.gameObject.SetActive(definition != 0 && !known);
         }
         private Button AddButton(RectTransform parent,string label,Action action,bool primary=false)
         {
             Button button=Instantiate(TargetTemplateButton,parent);button.gameObject.SetActive(true);
+            button.gameObject.name = label;
             Text caption=button.GetComponentInChildren<Text>();caption.font=font;ApplyButtonFont(caption);caption.text=label;
             caption.color=new Color(.99f,.96f,.86f);
             if(primary)
@@ -260,7 +321,9 @@ namespace ET.Client
                 m_EntryAddress = null;
             }
             ClearTargets();inputGuard=null;hudCanvas=null; if(font!=null)Destroy(font);font=null;
+            m_MoreActionsVisible = false;
             if(m_HandIcon!=null)m_HandIcon.sprite=null;
+            ReleaseUnknownIcon();
             if(handArt!=null)
             {
                 foreach(Sprite sprite in handArt)Destroy(sprite);

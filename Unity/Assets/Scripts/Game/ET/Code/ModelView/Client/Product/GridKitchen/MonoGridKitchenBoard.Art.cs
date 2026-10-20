@@ -38,6 +38,7 @@ namespace ET.Client
 
         private void InitializeArt()
         {
+            ValidateBistroAtlas();
             if (m_ArtAtlas == null || m_ArtAtlas.width != ArtColumns * ArtCell || m_ArtAtlas.height != ArtRows * ArtCell)
             {
                 throw new InvalidOperationException("Restaurant art atlas is missing or has an invalid layout.");
@@ -53,6 +54,7 @@ namespace ET.Client
                     pivot, ArtCell / span, 0, SpriteMeshType.FullRect);
                 artSprites[index].name = "RestaurantArt " + index;
             }
+            InitializeBistroArt();
         }
 
         private void ApplyCharacterArt(SpriteRenderer renderer, int skin, GridFacing facing, GridMotion motion,
@@ -81,13 +83,14 @@ namespace ET.Client
         private Sprite ItemArt(int definition)
         {
             // Projection旧测试允许definition=0；正式范围由原模型源生成，新增物品不落入占位图。
-            return definition > 0 && definition <= ArtItemCount ? artSprites[ArtItemStart + definition - 1] : PaletteSpriteRenderer.sprite;
+            Sprite replacement = BistroItem(definition);
+            return replacement != null ? replacement : definition > 0 && definition <= ArtItemCount ? artSprites[ArtItemStart + definition - 1] : PaletteSpriteRenderer.sprite;
         }
 
         private void ApplyStationArt(GridStationProjection station, SpriteRenderer renderer,
             GridAutoProcessProjection batch, GridBakeProjection bake, float tick)
         {
-            renderer.sprite = artSprites[ArtStationStart + (int)station.Kind * 4 + (int)station.Orientation];
+            renderer.sprite = BistroStation(station) ?? artSprites[ArtStationStart + (int)station.Kind * 4 + (int)station.Orientation];
             renderer.color = Color.white;
             int minY = station.Cell.Y, maxY = minY;
             for (int i = 0; i < station.Footprint.Count; ++i)
@@ -101,9 +104,9 @@ namespace ET.Client
             // 前沿作为家具遮挡基准，与角色脚底使用同一排序刻度。
             renderer.sortingOrder = 1000 - Mathf.RoundToInt((minY - .38f) * GroundY * 100);
             bool active = batch.Id != 0 && batch.State == GridAutoState.Cooking || bake.Id != 0 && bake.State == GridBakeState.Baking;
-            SetDecoration(steam, station.Id, renderer, ArtEffectStart, active,
-                new Vector3(0, .67f + ((Mathf.FloorToInt(tick / 4) & 1) == 0 ? 0 : .03f), 0), .55f, 3);
-            SetDecoration(upgrades, station.Id, renderer, ArtEffectStart + 3, station.UpgradeLevel > 0,
+            SetDecoration(steam, station.Id, renderer, bistroSprites[BistroSteam + BistroFrame(bistroTick)], active,
+                new Vector3(0, .67f, 0), .55f, 3);
+            SetDecoration(upgrades, station.Id, renderer, artSprites[ArtEffectStart + 3], station.UpgradeLevel > 0,
                 new Vector3(.31f, -.22f, 0), .3f, 2);
         }
 
@@ -137,14 +140,15 @@ namespace ET.Client
                 secondDefinition = 0;
             }
             bool hasContents = contentDefinition > 0;
-            int contentIndex = hasContents && contentDefinition <= ArtItemCount ? ArtItemStart + contentDefinition - 1 : ArtItemStart;
             float contentY = item.DefinitionId is GridKitchenRules.Plate or GridKitchenRules.DessertPlate ? .045f : .18f;
-            SetDecoration(contents, item.Id, renderer, contentIndex, hasContents, new Vector3(0, contentY, 0), .73f, 1);
-            SetDecoration(secondaryContents, item.Id, renderer, secondDefinition > 0 ? ArtItemStart + secondDefinition - 1 : ArtItemStart,
+            contentY = item.DefinitionId switch { GridKitchenRules.Bowl => .067f, GridKitchenRules.Pot => .127f, GridKitchenRules.DisposableCup => .148f, _ => contentY };
+            float contentScale = contentDefinition is GridKitchenRules.Soup or GridKitchenRules.OrangeJuice ? .95f : .73f;
+            SetDecoration(contents, item.Id, renderer, ItemArt(contentDefinition), hasContents, new Vector3(0, contentY, 0), contentScale, 1);
+            SetDecoration(secondaryContents, item.Id, renderer, ItemArt(secondDefinition),
                 secondDefinition > 0, new Vector3(.10f,contentY+.035f,0), .50f, 2);
-            SetDecoration(dirt, item.Id, renderer, ArtEffectStart + 1, item.Hygiene == ItemHygiene.Dirty,
+            SetDecoration(dirt, item.Id, renderer, artSprites[ArtEffectStart + 1], item.Hygiene == ItemHygiene.Dirty,
                 new Vector3(0, .12f, 0), .75f, 2);
-            SetDecoration(tickets, item.Id, renderer, ArtEffectStart + 2, item.BoundOrderId != 0,
+            SetDecoration(tickets, item.Id, renderer, artSprites[ArtEffectStart + 2], item.BoundOrderId != 0,
                 new Vector3(.29f, -.02f, 0), .65f, 3);
             if (batch.Id != 0 && batch.State == GridAutoState.Ready)
             {
@@ -169,7 +173,7 @@ namespace ET.Client
         }
 
         private void SetDecoration(Dictionary<long, SpriteRenderer> map, long id, SpriteRenderer parent,
-            int spriteIndex, bool visible, Vector3 position, float scale, int order)
+            Sprite sprite, bool visible, Vector3 position, float scale, int order)
         {
             if (!map.TryGetValue(id, out SpriteRenderer child))
             {
@@ -186,7 +190,7 @@ namespace ET.Client
             {
                 return;
             }
-            child.sprite = artSprites[spriteIndex];
+            child.sprite = sprite;
             child.transform.localPosition = position;
             child.transform.localScale = new Vector3(scale, scale, 1);
             child.sortingOrder = parent.sortingOrder + order;
@@ -203,6 +207,7 @@ namespace ET.Client
 
         private void ReleaseArt()
         {
+            ReleaseBistroArt();
             if (artSprites != null)
             {
                 foreach (Sprite sprite in artSprites) Destroy(sprite);
@@ -210,6 +215,8 @@ namespace ET.Client
             }
             contents.Clear(); secondaryContents.Clear(); dirt.Clear(); tickets.Clear(); steam.Clear(); upgrades.Clear(); chairs.Clear();
         }
+
+        public static int ItemArtDefinitionCount => ArtItemCount;
 
         public static Sprite CreateItemArtSlice(Texture2D atlas, int definition)
         {

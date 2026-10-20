@@ -21,6 +21,7 @@ namespace ET.Client
         private static void Awake(this GridPresentationComponent self)
         {
             self.PreferencesDraft = null;
+            self.AudioPage = null;
             self.InitializePreferences();
             self.Ready=false;self.Failure=null;self.HudVersion=0;self.HudTargetsValid=false;self.HudInformationValid=false;self.Board=default;self.Hud=default;
             self.PointerHeld=false;self.PointerDragged=false;self.PointerConsumed=false;self.Highlight=null;self.HighlightCommand=0;
@@ -43,7 +44,9 @@ namespace ET.Client
             self.RoomControlPending=false;
             self.RecipeDishId=0;self.RecipeVisible=false;
             ProductRuntimeComponent runtime=((Scene)self.IScene).GetComponent<ClientSessionComponent>().Runtime;
-            self.FirstOrderGuideVisible=runtime.Config.Role==RuntimeInstanceRole.Solo;
+            self.FirstOrderGuideVisible=false;
+            self.FirstGuideOrderId = self.FirstGuideLocatedItem = self.FirstGuideLocatedStation = 0;
+            self.FirstGuideNeedsOrderChoice = false;
             self.HudLoading=false;self.HudLoadEpoch=0;self.HudActionFields.Clear();self.HudInformationFields.Clear();
             self.RecoveryDisplayed=false;self.RecoveryFeedback=null;
             self.RecoveryRuntime=default;self.RecoveryClient=default;self.RecoveryHud=default;
@@ -109,9 +112,17 @@ namespace ET.Client
             board.View.Configure(grid.Width, grid.Height, grid.KitchenBottom);
             board.View.SetHudViewport(hud.View.MapViewport());
             float tick=grid.Tick+Mathf.Clamp(TimeInfo.Instance.FrameTime-grid.ReceivedFrameTime,0,grid.TickMilliseconds*grid.StepTicks)/(float)grid.TickMilliseconds;
+            // Sparse unchanged snapshots must not stop idle / liquid animation. Position
+            // interpolation keeps its original cap; only the read-only art phase extrapolates.
+            float animationTick=grid.Tick+Mathf.Max(TimeInfo.Instance.FrameTime-grid.ReceivedFrameTime,0)/(float)grid.TickMilliseconds;
             if (grid.LevelPaused || grid.LevelPhase == LevelPhase.Completed) tick = grid.Tick;
-            GridCell? displayHighlight = self.OverviewPage == GridOverviewPage.Items ? self.ItemLocatorHighlight(grid) : self.Highlight;
-            board.View.Render(grid.Actors,grid.Stations,grid.Items,grid.AutoProcesses,grid.BakeProcesses,grid.Companions,grid.Customers,grid.FrontWorks,grid.MemberId,tick,grid.StepTicks,displayHighlight,grid.Processes,grid.Tables);
+            if (grid.LevelPaused || grid.LevelPhase == LevelPhase.Completed)
+            {
+                animationTick = grid.Tick;
+            }
+            GridCell? displayHighlight = self.OverviewPage == GridOverviewPage.Items ? self.ItemLocatorHighlight(grid) : self.FirstSessionHighlight(grid) ?? self.Highlight;
+            board.View.Render(grid.Actors,grid.Stations,grid.Items,grid.AutoProcesses,grid.BakeProcesses,grid.Companions,grid.Customers,grid.FrontWorks,grid.MemberId,tick,grid.StepTicks,displayHighlight,grid.Processes,grid.Tables,
+                grid.LastProductOutcome,grid.LastProductOutcomeSerial,grid.LevelId,grid.LevelGeneration,grid.BindingGeneration,animationTick);
             self.RenderTargetPings(grid, board.View);
             self.UpdateStationInspection(grid);
             if(grid.LastCommandId>=self.HighlightCommand && grid.LastStatus is GridResultStatus.Rejected or GridResultStatus.Cancelled)self.Highlight=null;
@@ -134,7 +145,7 @@ namespace ET.Client
             if(down)
             {
                 self.PointerHeld=true;self.PointerDragged=false;self.PointerStart=point;self.PointerLast=point;
-                self.PointerConsumed=!board.View.InputScreenRect.Contains(point);
+                self.PointerConsumed=!board.View.InputScreenRect.Contains(point) || ((UIGridKitchen)self.Hud)?.View.LayoutMode == ProductHudLayout.Details;
                 if(UIEventSystem.current!=null)
                 {
                     var hits=new List<RaycastResult>();
@@ -214,19 +225,23 @@ namespace ET.Client
                 }
                 EntityRef<GridClientComponent> gridRef=grid;
                 GridCommandRequest request=grid.CreateGridCommand(action,cell,target,expected,expectedTarget,process,expectedContents,expectedRemainingPortions,expectedLayoutVersion,expectedOrderId,recipeId);
+                ProductFeedbackComponent feedback = ProductFeedbackSystem.Feedback((Scene)self.IScene);
+                feedback?.RegisterFeedback(grid, request.CommandId, action);
+                EntityRef<ProductFeedbackComponent> feedbackRef = feedback;
                 self.RememberAdviceRequest(grid, request.CommandId, target);
                 long command=request.CommandId, generation=grid.WorldGeneration;
                 self.Highlight=cell;self.HighlightCommand=command;
                 try
                 {
                     string rejection=await client.CallProductValueAsync(context,request,response=>response.Error==0?null:response.Message);
+                    if (rejection != null) ((ProductFeedbackComponent)feedbackRef)?.ForgetFeedback(command);
                     context.ThrowIfStopped();self=selfRef;grid=gridRef;
                     if(self==null || !self.Ready || grid==null || grid.WorldGeneration!=generation || grid.LastCommandId!=command)return;
                     if(rejection!=null){grid.LastStatus=GridResultStatus.Rejected;grid.LastReason=rejection;self.Highlight=null;self.RefreshGridHud();}
                 }
                 catch(OperationCanceledException){ }
                 catch(Exception exception)
-                {self=selfRef;if(self!=null && self.HighlightCommand==command){self.Highlight=null;self.Failure=exception.Message;self.RefreshGridHud();}}
+                {((ProductFeedbackComponent)feedbackRef)?.ForgetFeedback(command);self=selfRef;if(self!=null && self.HighlightCommand==command){self.Highlight=null;self.Failure=exception.Message;self.RefreshGridHud();}}
             });
         }
 
@@ -264,6 +279,11 @@ namespace ET.Client
             GridClientComponent grid=client.GetComponent<GridClientComponent>();
             MonoUIGridKitchen view=hud.View;
             self.ApplySavedPreferences(view);
+            if (self.RenderAudio(hud, () => self.RefreshGridHud()))
+            {
+                self.HudVersion = grid.Version;
+                return;
+            }
             self.DisplayedClaimInboxVersion = self.Root().GetComponent<ProductEntryPresentation>()?.ClaimInboxVersion ?? 0;
             if(!grid.Actors.TryGetValue(grid.MemberId,out GridActorProjection own))
             {
@@ -289,6 +309,9 @@ namespace ET.Client
                 self.ClearStationInspection();
                 self.ClearRenovationPreview();
                 self.SelectedStationId=0;self.DetailsVisible=false;
+                self.FirstOrderGuideVisible = HasSoloRecipeGuide(grid) && grid.LevelConfigId == 1101;
+                self.FirstGuideOrderId = self.FirstGuideLocatedItem = self.FirstGuideLocatedStation = 0;
+                self.FirstGuideNeedsOrderChoice = false;
                 self.SelectedLevelId=grid.LevelId;self.SelectedLevelGeneration=grid.LevelGeneration;
             }
             else if(self.SelectedStationId!=0 && !grid.Stations.ContainsKey(self.SelectedStationId))
@@ -317,6 +340,7 @@ namespace ET.Client
             {
                 self.CloseItemLocator();
             }
+            self.ObserveFirstSession(grid);
             bool actionsChanged=self.GridHudActionsChanged(grid,own,hud);
             if(actionsChanged)
             {
@@ -470,6 +494,7 @@ namespace ET.Client
             self.AddPreparationOverview(view,grid);
             self.AddSettlementGuidance(view,grid);
             self.AddPreferencesControl(view, () => self.RefreshGridHud());
+            self.AddAudioControl(view, () => self.RefreshGridHud());
             self.AddServiceRecap(view,grid);
             self.AddNoticeView(view);
             bool detailsVisible=self.DetailsVisible || self.RecipeVisible || self.CompanionChat!=CompanionChatTopic.None ||
@@ -584,12 +609,15 @@ namespace ET.Client
                 {
                     if(!grid.Stations.TryGetValue(order.TableStationId,out GridStationProjection table))continue;
                     GridCell approach=table.Approaches.First(cell=>!grid.Stations.Values.Any(value=>value.Footprint.Contains(cell)));
-                    view.AddOrderAction("前往 "+table.Name,()=>{GridPresentationComponent current=selfRef;current?.SendGridAction(GridAction.Move,approach);});
+                    DRDishConfig orderDish = Tables.Instance.DTDishConfig.Get(order.DishId);
+                    view.AddOrderAction("前往 "+table.Name,()=>{GridPresentationComponent current=selfRef;current?.SendGridAction(GridAction.Move,approach);}, dishDefinition: orderDish.ContentDefinitionId);
                     if(own.HandItemId!=0)
                     {
                         long item=own.HandItemId,level=grid.LevelId,generation=grid.LevelGeneration;
                         string dish=Tables.Instance.DTDishConfig.Get(order.DishId).Name;
-                        view.AddOrderAction("交付 "+dish+" → "+table.Name,()=>{GridPresentationComponent current=selfRef;current?.SendServeOrder(order.Id,order.CustomerId,order.TableStationId,item,level,generation);});
+                        bool selectedOrder = self.RecipeOrderId == order.Id || self.FirstOrderGuideVisible && self.FirstGuideOrderId == order.Id;
+                        view.AddOrderAction("交付 "+dish+" → "+table.Name,()=>{GridPresentationComponent current=selfRef;current?.SendServeOrder(order.Id,order.CustomerId,order.TableStationId,item,level,generation);},
+                            selectedOrder && ContextServeMatches(grid, order, item), orderDish.ContentDefinitionId);
                     }
                 }
             view.BeginActionGroup(GridActionGroup.Supply);
@@ -662,7 +690,9 @@ namespace ET.Client
                 }
                 if(station.Kind is GridStationKind.Table or GridStationKind.Wash or GridStationKind.DirtyPool or GridStationKind.CleanPool) continue;
                 string action=intent.Action switch {GridAction.PlaceCounter=>"放",GridAction.AddToContainer=>"添加",GridAction.StartStationWork=>intent.ExpectedProcessId==0?"切配":"继续切配",GridAction.StopWork=>"停止",GridAction.PourContents=>"倒蛋液",GridAction.StartAutoWork=>"煮汤",GridAction.PortionSoup or GridAction.PortionJuice=>"盛一份",GridAction.StartJuice=>"榨汁",GridAction.StartBake=>"烘烤",GridAction.StartFry=>"煎制",GridAction.StartMix=>"搅拌",GridAction.PortionBatter=>"装模",GridAction.Unmold=>"脱模",GridAction.StartBrewTea=>"泡茶",GridAction.StartBoilPearls=>"煮珍珠",GridAction.StartMixTea=>"调饮",GridAction.PortionTeaBase=>"取一份",GridAction.StartSteam=>"蒸制",GridAction.StartGrind=>"研磨",GridAction.StartExtract=>"萃取",GridAction.HeatMilk=>"热奶",GridAction.FoamMilk=>"打泡",GridAction.PortionDrinkBase=>"取一份",_=>"拿"};
-                view.AddTarget($"{action} {station.Name} · {grid.ItemDescription(station.ItemId)}",()=>{GridPresentationComponent current=selfRef;current?.SendGridIntent(intent);},self.IsSelectedTarget(id));
+                bool contextEligible = self.IsSelectedTarget(id) && ContextActionReason(grid, station, intent) == null;
+                view.AddTarget($"{action} {station.Name} · {grid.ItemDescription(station.ItemId)}",()=>{GridPresentationComponent current=selfRef;current?.SendGridIntent(intent);}, contextEligible,
+                    summaryLabel: ContextActionCaption(grid, station, intent, action), priority: GridContextPriority.Direct);
                 if (own.HandItemId == 0 && grid.Items.TryGetValue(station.ItemId, out GridItemProjection potItem) && potItem.DefinitionId == GridKitchenRules.Pot && intent.Action == GridAction.StartAutoWork)
                 {
                     long potId = potItem.Id;
@@ -727,6 +757,7 @@ namespace ET.Client
             }
             self.AddItemLocator(view,grid);
             self.AddActionNavigation(view,grid);
+            view.CompleteContextActions();
             // 仅在本次信息／结构成功展示后记录，下一次轮询才可跳过该投影。
             self.HudTargetsValid=true;self.HudVersion=grid.Version;
         }

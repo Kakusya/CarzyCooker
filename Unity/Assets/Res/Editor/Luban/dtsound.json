@@ -1,1 +1,74 @@
-[]
+[
+  {
+    "Id": 1101,
+    "CSName": "ProductPickup",
+    "Desc": "拾取确认",
+    "AssetName": "Product/Pickup",
+    "SoundGroupName": "Sound.Default",
+    "Priority": 20,
+    "Loop": false,
+    "Volume": 1,
+    "SpatialBlend": 0,
+    "MaxDistance": 100
+  },
+  {
+    "Id": 1102,
+    "CSName": "ProductPlace",
+    "Desc": "放置入容器和分装",
+    "AssetName": "Product/Place",
+    "SoundGroupName": "Sound.Default",
+    "Priority": 20,
+    "Loop": false,
+    "Volume": 1,
+    "SpatialBlend": 0,
+    "MaxDistance": 100
+  },
+  {
+    "Id": 1103,
+    "CSName": "ProductWorkStart",
+    "Desc": "实际开始加工",
+    "AssetName": "Product/WorkStart",
+    "SoundGroupName": "Sound.Default",
+    "Priority": 40,
+    "Loop": false,
+    "Volume": 1,
+    "SpatialBlend": 0,
+    "MaxDistance": 100
+  },
+  {
+    "Id": 1104,
+    "CSName": "ProductWorkFinished",
+    "Desc": "实际加工完成",
+    "AssetName": "Product/WorkFinished",
+    "SoundGroupName": "Sound.Default",
+    "Priority": 64,
+    "Loop": false,
+    "Volume": 1,
+    "SpatialBlend": 0,
+    "MaxDistance": 100
+  },
+  {
+    "Id": 1105,
+    "CSName": "ProductServe",
+    "Desc": "实际交付成功",
+    "AssetName": "Product/Serve",
+    "SoundGroupName": "Sound.Default",
+    "Priority": 80,
+    "Loop": false,
+    "Volume": 1,
+    "SpatialBlend": 0,
+    "MaxDistance": 100
+  },
+  {
+    "Id": 1106,
+    "CSName": "ProductLevelComplete",
+    "Desc": "本关自然完成",
+    "AssetName": "Product/LevelComplete",
+    "SoundGroupName": "Sound.Default",
+    "Priority": 96,
+    "Loop": false,
+    "Volume": 1,
+    "SpatialBlend": 0,
+    "MaxDistance": 100
+  }
+]

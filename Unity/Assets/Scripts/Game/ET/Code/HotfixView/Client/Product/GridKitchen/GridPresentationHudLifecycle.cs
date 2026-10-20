@@ -32,6 +32,7 @@ namespace ET.Client
         }
         public static void CloseGridHud(this GridPresentationComponent self)
         {
+            self.AudioPage = null;
             self.PreferencesDraft = null;
             self.ClearOperationHelp();
             self.ResetActionAdvice();
@@ -55,6 +56,7 @@ namespace ET.Client
         public static void GridHudClosed(this GridPresentationComponent self,UIGridKitchen hud)
         {
             if((UIGridKitchen)self.Hud!=hud)return;
+            self.AudioPage = null;
             self.PreferencesDraft = null;
             self.ClearOperationHelp();
             self.ResetActionAdvice();

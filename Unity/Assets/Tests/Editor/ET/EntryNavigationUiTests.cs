@@ -12,6 +12,7 @@ namespace ET
     {
         [UnityTest]
         [Category("EntryExperience")]
+        [Category("ReadableHud")]
         public IEnumerator EntryNavigationReturnsFromProgressAndRejectsRetiredPageButtons()
         {
             yield return StartModeLauncher();

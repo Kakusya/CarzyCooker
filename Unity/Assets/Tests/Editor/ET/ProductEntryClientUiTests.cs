@@ -157,8 +157,7 @@ namespace ET
             yield return Wait(() => Runtime.Root().GetComponent<SoloSavePresentation>() is SoloSavePresentation selection &&
                 ((UIGridKitchen)selection.Hud)?.Available == true, "Failed join leaves a working Solo choice");
             var selector = Runtime.Root().GetComponent<SoloSavePresentation>();
-            yield return StartPreviewAndConfirm(((UIGridKitchen)selector.Hud).View.GetComponentsInChildren<Button>(false)
-                .Single(button => button.GetComponentInChildren<Text>().text == "内存试玩"));
+            yield return StartPreviewAndConfirm(SelectionButton("内存试玩"));
             yield return Wait(() => Presentation?.Ready == true, "Solo starts after the actual timeout");
             Assert.That(((Scene)Runtime.HostScene).GetComponent<NetComponent>(), Is.Null);
         }

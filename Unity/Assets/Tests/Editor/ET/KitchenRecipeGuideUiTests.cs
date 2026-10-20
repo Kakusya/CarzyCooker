@@ -11,10 +11,12 @@ namespace ET
 {
     public sealed partial class SoloRestaurantUiTests
     {
-        [UnityTest]
+        [UnityTest, Category("RecipeStepRegression")]
         public IEnumerator KitchenRecipeGuideActualDefinitionsPrepreparedDishPauseAndManagedReopenStayReadOnly()
         {
             yield return StartLauncher();
+            Assert.That(Presentation.FirstOrderGuideVisible, Is.False, "Independent trials retain a manual guide");
+            Pointer(Button("重看首单引导"));
             string soup=GridRecipeGuide.Describe(1,Grid.TickMilliseconds);
             foreach(string required in new[]{"番茄","鸡蛋","煮锅","碗","切配台","灶台","倒入","盛一份"})
                 Assert.That(soup,Does.Contain(required));
@@ -34,6 +36,9 @@ namespace ET
             yield return Command("暂停");long tick=Grid.Tick;command=Client.NextCommandId;
             Pointer(Button("菜谱 盘装吐司"));yield return null;
             Assert.That(Hud.DetailsText.text,Does.Contain("已备好，无需重做").And.Contain("已暂停"));
+            var step = GridRecipeGuide.CurrentStep(Grid, 2);
+            Assert.That(step.Kind, Is.EqualTo(GridRecipeStepKind.Delivery));
+            Assert.That(step.ItemId, Is.EqualTo(plate), "Shared step metadata points to the existing real prepared carrier");
             Assert.That(Client.NextCommandId,Is.EqualTo(command));
             var retiredRecipe=CaptureButtonCallback(Button("菜谱 番茄蛋花汤"));
             Pointer(Button("跳过首单引导"));yield return null;

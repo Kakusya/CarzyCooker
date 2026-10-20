@@ -8,6 +8,8 @@ using Game;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UiEventSystem = UnityEngine.EventSystems.EventSystem;
 
 namespace ET
 {
@@ -16,8 +18,28 @@ namespace ET
     [FriendOf(typeof(CooperativeClaimState))]
     public sealed partial class SoloRestaurantUiTests
     {
-        private static Button ClaimUiButton(MonoUIGridKitchen hud, string caption, bool prefix = false) => hud.GetComponentsInChildren<Button>(false)
-            .Single(button => prefix ? button.GetComponentInChildren<Text>().text.StartsWith(caption) : button.GetComponentInChildren<Text>().text == caption);
+        private static Button ClaimUiButton(MonoUIGridKitchen hud, string caption, bool prefix = false)
+        {
+            Button Find() => hud.GetComponentsInChildren<Button>(false).SingleOrDefault(button => prefix
+                ? button.name.StartsWith(caption) || button.GetComponentInChildren<Text>().text.StartsWith(caption)
+                : button.name == caption || button.GetComponentInChildren<Text>().text == caption);
+            Button result = Find();
+            foreach (string navigation in new[] { "更多动作", "全部动作" })
+            {
+                if (result != null)
+                {
+                    break;
+                }
+                var next = hud.GetComponentsInChildren<Button>(false).SingleOrDefault(button => button.GetComponentInChildren<Text>().text == navigation);
+                if (next != null)
+                {
+                    ExecuteEvents.Execute(next.gameObject, new PointerEventData(UiEventSystem.current), ExecuteEvents.pointerClickHandler);
+                    result = Find();
+                }
+            }
+            Assert.That(result, Is.Not.Null, "Retained contextual action is reachable: " + caption);
+            return result;
+        }
 
         [UnityTest]
         [Category("CooperativeClaimsUiStates")]

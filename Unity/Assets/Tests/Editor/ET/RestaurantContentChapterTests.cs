@@ -40,7 +40,9 @@ namespace ET
             {
                 LevelDo(LevelControlAction.Start);
             }
-            for (int tick = 0; tick < 3000 && CurrentLevel.Phase != LevelPhase.Completed; ++tick)
+            int limit = CurrentLevel.OperatingTicks + Tables.Instance.DTCustomerFlowConfig.DataList
+                .Where(flow => flow.LevelConfigId == CurrentLevel.ConfigId).Max(flow => flow.OrderWaitTicks) + 300;
+            for (int tick = 0; tick < limit && CurrentLevel.Phase != LevelPhase.Completed; ++tick)
             {
                 AdvanceTicks(1); PumpMessages(3);
             }

@@ -1,5 +1,11 @@
 # UI 开发
 
+Product UI1101 的入口调用 `ShowEntryLayout()`，经营/结算继续用 `ShowPanels()`；`SetInformation()` 控制独立详情覆盖区。标题、正文、记录/动作列表和固定导航各有空间，`AddControl()` 将返回、开局确认及设置保存/取消放入固定导航。入口/选档消费者为 `ProductEntryPresentationSystem`、`SoloSavePresentationSystem`；厨房及各详情消费者沿原 `GridPresentationSystem`，不另开 HUD。正文、动作和入口控制分别由原 Prefab 内的 ScrollRect 滚动，装饰文字不接收射线。原 CodeBind 目标全部保留，无新增 UI 类型或表行。
+
+`AddOrderAction()` 和 `AddTarget()` 共用本轮原按钮；`CompleteContextActions()` 将选中订单的合法交付纳入主要动作，其他前往/交付保留在更多动作的前厅组。原订单区只显示独立滚动摘要，执行按钮不覆盖文字。`ClearTargets()`统一清理，订单图使用HUD本轮物品切片，不新建业务owner。
+
+Solo 首页推荐第一章，其他章节、继续记录和独立菜单试玩各有页面。新开仍预览并明确确认；继续记录须明确选档，完成记录只读。返回/取消只改变本轮界面选择，不代替成功保存。
+
 当前 Product HUD 保留原 CodeBind 与按钮 owner，图集和手持 Image 使用直接序列化美术引用；关闭释放本轮图标切片，重开恢复当前投影。面板／按钮使用九宫格 Sprite，装饰 Image 不接收射线；制作和接入见 [餐厅美术约定](../references/restaurant-art.md)。
 
 > **ET 底座适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。

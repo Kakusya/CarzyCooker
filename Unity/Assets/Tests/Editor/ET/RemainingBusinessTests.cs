@@ -205,7 +205,7 @@ namespace ET
             Assert.That(client.NextCommandId, Is.EqualTo(command)); Assert.That(Grid.IdentifyDish(cupId), Is.EqualTo(9));
         }
 
-        [Test, Category("RemainingBusiness")]
+        [Test, Category("RemainingBusiness"), Category("RecipeStepRegression")]
         public void RemainingBusinessGuideDoesNotOfferLockedSoupInputsAsSaladMaterials()
         {
             StartGrowth(); var client = (ClientSessionComponent)host.Client;
@@ -213,9 +213,12 @@ namespace ET
             var view = client.GetComponent<GridClientComponent>();
             Assert.That(GridRecipeGuide.CurrentNeed(view, 4), Does.Contain("番茄"));
             Assert.That(GridRecipeGuide.CurrentNeed(view, 4), Does.Not.Contain("切配生菜"));
+            var step = GridRecipeGuide.CurrentStep(view, 4);
+            Assert.That(step.Description, Does.Contain("番茄"));
+            Assert.That(Grid.Item(pot).Contents, Has.No.Member(step.ItemId), "A locked soup input is never offered as the locator's free material");
         }
 
-        [Test, Category("RemainingBusiness")]
+        [Test, Category("RemainingBusiness"), Category("RecipeStepRegression")]
         public void RemainingBusinessRecipeGuideUsesPartialRealMixAndCookedMoldInsteadOfRepeatingMaterials()
         {
             StartDessert(); var client = (ClientSessionComponent)host.Client; var view = client.GetComponent<GridClientComponent>();

@@ -10,9 +10,17 @@
 
 ## 已有 owner 接入
 
+### 手作小馆动画
+
+`Art/CarzyCooker/HandmadeBistro/export_unity.py` 将离线203帧、同一模型派生的32帧无刀作业及汤/吐司样板9帧合成独立`BistroAtlas`，同次生成布局C#、挂点及`runtime-layout.csv`。本批244帧、3072×3072；原生产图集保留全部94物品及其余设备。Board/HUD原Prefab直接引用纹理，导入保留原尺寸、alpha和无mipmap；覆盖及可编辑源见[样板说明](../Art/CarzyCooker/HandmadeBistro/COHERENCE.md)。
+
+本地厨师使用四方向八帧待机／行走／端物／切配／递餐，洗碗与打蛋使用无刀具作业帧；远端玩家、伙伴和顾客继续保留原可辨身份。每2个50ms投影tick推进一帧，暂停和结算沿冻结tick显示。手持点按生成帧信息转换，不套旧0.17 pivot。本人当前关与绑定的Serve Executed只触发一次短递餐，显示不发消息或改状态。
+
+样板覆盖番茄/切番茄、鸡蛋/蛋液、面包/吐司、碗/锅/杯/盘、切配台/炉台/烤箱/水槽及原窗/植物，其余定义回退生产图集。汤/橙汁液面只按真实内容或完成批次选择，蒸汽只在真实加工时播放。切片与挂点属于原Mono本轮view，几何重配复用，ReleaseBoard一并回收。原动画运行证据见[接入记录](../openspec/changes/archive/2026-10-16-integrate-handmade-bistro-animation/execution-notes.md)，新增覆盖见[当前样板验收](../openspec/changes/archive/2026-10-20-restaurant-visual-coherence-pass/execution-notes.md)。
+
 - Board 仍是原 `GridKitchenBoard` GF 托管 Entity；图集纹理通过 Prefab 的 `m_ArtAtlas` 引用，由原 GF 资源链持有。
 - 本轮第一次 Configure 创建并缓存 Sprite 切片；同一世界几何变化复用切片/已有地砖，更新边界、窗位与镜头；尺寸不变立即返回。ReleaseBoard 清表现节点并释放切片。子图层均归该 view，不建立业务状态或私有池。
-- HUD 的 `m_ArtAtlas`／`m_HandIcon` 是直接序列化美术引用，原 CodeBind 字段保持；关闭释放本轮手持图标切片，重开重新创建，原输入 guard 和按钮 owner 保持。
+- HUD 的 `m_ArtAtlas`／`m_BistroAtlas`／`m_HandIcon` 为直接序列化美术引用，原 CodeBind 字段保持；切片数量取生成布局，不再限制21。订单图取自身菜品的ContentDefinitionId，和手持物无关；未知物品显示问号，空手清空图标。关闭释放本轮切片/占位，重开重新创建，原输入guard和按钮owner保持。
 - 手持、工位方向、容器内容、卫生、批次份数与贴单均来自当前投影。镜头、图片或动画不修改厨房、角色、工作与订单。
 
 ## 位置和遮挡

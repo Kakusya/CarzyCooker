@@ -119,9 +119,9 @@ namespace ET.Client
             if (first)
             {
                 restaurantPlant = CreateSprite("Restaurant plant", CellToWorld(new GridCell(0, bottom)), new Vector3(.65f,.65f,1), Color.white, 2000);
-                restaurantPlant.sprite = artSprites[3];
+                restaurantPlant.sprite = bistroSprites[BistroPlant];
                 restaurantWindow = CreateSprite("Restaurant window", CellToWorld(new GridCell(width/2,height-1))+new Vector3(0,.2f,0), new Vector3(.8f,.8f,1), Color.white, 2000);
-                restaurantWindow.sprite = artSprites[4];
+                restaurantWindow.sprite = bistroSprites[BistroWindow];
             }
             restaurantPlant.transform.localPosition = CellToWorld(new GridCell(0, bottom));
             restaurantWindow.transform.localPosition = CellToWorld(new GridCell(width/2,height-1))+new Vector3(0,.2f,0);
@@ -155,8 +155,11 @@ namespace ET.Client
             Dictionary<long,GridBakeProjection> baking, Dictionary<long,GridCompanionProjection> companions,
             Dictionary<long,GridCustomerProjection> customers, Dictionary<long,GridFrontWorkProjection> frontWorks,
             int ownMember, float tick, int stepTicks, GridCell? highlight, Dictionary<long,GridProcessProjection> manual = null,
-            Dictionary<long,GridTableProjection> tables = null)
+            Dictionary<long,GridTableProjection> tables = null, ProductCommandOutcomeValue outcome = default,
+            long outcomeSerial = 0, long levelId = 0, long levelGeneration = 0, long bindingGeneration = 0, float animationTick = float.NaN)
         {
+            bistroTick = float.IsNaN(animationTick) ? tick : animationTick;
+            ObserveBistroOutcome(ownMember, people, bistroTick, outcome, outcomeSerial, levelId, levelGeneration, bindingGeneration);
             // 客户端投影在这段同步渲染中不变；直接遍历具体字典，不经 IEnumerable 装箱或复制。
             nextTints.Clear();
             foreach (GridActorProjection person in people.Values)
@@ -190,6 +193,12 @@ namespace ET.Client
                 bool working = person.WorkId != 0 && manual != null && manual.TryGetValue(person.WorkId, out GridProcessProjection process) && process.State == GridWorkState.Working;
                 working |= person.FrontWorkId != 0 && frontWorks.TryGetValue(person.FrontWorkId, out GridFrontWorkProjection frontWork) && frontWork.State == FrontWorkState.Working;
                 ApplyCharacterArt(renderer, person.MemberId == ownMember ? 0 : 1, person.Facing, person.Motion, person.HandItemId != 0, working, tick);
+                if (person.MemberId == ownMember)
+                {
+                    bool chopping = person.WorkId != 0 && manual != null && manual.TryGetValue(person.WorkId, out GridProcessProjection task) &&
+                        task.State == GridWorkState.Working && counters.TryGetValue(task.StationId, out GridStationProjection workStation) && workStation.Kind == GridStationKind.Chopping;
+                    ApplyBistroCharacter(renderer, person, chopping, working, bistroTick);
+                }
                 Vector3 facing = person.Facing == GridFacing.Up ? Vector3.up : person.Facing == GridFacing.Right ? Vector3.right : person.Facing == GridFacing.Down ? Vector3.down : Vector3.left;
                 directions[person.MemberId].transform.localPosition = renderer.transform.localPosition + facing * .2f;
                 directions[person.MemberId].sortingOrder = renderer.sortingOrder + 1;
@@ -204,7 +213,7 @@ namespace ET.Client
                 }
             }
             foreach (int member in removedMembers)
-            { Destroy(actors[member].gameObject);Destroy(directions[member].gameObject);actors.Remove(member);directions.Remove(member); }
+            { Destroy(actors[member].gameObject);Destroy(directions[member].gameObject);actors.Remove(member);directions.Remove(member);bistroHands.Remove(member); }
             foreach (GridCompanionProjection companion in companions.Values)
             {
                 for(int i=0;i<companion.Path.Count;i++)nextTints[companion.Path[i]]=new Color(.79f,.75f,.92f);
@@ -374,7 +383,7 @@ namespace ET.Client
                 Vector3 position=CellToWorld(item.Cell);
                 if (item.Location==GridItemLocation.Hand && actors.TryGetValue((int)item.HolderId,out SpriteRenderer holder))
                 {
-                    position=holder.transform.localPosition+new Vector3(.22f,.12f,0);
+                    position=HandPosition((int)item.HolderId,holder);
                 }
                 else if(item.Location==GridItemLocation.Counter)
                 {
@@ -407,7 +416,7 @@ namespace ET.Client
                     renderer.transform.localPosition=position;
                 }
                 int order = item.Location == GridItemLocation.Hand && actors.TryGetValue((int)item.HolderId,out SpriteRenderer carrier)
-                    ? carrier.sortingOrder + 5 : item.Location is GridItemLocation.Counter or GridItemLocation.Table or GridItemLocation.DirtyPool or GridItemLocation.CleanPool && stations.TryGetValue(item.HolderId,out SpriteRenderer surface)
+                    ? carrier.sortingOrder + (people.TryGetValue((int)item.HolderId,out GridActorProjection carrierActor) && carrierActor.Facing==GridFacing.Up ? -5 : 5) : item.Location is GridItemLocation.Counter or GridItemLocation.Table or GridItemLocation.DirtyPool or GridItemLocation.CleanPool && stations.TryGetValue(item.HolderId,out SpriteRenderer surface)
                     ? surface.sortingOrder + 5 : 1000 - Mathf.RoundToInt((position.y-.05f)*100);
                 if(renderer.sortingOrder!=order)
                 {

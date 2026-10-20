@@ -15,9 +15,27 @@ namespace ET
     {
         private SoloSavePresentation Selection => Runtime.Root().GetComponent<SoloSavePresentation>();
         private MonoUIGridKitchen SelectionHud => ((UIGridKitchen)Selection.Hud).View;
-        private Button SelectionButton(string caption) => SelectionHud.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == caption);
+        private Button SelectionButton(string caption)
+        {
+            Button Find(string text) => SelectionHud.GetComponentsInChildren<Button>(false).SingleOrDefault(value => value.GetComponentInChildren<Text>().text == text);
+            Button result = Find(caption);
+            if (result == null && Selection.Page == SoloEntryPage.Home)
+            {
+                string page = caption.StartsWith("新开大关") ? "选择其他章节" :
+                    caption.StartsWith("新开") || caption == "内存试玩" ? "菜单试玩" :
+                    Selection.Headers.Length > 0 ? "继续记录" : "查看记录";
+                Pointer(Find(page));
+                result = Find(caption);
+            }
+            Assert.That(result, Is.Not.Null, "Retained original action is reachable: " + caption);
+            return result;
+        }
         private Button SelectionSlotButton(string slot)
         {
+            if (Selection.Page == SoloEntryPage.Home)
+            {
+                Pointer(SelectionButton(Selection.Headers.Length > 0 ? "继续记录" : "查看记录"));
+            }
             int index = Array.FindIndex(Selection.Headers, header => header.SlotId == slot) + 1;
             return SelectionHud.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text.StartsWith($"继续 记录{index} ·"));
         }
@@ -30,7 +48,7 @@ namespace ET
             Pointer(SelectionButton("确认继续此记录"));
         }
 
-        private static SoloSavePayload SelectionFixture()
+        private static SoloSavePayload SelectionFixture(ProductMenuVariant menu = ProductMenuVariant.Basic)
         {
             // Actual config supplies the file fixture; this test targets selection rather than world simulation.
             var tables = Tables.Instance;
@@ -42,14 +60,14 @@ namespace ET
                     DishIds = tables.DTDishConfig.DataList.Select(row => row.Id).ToArray(),
                     StationIds = tables.DTStationConfig.DataList.Select(row => row.Id).ToArray()
                 },
-                Stations = tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == ProductMenuVariant.Basic).Select(row => new SoloSavedStation
+                Stations = tables.DTInitialLayoutConfig.DataList.Where(row => ProductMenuCatalog.Includes(menu, row.MenuVariant)).Select(row => new SoloSavedStation
                 {
                     Key = row.Id, InitialLayoutId = row.Id, DefinitionId = row.StationDefinitionId, X = row.X, Y = row.Y, Orientation = (int)row.Orientation,
                     ItemKey = row.InitialItemDefinitionId == 0 ? 0 : row.Id, TableDefinitionId = tables.DTTableConfig.DataList.FirstOrDefault(t => t.InitialLayoutId == row.Id)?.Id ?? 0
                 }).ToArray(),
-                Items = tables.DTInitialLayoutConfig.DataList.Where(row => row.MenuVariant == ProductMenuVariant.Basic && row.InitialItemDefinitionId != 0).Select(row => new SoloSavedItem
+                Items = tables.DTInitialLayoutConfig.DataList.Where(row => ProductMenuCatalog.Includes(menu, row.MenuVariant) && row.InitialItemDefinitionId != 0).Select(row => new SoloSavedItem
                     { Key = row.Id, DefinitionId = row.InitialItemDefinitionId, X = row.X, Y = row.Y, Location = (int)GridItemLocation.Counter, HolderKey = row.Id }).ToArray(),
-                Supply = tables.DTSupplyConfig.DataList.Where(row => row.MenuVariant == ProductMenuVariant.Basic).Select(row => new SoloSavedSupplyBalance { SourceId = row.Id, RemainingPackages = row.AvailablePackages }).ToArray()
+                Supply = tables.DTSupplyConfig.DataList.Where(row => ProductMenuCatalog.Includes(menu, row.MenuVariant)).Select(row => new SoloSavedSupplyBalance { SourceId = row.Id, RemainingPackages = row.AvailablePackages }).ToArray()
             };
         }
 
@@ -67,7 +85,7 @@ namespace ET
             writer.Write(Encoding.ASCII.GetBytes("CCSOLO01")); writer.Write(bytes.Length); writer.Write(body.Length); writer.Write(bytes); writer.Write(body);
         }
 
-        [UnityTest]
+        [UnityTest, Category("FirstChapterCompatibility")]
         public IEnumerator SoloSaveSelectionUiBrowsesWithoutWorldCancelsValidLoadRejectsInvalidAndRestoresSelectedFile()
         {
             yield return StartLauncher(false, false);

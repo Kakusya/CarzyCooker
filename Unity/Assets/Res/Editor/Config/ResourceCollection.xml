@@ -18,6 +18,7 @@
       <Resource Name="Res/UI/UIForm/Demo/UILobby" LoadType="0" Packed="False" />
       <Resource Name="Res/UI/UIForm/Demo/UILogin" LoadType="0" Packed="False" />
       <Resource Name="Res/UI/UIPrefab/Button" LoadType="0" Packed="False" />
+      <Resource Name="Sound.Product" LoadType="0" Packed="False" />
       <Resource Name="UI.RuntimeInspector" LoadType="0" Packed="False" />
       <Resource Name="UI.UIForm.LockStep" LoadType="0" Packed="False" />
       <Resource Name="UI.UIForm.Product" LoadType="0" Packed="False" />
@@ -40,7 +41,9 @@
       <Asset Guid="072b2cbf25905cb44beb317e33508b57" ResourceName="UI.UIForm.Product" />
       <Asset Guid="07357b3d413da0c47b3fb28619106e9d" ResourceName="UI.UXTool" />
       <Asset Guid="08b1969f82430784f915a659ed9d66d5" ResourceName="ET.ClientServer" />
+      <Asset Guid="099c25f802e0af545be5959039a43a07" ResourceName="Sound.Product" />
       <Asset Guid="09e587528c6da27469a8017d23136a0f" ResourceName="Luban" />
+      <Asset Guid="0bf69a51c0e432e46b4fcd9a650d195d" ResourceName="Sound.Product" />
       <Asset Guid="0bf95b0cbca885c4cad5d9babd2c03a2" ResourceName="UI.UXTool" />
       <Asset Guid="1009ccebe686bd549829ad70ae054eba" ResourceName="UI.UXTool" />
       <Asset Guid="114d57cbe6103c24ba03dd555f31d2bf" ResourceName="UI.UXTool" />
@@ -70,6 +73,7 @@
       <Asset Guid="375b66080af62fd40ae443f01b729af2" ResourceName="UI.UXTool" />
       <Asset Guid="38f6322242a881141bfc1a69a80a65c5" ResourceName="UI.UXTool" />
       <Asset Guid="3b7910331870913419f6e73a758d246e" ResourceName="UI.UXTool" />
+      <Asset Guid="3bdfbdccf2e100f4c93e9c4985b3eeaa" ResourceName="Sound.Product" />
       <Asset Guid="3d35d566fece421448c5f52a6f72cce7" ResourceName="UI.UXTool" />
       <Asset Guid="3dfc56ac974e73f4c960abf1fe503a07" ResourceName="Res/UI/UIPrefab/Button" />
       <Asset Guid="3e9ef7dd787132643bb3be71dc2120bd" ResourceName="UI.UXTool" />
@@ -102,6 +106,7 @@
       <Asset Guid="6887965437e6cdd4994b29405da0cf20" ResourceName="ET.ClientServer" />
       <Asset Guid="69535882c3a640945a975f2a4438825d" ResourceName="UI.UXTool" />
       <Asset Guid="6a20488bc1db41d47bf65a05117a877d" ResourceName="UI.UXTool" />
+      <Asset Guid="6a657fcc14573c0449d0b63369cc52be" ResourceName="Sound.Product" />
       <Asset Guid="6bb61da7c155dbe4c8ea5214984f07c6" ResourceName="UI.UXTool" />
       <Asset Guid="6bc106e2e539dda44af3453fe97cd0d0" ResourceName="UI.UXTool" />
       <Asset Guid="6bd5badd6531c384082aa69d2524bb95" ResourceName="UI.UXTool" />
@@ -114,6 +119,7 @@
       <Asset Guid="734f797ee4dcc004dadedc57de49b03a" ResourceName="ET.ClientServer" />
       <Asset Guid="7516602de2ae31a449cba1e0f791a423" ResourceName="ET.ClientServer" />
       <Asset Guid="758ac2ccd4d017643b5738b7d1174ddd" ResourceName="Entity" />
+      <Asset Guid="7a3a99370b602b74884ae5b7da1c0b13" ResourceName="Sound.Product" />
       <Asset Guid="7b0f5c669cbe13b4491cb84dd866ca01" ResourceName="UI.UIForm.Product" />
       <Asset Guid="7b7f16b4d09b45c4c8731b9d209ce4e3" ResourceName="ET.ClientServer" />
       <Asset Guid="7c257456f05a75841b93e90bdd63bbf9" ResourceName="Res/Localization/ChineseSimplified/Localization" />
@@ -138,7 +144,9 @@
       <Asset Guid="8cbf73a62f872e741af7cceda911c264" ResourceName="UI.UXTool" />
       <Asset Guid="8d42b919fb94e5f4f998957f2ac1ff81" ResourceName="UI.UXTool" />
       <Asset Guid="8d5a2e62e7aa0c547b00c81d23116523" ResourceName="ET.ClientServer" />
+      <Asset Guid="8e6c068d301155b488458acced348b8a" ResourceName="ET.ClientServer" />
       <Asset Guid="8f0857f85ecc988498c47eece7afdccd" ResourceName="Res/UI/UIPrefab/Button" />
+      <Asset Guid="8f350f51e2f539143aa1033e8d5d8bbd" ResourceName="Sound.Product" />
       <Asset Guid="90bbee64859e4e14f8f5eec8db43b621" ResourceName="UI.UXTool" />
       <Asset Guid="919546e3dacf13c4c9e26b7393c796fc" ResourceName="UI.UXTool" />
       <Asset Guid="91ddddbb4ac95e144b11eec367d27826" ResourceName="Auto/Combine/6274e2cf" />
@@ -156,6 +164,7 @@
       <Asset Guid="9ebd8488557a229498419fe251336d05" ResourceName="UI.UXTool" />
       <Asset Guid="9ef39b1d990f66b41ba4e5bdf5741b1b" ResourceName="UI.UXTool" />
       <Asset Guid="9f6d9adc6f537764fa0fea29671e77bf" ResourceName="Res/UI/UIForm/Demo/UILogin" />
+      <Asset Guid="a36716ec85b32564aa0e0d6edef1ab63" ResourceName="Entity" />
       <Asset Guid="a5294483f20f40d449699101bb428cda" ResourceName="Res/Scene/Map1" />
       <Asset Guid="a57e4a78fa2c235448cc55f4f05671a2" ResourceName="UI.UXTool" />
       <Asset Guid="a5d9d0e22ef24e54f889295f42c5fc22" ResourceName="UI.UXTool" />

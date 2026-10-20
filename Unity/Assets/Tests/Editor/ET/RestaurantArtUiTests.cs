@@ -19,6 +19,7 @@ namespace ET
         [UnityTest]
         [Category("RestaurantArtRegression")]
         [Category("RestaurantArtFinal")]
+        [Category("VisualCoherence")]
         public IEnumerator RestaurantArtAllDefinitionsDirectionsAndLayeredContentsFollowProjection()
         {
             yield return StartLauncher(menuVariant:ProductMenuVariant.Drink);
@@ -45,26 +46,27 @@ namespace ET
             void Render(float tick)=>Board.Render(people,counters,objects,automatic,baking,companions,customers,works,1,tick,5,null);
             Render(100);
             var views=ArtMap<long>("items");
-            var itemRects=new HashSet<Rect>();
+            var itemRects=new HashSet<(Texture2D,Rect)>();
             Texture2D atlas=views[8101].sprite.texture;
-            Assert.That(atlas.name,Is.EqualTo("RestaurantAtlas"));
+            Assert.That(atlas.name,Is.EqualTo("BistroAtlas"));
             foreach(var view in views.Values)
             {
-                Assert.That(view.sprite.texture,Is.SameAs(atlas));
-                Assert.That(itemRects.Add(view.sprite.rect),Is.True,"Every configured item has a distinct authored silhouette");
+                Assert.That(view.sprite.texture.name,Is.EqualTo("RestaurantAtlas").Or.EqualTo("BistroAtlas"));
+                Assert.That(itemRects.Add((view.sprite.texture,view.sprite.rect)),Is.True,"Every configured item has a distinct authored silhouette");
             }
             Assert.That(itemRects.Count,Is.EqualTo(Tables.Instance.DTGridItemConfig.DataList.Count));
-            var stationRects=new HashSet<Rect>();
+            var stationRects=new HashSet<(Texture2D,Rect)>();
             foreach(GridStationKind kind in Enum.GetValues(typeof(GridStationKind)))
             {
                 for(int facing=0;facing<4;++facing)
                 {
                     counters[7001]=new GridStationProjection(7001,cell,"美术工位",0,kind,orientation:(GridOrientation)facing);
                     Render(100);
-                    Assert.That(stationRects.Add(ArtMap<long>("stations")[7001].sprite.rect),Is.True,"Each station direction uses its own view");
+                    Sprite stationSprite=ArtMap<long>("stations")[7001].sprite;
+                    Assert.That(stationRects.Add((stationSprite.texture,stationSprite.rect)),Is.True,"Each station direction uses its own view");
                 }
             }
-            Assert.That(stationRects.Count,Is.EqualTo(64));
+            Assert.That(stationRects.Count,Is.EqualTo(System.Enum.GetValues(typeof(GridStationKind)).Length * 4));
             counters[7001]=new GridStationProjection(7001,cell,"美术灶台",8106,GridStationKind.Stove,orientation:GridOrientation.CounterClockwise90,
                 footprint:new[]{cell,new GridCell(4,12)},upgradeLevel:1);
             objects[8105]=new GridItemProjection(8105,"碗",GridItemLocation.Hand,1,cell,new long[]{8104},5);
@@ -83,7 +85,8 @@ namespace ET
             Assert.That(station.transform.localScale.x,Is.EqualTo(1.88f).Within(.001f));
             Assert.That(pot.sortingOrder,Is.GreaterThan(station.sortingOrder));
             Assert.That(bowl.sortingOrder,Is.GreaterThan(actor.sortingOrder));
-            Assert.That(bowl.transform.localPosition.x,Is.EqualTo(actor.transform.localPosition.x+.22f).Within(.001f));
+            var sockets=(Dictionary<int,Vector3>)typeof(MonoGridKitchenBoard).GetField("bistroHands",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(Board);
+            Assert.That(bowl.transform.localPosition,Is.EqualTo(actor.transform.localPosition+sockets[1]),"Held object follows the sampled animation socket");
             Sprite walking=actor.sprite;Render(104);Assert.That(actor.sprite,Is.Not.SameAs(walking),"Held walking has two distinct foot poses");
             Sprite frozen=actor.sprite;Render(104);Assert.That(actor.sprite,Is.SameAs(frozen),"A frozen projected tick keeps the pose unchanged");
             Sprite raw=ArtMap<long>("contents")[8106].sprite;
@@ -112,24 +115,30 @@ namespace ET
         [UnityTest]
         [Category("RestaurantArtRegression")]
         [Category("RestaurantArtFinal")]
+        [Category("VisualCoherence")]
         public IEnumerator RestaurantArtRealHudReopenAndWholeRunExitReleaseOwnedSlices()
         {
             yield return StartLauncher();
             yield return Command("拿 碗台 ·",true);
             var field=typeof(MonoUIGridKitchen).GetField("handArt",BindingFlags.Instance|BindingFlags.NonPublic);
             var icon=(Image)typeof(MonoUIGridKitchen).GetField("m_HandIcon",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(Hud);
-            Assert.That(icon.enabled,Is.True);Assert.That(icon.sprite.texture.name,Is.EqualTo("RestaurantAtlas"));
+            Assert.That(icon.enabled,Is.True);Assert.That(icon.sprite.texture.name,Is.EqualTo("BistroAtlas"));
             Assert.That(icon.raycastTarget,Is.False);
             var retired=(Sprite[])field.GetValue(Hud);
             var boardSlices=(Sprite[])typeof(MonoGridKitchenBoard).GetField("artSprites",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(Board);
+            var bistroSlices=(Sprite[])typeof(MonoGridKitchenBoard).GetField("bistroSprites",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(Board);
+            Board.Configure(Grid.Width+1,Grid.Height,Grid.KitchenBottom);
+            Assert.That(typeof(MonoGridKitchenBoard).GetField("bistroSprites",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(Board),Is.SameAs(bistroSlices),"Geometry changes reuse owned animation slices");
             Presentation.CloseGridHud();yield return null;
             foreach(Sprite slice in retired)Assert.That(slice==null,Is.True,"Closing HUD releases native slices owned by that opening");
             Assert.That(boardSlices[0]!=null,Is.True,"Closing HUD does not release the retained Board owner");
+            Assert.That(bistroSlices[0]!=null,Is.True,"HUD close retains animation slices owned by Board");
             Presentation.OpenGridHud();yield return Wait(()=>Presentation.Ready,"Art HUD reopened");
             Assert.That(field.GetValue(Hud),Is.Not.SameAs(retired));
             Assert.That(((Image)typeof(MonoUIGridKitchen).GetField("m_HandIcon",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(Hud)).enabled,Is.True);
             Runtime.StopProduct();yield return null;
             foreach(Sprite slice in boardSlices)Assert.That(slice==null,Is.True,"Whole runtime exit releases Board slices");
+            foreach(Sprite slice in bistroSlices)Assert.That(slice==null,Is.True,"Whole runtime exit releases animated Board slices");
         }
     }
 }

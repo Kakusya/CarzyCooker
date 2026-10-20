@@ -1180,7 +1180,7 @@
   {
     "Id": 1101,
     "NextLevelConfigId": 1102,
-    "OperatingTicks": 500,
+    "OperatingTicks": 1800,
     "StarThresholds": [
       10,
       20,
@@ -1230,7 +1230,7 @@
   {
     "Id": 1102,
     "NextLevelConfigId": 1103,
-    "OperatingTicks": 650,
+    "OperatingTicks": 2100,
     "StarThresholds": [
       10,
       20,
@@ -1281,7 +1281,7 @@
   {
     "Id": 1103,
     "NextLevelConfigId": 0,
-    "OperatingTicks": 800,
+    "OperatingTicks": 2400,
     "StarThresholds": [
       10,
       20,

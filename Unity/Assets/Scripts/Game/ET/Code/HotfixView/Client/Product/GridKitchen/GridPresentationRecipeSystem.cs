@@ -52,8 +52,8 @@ namespace ET.Client
             if(self.FirstOrderGuideVisible && HasSoloRecipeGuide(grid))
             {
                 int dish=self.RecipeDishId!=0?self.RecipeDishId:self.GuideDish(grid);
-                string need=GridRecipeGuide.CurrentNeed(grid,dish).Replace('\n',' ');
-                view.HintText.text="首单："+(need.Length>26?need.Substring(0,26)+"…":need)+"\n"+view.HintText.text;
+                GridRecipeStep step = grid.LevelConfigId == 1101 ? self.FirstSessionStep(grid) : GridRecipeGuide.CurrentStep(grid, dish);
+                view.HintText.text = "首单：" + step.Description;
             }
             if(self.RecipeVisible)
             {
@@ -97,8 +97,17 @@ namespace ET.Client
                 view.AddTarget(shown?"跳过首单引导":"重看首单引导",()=>
                 {
                     GridPresentationComponent current=original;if(current==null)return;
-                    current.FirstOrderGuideVisible=!shown;current.RefreshGridHud();
+                    current.FirstOrderGuideVisible=!shown;
+                    if (shown)
+                    {
+                        current.FirstGuideLocatedItem = current.FirstGuideLocatedStation = 0;
+                    }
+                    current.RefreshGridHud();
                 });
+                if (shown && grid.LevelConfigId == 1101)
+                {
+                    self.AddFirstSessionLocation(view, grid);
+                }
             }
         }
     }

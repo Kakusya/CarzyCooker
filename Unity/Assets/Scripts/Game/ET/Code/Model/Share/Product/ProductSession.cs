@@ -49,6 +49,7 @@ namespace ET
     [ComponentOf(typeof(Scene))]
     public sealed class ProductRuntimeComponent : Entity, IAwake<RuntimeInstanceConfig>, IUpdate, IDestroy
     {
+        public bool BackgroundPauseInFlight;
         public EntityRef<RestaurantRuntime> FinishingRestaurant;
         public RuntimeInstanceConfig Config;
         public ProductStage Stage;

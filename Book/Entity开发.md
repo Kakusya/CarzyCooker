@@ -4,6 +4,7 @@
 
 当前 Product Board 的美术图集通过原 Entity Prefab 引用；动态 Sprite 切片归实际 Mono 本轮 view，在 ReleaseBoard 释放。工位、手持物、容器图层与座位表现只消费投影，不另建 Entity 权威或资源池；具体做法见 [餐厅美术约定](../references/restaurant-art.md)。
 
+手作动画通过同一Board的`m_BistroAtlas`引用加入，原图集继续覆盖其余物品与角色。生成布局持切片位置、pivot和手持点；几何重配不重建切片，新增Sprite也在ReleaseBoard释放。制作源和重新导出方式见[手作素材](../Art/CarzyCooker/HandmadeBistro/README.md)。
 
 > **ET 底座适用说明（2026-10-09）**：当前 ProcedurePreset 直接进入 ET；GameHot 源码、配置和 GF Network 运行时已移除。本文保留的 GameHot/纯 GF 示例与双模式切换段落仅作历史参考，不是当前可执行流程。ET、GF 公共组件与 HybridCLR 的适用部分仍以当前源码/配置为准。
 

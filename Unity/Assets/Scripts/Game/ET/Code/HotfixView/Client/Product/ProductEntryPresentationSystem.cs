@@ -17,6 +17,8 @@ namespace ET.Client
         private static void Awake(this ProductEntryPresentation self)
         {
             self.PreferencesDraft = null;
+            self.AudioPage = null;
+            ProductAudioSettings.ApplySaved();
             self.InitializePreferences();
             self.Hud = default;
             self.Epoch = 0;
@@ -64,6 +66,7 @@ namespace ET.Client
 
         public static void CloseProductEntry(this ProductEntryPresentation self)
         {
+            self.AudioPage = null;
             self.PreferencesDraft = null;
             self.ClearLeaveConfirmation();
             self.AuthorizationResultSlot = self.AuthorizationResultProfile = self.AuthorizationOutputPath = null; self.AuthorizationResultRevision = 0;
@@ -203,6 +206,7 @@ namespace ET.Client
                 return;
             }
             self.ApplySavedPreferences(hud.View);
+            if (self.RenderAudio(hud, () => self.RenderProductEntry())) return;
             if (self.RenderPreferences(hud, () => self.RenderProductEntry()))
             {
                 return;
@@ -222,7 +226,7 @@ namespace ET.Client
             }
             ++self.ProgressRenderVersion;
             view.ClearTargets();
-            view.ShowPanels(false, true);
+            view.ShowEntryLayout();
             view.CameraDragAreaRectTransform.gameObject.SetActive(false);
             view.SetInformation("", "", false, false);
             view.ClockText.text = modes ? "选择开始方式" : "先集合，再开餐厅";
@@ -251,6 +255,7 @@ namespace ET.Client
             if (self.Page == ProductEntryPage.Home && !self.ProgressVisible && !self.ClaimsVisible && !self.Busy)
             {
                 self.AddPreferencesControl(view, () => self.RenderProductEntry());
+                self.AddAudioControl(view, () => self.RenderProductEntry());
             }
             if (self.LeaveAction != ProductLeaveAction.None)
             {
@@ -342,7 +347,7 @@ namespace ET.Client
             self.DisplayedRuntimeFailure = runtime.Failure;
         }
 
-        private static void ChooseSoloEntry(this ProductEntryPresentation self)
+        private static void ChooseSoloEntry(this ProductEntryPresentation self, bool showRecords = false)
         {
             if (self.Busy || self.ChoosingSolo)
             {
@@ -350,7 +355,7 @@ namespace ET.Client
             }
             self.ChoosingSolo = true;
             self.CloseProductEntry();
-            EventSystem.Instance.Publish(self.Root(), new SoloSaveSelectionRequested());
+            EventSystem.Instance.Publish(self.Root(), new SoloSaveSelectionRequested { ShowRecords = showRecords });
         }
 
         private static void ChooseCooperativeEntry(this ProductEntryPresentation self, bool join)
