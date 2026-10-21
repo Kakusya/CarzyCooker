@@ -32,9 +32,9 @@ namespace ET.Client
             view.ClockText.text=grid.LevelPhase is LevelPhase.Preparing or LevelPhase.Operating
                 ?$"剩余 {Math.Max(0,grid.LevelOperatingTicks-grid.LevelElapsedTicks)*grid.TickMilliseconds/1000f:0.0} 秒"
                 :grid.LevelPhase==LevelPhase.Draining?"等待前厅完成":"本关已结束";
-            view.ScoreText.text = grid.LevelPhase == LevelPhase.Completed
+            view.SetScore(grid.LevelPhase == LevelPhase.Completed
                 ? $"{grid.LevelScore} 分 · {grid.LevelStars} 星"
-                : $"{grid.LevelScore} 分 · 参考 {ServiceReferenceStars(grid)} 星 · 未结算";
+                : $"{grid.LevelScore} 分 · 参考 {ServiceReferenceStars(grid)} 星 · 未结算");
             string partner=string.Join(" · ",grid.Companions.Values.Select(role=>
             {
                 string job="空闲";

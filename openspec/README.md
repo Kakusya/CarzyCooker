@@ -1,5 +1,7 @@
 # 中文底座规格索引
 
+2026-10-21 启动入口与开发测试入口两案已归档，10/10任务；13条delta要求已同步3份主规格，52份主规格严格校验通过。沿用本轮逐项UTF、普通Launcher和真实KCP结果；独立Player、真机与物理LAN仍NotRun。用户已授权归档、提交与推送。见[入口验收](changes/archive/2026-10-21-product-entry-flow-clarity/execution-notes.md)及[测试入口验收](changes/archive/2026-10-21-development-test-level-entry/execution-notes.md)。
+
 2026-10-20 HUD、首局路径、情境动作、第一章节奏、短声画和有限视觉样板六案已归档，29/29任务；8份delta的23条新增与1条修改已同步6份主规格，保留原场景。原UTF及正常三关运行证据随案保留，用户已接受有限视觉方向和短音试听；没有增加Player、真机或真人新手结论。本轮授权本地提交，不推送。
 
 这些主规格描述当前源码／配置支持的底座与产品契约；逐项交付状态、协议和模式范围以 [当前进度](../CarzyCooker当前进度.md) 及相应 change 的 execution-notes 为准。供应、装修、本机检查点与合作核心已有实现，不能从早期索引文字推断未实现。未来方向读 [产品文档](../Docs/Product/README.md)，模块路由读 [模块索引](../Docs/AI/module-index.md)。
@@ -26,6 +28,7 @@
 | [runtime-foundation](specs/runtime-foundation/spec.md) | 公共组件/流程/示例 |
 | [runtime-instances](specs/runtime-instances/spec.md) | 显式实例配置、工程范围请求、Play 交接与本轮入口收尾 |
 | [product-entry](specs/product-entry/spec.md) | 普通模式菜单、无餐厅房间、开局/返回/重开及取消失败 |
+| [development-test-levels](specs/development-test-levels/spec.md) | 开发环境Solo指定起点、临时进度隔离、真实规则与重开返回 |
 | [product-preferences](specs/product-preferences/spec.md) | 本机字号、地图拖动和提醒偏好，独立文件、明确保存/失败保旧及原交互保护 |
 | [cooperative-save-baselines](specs/cooperative-save-baselines/spec.md) | 当前绑定Profile证明、离线授权基线读取及真实库存恢复 |
 | [product-session](specs/product-session/spec.md) | Unity 本机产品树、共同裁决、逻辑成员/连接分离、本轮手动恢复、本地/远端消息与收尾 |

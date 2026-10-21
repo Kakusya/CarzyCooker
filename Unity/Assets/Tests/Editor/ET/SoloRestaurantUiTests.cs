@@ -55,11 +55,16 @@ namespace ET
             yield return Wait(() => Runtime?.Root().GetComponent<ProductEntryPresentation>() is ProductEntryPresentation entry &&
                 ((UIGridKitchen)entry.Hud)?.Available == true, "Ordinary managed mode menu ready");
             var modeEntry = Runtime.Root().GetComponent<ProductEntryPresentation>();
-            Pointer(((UIGridKitchen)modeEntry.Hud).View.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "单机餐厅"));
+            Pointer(((UIGridKitchen)modeEntry.Hud).View.GetComponentsInChildren<Button>(false).Single(value => value.GetComponentInChildren<Text>().text == "开始新游戏"));
             yield return Wait(() => Runtime?.Root().GetComponent<SoloSavePresentation>() is SoloSavePresentation selection &&
                 ((UIGridKitchen)selection.Hud)?.Available == true, "Real managed save selector ready");
-            if (!chooseGame) yield break;
             var selector = Runtime.Root().GetComponent<SoloSavePresentation>();
+            if (!chooseGame)
+            {
+                // Historical selector tests inspect its retained subpages. The new ordinary entry is covered by EntryFlowClarity.
+                selector.NavigateSoloPage(SoloEntryPage.Home);
+                yield break;
+            }
             // This existing suite exercises the retained two-food configuration; drink tests opt into the new menu.
             selector.NewMenuVariant = menuVariant;
             var menu = ((UIGridKitchen)selector.Hud).View;

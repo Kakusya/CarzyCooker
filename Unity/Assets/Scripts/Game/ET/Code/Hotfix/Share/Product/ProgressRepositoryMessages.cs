@@ -12,6 +12,7 @@ namespace ET
         {
             try
             {
+                repository.RequireFormalProgress();
                 switch ((ProgressRepositoryOperation)request.Operation)
                 {
                     case ProgressRepositoryOperation.PrepareResult:

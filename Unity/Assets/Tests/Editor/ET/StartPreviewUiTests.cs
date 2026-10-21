@@ -11,7 +11,7 @@ namespace ET
 {
     public sealed partial class SoloRestaurantUiTests
     {
-        [UnityTest, Category("EntryExperience")]
+        [UnityTest, Category("EntryExperience"), Category("EntryFlowClarity")]
         public IEnumerator EntryStartPreviewSoloCancelsReopensAndStartsExactChapterWithoutChangingExistingFile()
         {
             yield return StartModeLauncher();
@@ -33,7 +33,7 @@ namespace ET
                 Assert.That((Scene)runtime.HostScene, Is.Null);
                 Assert.That((ClientSessionComponent)runtime.Client, Is.Null);
                 var retired = CaptureButtonCallback(SelectionButton("确认开始"));
-                Pointer(SelectionButton("返回开始方式"));
+                Pointer(SelectionButton("菜单试玩"));
                 Pointer(SelectionButton("内存试玩"));
                 Assert.That(SelectionHud.SettlementText.text, Does.Contain("内存试玩：退出后不保留记录"));
                 retired();

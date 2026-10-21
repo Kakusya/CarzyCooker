@@ -2,6 +2,7 @@ namespace ET.Client
 {
     public enum SoloSaveListFilter { All = 0, Continue = 1, Completed = 2, Favorites = 3 }
     public enum SoloEntryPage { Home = 0, Chapters = 1, Records = 2, TrialMenus = 3 }
+    public enum SoloRecordReadState { Unknown, Loading, Ready, Failed }
 
     [ComponentOf(typeof(Scene))]
     public sealed class SoloSavePresentation : Entity, IAwake, IUpdate, IDestroy
@@ -28,6 +29,7 @@ namespace ET.Client
         public SoloSaveListFilter SaveFilter;
         public SoloEntryPage Page;
         public long BrowseSerial;
+        public SoloRecordReadState RecordState;
         // 原领取入口定位的Slot/修订；只在本轮浏览中消费，完整载荷仍走原Select检查。
         public string RequestedSlotId;
         public int RequestedRevision;

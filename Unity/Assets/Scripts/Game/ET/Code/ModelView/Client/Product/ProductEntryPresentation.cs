@@ -14,7 +14,10 @@ namespace ET.Client
         Chapters = 2,
         TrialMenus = 3,
         StartPreview = 4,
-        ConnectionHelp = 5
+        ConnectionHelp = 5,
+        Progress = 6,
+        Settings = 7,
+        TestCatalog = 8
     }
 
     [ComponentOf(typeof(Scene))]
@@ -33,6 +36,11 @@ namespace ET.Client
         public int PreviewChapterId;
         public long PreviewRoomVersion, PreviewClient;
         public string Failure, JoinAddress;
+        public SoloRecordReadState RecordState;
+        public int ContinueRecordCount;
+        public string RecordReadFailure;
+        public long RecordReadSerial, RecordRepository;
+        public int SelectedTestLevelId;
         public ProductStage DisplayedStage;
         public long DisplayedRosterVersion, DisplayedRoomVersion, DisplayedClient;
         public ProductClientStage DisplayedClientStage;

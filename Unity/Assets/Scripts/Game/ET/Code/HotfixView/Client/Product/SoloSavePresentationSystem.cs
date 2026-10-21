@@ -24,6 +24,7 @@ namespace ET.Client
             self.NewMenuVariant = ProductMenuVariant.Drink;
             self.RenderVersion = 0; self.StartPreviewVisible = false;
             self.Page = SoloEntryPage.Home;
+            self.RecordState = SoloRecordReadState.Unknown;
             self.ClearSaveInspection(); self.SaveFilter = SoloSaveListFilter.All; self.BrowseSerial = 0;
             self.LoadingHud = false; self.LoadingSelection = false; self.Started = false;
             self.OpenSoloSelection();
@@ -103,11 +104,27 @@ namespace ET.Client
         {
             UIGridKitchen hud = self.Hud; if (hud?.Available != true) return;
             EntityRef<SoloSavePresentation> original = self; long epoch = self.Epoch, serial = ++self.BrowseSerial;
+            self.RecordState = SoloRecordReadState.Loading;
+            self.RenderSoloSelection();
             hud.GetAsyncOwner().Run(async context =>
             {
                 try
                 {
-                    var repository = self.Repository();
+                    var repository = self.Root().GetComponent<SoloSaveRepository>();
+                    if (repository == null)
+                    {
+                        string directory = Application.persistentDataPath;
+                        string profile = SoloSaveRepositorySystem.ExistingLocalProfile(directory);
+                        if (profile == null)
+                        {
+                            self.Headers = Array.Empty<SoloSaveHeader>();
+                            self.RecordState = SoloRecordReadState.Ready;
+                            self.Failure = null;
+                            self.RenderSoloSelection();
+                            return;
+                        }
+                        repository = self.Root().AddComponent<SoloSaveRepository, string, string>(directory, profile);
+                    }
                     using var reply = (SoloSaveBrowseResponse)await self.Root().GetComponent<ProcessInnerSender>().Call(repository.GetActorId(), ProductMessages.Create<SoloSaveBrowseRequest>(_ => { }), false);
                     context.ThrowIfStopped(); self = original;
                     if (self == null || self.Epoch != epoch || self.BrowseSerial != serial || self.Started) return;
@@ -127,6 +144,7 @@ namespace ET.Client
                         self.ClearSaveInspection();
                     }
                     self.Failure = null;
+                    self.RecordState = SoloRecordReadState.Ready;
                     if (self.RequestedSlotId != null)
                     {
                         string slot = self.RequestedSlotId;
@@ -142,7 +160,7 @@ namespace ET.Client
                     self.RenderSoloSelection();
                 }
                 catch (OperationCanceledException) { }
-                catch (Exception e) { self = original; if (self != null && self.Epoch == epoch && self.BrowseSerial == serial) { self.Failure = e.Message; self.RenderSoloSelection(); } }
+                catch (Exception e) { self = original; if (self != null && self.Epoch == epoch && self.BrowseSerial == serial) { self.RecordState = SoloRecordReadState.Failed; self.Failure = e.Message; self.RenderSoloSelection(); } }
             });
         }
 
@@ -178,6 +196,14 @@ namespace ET.Client
             self.AddPreferencesControl(view, () => self.RenderSoloSelection());
             self.AddAudioControl(view, () => self.RenderSoloSelection());
             if (self.InspectedSave != null) { self.RenderSaveInspection(view); return; }
+            if (self.Page == SoloEntryPage.Chapters && !self.StartPreviewVisible)
+            {
+                var chapter = Tables.Instance.DTRestaurantChapterConfig.Get(1);
+                self.PreviewPersistent = !Application.isMobilePlatform;
+                self.PreviewMenuVariant = chapter.MenuVariant;
+                self.PreviewChapterId = chapter.Id;
+                self.StartPreviewVisible = true;
+            }
             if (self.StartPreviewVisible) { self.RenderSoloStartPreview(view); return; }
             if (self.Page == SoloEntryPage.Home)
             {
@@ -306,6 +332,12 @@ namespace ET.Client
                     ProductBootstrapBridge.ReturnToModeMenu(current.Root().GetComponent<ProductRuntimeComponent>().Config);
                 }
             });
+            if (self.RecordState != SoloRecordReadState.Ready)
+            {
+                view.SettlementText.text = self.RecordState == SoloRecordReadState.Failed
+                    ? "记录读取失败，尚未创建餐厅。请刷新重试。\n" + self.Failure : "正在读取本机记录…";
+                return;
+            }
             for (int index = 0; index < self.Headers.Length; ++index)
             {
                 var header = self.Headers[index];
@@ -339,10 +371,16 @@ namespace ET.Client
                 SoloSavePresentation current = original;
                 if (current != null)
                 {
-                    current.Page = page;
-                    current.RenderSoloSelection();
+                    current.NavigateSoloPage(page);
                 }
             });
+        }
+
+        public static void NavigateSoloPage(this SoloSavePresentation self, SoloEntryPage page)
+        {
+            self.Page = page;
+            self.StartPreviewVisible = false;
+            self.RenderSoloSelection();
         }
 
         public static void ChooseSoloNewGame(this SoloSavePresentation self, bool persistent, int contentChapterId = 0)

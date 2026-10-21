@@ -269,6 +269,7 @@ namespace ET.Client
             }
         }
         public void AddControl(string label,Action action)=>AddButton(ControlParent(label),label,action);
+        public void AddEntryPrimary(string label, Action action) => AddButton(ControlPanelRectTransform, label, action, true);
         public void AddOrderAction(string label, Action action, bool primary = false, int dishDefinition = 0)
         {
             Button button = AddButton(OrderActionsRectTransform, label, action);
@@ -291,6 +292,14 @@ namespace ET.Client
         }
         private Button AddButton(RectTransform parent,string label,Action action,bool primary=false)
         {
+            if (m_EntryLayout && parent == TargetsRectTransform)
+            {
+                m_Footer.gameObject.SetActive(true);
+            }
+            if (m_EntryLayout && parent == m_Navigation)
+            {
+                m_Navigation.gameObject.SetActive(true);
+            }
             Button button=Instantiate(TargetTemplateButton,parent);button.gameObject.SetActive(true);
             button.gameObject.name = label;
             Text caption=button.GetComponentInChildren<Text>();caption.font=font;ApplyButtonFont(caption);caption.text=label;

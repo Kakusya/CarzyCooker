@@ -21,13 +21,15 @@ namespace ET
         private MonoUIGridKitchen EntryHud => ((UIGridKitchen)Entry.Hud).View;
         private Button EntryButton(string caption)
         {
+            caption = caption == "单机餐厅" ? "开始新游戏" : caption == "合作房间" ? "合作游玩" : caption == "继续记录" ? "继续游戏" : caption;
             Button found = EntryHud.GetComponentsInChildren<Button>(false)
                 .SingleOrDefault(button => button.GetComponentInChildren<Text>().text == caption);
             if (found != null)
             {
                 return found;
             }
-            string parent = caption is "创建合作房间" or "加入合作房间" ? "合作房间"
+            string parent = caption is "创建合作房间" or "加入合作房间" ? "合作游玩"
+                : caption is "合作进度领取" or "存档与授权" ? "进度管理"
                 : caption.StartsWith("开启大关 ") ? "选择章节"
                 : caption.StartsWith("开启") ? "菜单试玩" : null;
             Assert.That(parent, Is.Not.Null, "Missing actual entry: " + caption);

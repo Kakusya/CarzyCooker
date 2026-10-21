@@ -22,11 +22,19 @@ namespace ET.Client
             return owner.Root().AddComponent<SoloSaveRepository, string, string>(directory, SoloSaveRepositorySystem.LocalProfile(directory));
         }
 
-        public static void InitializePreferences(this Entity owner)
+        public static void InitializePreferences(this Entity owner, string applicationDirectory = null)
         {
             try
             {
-                PreferencesRepository(owner);
+                if (owner.Root().GetComponent<SoloSaveRepository>() == null)
+                {
+                    string directory = applicationDirectory ?? Application.persistentDataPath;
+                    string profile = SoloSaveRepositorySystem.ExistingLocalProfile(directory);
+                    if (profile != null)
+                    {
+                        owner.Root().AddComponent<SoloSaveRepository, string, string>(directory, profile);
+                    }
+                }
             }
             catch (Exception error)
             {
@@ -113,7 +121,7 @@ namespace ET.Client
                 (draft.Feedback ?? "尚未保存本轮草稿。"), true, false);
             view.PhaseText.text = "本机设置";
             view.ClockText.text = draft.Busy ? "正在保存" : "编辑草稿";
-            view.ScoreText.text = "不改餐厅进度";
+            view.SetScore("不改餐厅进度");
             view.StatusText.text = draft.Feedback ?? "选择阅读与操作习惯";
             view.HandText.text = "取消返回原页面";
             view.WorkText.text = "";

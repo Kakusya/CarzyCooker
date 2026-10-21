@@ -34,8 +34,30 @@ namespace ET.Client
 
         private static void RenderModeNavigation(this ProductEntryPresentation self, MonoUIGridKitchen view)
         {
-            self.AddClaimInboxControl(view);
             EntityRef<ProductEntryPresentation> original = self;
+            if (self.Page == ProductEntryPage.TestCatalog)
+            {
+                self.RenderDevelopmentTests(view);
+                return;
+            }
+            if (self.Page == ProductEntryPage.Progress)
+            {
+                view.ClockText.text = "开始 / 进度管理";
+                view.SettlementText.text = "查看本机记录，领取合作结果，或管理存档授权。\n这些操作不会自动开启餐厅。";
+                self.AddClaimInboxControl(view);
+                view.AddControl("查看全部记录", () => { ProductEntryPresentation current = original; current?.ChooseSoloEntry(true); });
+                view.AddControl("合作进度领取", () => { ProductEntryPresentation current = original; current?.OpenClaims(); });
+                view.AddControl("存档与授权", () => { ProductEntryPresentation current = original; current?.OpenAuthorizationFiles(); });
+                self.AddEntryNavigation(view, "返回开始页", ProductEntryPage.Home);
+                return;
+            }
+            if (self.Page == ProductEntryPage.Settings)
+            {
+                view.ClockText.text = "开始 / 设置";
+                view.SettlementText.text = "调整本机声音、字号和操作偏好。";
+                self.AddEntryNavigation(view, "返回开始页", ProductEntryPage.Home);
+                return;
+            }
             if (self.Page == ProductEntryPage.Cooperation)
             {
                 view.ClockText.text = "开始 / 合作房间";
@@ -71,29 +93,41 @@ namespace ET.Client
             }
 
             self.Page = ProductEntryPage.Home;
+            view.ShowEntryLayout(ProductEntryLayout.Home);
             view.ClockText.text = "开始 / 主页";
-            view.SettlementText.text = "新开或继续本机餐厅，或进入合作房间。\n合作结果和授权文件可单独查看，不会因此开启餐厅。";
-            view.AddControl("单机餐厅", () =>
+            view.StatusText.text = "欢迎回到你的小餐厅";
+            view.HintText.text = "选择一章开始，或继续上次的餐厅";
+            view.SettlementText.text = self.RecordSummaryText();
+            view.AddEntryPrimary("开始新游戏", () =>
             {
                 ProductEntryPresentation current = original;
                 current?.ChooseSoloEntry();
             });
-            view.AddControl("继续记录", () =>
+            view.AddEntryPrimary("继续游戏", () =>
             {
                 ProductEntryPresentation current = original;
                 current?.ChooseSoloEntry(true);
             });
-            self.AddEntryNavigation(view, "合作房间", ProductEntryPage.Cooperation);
-            view.AddControl("合作进度领取", () =>
+            view.AddEntryPrimary("合作游玩", () => { ProductEntryPresentation current = original; current?.NavigateEntry(ProductEntryPage.Cooperation); });
+            view.AddTarget("更多玩法", () =>
             {
                 ProductEntryPresentation current = original;
-                current?.OpenClaims();
+                current?.ChooseSoloEntry(showTrials: true);
             });
-            view.AddControl("存档与授权", () =>
+            view.AddTarget("进度管理", () =>
             {
                 ProductEntryPresentation current = original;
-                current?.OpenAuthorizationFiles();
+                current?.NavigateEntry(ProductEntryPage.Progress);
             });
+            view.AddTarget("设置", () => { ProductEntryPresentation current = original; current?.NavigateEntry(ProductEntryPage.Settings); });
+            if (RuntimeInstanceConfig.DevelopmentTestsAvailable)
+            {
+                view.AddTarget("测试关卡", () => { ProductEntryPresentation current = original; current?.NavigateEntry(ProductEntryPage.TestCatalog); });
+            }
+            if (self.RecordState == SoloRecordReadState.Failed)
+            {
+                view.AddTarget("重试读取记录", () => { ProductEntryPresentation current = original; if (current != null) { current.RecordState = SoloRecordReadState.Unknown; } });
+            }
         }
 
         private static void AddRoomStartNavigation(this ProductEntryPresentation self, MonoUIGridKitchen view,

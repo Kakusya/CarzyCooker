@@ -71,6 +71,7 @@ namespace ET
 
     [EntitySystemOf(typeof(SoloSaveRepository))]
     [FriendOf(typeof(SoloSaveRepository))]
+    [FriendOf(typeof(ProductRuntimeComponent))]
     public static partial class SoloSaveRepositorySystem
     {
         [EntitySystem]
@@ -112,6 +113,18 @@ namespace ET
                 }
                 finally { if (File.Exists(temp)) File.Delete(temp); }
             }
+            return ExistingLocalProfile(applicationDirectory, platform);
+        }
+
+        // 首页只读查询不得创建身份、目录或成功记录。
+        public static string ExistingLocalProfile(string applicationDirectory, ProductStoragePlatform? platform = null)
+        {
+            string path = Path.GetFullPath(Path.Combine(applicationDirectory, "Solo",
+                RuntimeInstanceContext.StoragePlatformName(platform ?? RuntimeInstanceContext.StoragePlatform), "profile.id"));
+            if (!File.Exists(path))
+            {
+                return null;
+            }
             using var stream = File.OpenRead(path);
             if (stream.Length != 32) throw new InvalidOperationException("InvalidLocalProfile");
             var bytes = new byte[32]; if (stream.Read(bytes, 0, bytes.Length) != bytes.Length) throw new IOException("TruncatedLocalProfile");
@@ -147,6 +160,7 @@ namespace ET
 
         public static SoloSaveHeader Commit(this SoloSaveRepository self, SoloSaveHeader header, SoloSavePayload payload)
         {
+            self.RequireFormalProgress();
             SoloSaveValidation.Payload(header, payload, self.ProfileId, self.Platform);
             // Rebuild from committed headers, so response loss and reopening share the same fact.
             var existing = self.Browse().FirstOrDefault(h => h.ResultId == header.ResultId && h.ProfileId == header.ProfileId);
@@ -170,8 +184,17 @@ namespace ET
             }
         }
 
+        public static void RequireFormalProgress(this SoloSaveRepository self)
+        {
+            if (self.Root().GetComponent<ProductRuntimeComponent>()?.Config.IsDevelopmentTest == true)
+            {
+                throw new InvalidOperationException("DevelopmentTestCannotSave");
+            }
+        }
+
         private static SoloSaveHeader WriteNewRecord(this SoloSaveRepository self, SoloSaveHeader header, SoloSavePayload payload)
         {
+            self.RequireFormalProgress();
             string target = self.SlotPath(header.SlotId);
             if (File.Exists(target)) throw new IOException("SaveSlotConflict");
             byte[] bytes = SoloSaveFile.Encode(header, payload, self.Platform);

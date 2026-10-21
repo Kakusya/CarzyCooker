@@ -87,7 +87,7 @@ namespace ET.Client
             int volume = Mathf.RoundToInt(GameEntry.Sound.GetVolume(Group) * 100);
             view.SetInformation("声音 · 本机即时生效", "音效静音和音量即时生效并保存到本机。\n只控制经营音效；不改变其他玩家或经营进度。\n字体/经营提醒仍在原设置页明确保存，取消其草稿不会撤销声音。\n" +
                 (page.Feedback ?? "当前音量 " + volume + "% · " + (muted ? "已静音" : "未静音")), true, false);
-            view.PhaseText.text = "声音"; view.ClockText.text = "即时生效"; view.ScoreText.text = volume + "%";
+            view.PhaseText.text = "声音"; view.ClockText.text = "即时生效"; view.SetScore(volume + "%");
             view.StatusText.text = page.Feedback ?? "本机经营音效";
             view.HintText.text = "音效与可关闭的视觉提醒分别控制";
             view.HandText.text = "默认音量60%，未静音";

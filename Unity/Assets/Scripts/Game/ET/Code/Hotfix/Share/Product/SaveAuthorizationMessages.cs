@@ -11,6 +11,7 @@ namespace ET
         {
             try
             {
+                repository.RequireFormalProgress();
                 switch ((SaveAuthorizationAction)request.Action)
                 {
                     case SaveAuthorizationAction.ExportImport:

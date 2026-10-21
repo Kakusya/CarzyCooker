@@ -34,6 +34,10 @@ namespace ET
                 return false;
             }
             s_SwitchPending = true;
+            if (next.TestLevelId == 0 && owner.TestLevelId > 0)
+            {
+                next = next.WithTestSelection(owner.TestLevelId);
+            }
             SwitchAfterFiberFrame(owner, world, next).Forget();
             return true;
         }

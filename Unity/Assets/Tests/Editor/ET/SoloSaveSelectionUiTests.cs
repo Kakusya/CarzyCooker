@@ -17,14 +17,34 @@ namespace ET
         private MonoUIGridKitchen SelectionHud => ((UIGridKitchen)Selection.Hud).View;
         private Button SelectionButton(string caption)
         {
-            Button Find(string text) => SelectionHud.GetComponentsInChildren<Button>(false).SingleOrDefault(value => value.GetComponentInChildren<Text>().text == text);
+            Button Find(string text)
+            {
+                var visible = SelectionHud.GetComponentsInChildren<Button>(false);
+                var button = visible.SingleOrDefault(value => value.GetComponentInChildren<Text>().text == text);
+                if (button == null && text.StartsWith("新开大关 "))
+                {
+                    string name = text.Substring(text.IndexOf(" · ", StringComparison.Ordinal) + 3);
+                    button = visible.SingleOrDefault(value => value.GetComponentInChildren<Text>().text == "选择 · " + name ||
+                        value.GetComponentInChildren<Text>().text == "已选 · " + name);
+                }
+                return button;
+            }
             Button result = Find(caption);
+            if (result == null && Selection.Page == SoloEntryPage.TrialMenus && caption.StartsWith("新开大关 "))
+            {
+                Pointer(Find("返回单机首页"));
+            }
             if (result == null && Selection.Page == SoloEntryPage.Home)
             {
                 string page = caption.StartsWith("新开大关") ? "选择其他章节" :
                     caption.StartsWith("新开") || caption == "内存试玩" ? "菜单试玩" :
                     Selection.Headers.Length > 0 ? "继续记录" : "查看记录";
                 Pointer(Find(page));
+                result = Find(caption);
+            }
+            if (result == null && Selection.Page == SoloEntryPage.Chapters && (caption.StartsWith("新开") || caption == "内存试玩"))
+            {
+                Pointer(Find("菜单试玩"));
                 result = Find(caption);
             }
             Assert.That(result, Is.Not.Null, "Retained original action is reachable: " + caption);

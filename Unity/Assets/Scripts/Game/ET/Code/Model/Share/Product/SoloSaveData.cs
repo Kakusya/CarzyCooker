@@ -5,7 +5,7 @@ using MemoryPack;
 namespace ET
 {
     // 本端只读导航上下文；不序列化、不代表已读取或继续记录。
-    public struct SoloSaveSelectionRequested { public string SlotId; public int Revision; }
+    public struct SoloSaveSelectionRequested { public string SlotId; public int Revision; public bool ShowRecords; }
     public enum SoloSaveRecordKind { Continue = 0, ChapterCompleted = 1 }
     public static class SoloSaveFormat { public const int Current = 12; }
 

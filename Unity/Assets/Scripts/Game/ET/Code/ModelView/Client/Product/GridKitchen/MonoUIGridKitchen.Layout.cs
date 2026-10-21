@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 namespace ET.Client
 {
+    public enum ProductEntryLayout { Page, Home, ChapterSelection }
+
     public enum ProductHudLayout
     {
         Entry,
@@ -21,6 +23,8 @@ namespace ET.Client
         private RectTransform m_Header;
         private RectTransform m_Footer;
         private bool m_EntryLayout;
+        private bool m_DevelopmentTest;
+        private ProductEntryLayout m_EntryPage;
         private bool m_Preparing;
         private bool m_Completed;
         private float m_ActionPosition = 1;
@@ -28,7 +32,7 @@ namespace ET.Client
         private bool m_RestoreScroll;
         private bool m_RestoreDetails;
         private float m_DetailsPosition = 1;
-        private (bool Entry, bool Preparing, bool Completed, bool Details, float Scale, float Width, bool Context, bool More) m_LayoutKey;
+        private (bool Entry, ProductEntryLayout Page, bool Preparing, bool Completed, bool Details, float Scale, float Width, bool Context, bool More) m_LayoutKey;
         private bool m_LayoutValid;
 
         public ProductHudLayout LayoutMode => m_EntryLayout ? ProductHudLayout.Entry :
@@ -55,13 +59,15 @@ namespace ET.Client
             }
             orders.verticalNormalizedPosition = 1;
             m_EntryLayout = false;
+            m_DevelopmentTest = false;
             m_LayoutValid = false;
             ApplyLayout();
         }
 
-        public void ShowEntryLayout()
+        public void ShowEntryLayout(ProductEntryLayout page = ProductEntryLayout.Page)
         {
             m_EntryLayout = true;
+            m_EntryPage = page;
             BuffPanelRectTransform.gameObject.SetActive(false);
             OrderPanelRectTransform.gameObject.SetActive(false);
             SettlementPanelRectTransform.gameObject.SetActive(true);
@@ -84,7 +90,7 @@ namespace ET.Client
                 return;
             }
             bool details = DetailsPanelRectTransform.gameObject.activeSelf;
-            var key = (m_EntryLayout, m_Preparing, m_Completed, details, m_FontScale, ((RectTransform)transform).rect.width, m_ContextSummaryReady, m_MoreActionsVisible);
+            var key = (m_EntryLayout, m_EntryPage, m_Preparing, m_Completed, details, m_FontScale, ((RectTransform)transform).rect.width, m_ContextSummaryReady, m_MoreActionsVisible);
             if (m_LayoutValid && m_LayoutKey == key)
             {
                 return;
@@ -106,6 +112,19 @@ namespace ET.Client
                 Region((RectTransform)m_ControlScroll.transform, .31f, .59f);
                 Region(SettlementPanelRectTransform, .60f, .85f);
                 Region((RectTransform)m_ActionScroll.transform, 0, 1);
+                if (m_EntryPage == ProductEntryLayout.Home)
+                {
+                    Region(SettlementPanelRectTransform, .64f, .84f, .06f, .94f);
+                    Region((RectTransform)m_ControlScroll.transform, .32f, .63f, .10f, .90f);
+                    Region(m_Footer, .14f, .30f, .06f, .94f);
+                }
+                else if (m_EntryPage == ProductEntryLayout.ChapterSelection && ((RectTransform)transform).rect.width > 900 &&
+                    ((RectTransform)transform).rect.width > ((RectTransform)transform).rect.height)
+                {
+                    Region((RectTransform)m_ControlScroll.transform, .10f, .84f, .02f, .42f);
+                    Region(SettlementPanelRectTransform, .53f, .84f, .44f, .98f);
+                    Region(m_Footer, .10f, .52f, .44f, .98f);
+                }
             }
             else
             {
@@ -134,7 +153,7 @@ namespace ET.Client
             // A full opaque detail surface consumes pointer/scroll input before the map.
             DetailsPanelRectTransform.SetAsLastSibling();
             m_Navigation.SetAsLastSibling();
-            LayoutButtons(ControlPanelRectTransform, m_EntryLayout ? 2 : 3);
+            LayoutButtons(ControlPanelRectTransform, EntryColumns());
             LayoutButtons(TargetsRectTransform, 2);
             LayoutButtons(m_Navigation, 3);
             LayoutButtons(PrimaryActionsRectTransform, m_ContextSummaryReady ? 3 : 2);
@@ -157,7 +176,13 @@ namespace ET.Client
             layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             layout.constraintCount = columns;
             float width = (parent.rect.width - layout.padding.horizontal - layout.spacing.x * (columns - 1)) / columns;
-            layout.cellSize = new Vector2(Mathf.Max(40, width), 76 * m_FontScale);
+            float height = 76 * m_FontScale;
+            if (m_EntryLayout && m_EntryPage == ProductEntryLayout.Home && parent == ControlPanelRectTransform)
+            {
+                float available = ((RectTransform)m_ControlScroll.transform).rect.height - layout.padding.vertical - layout.spacing.y * 2;
+                height = Mathf.Min(132 * m_FontScale, Mathf.Max(60, available / 3));
+            }
+            layout.cellSize = new Vector2(Mathf.Max(40, width), height);
         }
 
         private void RememberListPosition()
@@ -179,9 +204,12 @@ namespace ET.Client
             }
             m_RestoreScroll = false;
             Canvas.ForceUpdateCanvases();
-            LayoutButtons(ControlPanelRectTransform, m_EntryLayout ? 2 : 3);
+            LayoutButtons(ControlPanelRectTransform, EntryColumns());
             LayoutButtons(TargetsRectTransform, 2);
             LayoutButtons(m_Navigation, 3);
+            m_Footer.gameObject.SetActive(!m_EntryLayout || buttons.Exists(button => button != null && button.transform.parent == TargetsRectTransform));
+            m_Navigation.gameObject.SetActive(!m_EntryLayout || buttons.Exists(button => button != null && button.transform.parent == m_Navigation));
+            ScoreText.gameObject.SetActive(!m_EntryLayout || !string.IsNullOrEmpty(ScoreText.text));
             Canvas.ForceUpdateCanvases();
             m_ActionScroll.verticalNormalizedPosition = Mathf.Clamp01(m_ActionPosition);
             m_ControlScroll.verticalNormalizedPosition = Mathf.Clamp01(m_ControlPosition);
@@ -213,5 +241,18 @@ namespace ET.Client
             }
             return ControlPanelRectTransform;
         }
+
+        private int EntryColumns() => !m_EntryLayout ? 3 : m_EntryPage == ProductEntryLayout.Home ? 1 : 2;
+
+        public void SetDevelopmentTest(bool enabled)
+        {
+            m_DevelopmentTest = enabled;
+            if (enabled && !ScoreText.text.StartsWith("测试 · ", StringComparison.Ordinal))
+            {
+                SetScore(ScoreText.text);
+            }
+        }
+
+        public void SetScore(string score) => ScoreText.text = (m_DevelopmentTest ? "测试 · " : "") + score;
     }
 }

@@ -7,6 +7,11 @@ namespace ET.Client
     {
         private static void RefreshBaselineStatus(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
+            if (((ProductRuntimeComponent)grid.GetParent<ClientSessionComponent>().Runtime).Config.IsDevelopmentTest)
+            {
+                view.HintText.text = "测试运行 · 不计正式进度 · " + view.HintText.text;
+                return;
+            }
             ProductRoomClient room = grid.GetParent<ClientSessionComponent>().GetComponent<ProductRoomClient>();
             if (!string.IsNullOrEmpty(room?.Current.BaselineOwnerId))
             {
@@ -17,6 +22,11 @@ namespace ET.Client
         private static void AddRoomControls(this GridPresentationComponent self, MonoUIGridKitchen view, GridClientComponent grid)
         {
             ClientSessionComponent client = grid.GetParent<ClientSessionComponent>();
+            if (((ProductRuntimeComponent)client.Runtime).Config.IsDevelopmentTest)
+            {
+                self.AddDevelopmentTestControls(view, grid);
+                return;
+            }
             if (IsCooperativeRestaurant(grid))
             {
                 self.Root().GetComponent<ProductEntryPresentation>()?.AddClaimInboxControl(view);

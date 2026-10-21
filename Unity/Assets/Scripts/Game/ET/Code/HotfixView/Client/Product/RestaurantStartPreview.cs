@@ -67,6 +67,23 @@ namespace ET.Client
             ProductMenuVariant menu = self.PreviewMenuVariant;
             int chapterId = self.PreviewChapterId;
             view.ClockText.text = "单机 / 开局预览";
+            if (self.Page == SoloEntryPage.Chapters)
+            {
+                view.ShowEntryLayout(ProductEntryLayout.ChapterSelection);
+                view.ClockText.text = "单机 / 选择章节";
+                foreach (var chapter in Tables.Instance.DTRestaurantChapterConfig.DataList.OrderBy(row => row.Id))
+                {
+                    int id = chapter.Id;
+                    ProductMenuVariant variant = chapter.MenuVariant;
+                    EntityRef<SoloSavePresentation> selection = self;
+                    view.AddEntryPrimary((id == chapterId ? "已选 · " : "选择 · ") + chapter.Name, () =>
+                    {
+                        SoloSavePresentation current = selection;
+                        current?.PreviewSoloStart(persistent, variant, id);
+                    });
+                }
+                self.AddSoloPage(view, "菜单试玩", SoloEntryPage.TrialMenus);
+            }
             view.ScoreText.text = persistent ? "成功后保存" : "内存试玩";
             view.HintText.text = persistent ? "本轮成功后新增记录" : "本轮退出后不保留";
             view.StatusText.text = "阅读后确认开始，也可以返回重新选择";
@@ -90,6 +107,11 @@ namespace ET.Client
                 SoloSavePresentation current = original;
                 if (current != null)
                 {
+                    if (current.Page == SoloEntryPage.Chapters)
+                    {
+                        ProductBootstrapBridge.ReturnToModeMenu(current.Root().GetComponent<ProductRuntimeComponent>().Config);
+                        return;
+                    }
                     current.StartPreviewVisible = false;
                     current.RenderSoloSelection();
                 }

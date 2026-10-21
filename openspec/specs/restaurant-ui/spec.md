@@ -374,6 +374,26 @@
 - **WHEN** 玩家关闭重开HUD，拖动地图后释放，再明确点击一个有效动作
 - **THEN** 拖动和旧回调不提交动作，新点击至多提交一次，Client不能因此获得开店或换关控制
 
+### Requirement: 启动首页具有明确的操作主次
+
+界面 SHALL 为启动首页提供游戏标题、既有餐厅视觉和突出显示的三项游玩操作，次级资料与设置使用较轻的视觉样式。非餐厅页面不展示无用途的经营指标、手持区域或空动作框；原合法功能仍可达，装饰不截获有效输入。
+
+#### Scenario: 首页查看与次级导航
+- **WHEN** 玩家从普通 Launcher 进入首页并打开设置、进度管理后返回
+- **THEN** 主要游玩操作始终清楚可辨，返回目标明确，不显示空厨房控制区，点击装饰不会创建业务动作
+
+### Requirement: 章节列表与开局预览在同页可操作
+
+界面 MUST 在单人新开页同时提供章节选择、当前预览和固定主要操作，窄屏纵向组织、宽屏可并排；长菜单或记录独立滚动。在540×960、1920×1080、最大已有字号及一个非零安全区代表环境中，选中状态、完整预览和固定返回／确认均可触达，滚动不附带开局。
+
+#### Scenario: 竖屏长菜单与最大字号
+- **WHEN** 玩家在540×960、最大字号和非零安全区选择最长现有章节预览，滚动到末尾后返回
+- **THEN** 完整菜单、返回与确认都可触达，滚动不创建餐厅，返回后原入口可操作
+
+#### Scenario: 宽屏切换并开局
+- **WHEN** 玩家在1920×1080切换章节并明确确认，再返回首页重开入口
+- **THEN** 列表、预览和主要操作互不遮挡，旧页回调失效，入口与地图没有重复视图或按钮订阅
+
 ## Sources
 
 - [当前实现](../../../Unity/Assets/Scripts/Game/ET/Code/HotfixView/Client/Product/GridKitchen/GridPresentationPanels.cs)。
@@ -388,3 +408,4 @@
 - [restaurant-live-service-overview](../../changes/archive/2026-10-17-restaurant-live-service-overview/execution-notes.md).
 - [restaurant-service-recap](../../changes/archive/2026-10-17-restaurant-service-recap/execution-notes.md).
 - [restaurant-event-notices](../../changes/archive/2026-10-17-restaurant-event-notices/execution-notes.md).
+- [product-entry-flow-clarity](../../changes/archive/2026-10-21-product-entry-flow-clarity/execution-notes.md).

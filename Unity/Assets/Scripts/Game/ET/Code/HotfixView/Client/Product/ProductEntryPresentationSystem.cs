@@ -25,11 +25,20 @@ namespace ET.Client
             self.LoadingHud = self.Busy = false;
             self.Suspended = false;
             self.Page = ProductEntryPage.Home;
+            self.RecordState = SoloRecordReadState.Unknown;
+            self.ContinueRecordCount = 0;
+            self.RecordReadFailure = null;
+            self.RecordReadSerial = self.RecordRepository = 0;
             self.ClearLeaveConfirmation();
             ProductRuntimeComponent runtime = self.Root().GetComponent<ProductRuntimeComponent>();
             self.ChoosingSolo = runtime.Config.Role == RuntimeInstanceRole.Solo && !runtime.Config.ShowModeMenu;
             self.Failure = runtime.Config.EntryFeedback;
             self.JoinAddress = "127.0.0.1:";
+            self.SelectedTestLevelId = runtime.Config.TestLevelId;
+            if (runtime.Config.TestDestination == RuntimeTestDestination.Catalog)
+            {
+                self.Page = ProductEntryPage.TestCatalog;
+            }
             self.DisplayedStage = (ProductStage)(-1);
             self.DisplayedRosterVersion = self.DisplayedRoomVersion = self.DisplayedClient = -1;
             self.DisplayedRuntimeFailure = null;
@@ -98,6 +107,7 @@ namespace ET.Client
 
         public static void RefreshProductEntry(this ProductEntryPresentation self)
         {
+            self.RefreshRecordSummary();
             self.RefreshClaimInbox();
             if (self.RefreshLeaveConfirmation())
             {
@@ -252,7 +262,7 @@ namespace ET.Client
                     !current.ChoosingSolo && ((UIGridKitchen)hudRef)?.Available == true &&
                     (active?.InstanceId ?? 0) == clientInstance && (active?.GetComponent<ProductRoomClient>()?.Current.Version ?? 0) == roomVersion;
             });
-            if (self.Page == ProductEntryPage.Home && !self.ProgressVisible && !self.ClaimsVisible && !self.Busy)
+            if ((self.Page == ProductEntryPage.Settings || !modes && self.Page == ProductEntryPage.Home) && !self.ProgressVisible && !self.ClaimsVisible && !self.Busy)
             {
                 self.AddPreferencesControl(view, () => self.RenderProductEntry());
                 self.AddAudioControl(view, () => self.RenderProductEntry());
@@ -347,7 +357,7 @@ namespace ET.Client
             self.DisplayedRuntimeFailure = runtime.Failure;
         }
 
-        private static void ChooseSoloEntry(this ProductEntryPresentation self, bool showRecords = false)
+        private static void ChooseSoloEntry(this ProductEntryPresentation self, bool showRecords = false, bool showTrials = false)
         {
             if (self.Busy || self.ChoosingSolo)
             {
@@ -356,6 +366,11 @@ namespace ET.Client
             self.ChoosingSolo = true;
             self.CloseProductEntry();
             EventSystem.Instance.Publish(self.Root(), new SoloSaveSelectionRequested { ShowRecords = showRecords });
+            SoloSavePresentation selection = self.Root().GetComponent<SoloSavePresentation>();
+            if (selection != null && !showRecords)
+            {
+                selection.NavigateSoloPage(showTrials ? SoloEntryPage.TrialMenus : SoloEntryPage.Chapters);
+            }
         }
 
         private static void ChooseCooperativeEntry(this ProductEntryPresentation self, bool join)

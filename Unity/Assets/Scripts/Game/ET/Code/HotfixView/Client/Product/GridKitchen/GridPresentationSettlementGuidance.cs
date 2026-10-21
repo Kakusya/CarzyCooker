@@ -4,7 +4,8 @@ namespace ET.Client
 {
     public static partial class GridPresentationSystem
     {
-        private static string FinishChapterCaption(GridClientComponent grid) => grid.CooperativeSave
+        private static string FinishChapterCaption(GridClientComponent grid) => grid.Root().GetComponent<ProductRuntimeComponent>().Config.IsDevelopmentTest
+            ? "完成测试并返回列表" : grid.CooperativeSave
             ? "保存完成并返回房间" : IsCooperativeRestaurant(grid) ? "完成大关并返回房间"
             : grid.SaveEnabled ? "保存完成并返回选档" : "结束试玩并返回选档";
 
@@ -42,6 +43,10 @@ namespace ET.Client
 
         private static string SettlementRecordStatus(GridClientComponent grid)
         {
+            if (grid.Root().GetComponent<ProductRuntimeComponent>().Config.IsDevelopmentTest)
+            {
+                return "测试运行；不计正式进度";
+            }
             if (!grid.SaveEnabled)
             {
                 return IsCooperativeRestaurant(grid) ? grid.CooperativeSave ? "合作结算；个人领取另查凭证" : "内存合作；个人领取另查凭证"
@@ -84,7 +89,9 @@ namespace ET.Client
             string destination;
             if (terminal)
             {
-                destination = IsCooperativeRestaurant(grid) ? "大关终点：返回房间，无下一关" : "大关终点：返回选档，无下一关";
+                destination = grid.Root().GetComponent<ProductRuntimeComponent>().Config.IsDevelopmentTest
+                    ? "测试终点：返回测试列表，无下一关"
+                    : IsCooperativeRestaurant(grid) ? "大关终点：返回房间，无下一关" : "大关终点：返回选档，无下一关";
                 details += "\n" + destination + "；可以另开独立餐厅。零星不阻止完成。";
             }
             else

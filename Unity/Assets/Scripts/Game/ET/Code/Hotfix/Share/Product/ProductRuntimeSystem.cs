@@ -36,7 +36,12 @@ namespace ET
             RestaurantRuntime restaurant = self.FinishingRestaurant;
             if (restaurant == null) return;
             self.FinishingRestaurant = default;
-            if (self.Config.Role == RuntimeInstanceRole.Host)
+            if (self.Config.IsDevelopmentTest)
+            {
+                ProductBootstrapBridge.SwitchInitialization(self.Config, RuntimeInstanceConfig.Create(Guid.NewGuid().ToString("N"), "test-catalog", "solo",
+                    showModeMenu: true, testDestination: RuntimeTestDestination.Catalog, testLevelId: self.Config.TestLevelId));
+            }
+            else if (self.Config.Role == RuntimeInstanceRole.Host)
             {
                 ((HostSessionComponent)self.Authority)?.FinishCooperativeChapter(restaurant);
             }
@@ -183,7 +188,11 @@ namespace ET
             ProductRuntimeComponent runtime = root.AddComponent<ProductRuntimeComponent, RuntimeInstanceConfig>(RuntimeInstanceContext.Config);
             try
             {
-                if (RuntimeInstanceContext.Config.ShowModeMenu)
+                if (RuntimeInstanceContext.Config.IsDevelopmentTest)
+                {
+                    runtime.InitializeDevelopmentTest();
+                }
+                else if (RuntimeInstanceContext.Config.ShowModeMenu)
                 {
                     runtime.RegisterProductEntry();
                     EventSystem.Instance.Publish(root, new ProductEntryRequested());
@@ -211,6 +220,12 @@ namespace ET
             }
             catch (Exception e)
             {
+                if (RuntimeInstanceContext.Config.IsDevelopmentTest && ProductBootstrapBridge.SwitchInitialization(RuntimeInstanceContext.Config,
+                    RuntimeInstanceConfig.Create(Guid.NewGuid().ToString("N"), "test-catalog", "solo", showModeMenu: true,
+                        entryFeedback: "测试开局失败：" + e.Message, testDestination: RuntimeTestDestination.Catalog, testLevelId: RuntimeInstanceContext.Config.TestLevelId)))
+                {
+                    return UniTask.CompletedTask;
+                }
                 // 现有 FiberManager 的失败 Invoke 不结清创建等待；这里保留真实失败再结束初始化。
                 RuntimeInstanceContext.Fail(RuntimeInstanceContext.Config, $"ProductInitializeFailed: {e.Message}");
             }

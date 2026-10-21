@@ -17,6 +17,8 @@ namespace Game
             public string Role;
             public string Listen;
             public string Connect;
+            public RuntimeTestDestination TestDestination;
+            public int TestLevelId;
         }
 
         public static string ProjectPath => Directory.GetParent(Application.dataPath).FullName;
@@ -32,7 +34,9 @@ namespace Game
             {
                 RunId = config.RunId,
                 InstanceId = config.InstanceId,
-                Role = config.Role.ToString().ToLowerInvariant()
+                Role = config.Role.ToString().ToLowerInvariant(),
+                TestDestination = config.TestDestination,
+                TestLevelId = config.TestLevelId
             };
             if (config.Role is RuntimeInstanceRole.Host or RuntimeInstanceRole.Client)
             {
@@ -60,7 +64,8 @@ namespace Game
                 return null;
             }
             Request request = JsonUtility.FromJson<Request>(json);
-            return RuntimeInstanceConfig.Create(request.RunId, request.InstanceId, request.Role, request.Listen, request.Connect);
+            return RuntimeInstanceConfig.Create(request.RunId, request.InstanceId, request.Role, request.Listen, request.Connect,
+                testDestination: request.TestDestination, testLevelId: request.TestLevelId);
         }
 
         public static void Clear(string projectPath, bool preserveInterruption = false)

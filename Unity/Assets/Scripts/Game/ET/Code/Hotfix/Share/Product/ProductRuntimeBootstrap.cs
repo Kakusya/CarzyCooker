@@ -26,6 +26,7 @@ namespace ET
 
         public static void InitializeSavedProduct(this ProductRuntimeComponent self, string profile, SoloSaveHeader header = null, SoloSavePayload payload = null, bool joinLocal = true, ProductMenuVariant menuVariant = ProductMenuVariant.Basic, int contentChapterId = 0)
         {
+            if (self.Config.IsDevelopmentTest) throw new InvalidOperationException("DevelopmentTestCannotSave");
             if (self.Config.Role != RuntimeInstanceRole.Solo || !SoloSaveValidation.IsIdentifier(profile)) throw new InvalidOperationException("SoloSaveOnly");
             if (header != null) SoloSaveValidation.Payload(header, payload, profile);
             else if (payload != null) throw new InvalidOperationException("MissingSaveHeader");
@@ -35,6 +36,14 @@ namespace ET
                 throw new InvalidOperationException("SavedChapterAlreadySelected");
             }
             self.InitializeProductCore(joinLocal, profile, header, payload, menuVariant, contentChapterId: contentChapterId);
+        }
+
+        public static void InitializeDevelopmentTest(this ProductRuntimeComponent self, bool joinLocal = true)
+        {
+            RuntimeInstanceConfig.RequireDevelopmentAccess(self.Config.Role);
+            if (!self.Config.IsDevelopmentTest) throw new InvalidOperationException("MissingDevelopmentTestIntent");
+            var target = DevelopmentTestCatalog.Resolve(self.Config.TestLevelId);
+            self.InitializeProductCore(joinLocal, null, null, null, target.MenuVariant, testLevelId: target.Id);
         }
 
         public static void RegisterProductEntry(this ProductRuntimeComponent self)
@@ -48,8 +57,15 @@ namespace ET
             });
         }
 
-        private static void InitializeProductCore(this ProductRuntimeComponent self, bool joinLocal, string profile, SoloSaveHeader header, SoloSavePayload payload, ProductMenuVariant menuVariant, bool roomOnly = false, int contentChapterId = 0)
+        private static void InitializeProductCore(this ProductRuntimeComponent self, bool joinLocal, string profile, SoloSaveHeader header, SoloSavePayload payload, ProductMenuVariant menuVariant, bool roomOnly = false, int contentChapterId = 0, int testLevelId = 0)
         {
+            if (self.Config.IsDevelopmentTest)
+            {
+                RuntimeInstanceConfig.RequireDevelopmentAccess(self.Config.Role);
+                if (profile != null || header != null || payload != null || roomOnly || testLevelId != self.Config.TestLevelId)
+                    throw new InvalidOperationException("InvalidDevelopmentTestStart");
+            }
+            else if (testLevelId != 0) throw new InvalidOperationException("MissingDevelopmentTestIntent");
             if ((Scene)self.HostScene != null || (Scene)self.ClientScene != null || self.Stage is ProductStage.Stopping or ProductStage.Stopped)
                 throw new InvalidOperationException("ProductAlreadyStarted");
             self.RegisterProductEntry();
@@ -72,7 +88,7 @@ namespace ET
                         RenovationConfig.ValidateAll();
                         RestaurantChapters.ValidateAll();
                     }
-                    var firstDefinition = header != null ? Tables.Instance.DTLevelConfig.Get(header.NextLevelId)
+                    var firstDefinition = testLevelId != 0 ? DevelopmentTestCatalog.Resolve(testLevelId) : header != null ? Tables.Instance.DTLevelConfig.Get(header.NextLevelId)
                         : RestaurantChapters.First(contentChapterId, self.Config.Role, menuVariant);
                     Scene host = EntitySceneFactory.CreateScene(root, IdGenerater.Instance.GenerateId(), IdGenerater.Instance.GenerateInstanceId(), SceneType.ProductHost, "ProductHost");
                     self.HostScene = host;

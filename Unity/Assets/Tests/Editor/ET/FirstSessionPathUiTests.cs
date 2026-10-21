@@ -13,7 +13,7 @@ namespace ET
 {
     public sealed partial class SoloRestaurantUiTests
     {
-        [UnityTest, Category("FirstSessionPath")]
+        [UnityTest, Category("FirstSessionPath"), Category("EntryFlowClarity")]
         public IEnumerator FirstSessionPathAllChaptersTrialsCancelAndRetiredPreviewRemainReadOnly()
         {
             yield return StartLauncher(chooseGame: false);
@@ -28,16 +28,14 @@ namespace ET
                 Assert.That(Selection.Page, Is.EqualTo(SoloEntryPage.Chapters));
                 foreach (var chapter in Tables.Instance.DTRestaurantChapterConfig.DataList)
                 {
+                    var retired = CaptureButtonCallback(SelectionButton("确认开始"));
                     Pointer(SelectionButton($"新开大关 {chapter.Id} · {chapter.Name}"));
                     Assert.That(Selection.PreviewChapterId, Is.EqualTo(chapter.Id));
                     Assert.That(SelectionHud.SettlementText.text, Does.Contain(chapter.Name));
-                    var retired = CaptureButtonCallback(SelectionButton("确认开始"));
-                    Pointer(SelectionButton("返回开始方式"));
                     retired();
                     Assert.That((Scene)Runtime.HostScene, Is.Null);
                     Assert.That(repository.Browse(), Is.Empty);
                 }
-                Pointer(SelectionButton("返回单机首页"));
                 Pointer(SelectionButton("菜单试玩"));
                 foreach (string caption in new[] { "新开餐厅", "内存试玩", "新开沙拉餐厅", "新开经营成长餐厅", "新开热餐餐厅", "新开甜品餐厅", "新开咖啡餐厅", "新开蒸食餐厅", "新开茶饮餐厅" })
                 {

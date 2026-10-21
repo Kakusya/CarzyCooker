@@ -17,6 +17,7 @@ namespace ET
     }
 
     [EntitySystemOf(typeof(SoloSaveBinding))]
+    [FriendOf(typeof(ProductRuntimeComponent))]
     [FriendOf(typeof(SoloSaveBinding))]
     [FriendOf(typeof(SelectedSaveBaseline))]
     public static partial class SoloSaveBindingSystem
@@ -31,6 +32,8 @@ namespace ET
 
         public static void BindSoloSave(this Match match, string profile, SoloSaveHeader header, SoloSavePayload payload)
         {
+            if (match.Root().GetComponent<ProductRuntimeComponent>()?.Config.IsDevelopmentTest == true)
+                throw new InvalidOperationException("DevelopmentTestCannotSave");
             if (!SoloSaveValidation.IsIdentifier(profile)) throw new InvalidOperationException("InvalidProfile");
             var binding = match.AddComponent<SoloSaveBinding, string>(profile);
             if (header != null)
